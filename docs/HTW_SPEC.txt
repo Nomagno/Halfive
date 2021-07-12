@@ -1,0 +1,47 @@
+The .hwt (Half-World Track) format has a very template that must always be followed:
+
+------------------------------------------
+[PARAMETERS]
+
+PARAM - VALUE
+PARAM - VALUE
+PARAM - VALUE
+
+[SEGMENTS]
+
+(itr) (p1x, p1y) (p2x, p2y) (p3x, p3y) (w)
+
+# OR
+
+(itr) (p1x, p1y) (p2x, p2y) (p3x, p3y) (w) + PARAM = VALUE
+------------------------------------------
+
+EXPLANATION:
+
+Empty lines and lines starting with hashtag "#" will be ignored. Whitespace does matter.
+Always start the file with the "[PARAMETERS]" header, followed by flags/settings following 
+the "PARAM - VALUE" format, of course replacing PARAM and VALUE for the parameter and the value.
+After the "[PARAMETERS]" section comes the [SEGMENTS] section. Here you define the segments like so:
+
+"(itr) (p1x, p1y) (p2x, p2y) (p3x, p3y) (w)"
+
+Where p1 and p2 are bezier curve anchors, p3 is a bezier curve control point, 
+itr is the number of the segment, and w is the track width 0.0 to 10.0
+
+Aditionally, you can add special properties for that segment:
+
+"(itr) (p1x, p1y) (p2x, p2y) (p3x, p3y) (w) + PARAM = VALUE"
+
+
+AVAILABLE GLOBAL PARAMETERS:
+
+TIME - NIGHT/DAY
+BIOME - GRASS/DESERT/SNOW/JUNGLE
+MAX_PLAYERS - NUMBER
+
+
+AVAILABLE SEGMENT PARAMETERS:
+
+SPEED = SLOWER/FASTER
+FINISH_LINE = NORMAL/CHECKPOINT
+GUARDRAILS = NORMAL/ELECTRIC
