@@ -24,3 +24,7 @@ Segments are defined by quadratic (Three-point) Bezier curves, in addition to an
 - Slower speed (Track is dirty/unpaved) / Faster speed (Track has air suction devices on the floor)
 
 ### GENERAL FEATURES
+- Gameplay and physics calculations must in all cases remain 2D, without verticality. This is in order to support both 2D and 3D frontends.
+  - For example, going off track and hard collisions will preferrably result in a short 'teleport' to the last control point, instead of a flashy boom and HVs flying into the air.
+- Networking will preferrably have a 'Rollback' system where UDP packets are used and only the server can decide who won, and players will periodically sync all stadistics.
+- Any player controls must be ABSTRACTED, the only thing the backend should have to care about is the raw power being applied to each thruster.
