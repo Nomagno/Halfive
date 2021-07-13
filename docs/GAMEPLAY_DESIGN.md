@@ -22,4 +22,4 @@ The track segments are defined by quadratic (Three-point) Bezier curves, in addi
 
 - Finish line / Control point (For reappearing when going off track)
 - Guard rails / Electric guard rails
-- Slower speed (Track is dirty/unpaved) / Faster speed (Track has air suction devices on the floot)
+- Slower speed (Track is dirty/unpaved) / Faster speed (Track has air suction devices on the floor)
