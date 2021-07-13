@@ -23,6 +23,8 @@ Segments are defined by quadratic (Three-point) Bezier curves, in addition to an
 - Guard rails / Electric guard rails
 - Slower speed (Track is dirty/unpaved) / Faster speed (Track has air suction devices on the floor)
 
+For more information, please see the HWT (Half-World Track) specification document.
+
 ### GENERAL FEATURES
 - Gameplay and physics calculations must in all cases remain 2D, without verticality. This is in order to support both 2D and 3D frontends.
   - For example, going off track and hard collisions will preferrably result in a short 'teleport' to the last control point, instead of a flashy boom and HVs flying into the air.
