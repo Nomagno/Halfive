@@ -2,7 +2,12 @@
 int main() {
   int y;
   struct Bezier track_storage[40];
-  int result = get_track("../tracks/circle_madness.hwt", track_storage);
+  char full_path[20], *path;
+  printf("What's the name of the track file you'd like to test-parse?\n");
+  scanf("%s", path);
+  strcpy(full_path, "../tracks/");
+  strcat(full_path, path);
+  int result = get_track(full_path, track_storage);
   for (y = 0; y < 40; y++) {
     printf("(%f, %f) (%f, %f) (%f, %f)\n", track_storage[y].p1.x,
            track_storage[y].p1.y, track_storage[y].p2.x, track_storage[y].p2.y,
