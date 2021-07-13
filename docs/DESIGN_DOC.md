@@ -1,4 +1,4 @@
-# Half-World gameplay design document
+# Half-World design document
 
 ## Mechanics
 
