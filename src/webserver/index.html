@@ -88,7 +88,7 @@
         }
         
         
-        var socket = new WebSocket("ws://192.168.1.200:8080");
+        var socket = new WebSocket("ws://" + document.location.hostname + ":8080");
         
         function send(){
           socket.send(values);

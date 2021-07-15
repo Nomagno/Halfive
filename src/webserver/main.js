@@ -18,3 +18,4 @@ server.on('connection', function(socket) {
         console.log('socket closed');
 
     });
+});
