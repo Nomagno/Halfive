@@ -36,7 +36,7 @@ Aditionally, you can add special properties for that segment:
 AVAILABLE GLOBAL PARAMETERS:
 
 TIME - NIGHT/DAY
-BIOME - GRASS/DESERT/SNOW/JUNGLE
+BIOME - DESERT/SNOW/JUNGLE
 MAX_PLAYERS - NUMBER
 
 
