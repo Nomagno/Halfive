@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 struct Point {
-  float x;
-  float y;
+  int x;
+  int y;
 };
 struct Bezier {
   struct Point p1;
@@ -53,13 +53,13 @@ int get_track(char *track, struct Bezier track_shape[]) {
       valuetrack++;
     }
 
-    if (sscanf(buffer[x], " (%1i) (%f, %f) (%f, %f) (%f, %f) (%1i) ",
+    if (sscanf(buffer[x], " (%1i) (%i, %i) (%i, %i) (%i, %i) (%1i) ",
                &index[curvetrack], &curves[curvetrack].p1.x,
                &curves[curvetrack].p1.y, &curves[curvetrack].p2.x,
                &curves[curvetrack].p2.y, &curves[curvetrack].p3.x,
                &curves[curvetrack].p3.y, &width[curvetrack]) != 8) {
       if (sscanf(buffer[x],
-                 " (%1i) (%f, %f) (%f, %f) (%f, %f) (%1i) + %s = %s ",
+                 " (%1i) (%i, %i) (%i, %i) (%i, %i) (%1i) + %s = %s ",
                  &index[curvetrack], &curves[curvetrack].p1.x,
                  &curves[curvetrack].p1.y, &curves[curvetrack].p2.x,
                  &curves[curvetrack].p2.y, &curves[curvetrack].p3.x,
