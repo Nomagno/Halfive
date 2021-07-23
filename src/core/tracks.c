@@ -1,15 +1,52 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
+
+enum SPEED { normal, boost, antiboost };
+
+enum RACING_LINE {no, finish_line, checkpoint};
+
+enum GUARDRAILS {empty, metal, electric};
+
+enum BIOME {forest, desert, snow};
+
+enum TIME {day, night};
+
+
 struct Point {
-  float x;
-  float y;
+  int x;
+  int y;
 };
+
 struct Bezier {
   struct Point p1;
   struct Point p2;
   struct Point p3;
 };
+
+struct Segment {
+	unsigned int index;
+	
+	struct Bezier shape;
+
+	enum SPEED speed;
+	enum RACING_LINE racing_line;
+	enum GUARDRAILS guardrails;
+};
+
+struct Track {
+	char name[20];
+
+	enum BIOME biome;
+	enum TIME time;
+	short unsigned int max_players;
+	
+	struct Segment segments[40];
+};
+
+struct Track tracks[10];
 struct Bezier curves[40];
+
 char section[10][20], param[10][20], value[10][20];
 char buffer[80][100];
 
@@ -52,34 +89,32 @@ int get_track(char *track, struct Bezier track_shape[]) {
     } else {
       valuetrack++;
     }
-
-    if (sscanf(buffer[x], " (%1i) (%f, %f) (%f, %f) (%f, %f) (%1i) ",
-               &index[curvetrack], &curves[curvetrack].p1.x,
+     if (sscanf(buffer[x],
+                " (%1i) (%i, %i) (%i, %i) (%i, %i) (%1i) {%[^}]} ",
+                &index[curvetrack], &curves[curvetrack].p1.x,
+                &curves[curvetrack].p1.y, &curves[curvetrack].p2.x,
+                &curves[curvetrack].p2.y, &curves[curvetrack].p3.x,
+                &curves[curvetrack].p3.y, &width[curvetrack],
+                param[valuetrack]) != 9)	{
+    if (sscanf(buffer[x], " (%1i) (%i, %i) (%i, %i) (%i, %i) (%1i) ",
+               &index[curvetrack] ,&curves[curvetrack].p1.x,
                &curves[curvetrack].p1.y, &curves[curvetrack].p2.x,
                &curves[curvetrack].p2.y, &curves[curvetrack].p3.x,
                &curves[curvetrack].p3.y, &width[curvetrack]) != 8) {
-      if (sscanf(buffer[x],
-                 " (%1i) (%f, %f) (%f, %f) (%f, %f) (%1i) + %s = %s ",
-                 &index[curvetrack], &curves[curvetrack].p1.x,
-                 &curves[curvetrack].p1.y, &curves[curvetrack].p2.x,
-                 &curves[curvetrack].p2.y, &curves[curvetrack].p3.x,
-                 &curves[curvetrack].p3.y, &width[curvetrack],
-                 param[valuetrack], value[valuetrack]) != 10) {
         test_full += 1;
       } else if (curvetrack < 40) {
         curvetrack++;
-        valuetrack++;
       }
     }
 
     else if (curvetrack < 40) {
       curvetrack++;
+   	  valuetrack++;
     }
   }
 
   for (i = 0; i < (sizeof(curves) / len); i++) {
     track_shape[i] = curves[i];
   };
-  // test_full = test1 + test2 + test3 + test4 + test5;
   return (0);
 }
