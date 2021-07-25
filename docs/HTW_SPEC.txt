@@ -25,8 +25,8 @@ After the "[PARAMETERS]" section comes the [SEGMENTS] section. Here you define t
 
 "(itr) (p1x, p1y) (p2x, p2y) (p3x, p3y) (w)"
 
-Where p1 and p2 are bezier curve anchors, p3 is a bezier curve control point, 
-itr is the number of the segment, and w is the track width 0.0 to 10.0
+Where all numbers are integers, p1 and p2 are bezier curve anchors, p3 is a bezier curve control point, 
+itr is the number of the segment, and w is the track width 0 to 10
 
 Aditionally, you can add special properties for that segment:
 
