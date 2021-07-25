@@ -118,6 +118,7 @@ struct Track get_track(char *track_file) {
 
     else if (curvetrack < 40) {
       curvetrack++;
+
     }
   }
 

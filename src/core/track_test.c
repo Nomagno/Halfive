@@ -15,5 +15,5 @@ int main() {
            test_track.segments[y].shape.p3.x, test_track.segments[y].shape.p3.y);
   }
   printf("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n", "SHOW ME YOUR MOVES!", section[0], param[0], value[0],
-         section[1], param[1], value[1], param[2], value[2], param[3], value[3], param[4], value[4]);
+         section[1], param[1], value[1], param[2], value[2], segment_param[0], value[3], segment_param[1], value[4]);
 }
