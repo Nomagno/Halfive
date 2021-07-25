@@ -1,0 +1,13 @@
+#The English example will always contain all translatable sections
+
+[EN]
+play="Play"
+settings="Settings"
+leave="Leave"
+popup="Introduce the name of the track file"
+
+[ES]
+play="Jugar"
+settings="Opciones"
+exit="Abandonar"
+popup="Introduce el nombre del archivo de pista"

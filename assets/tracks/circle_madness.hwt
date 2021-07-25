@@ -4,5 +4,5 @@ BIOME - DESERT
 MAX_PLAYERS - 4
 
 [SEGMENTS]
-(1) (28, 36) (50, 30) (40, 80) (5) + RACING_LINE
-(2) (50, 30) (28, 36)  (40, -80) (4) + RACING_LINE = NORMAL
+(1) (28, 36) (50, 30) (40, 80) (5) {FINISH_LINE}
+(2) (50, 30) (28, 36)  (40, -80) (4)

@@ -13,7 +13,7 @@ PARAM - VALUE
 
 # OR
 
-(itr) (p1x, p1y) (p2x, p2y) (p3x, p3y) (w) + PARAM = VALUE
+(itr) (p1x, p1y) (p2x, p2y) (p3x, p3y) (w) {PARAM}
 ------------------------------------------
 
 EXPLANATION:
@@ -30,18 +30,18 @@ itr is the number of the segment, and w is the track width 0 to 10
 
 Aditionally, you can add special properties for that segment:
 
-"(itr) (p1x, p1y) (p2x, p2y) (p3x, p3y) (w) + PARAM = VALUE"
+"(itr) (p1x, p1y) (p2x, p2y) (p3x, p3y) (w) {PARAM}"
 
 
 AVAILABLE GLOBAL PARAMETERS:
 
 TIME - NIGHT/DAY
-BIOME - GRASS/DESERT/SNOW/JUNGLE
+BIOME - DESERT/SNOW/FOREST
 MAX_PLAYERS - NUMBER
 
 
 AVAILABLE SEGMENT PARAMETERS:
 
-SPEED = SLOWER/FASTER
-FINISH_LINE = NORMAL/CHECKPOINT
-GUARDRAILS = NORMAL/ELECTRIC
+BOOST/ANTIBOOST
+RACING_LINE/CHECKPOINT
+GUARDRAILS/ELECTRIC_GUARDRAILS
