@@ -1,5 +1,5 @@
 [USAGE]
-- Run "main.js" with Node.js (nodejs.org).
+- Compile "main.c" with "ws" and "pthread" linked (See README in the "WebSocket" folder).
 - Serve "index.html" from the same machine.
 - Open "index.html" on a device with a touchscreen.
 - The vertical position of up to two (2) fingers is now being written to "input.txt" in real time.

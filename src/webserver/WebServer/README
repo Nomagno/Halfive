@@ -1,0 +1,18 @@
+Minified fork of https://github.com/Theldus/wsServer
+
+BUILD FOR UNIX-LIKE SYSTEMS
+------------
+make
+------------
+
+BUILD FOR WINDOWS
+------------
+mkdir build
+cd build
+cmake ..
+mingw32-make
+------------
+
+USAGE
+
+Link "libws.a" with main.c in the directory above this one
