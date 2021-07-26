@@ -5,9 +5,9 @@
 #include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_ttf.h>
 #include <stdbool.h>
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
-int i;
+const uint16_t SCREEN_WIDTH = 640;
+const uint16_t SCREEN_HEIGHT = 480;
+uint16_t i;
 
 SDL_Window *sdlWindow = NULL;
 SDL_Renderer *sdlRenderer = NULL;
@@ -29,7 +29,7 @@ void sdlExit() {
 }
 void sdlError() {}
 
-bool sdlLoadTexture(int sprite_num, char paths[sprite_num][100],
+bool sdlLoadTexture(uint16_t sprite_num, char paths[sprite_num][100],
                     SDL_Texture *returnArray[sprite_num]) {
 
   bool any_errors = false;
@@ -92,7 +92,7 @@ bool sdlInit() {
   }
 
   SDL_SetRenderDrawColor(sdlRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-  int imgInit = IMG_INIT_PNG;
+  uint16_t imgInit = IMG_INIT_PNG;
   if (!(IMG_Init(imgInit) & imgInit)) {
     sdlError();
     success = false;

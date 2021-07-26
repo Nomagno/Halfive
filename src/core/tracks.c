@@ -2,9 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <stdint.h>
 enum SPEED { normal, boost, antiboost };
-
 enum RACING_LINE { no, finish_line, checkpoint };
 
 enum GUARDRAILS { empty, metal, electric };
@@ -21,8 +20,8 @@ struct Biome {
 enum TIME { unknown, day, night };
 
 struct Point {
-  int x;
-  int y;
+  uint16_t x;
+  uint16_t y;
 };
 
 struct Bezier {
@@ -32,7 +31,7 @@ struct Bezier {
 };
 
 struct Segment {
-  unsigned int index;
+  uint16_t index;
 
   struct Bezier shape;
 
@@ -46,7 +45,7 @@ struct Track {
 
   enum BIOME biome;
   enum TIME time;
-  short unsigned int max_players;
+  uint16_t max_players;
 
   struct Segment segments[40];
 };
@@ -65,7 +64,7 @@ struct Track get_track(char *track_file) {
   FILE *fp;
   struct Track read_track;
   long unsigned i = 0, x = 0, curvetrack = 0, sectiontrack = 0, valuetrack = 0;
-  int index[40], width[40], test_full = 0;
+  uint16_t index[40], width[40], test_full = 0;
   for (x = 0; x < 10; x++) {
     strcpy(section[x], "");
     strcpy(param[x], "");

@@ -1,7 +1,7 @@
 #include "tracks.c"
 
 int main() {
-  int y;
+  uint16_t y;
   char full_path[40], *path;
   printf("What's the name of the track file you'd like to test-parse?\n");
   scanf("%s", path);
