@@ -1,114 +1,93 @@
 <html>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<head>
-    <style>
-        div {
-         		width: 720px;
-                position: absolute;
-                bottom: 50%;
-                left: 50%;
-                top: 40%;
-                transform: translate(-50%, -50%);
-        	}
-        	
-           #barleft {
-                width: 280px;
-          		height: 120px;
-                -webkit-transform: rotate(90deg);
-                -moz-transform: rotate(90deg);
-                -o-transform: rotate(90deg);
+    <head>
+        <style>
+            div {
+                height: 100%;
+                padding: 0;
+                margin: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            #barleft {
                 transform: rotate(90deg);
-        	}
-        
-              #barright {
-        		width: 280px;
-        		height: 120px;
-                -webkit-transform: rotate(90deg);
-                -moz-transform: rotate(90deg);
-                -o-transform: rotate(90deg);
+                height: 30%;
+                width: 50%;
+            }
+            #barright {
                 transform: rotate(90deg);
-              }
-        
-        	#main
-        	{         
-        	    position:fixed;
-        	    top:0px;
-        	    bottom:0px;
-        	    left:0px;
-        	    right:0px;
-        	}
-    </style>
-</head>
+                height: 30%;
+                width: 50%;
+            }
 
-<body id="main">
+            #main {
+                position: fixed;
+                top: 0px;
+                bottom: 0px;
+                left: 0px;
+                right: 0px;
+            }
+        </style>
+    </head>
 
-    <div class="center">
-        <progress ontouchstart="showCoordinates(event)" ontouchmove="showCoordinates(event)" max="100" id="barleft">
-</progress>
+    <body id="main">
+        <div class="center">
+            <progress ontouchstart="showCoordinates(event)" ontouchmove="showCoordinates(event)" max="100" id="barleft"> </progress>
 
-        <button onclick="openFullscreen();">FULLSCREEN</button>
+            <button onclick="openFullscreen();">FULLSCREEN</button>
 
-        <progress ontouchstart="showCoordinates(event)" ontouchmove="showCoordinates(event)" max="100" id="barright">
-</progress>
-    </div>
+            <progress ontouchstart="showCoordinates(event)" ontouchmove="showCoordinates(event)" max="100" id="barright"> </progress>
+        </div>
 
-    <script>
-        var elem = document.documentElement;
-        var x1, x2, y1, y2, values;
-        
-        function showCoordinates(event) {
-          x1 = event.touches[0].clientX;
-          y1 = event.touches[0].clientY;
-        
-         if (event.touches.length == 2) {
-          y2 = event.touches[1].clientY;
-          x2 = event.touches[1].clientX;
-        
-          if (event.touches[1].target.id == "barright") {
-          values = "(y1=" + y1 + ", y2=" + y2 + ")";
-          }
-        
-          else if (event.touches[1].target.id == "barleft") {
-          values = "(y1=" + y2 + ", y2=" + y1 + ")";
-          }
-          event.preventDefault();
-          }
-        
-          else {
-          if (event.touches[0].target.id == "barright") {
-          values = "(y2=" + y1 + ")";
-          }
-        
-          else if (event.touches[0].target.id == "barleft") {
-          values = "(y1=" + y1 + ")";
-          }
-         }
-         send();
-        }
-        
-        
-        var socket = new WebSocket("ws://" + document.location.hostname + ":8080");
-        
-        function send(){
-          socket.send(values);
-          socket.onmessage = function (message) {
-          };
-          socket.onerror = function (error) {
-          };
-        }
-        
-        function openFullscreen() {
-          if (elem.requestFullscreen) {
-            elem.requestFullscreen();
-          } else if (elem.mozRequestFullScreen) { /* Firefox */
-            elem.mozRequestFullScreen();
-          } else if (elem.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
-            elem.webkitRequestFullscreen();
-          } 
-        }
-    </script>
+        <script>
+            var elem = document.documentElement;
+            var x1, x2, y1, y2, values;
 
-</body>
+            function showCoordinates(event) {
+                x1 = event.touches[0].clientX;
+                y1 = event.touches[0].clientY;
 
+                if (event.touches.length == 2) {
+                    y2 = event.touches[1].clientY;
+                    x2 = event.touches[1].clientX;
+
+                    if (event.touches[1].target.id == "barright") {
+                        values = "(y1=" + y1 + ", y2=" + y2 + ")";
+                    } else if (event.touches[1].target.id == "barleft") {
+                        values = "(y1=" + y2 + ", y2=" + y1 + ")";
+                    }
+                    event.preventDefault();
+                } else {
+                    if (event.touches[0].target.id == "barright") {
+                        values = "(y2=" + y1 + ")";
+                    } else if (event.touches[0].target.id == "barleft") {
+                        values = "(y1=" + y1 + ")";
+                    }
+                }
+                send();
+            }
+
+            var socket = new WebSocket("ws://" + document.location.hostname + ":8080");
+
+            function send() {
+                socket.send(values);
+                socket.onmessage = function (message) {};
+                socket.onerror = function (error) {};
+            }
+
+            function openFullscreen() {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.mozRequestFullScreen) {
+                    /* Firefox */
+                    elem.mozRequestFullScreen();
+                } else if (elem.webkitRequestFullscreen) {
+                    /* Chrome, Safari & Opera */
+                    elem.webkitRequestFullscreen();
+                }
+            }
+        </script>
+    </body>
 </html>
