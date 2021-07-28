@@ -2,4 +2,7 @@
 - Compile "main.c" with "ws" and "pthread" linked (See README in the "WebSocket" folder).
 - Serve "index.html" from the same machine.
 - Open "index.html" on a device with a touchscreen.
-- The vertical position of up to two (2) fingers is now being written to "input.txt" in real time.
+- The vertical position of up to two (2) fingers is now being written:
+    -  Read "input.pipe" (POSIX/Linux/MacOS/BSD) 
+    -  Read "input.txt" (Other/Windows)
+    -  Parse the first line of the file, format `(y1=FLOAT, y2=FLOAT)` or `(y1=FLOAT)`, where FLOAT is a floating point number
