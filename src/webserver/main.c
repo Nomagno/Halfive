@@ -31,6 +31,8 @@ void onmessage(int fd, const unsigned char *msg, uint64_t size, int type)
 int main()
 {
     #if defined(__unix__) || defined (__APPLE__)
+    //FIFOs, or First In Fist Out files, or Named Pipes, are Unix files 
+    //that can be opened like normal, but are stored in RAM instead of on disk
     mkfifo("input.pipe", 0666);
     input_file = fopen("input.pipe", "w");
     #else
