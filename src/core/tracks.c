@@ -20,8 +20,8 @@ struct Biome {
 enum TIME { unknown, day, night };
 
 struct Point {
-  uint16_t x;
-  uint16_t y;
+  int x;
+  int y;
 };
 
 struct Bezier {
@@ -31,7 +31,7 @@ struct Bezier {
 };
 
 struct Segment {
-  uint16_t index;
+  int index;
 
   struct Bezier shape;
 
@@ -45,7 +45,7 @@ struct Track {
 
   enum BIOME biome;
   enum TIME time;
-  uint16_t max_players;
+  int max_players;
 
   struct Segment segments[40];
 };
@@ -63,8 +63,8 @@ struct Track get_track(char *track_file) {
 
   FILE *fp;
   struct Track read_track;
-  long unsigned i = 0, x = 0, curvetrack = 0, sectiontrack = 0, valuetrack = 0;
-  uint16_t index[40], width[40], test_full = 0;
+  int i = 0, x = 0, curvetrack = 0, sectiontrack = 0, valuetrack = 0;
+  int index[40], width[40], test_full = 0;
   for (x = 0; x < 10; x++) {
     strcpy(section[x], "");
     strcpy(param[x], "");
