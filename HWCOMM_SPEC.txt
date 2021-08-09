@@ -1,0 +1,26 @@
+WARNING: This specification is incomplete, but not for long
+
+Half-World Backend-Fontend Common/Communication Specification
+
+THE BASIC THEME OF THIS DOCUMENT IS DEFINING HOW THE Frontend SHOULD BE ABLE TO QUERY THE Backend. ALTHOUGH THOROUGHLY RECOMMENDED GUIDELINES WILL BE DEFINED, INTERNAL IMPLEMENTATION OF THE Frontend OR THE Backend IS COMPLETELY IRRELEVANT AS LONG AS THE INTERFACE IS COHERENT WITH THAT DESCRIBED IN THIS DOCUMENT.
+
+
+DEFINITIONS
+
+CommonUnit (CU): An arbitrary number meant to be a common unit for all relative sizes.
+
+Stage: 2D plane where all of the gameplay takes place, that is a maximum of 8000000 (8 MILLION) CUs wide and long.
+
+Track: Racing Circuit that follows the Half-World Track encoding specification (HWT). It has its first segment anchored on an arbitrary position on the Stage, and has a size from the interior to exterior line of (5+WIDTH)*1000 CommonUnits.
+
+Player: Entity (Be it NPC or Human) that sends the required inputs to action an HV.
+
+HoVercar (HV): Vehicle of rectangular shape that has a variable position on the Stage, is 300CUs wide and 600CUs long, and is controlled by a Player.
+
+GameMode: Set of rules compliant with the Half-World Gamemode encoding specification (HWC).
+
+Race: The act of the Player or Players competing in a Track, on a Stage, controlling HVs, following a GameMode
+
+Backend: Software that handles the common logic required to execute a Half-World compliant Race
+
+Frontend: Software that handles presentation details, Player input handling, input method abstraction, graphics, and any other subjective or open-ended matters related to a real world implementation.
