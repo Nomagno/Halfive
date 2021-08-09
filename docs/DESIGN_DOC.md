@@ -1,4 +1,4 @@
-# Half-World backend design document
+# Half-World draft/abstract design document
 
 ## Mechanics
 
