@@ -1,1 +1,1 @@
-# Half-World, the modular hovercar racing game
+# Half-World a universal racing game protocol
