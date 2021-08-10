@@ -15,6 +15,7 @@ enum COLORS { white, red, blue, yellow, green, pink };
 struct Biome {
   char spritesheet[100];
   enum COLORS main_color;
+  enum BIOME the_biome;
 };
 
 enum TIME { unknown, day, night };
@@ -43,7 +44,7 @@ struct Segment {
 struct Track {
   char name[20];
 
-  enum BIOME biome;
+  struct Biome biome;
   enum TIME time;
   int max_players;
 
@@ -140,15 +141,15 @@ struct Track get_track(char *track_file) {
     if (strcmp(param[i], "BIOME") == 0) {
 
       if (strcmp(value[i], "DESERT") == 0) {
-        read_track.time = night;
+        read_track.biome.the_biome = desert;
       }
 
       else if (strcmp(value[i], "SNOW") == 0) {
-        read_track.time = day;
+        read_track.biome.the_biome = snow;
       }
 
       else {
-        read_track.biome = forest;
+        read_track.biome.the_biome = forest;
       }
     }
 
