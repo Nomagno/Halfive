@@ -1,11 +1,33 @@
-WARNING: This specification is incomplete, but not for long
-
-Half-World Backend-Fontend Common/Communication Specification
+Half-World Backend-Fontend Common/Communication Specification [WORKING DRAFT]
 
 THE BASIC THEME OF THIS DOCUMENT IS DEFINING HOW THE Frontend SHOULD BE ABLE TO QUERY THE Backend. ALTHOUGH THOROUGHLY RECOMMENDED GUIDELINES WILL BE DEFINED, INTERNAL IMPLEMENTATION OF THE Frontend OR THE Backend IS COMPLETELY IRRELEVANT AS LONG AS THE INTERFACE IS COHERENT WITH THAT DESCRIBED IN THIS DOCUMENT.
 
+-----------------------------------------
 
-DEFINITIONS
+
+INDEX (I0)
+
+I0  -  "INDEX"
+
+D0  -  "DEFINITIONS"
+
+S0  -  "RACE INITIATION PRODECURE"
+
+R0  -  "RACE EXECUTION PRODECURE"
+
+E0  -   "RACE ENDING PRODECURE"
+
+A0  -  "ADITIONAl"
+
+-----------------------------------------
+
+
+DEFINITIONS (D0)
+
+
+Half-World Common Specification (HWCOMM): This document
+
+Half-World Track (HWT): Defines an encoding format for Tracks
 
 CommonUnit (CU): An arbitrary number meant to be a common unit for all relative sizes.
 
@@ -15,12 +37,72 @@ Track: Racing Circuit that follows the Half-World Track encoding specification (
 
 Player: Entity (Be it NPC or Human) that sends the required inputs to action an HV.
 
-HoVercar (HV): Vehicle of rectangular shape that has a variable position on the Stage, is 300CUs wide and 600CUs long, and is controlled by a Player.
+HoVercar (HV): Vehicle of rectangular shape that has a variable position on the Stage, is 300CUs wide and 600CUs long, and is controlled by a Player. It has two thrusters, one on the rear right, and another on the rear left, that dictate how it should move.
 
-GameMode: Set of rules compliant with the Half-World Gamemode encoding specification (HWC).
+Input: A set of two onedimensional numbers that represent the relative position of each of each thruster lever of an HV.
+
+GameMode: Set of rules compliant with the Half-World GameMode encoding specification (HWGM).
 
 Race: The act of the Player or Players competing in a Track, on a Stage, controlling HVs, following a GameMode
 
 Backend: Software that handles the common logic required to execute a Half-World compliant Race
 
 Frontend: Software that handles presentation details, Player input handling, input method abstraction, graphics, and any other subjective or open-ended matters related to a real world implementation.
+
+Extension: Arbitrary modifications to HWT, HWGM, HWCOMM, and any new specifications that are considered relevant. In order to identify which Backends/Frontends implement them, they shall be named HW_EXT_XXXXXXXX, where "XXXXXXXX" is an arbitrary, unique 8-character alphanumerical string (A-Z,a-z,0-9)
+
+-----------------------------------------
+
+
+RACE INITIATION PROCEDURE (S0)
+
+Frontend (S1): the Frontend can query the Backend for the following information:
+
+T0 - The size (Height, Width) of the Stage.
+
+T1 - The Track information encoded on HWT, and where on the Stage it is anchored.
+
+T2- The GameMode information, with HWGM encoding.
+
+T3 - After replying to [S2.T0], query how many HVs there are, the starting position of each HV/Player, and which of these Players the Frontend has control over.
+
+T4 - After replying to [S2.T1], query which Extensions the Frontend will use.
+
+T5 - 
+
+TX0    -    //ADD YOUR Extention-SPECIFIC PROCEDURES
+
+TX1    -    //ADD YOUR Extension-SPECIFIC PROCEDURES
+
+
+Backend (S2): the Backend can query the Frontend for the following information:
+
+T0 - Query how many Players/HVs the Frontend needs, and only then reply to [S1.T3].
+
+T1 - Query which Extensions the Frontend supports, and only then reply to [S1.T4].
+
+T2 - 
+
+TX0    -    //ADD YOUR Extention-SPECIFIC PROCEDURES
+
+TX1    -    //ADD YOUR Extention-SPECIFIC PROCEDURES
+
+-----------------------------------------
+
+
+RACE EXECUTION PROCEDURE (R0)
+
+-----------------------------------------
+
+
+RACE ENDING PROCEDURE (E0)
+
+-----------------------------------------
+
+
+ADDITIONAL (A0)
+
+-----------------------------------------
+
+
+THE END - By Nomagno
