@@ -1,3 +1,5 @@
+//DEPRECATED, AWAITING A HWDOC-COMPLIANT REIMPLEMENTATION
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
