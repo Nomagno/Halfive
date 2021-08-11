@@ -1,9 +1,24 @@
-[PARAMETERS]
-TIME - NIGHT
-BIOME - GRASS
-MAX_PLAYERS - 6
+[track]
+time = ["night"]
+biome =  ["forest"]
+max_players = ["6"]
 
-[SEGMENTS]
-(1) (28, 36) (50, 30) (40, 40) (5) {FINISH_LINE}
-(2) (50, 30) (37, -50) (60, -80) (3) {CHECKPOINT}
-(3) (37, -50) (28, 36) (-50, -80) (5) {BOOST}
+[segments]
+
+[segments.1]
+
+shape = [ "28", "36", "50", "30", "40", "40" ] 
+width = [ "5" ]
+local_finish_line = [""]
+
+[segments.2]
+
+shape = [ "50", "30", "37", "-50", "60", "-80" ] 
+width = [ "3" ]
+local_checkpoint = [""]
+
+[segments.3]
+
+shape = [ "37", "-50", "28", 36, "-50", "-80" ] 
+width = [ "5" ]
+local_boost = [""]

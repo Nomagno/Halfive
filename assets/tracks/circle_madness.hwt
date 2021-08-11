@@ -1,8 +1,18 @@
-[PARAMETERS]
-TIME - DAY
-BIOME - DESERT
-MAX_PLAYERS - 4
+[track]
+time = ["day"]
+biome =  ["desert"]
+max_players = ["4"]
 
-[SEGMENTS]
-(1) (28, 36) (50, 30) (40, 80) (5) {FINISH_LINE}
-(2) (50, 30) (28, 36)  (40, -80) (4)
+[segments]
+
+[segments.1]
+
+shape = [ "28", "36", "50", "30", "40", "80" ] 
+width = [ "5" ]
+local_finish_line = [""]
+
+[segments.2]
+
+shape = [ "50", "30", "28", "36", "40", "-80" ] 
+width = [ "4" ]
+

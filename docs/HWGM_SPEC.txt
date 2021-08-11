@@ -1,0 +1,94 @@
+Half-World GameMode (Encoding) Specification
+
+
+Please read the HWDOC format specification before this one.
+
+COMMENTS ARE STILL PART OF THE SPECIFICATION.
+Arguments between parentheses are variable and should be replaced according to their respective explanations on the commentary below their line.
+
+------------------------------------------
+
+
+ON OBJECT IDENTIFICATION:
+
+
+In this document, the variable OBJIDX means the object index or identification number. OBJIDX 0 is reserved for the finish line and is completely immutable, even if it is not used in an e.g. hockey Track. OBJIDXs 1 trough 32 are reserved for players/HVs, and can only have onhit_(OBJIDX) properties as the rest are already effectively hard coded in HWCOMM. OBJIDXs 33 trough 36 define the places where Teams can start on the HWT spec side. OBJIDXs 37 trough 63 are completely available, general-purpose objects.
+ 
+Except in table names, at any point, "(OBJIDX)" may be replaced with "team_(TEAMIDX)" to refer to all Players/HVs that are part of that team. 
+Except in table names, at any point, "(OBJDIX)" may be replaced with "(OBJIDX-OBJIDX)" to represent ranges. 
+
+------------------------------------------
+
+
+
+AVAILABLE gamemode TABLE PARAMETERS:
+
+
+gamemode_tag = ["XXXXXXXX"]
+#OBLIGATORY. Where "XXXXXXXX" is an 8 character alphanumerical (A-Z,a-z,0-9) string
+
+enable_scores - ["yes"/"no"/"configurable"]
+#OPTIONAL. Defaults to yes, but if it is set to no, and the Track is not defined in a racing-oriented mode, and there is a time limit, there will be no organical way to decide who won.
+
+time_limit - ["(SECONDS)"/"no"/"configurable"]
+#OPTIONAL. Defaults to configurable.
+
+min_players - "number"
+#OBLIGATORY.
+
+max_players - "number"
+#OBLIGATORY.
+
+min_teams - "number"
+#OBLIGATORY. Minimum 1
+
+max_teams - "number"
+#OBLIGATORY. Maximum 4
+
+------------------------------------------
+
+AVAILABLE objects.(OBJIDX) TABLE PARAMETERS
+
+shape = ["dot"]/["square", "(WIDTH)"]/["disc", "(RADIUS)"]
+#OBLIGATORY. dots are objects one CommonUnit wide and tall. squaress and discs have the shape indicated by their name and the dimensions indicated by the numbers you replace "WIDTH"/"RADIUS" with.
+
+
+physics - ["static"]/["slide", "(FRICTION)"]
+#OBLIGATORY. A static object can not be moved at all. A sliding will have FRICTION friction from 0 to 10 (Where 0 is frictionless, 1 is hockey-disc esque, 9 is metal box like, and 10 will be left undefined and unrecommended).
+
+
+onhit_(OBJIDX) - ["end"]/["score"/"win", (OBJIDX)]
+#OPTIONAL. Defines what happens when an object collides with another one, where score/win will apply that action, score a point or straight up win the match; and end will end the match without modifying scores
+
+movable_by - ["(OBJIDX)","(OBJIDX)","(OBJIDX)","(OBJIDX)"...]
+#OPTIONAL. Defines what objects can move a non-static object. It also defines what objects can move a static object with FRICTION 10.
+
+
+------------------------------------------
+EXAMPLE BELOW THAT ILLUSTRATES A HOCKEY-LIKE GAME MODE
+------------------------------------------
+
+[gamemode]
+gamemode_tag = ["JUSTAGMD"]
+
+time_limit = ["configurable"] # could also be e.g "42"
+enable_scores = ["yes"]
+
+min_players = ["1"]
+max_players = ["32"]
+min_teams = ["2"]
+max_teams = ["2"]
+
+[objects]
+
+[objects.33]
+shape = [ "square", "16" ]
+physics = [ "static" ]
+onhit_34 = [ "score", "team_1" ]
+
+[objects.34]
+shape = [ "disc", "2" ]
+physics = [ "slide", "1" ]
+movable_by = [ "team_1", "team_2" ]
+
+------------------------------------------

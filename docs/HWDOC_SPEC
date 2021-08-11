@@ -1,0 +1,29 @@
+Half-World Document Specification (The encoding syntax HWGM and HWT)
+
+HWDOC is a dead simple subset of TOML
+
+The only things supported are comments, arrays of strings, and there is no top level table and only support for one subtable level.
+
+
+---------------------------------
+
+#THERE IS NO TOP LEVEL TABLE
+
+[table]
+
+[table.1]
+
+#ONLY ARRAYS OF STRINGS ARE SUPPORTED
+name = ["john", "doe"]
+age = ["5", "fwive"]
+verboseage = ["fwive", "5"]
+foo = ["bar"]
+
+[table.2]
+
+ageofjohn = ["five", table.1.age] 
+# This is the same as ["five", "5", "fwive"]
+
+---------------------------------
+
+Anything else not seen here is not supported. This includes nested arrays, nested tables, integers, etc.

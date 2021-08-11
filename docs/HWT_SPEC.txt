@@ -1,47 +1,94 @@
-The .hwt (Half-World Track) format has a very template that must always be followed:
+Half-World Track (Encoding) Specification
+
+
+Please read the HWDOC format specification before this one.
+Arguments between parentheses are variable and should be replaced according to their respective explanations.
+
+The .hwt (Half-World Track) format :
 
 ------------------------------------------
-[PARAMETERS]
+[track]
 
-PARAM - VALUE
-PARAM - VALUE
-PARAM - VALUE
+global_(param) = ["(value)"]
+...
 
-[SEGMENTS]
+[segments]
 
-(itr) (p1x, p1y) (p2x, p2y) (p3x, p3y) (w)
+[segments.1]
 
-# OR
+shape = [ "(p1x)", "(p1y)", "(p2x)", "(p2y)", "(p3x)", "(p3y)"]
+width = ["(w)"]
+local_(param) = ["(THE VALUE IS COMPLETELY IRRELEVANT AND WILL BE IGNORED)"] #local_(param) IS OPTIONAL
 
-(itr) (p1x, p1y) (p2x, p2y) (p3x, p3y) (w) {PARAM}
+[segments.2]
+
+shape = [ "(p1x)", "(p1y)", "(p2x)", "(p2y)", "(p3x)", "(p3y)"]
+width = ["(w)"]
+
+
 ------------------------------------------
 
 EXPLANATION:
 
-Empty lines and lines starting with hashtag "#" will be ignored. Whitespace does matter.
-Always start the file with the "[PARAMETERS]" header, followed by flags/settings following 
-the "PARAM - VALUE" format, of course replacing PARAM and VALUE for the parameter and the value.
-After the "[PARAMETERS]" section comes the [SEGMENTS] section. Here you define the segments like so:
+Always start the file with the track table, followed by flags/settings, of course replacing param and value for the parameter and the value.
+After the track table comes the segments table. Here you define the segments, from one to a maximum of 40.
 
-"(itr) (p1x, p1y) (p2x, p2y) (p3x, p3y) (w)"
+Where all numbers are integers, p1 and p2 are bezier curve anchors, p3 is a bezier curve control point, and w is the track width from 1 to 5.
 
-Where all numbers are integers, p1 and p2 are bezier curve anchors, p3 is a bezier curve control point, 
-itr is the number of the segment, and w is the track width 1 to 5
+Aditionally, you can add special properties for that segment with param.
 
-Aditionally, you can add special properties for that segment:
 
-"(itr) (p1x, p1y) (p2x, p2y) (p3x, p3y) (w) {PARAM}"
-
+------------------------------------------
 
 AVAILABLE GLOBAL PARAMETERS:
 
-TIME - NIGHT/DAY
-BIOME - DESERT/SNOW/FOREST
-MAX_PLAYERS - NUMBER
 
+time = "night"/"day"
+
+biome = "desert"/"snow"/"forest"
+#AN ADDITIONAL "color - white/red/blue/yellow/green/pink" PARAMETER WILl BE GENERATED FROM THE BIOME. IF YOU ONLY CARE ABOUT THE COLOR OF THE STAGE/TRACK BACKGROUND, PLEASE STILL SPECIFY A BIOME
+
+max_players = "(NUMBER)"
+
+
+------------------------------------------
 
 AVAILABLE SEGMENT PARAMETERS:
 
-BOOST/ANTIBOOST
-RACING_LINE/CHECKPOINT
-GUARDRAILS/ELECTRIC_GUARDRAILS
+
+"boost"/"antiboost"
+
+"racing_line"/"checkpoint"
+
+"guardrails"/"electric_guardrails"
+
+
+------------------------------------------
+EXAMPLE DRAWN FROM THE triangular_parade.hwt TRACK
+------------------------------------------
+
+[track]
+time = ["night"]
+biome =  ["forest"]
+max_players = ["6"]
+
+[segments]
+
+[segments.1]
+
+shape = [ "28", "36", "50", "30", "40", "40" ] 
+width = [ "5" ]
+local_finish_line = [""]
+
+[segments.2]
+
+shape = [ "50", "30", "37", "-50", "60", "-80" ] 
+width = [ "3" ]
+local_checkpoint = [""]
+
+[segments.3]
+
+shape = [ "37", "-50", "28", 36, "-50", "-80" ] 
+width = [ "5" ]
+local_boost = [""]
+
