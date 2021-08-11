@@ -1,0 +1,27 @@
+[gamemode]
+gamemode_tag = ["HOCKEY00"]
+
+time_limit = ["configurable"]
+enable_scores = ["yes"]
+
+min_players = ["1"]
+max_players = ["32"]
+min_teams = ["2"]
+max_teams = ["2"]
+
+[objects]
+
+[objects.33]
+shape = [ "square", "16" ]
+physics = [ "static" ]
+onhit_34 = [ "score", "team_1" ]
+
+[objects.33]
+shape = [ "square", "16" ]
+physics = [ "static" ]
+onhit_34 = [ "score", "team_2" ]
+
+[objects.34]
+shape = [ "disc", "2" ]
+physics = [ "slide", "1" ]
+movable_by = [ "team_1", "team_2" ]

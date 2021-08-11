@@ -1,5 +1,6 @@
 Half-World GameMode (Encoding) Specification
 
+Use the ".hwgm" extension for HWGM documents, please.
 
 Please read the HWDOC format specification before this one.
 
