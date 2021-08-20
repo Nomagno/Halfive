@@ -5,6 +5,12 @@ HWDOC is a dead simple subset of TOML
 The only things supported are comments, arrays of strings, and there is no top level table and only support for one subtable level.
 
 
+There can be no single table name, string or key name longer than 20 characters. This restriction, however, does not apply when referencing objects with dot syntax ("yes2 = [my14charstable.6table.yes]").
+
+Aditionally, arrays can not be longer than 20 elements.
+
+There can, aditionally, not be more than 100 tables, or 500 key-value pairs (where a value is an array of arbitrary length).
+
 ---------------------------------
 
 #THERE IS NO TOP LEVEL TABLE
@@ -26,4 +32,4 @@ ageofjohn = ["five", table.1.age]
 
 ---------------------------------
 
-Anything else not seen here is not supported. This includes nested arrays, nested tables, integers, etc.
+Anything else not seen in this document is not supported. This includes nested arrays, nested tables, integers, etc.
