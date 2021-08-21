@@ -1,35 +1,49 @@
 Half-World Document Specification (The encoding syntax HWGM and HWT)
 
-HWDOC is a dead simple subset of TOML
+HWDOC is a subset of TOML 1.0
 
 The only things supported are comments, arrays of strings, and there is no top level table and only support for one subtable level.
 
 
-There can be no single table name, string or key name longer than 20 characters. This restriction, however, does not apply when referencing objects with dot syntax ("yes2 = [my14charstable.6table.yes]").
+There can be no single table name, string or key name longer than 20 characters
 
 Aditionally, arrays can not be longer than 20 elements.
 
 There can, aditionally, not be more than 100 tables, or 500 key-value pairs (where a value is an array of arbitrary length).
 
 ---------------------------------
-
-#THERE IS NO TOP LEVEL TABLE
+#PRETTY MUCH ONLY STUFF SEEN HERE IS VALID
 
 [table]
 
-[table.1]
+    [table.1]
+        name = ["john", "doe"]
+        age = ["5", "fwive"]
+        verboseage = ["fwive", "5"]
+        foo = ["bar"]
 
-#ONLY ARRAYS OF STRINGS ARE SUPPORTED
-name = ["john", "doe"]
-age = ["5", "fwive"]
-verboseage = ["fwive", "5"]
-foo = ["bar"]
+    [table."1.5"] 
+    #Empty Subtable named 1.5
 
-[table.2]
+    [table.2]
+        ageofjohn = ["five", "5", "fwive"]
 
-ageofjohn = ["five", table.1.age] 
-# This is the same as ["five", "5", "fwive"]
+---------------------------------
+#ALL OF THIS IS INVALID
+
+#THERE IS NO TOP LEVEL TABLE
+a="t" #ONLY ARRAYS OF STRINGS ARE SUPPORTED
+a=1 #ONLY ARRAYS OF STRINGS ARE SUPPORTED
+a=[1,2] #ONLY ARRAYS OF STRINGS ARE SUPPORTED
+
+    [table.1] #THERE IS NO IMPLICIT TABLE CREATION
+        verboseage = ["fwive", "5"]
+        "twentycharacterslong" = ["twentyandsixcharacterslong"] #MAX NAME CHARACTER LENGTH IS 20
+
+    [table.1.5] #LEVEL TWO SUBTABLES ARE NOT SUPPORTED 
+
+        ageofjohn = 5.0001 #ONLY ARRAYS OF STRINGS ARE SUPPORTED
 
 ---------------------------------
 
-Anything else not seen in this document is not supported. This includes nested arrays, nested tables, integers, etc.
+Anything else not seen in the first example is also invalid. This includes nested arrays, nested tables, integers, table arrays, etc.
