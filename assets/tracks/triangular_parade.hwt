@@ -7,18 +7,18 @@ max_players = ["6"]
 
 [segments.1]
 
-shape = [ "28", "36", "50", "30", "40", "40" ] 
-width = [ "5" ]
+shape = ["28", "36", "50", "30", "40", "40"] 
+width = ["5"]
 local_finish_line = [""]
 
 [segments.2]
 
-shape = [ "50", "30", "37", "-50", "60", "-80" ] 
-width = [ "3" ]
+shape = ["50", "30", "37", "-50", "60", "-80"] 
+width = ["3"]
 local_checkpoint = [""]
 
 [segments.3]
 
-shape = [ "37", "-50", "28", "36", "-50", "-80" ] 
-width = [ "5" ]
+shape = ["37", "-50", "28", "36", "-50", "-80"] 
+width = ["5"]
 local_boost = [""]

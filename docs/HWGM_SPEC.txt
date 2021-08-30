@@ -82,18 +82,18 @@ max_teams = ["2"]
 [objects]
 
 [objects.37]
-shape = [ "square", "16" ]
-physics = [ "static" ]
-onhit_39 = [ "score", "team_1" ]
+shape = ["square", "16"]
+physics = ["static"]
+onhit_39 = ["score", "team_1"]
 
 [objects.38]
-shape = [ "square", "16" ]
-physics = [ "static" ]
-onhit_39 = [ "score", "team_2" ]
+shape = ["square", "16"]
+physics = ["static"]
+onhit_39 = ["score", "team_2"]
 
 [objects.39]
-shape = [ "disc", "2" ]
-physics = [ "slide", "1" ]
-movable_by = [ "team_1", "team_2" ]
+shape = ["disc", "2"]
+physics = ["slide", "1"]
+movable_by = ["team_1", "team_2"]
 
 ------------------------------------------
