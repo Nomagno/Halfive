@@ -1,0 +1,8 @@
+Halfive-term will read input data from the last line of a specified ASCII plain text file (can be a FIFO) in the format:
+
+	'INT,INT,INT,INT,BOOL,BOOL,BOOL,BOOL,' 
+
+Where each one of the four INTs is an axis, from 0 to 65535, and each one of the four BOOLs is a digital button, 0/1.
+Note the trailing comma after the last number.
+
+It is designed to work with just the two first axis being being active, and no buttons.

@@ -1,0 +1,75 @@
+<head>
+<style type="text/css">
+body{
+line-height:1.6;
+font-size:18px;
+color:#444;
+padding:0
+10px}
+h1,h2,h3{
+line-height:1.2
+}
+</style>
+</head>
+<h1>Half-World Document Specification (The encoding format of HWT)</h1>
+<h4>SPDX identifier: COIL-1.0</h4> 
+<h4>HWDOC is a subset of TOML 1.0</h4>
+<h4>It is recommended to use the &#x201C;.hwdoc&#x201D; extension for HWDOC documents (where applicable).</h4>
+<h4>HWDOC is identified by the MIME type <code>text/hwdoc</code></h4>
+<hr />
+<h3>The only supported features:</h3>
+<pre><code>- Tables 
+- Key-Value pairs 
+- Values as arrays of strings 
+- One level of subtables 
+- Comments </code></pre>
+<h3>Length limitations (Quotes that aren&#x2019;t part of the names don&#x2019;t count):</h3>
+<pre><code>- Arrays | 20 elements
+- Strings | 20 chars
+- Key names | 20 chars
+- Table names  (Not including subtables) | 20 chars
+- Table names (Including subtables) | 41 chars
+- Comments | UNLIMITED</code></pre>
+<hr />
+<h3>Everything else is officially unsupported. Examples:</h3>
+<pre><code>- Numbers
+- Strings not inside arrays
+- The top-level table does not exist
+- Level 2 Nested tables
+- Arrays of tables
+- Nested arrays
+- Referencing</code></pre>
+<h4>Example of what to do below</h4>
+<pre><code>#PRETTY MUCH ONLY STUFF SEEN HERE IS VALID
+
+[table]
+
+    [table.1]
+        name = [&quot;john&quot;, &quot;doe&quot;]
+        age = [&quot;5&quot;, &quot;fwive&quot;]
+        verboseage = [&quot;fwive&quot;, &quot;5&quot;]
+        foo = [&quot;bar&quot;]
+
+    [table.&quot;1.5&quot;] 
+    #Empty Subtable named 1.5
+
+    [table.2]
+        ageofjohn = [&quot;five&quot;, &quot;5&quot;, &quot;fwive&quot;]
+
+[thesecondtable]
+    name = [&quot;The Second&quot;]</code></pre>
+<h4>Example of what NOT to do below</h4>
+<pre><code>#ALL OF THIS IS INVALID
+
+#THERE IS NO TOP LEVEL TABLE
+a=&quot;t&quot; #ONLY ARRAYS OF STRINGS ARE SUPPORTED
+a=1 #ONLY ARRAYS OF STRINGS ARE SUPPORTED
+a=[1,2] #ONLY ARRAYS OF STRINGS ARE SUPPORTED
+
+    [table.1] #THERE IS NO IMPLICIT TABLE CREATION
+        verboseage = [&quot;fwive&quot;, [&quot;4&quot;, &quot;5&quot;]] #NESTED ARRAYS ARE NOT SUPPORTED
+        &quot;twentycharacterslong&quot; = [&quot;twentyandsixcharacterslong&quot;] #MAX NAME CHARACTER LENGTH IS 20
+
+    [table.1.5] #LEVEL TWO SUBTABLES ARE NOT SUPPORTED 
+
+        ageofjohn = 5.0001 #ONLY ARRAYS OF STRINGS ARE SUPPORTED</code></pre>

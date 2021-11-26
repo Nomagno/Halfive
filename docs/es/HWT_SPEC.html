@@ -1,0 +1,80 @@
+<head>
+<style type="text/css">
+body{
+line-height:1.6;
+font-size:18px;
+color:#444;
+padding:0
+10px}
+h1,h2,h3{
+line-height:1.2
+}
+</style>
+</head>
+<h1>Especificaci&#xF3;n de Circuitos para Half-World (HWT)</h1>
+<h4>SPDX identifier: COIL-1.0</h4> 
+<h4>Por favor, leer HWDOC antes de este documento.</h4>
+<h4>Los argumentos entre par&#xE9;ntesis son variables y deben ser reemplazados de acuerdo con como se describe en la explicaci&#xF3;n.</h4>
+<h4>Se recomienda utilizar la extensi&#xF3;n &#x201C;.hwt&#x201D; para documentos HWT (donde sea relevante).</h4>
+<h4>HWT se puede identificar con el tipo MIME <code>text/hwt</code></h4>
+<h3>El formato HWT:</h3>
+<hr />
+<pre><code>[track]
+
+(param) = [&quot;(value)&quot;]
+...
+
+[segments]
+
+[segments.1]
+
+shape = [&quot;(p1x)&quot;, &quot;(p1y)&quot;, &quot;(p2x)&quot;, &quot;(p2y)&quot;, &quot;(p3x)&quot;, &quot;(p3y)&quot;]
+width = [&quot;(w)&quot;]
+local_param = [&quot;(local_param)&quot;] #param IS OPTIONAL
+
+[segments.2]
+
+shape = [&quot;(p1x)&quot;, &quot;(p1y)&quot;, &quot;(p2x)&quot;, &quot;(p2y)&quot;, &quot;(p3x)&quot;, &quot;(p3y)&quot;]
+width = [&quot;(w)&quot;]</code></pre>
+<hr />
+<p>EXPLICACI&#xD3;N:</p>
+<p>Siempre empieza el archivo con la tabla &#x2018;track&#x2019;, seguida de flags/configuraciones, reemplazando &#x2018;param&#x2019; y &#x2018;value&#x2019; por el par&#xE1;metro y el valor. Despu&#xE9;s de la tabla &#x2018;track&#x2019; viene la tabla &#x2018;segments&#x2019;. Aqu&#xED; se definen los segmentos, de 1 a un m&#xE1;ximo de 40.</p>
+<p>Donde todos los n&#xFA;meros con enteros, p1 y p2 son Anclas de curva de Bezier, p3 es un Control de curva de Bezier, y w es la longitud del segmento de 1 a 5.</p>
+<p>Adicionalmente, puedes a&#xF1;adir propiedades especiales a ese segmento con local_param. ***</p>
+<h3>PAR&#xC1;METROS GLOBALES DISPONIBLES:</h3>
+<p><code>name = "TRCKNAME"</code> #EL NOMBRE DEBE SER DIFERENTE DE &#x2019;_DEFAULT&#x2019;</p>
+<p><code>time = "night"/"day"</code> #EL TIEMPO, D&#xCD;A/NOCHE</p>
+<p><code>biome = "desert"/"snow"/"forest"</code> #EL BIOMA, DESIERTO/NIEVE/BOSQUE/ETC</p>
+<p><code>max_players = "(NUMBER)"</code> #EL NUMERO DE JUGADORES M&#xC1;XIMOS</p>
+<hr />
+<h3>SEGMENTOS DE PAR&#xC1;METRO DISPONIBLES (Incluye UNO de estos en el valor de local_param):</h3>
+<p>&#x201C;boost&#x201D;/&#x201C;antiboost&#x201D;</p>
+<p>&#x201C;finish_line&#x201D;/&#x201C;checkpoint&#x201D;</p>
+<p>&#x201C;guardrails&#x201D;/&#x201C;electric_guardrails&#x201D;</p>
+<h3>EXEMPLO COGIDO DEL CIRCUITO triangular_parade.hwt</h3>
+<hr />
+<pre><code>[track]
+name = [&quot;TRIANGUL&quot;]
+time = [&quot;night&quot;]
+biome =  [&quot;forest&quot;]
+max_players = [&quot;6&quot;]
+
+[segments]
+
+[segments.1]
+
+shape = [&quot;28&quot;, &quot;36&quot;, &quot;50&quot;, &quot;30&quot;, &quot;40&quot;, &quot;40&quot;] 
+width = [&quot;5&quot;]
+local_param = [&quot;finish_line&quot;]
+
+[segments.2]
+
+shape = [&quot;50&quot;, &quot;30&quot;, &quot;37&quot;, &quot;-50&quot;, &quot;60&quot;, &quot;-80&quot;] 
+width = [&quot;3&quot;]
+local_param = [&quot;checkpoint&quot;]
+
+[segments.3]
+
+shape = [&quot;37&quot;, &quot;-50&quot;, &quot;28&quot;, &quot;36&quot;, &quot;-50&quot;, &quot;-80&quot;] 
+width = [&quot;5&quot;]
+local_param = [&quot;boost&quot;]</code></pre>

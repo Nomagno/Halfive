@@ -1,0 +1,25 @@
+[track]
+name = ["TRIDEATH"]
+time = ["night"]
+biome =  ["forest"]
+max_players = ["6"]
+
+[segments]
+
+[segments.1]
+
+shape = ["28", "36", "50", "30", "40", "40"] 
+width = ["5"]
+local_param = ["finish_line"]
+
+[segments.2]
+
+shape = ["50", "30", "37", "-50", "60", "-80"] 
+width = ["3"]
+local_param = ["checkpoint"]
+
+[segments.3]
+
+shape = ["37", "-50", "28", "36", "-50", "-80"] 
+width = ["5"]
+local_param = ["boost"]

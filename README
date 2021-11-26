@@ -1,0 +1,25 @@
+HALF-WORLD, THE UNIVERSAL RACING GAME PROTOCOL
+
+Half-World is a stateless protocol for racing games, and with a bit more work any 2D game that needs to be accessible, lightweight, and work under heavy/total packet loss.
+
+All you need to implement it is a JSON parser, a TOML parser, and some kind of network capability (Can be UDP, TCP, Bluetooth, or IP over Avian Carriers. HWNET is cross-protocol-proxy friendly!).
+
+List of specifications and corresponding mime types:
+	Encoding formats:
+		Half-World Packet (HWPACK) (JSON subset) -- text/hwpack
+		Half-World Document (HWDOC) (TOML subset) -- text/hwdoc
+
+	Domain-specific data formats:
+		Half-World Network (HWNET) (Uses HWPACK) -- text/hwnet
+		Half-World Track (HWT) (Uses HWDOC) -- text/hwt
+
+If you read all specifications in the docs, you should be able to:
+ - Use HWPACK/HWNET as a basic communications standard
+ - Use HWDOC/HWT as a basic format for circuits
+
+You can make your own extensions of these documents. 
+To make them valid extensions, simply specify inside them an 8-character alphanumerical name (underscore hyphen 0-9 A-Z a-z, e.g "_My-Ext2").
+
+
+--- Licensing ---
+All files, except for those with an explicit license in the file, are released under the COIL license. see ewch individual file for more information

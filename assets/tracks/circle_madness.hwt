@@ -1,0 +1,18 @@
+[track]
+name = ["CIRCLMAD"]
+time = ["day"]
+biome =  ["desert"]
+max_players = ["4"]
+
+[segments]
+
+[segments.1]
+
+shape = ["28", "36", "50", "30", "40", "80"] 
+width = ["5"]
+local_param = ["finish_line"]
+
+[segments.2]
+
+shape = ["50", "30", "28", "36", "40", "-80"] 
+width = ["4"]
