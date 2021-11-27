@@ -86,7 +86,7 @@ void hnop(void){
   return;
 }
 
-uint hsub(uint op[4], vmem *space){
+uint hsub(uint op[4], vmem *space, uchar do_save){
   uint ad1;
   uint ad2;
   uint ad3;
@@ -153,6 +153,7 @@ uint hsub(uint op[4], vmem *space){
       result = val1 - val2;
       if((result > val1)) space->cf = 1;
       if(result == 0) space->zf = 0;
+      if(do_save) {
       switch(ad3){
         case 1:
           space->gp[conv3] = result;
@@ -172,6 +173,7 @@ uint hsub(uint op[4], vmem *space){
         case 6:
           space->ou = result;
           break;
+      };
       }
       break;
     case 2:
@@ -205,6 +207,7 @@ uint hsub(uint op[4], vmem *space){
       result = val1 - val2;
       if((result > val1)) space->cf = 1;
       if(result == 0) space->zf = 0;
+      if(do_save) {
       switch(ad3){
         case 1:
           space->gp[conv3] = result;
@@ -224,6 +227,7 @@ uint hsub(uint op[4], vmem *space){
         case 6:
           space->ou = result;
           break;
+      }
       }
       break;
     case 4:
@@ -258,6 +262,7 @@ uint hsub(uint op[4], vmem *space){
       result = val1 - val2;
       if((result > val1)) space->cf = 1;
       if(result == 0) space->zf = 0;
+      if(do_save) {
       switch(ad3){
         case 1:
           space->gp[conv3] = result;
@@ -278,6 +283,7 @@ uint hsub(uint op[4], vmem *space){
           space->ou = result;
           break;
       }
+      }
       break;
     case 6:
       ad3 = addrcheck(op[2]);
@@ -289,6 +295,7 @@ uint hsub(uint op[4], vmem *space){
       result = val1 - val2;
       if((result > val1)) space->cf = 1;
       if(result == 0) space->zf = 0;
+      if(do_save) {
       switch(ad3){
         case 1:
           space->gp[conv3] = result;
@@ -307,6 +314,7 @@ uint hsub(uint op[4], vmem *space){
           break;
         case 6:
           space->ou = result;
+      }
       }
       break;
   }
@@ -686,7 +694,7 @@ uint execnext(mem *program){
         }
         return 0;
       case sub:
-        errno = hsub(program->m1.opnd[program->co], &program->m2);
+        errno = hsub(program->m1.opnd[program->co], &program->m2, 1); /*Substract and save*/
         program->co += 1;
         if(errno != 0) {
           #ifdef EOF
@@ -704,7 +712,15 @@ uint execnext(mem *program){
       case not:
         break;
       case cmp:
-        break;
+        errno = hsub(program->m1.opnd[program->co], &program->m2, 0); /*Substract but don't save*/
+        program->co += 1;
+        if(errno != 0) {
+          #ifdef EOF
+          printf("ERROR\n");
+          #endif
+          return 2; /*EXECUTION ERROR*/    
+        }
+        return 0;
     };
   }
   #if defined(EOF)
