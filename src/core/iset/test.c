@@ -59,6 +59,7 @@ int main(void){
   mycode.inst[1] = nop;
 
   /*STEP 2*/
+
   mycode.inst[2] = jmp;
   mycode.opnd[2][0] = 5;
 
@@ -74,12 +75,14 @@ int main(void){
   mycode.opnd[4][1] = 0xFFFC;
 
   /*STEP 4*/
+
   mycode.inst[5] = cmp;
   mycode.opnd[5][0] = 9;
   mycode.opnd[5][1] = 0;
   mycode.opnd[5][3] = 2;
 
   /*STEP 5*/
+ 
   mycode.inst[6] = jcz;
   mycode.opnd[6][0] = 3;
 
@@ -128,7 +131,7 @@ int main(void){
   int myinput;
 
   #if defined(EOF)
-    printf("Enter value for address 10 of general purpose memory (1 character):\n");
+    printf("INPUT?\n");
     myinput = getchar();
   #else
     #if defined(BRANCHOUT) /*DEFINE BRANCHOUT TO RUN BOTH TESTPATHS WITHOUT STDLIB*/
@@ -139,8 +142,12 @@ int main(void){
   #endif
 
   prog.m2.gp[9] = myinput;
-  int err = 0;
-  while((!prog.hf) && (err == 0))
+  uint err = 0;
+  while((!prog.hf) && (err == 0)){
+    #if defined(EOF)
+      printf("PROGRAM COUNTER: %i\n", prog.co);
+    #endif
     err = execnext(&prog);
+  }
   return 0;
 }

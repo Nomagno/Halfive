@@ -43,7 +43,7 @@ addrcheck() returns the actual address space of the argument address
 5: INPUT REGISTER (READ-ONLY)
 6: OUTPUT REGISTER (WRITE-ONLY)
 */
-unsigned int addrcheck(unsigned int arg){
+uint addrcheck(uint arg){
   if(arg < 0x1FFF) /*(MEMSIZE*2)*/ {
   if(arg < 0x0FFF) /*MEMSIZE*/
     return 1;
@@ -61,7 +61,7 @@ unsigned int addrcheck(unsigned int arg){
     return 0;
 }
 
-unsigned int addrconvert(unsigned int arg, unsigned int addr) {
+uint addrconvert(uint arg, uint addr) {
   switch(arg){
     case 0:
       return UADDR;
@@ -86,14 +86,469 @@ void hnop(void){
   return;
 }
 
-unsigned int hset(unsigned int op[4], vmem *space){
-  unsigned int ad1;
-  unsigned int ad2;
+uint hsub(uint op[4], vmem *space){
+  uint ad1;
+  uint ad2;
+  uint ad3;
 
-  unsigned int conv1;
-  unsigned int conv2;
+  uint conv1;
+  uint conv2;
+  uint conv3;
 
-  unsigned int val;
+  uint val1;
+  uint val2;
+
+  uint result;
+
+  switch(op[3]){
+    case 0:
+      ad1 = addrcheck(op[0]);
+      ad2 = addrcheck(op[1]);
+      ad3 = addrcheck(op[2]);
+
+
+      conv1 = addrconvert(ad1, op[0]);
+      conv2 = addrconvert(ad2, op[1]);
+      conv3 = addrconvert(ad3, op[2]);
+      switch(ad1){
+        case 1:
+          val1 = space->gp[conv1];
+          break;
+        case 2:
+          val1 = space->cp[conv1];
+          break;
+        case 3:
+          val1 = space->zf;
+          break;
+        case 4:
+          val1 = space->cf;
+          break;
+        case 5:
+          val1 = space->in;
+          break;
+        case 6:
+          return 1; /*Can't read output register!*/
+          break;
+      }
+      switch(ad2) {
+        case 1:
+          val2 = space->gp[conv2];
+          break;
+        case 2:
+          val2 = space->cp[conv2];
+          break;
+        case 3:
+          val2 = space->zf;
+          break;
+        case 4:
+          val2 = space->cf;
+          break;
+        case 5:
+          val2 = space->in;
+          break;
+        case 6:
+          return 1; /*Can't read output register!*/        
+          break;
+      }
+      result = val1 - val2;
+      if((result > val1)) space->cf = 1;
+      if(result == 0) space->zf = 0;
+      switch(ad3){
+        case 1:
+          space->gp[conv3] = result;
+          break;
+        case 2:
+          space->cp[conv3] = result;
+          break;
+        case 3:
+          space->zf = result;
+          break;
+        case 4:
+          space->cf = result;
+          break;
+        case 5:
+          return 1; /*Can't set input register!*/        
+          break;
+        case 6:
+          space->ou = result;
+          break;
+      }
+      break;
+    case 2:
+      ad1 = addrcheck(op[0]);
+      ad3 = addrcheck(op[2]);
+
+
+      conv1 = addrconvert(ad1, op[0]);
+      conv3 = addrconvert(ad3, op[2]);
+      switch(ad1){
+        case 1:
+          val1 = space->gp[conv1];
+          break;
+        case 2:
+          val1 = space->cp[conv1];
+          break;
+        case 3:
+          val1 = space->zf;
+          break;
+        case 4:
+          val1 = space->cf;
+          break;
+        case 5:
+          val1 = space->in;
+          break;
+        case 6:
+          return 1; /*Can't read output register!*/
+          break;
+      }
+      val2 = op[1];
+      result = val1 - val2;
+      if((result > val1)) space->cf = 1;
+      if(result == 0) space->zf = 0;
+      switch(ad3){
+        case 1:
+          space->gp[conv3] = result;
+          break;
+        case 2:
+          space->cp[conv3] = result;
+          break;
+        case 3:
+          space->zf = result;
+          break;
+        case 4:
+          space->cf = result;
+          break;
+        case 5:
+          return 1; /*Can't set input register!*/        
+          break;
+        case 6:
+          space->ou = result;
+          break;
+      }
+      break;
+    case 4:
+      ad2 = addrcheck(op[1]);
+      ad3 = addrcheck(op[2]);
+
+      conv2 = addrconvert(ad2, op[1]);
+      conv3 = addrconvert(ad3, op[2]);
+      val1 = op[0];
+
+      switch(ad2) {
+        case 1:
+          val2 = space->gp[conv2];
+          break;
+        case 2:
+          val2 = space->cp[conv2];
+          break;
+        case 3:
+          val2 = space->zf;
+          break;
+        case 4:
+          val2 = space->cf;
+          break;
+        case 5:
+          val2 = space->in;
+          break;
+        case 6:
+          return 1; /*Can't read output register!*/        
+          break;
+      }
+
+      result = val1 - val2;
+      if((result > val1)) space->cf = 1;
+      if(result == 0) space->zf = 0;
+      switch(ad3){
+        case 1:
+          space->gp[conv3] = result;
+          break;
+        case 2:
+          space->cp[conv3] = result;
+          break;
+        case 3:
+          space->zf = result;
+          break;
+        case 4:
+          space->cf = result;
+          break;
+        case 5:
+          return 1; /*Can't set input register!*/        
+          break;
+        case 6:
+          space->ou = result;
+          break;
+      }
+      break;
+    case 6:
+      ad3 = addrcheck(op[2]);
+
+      conv3 = addrconvert(ad3, op[2]);
+      val1 = op[0];
+      val2 = op[1];
+
+      result = val1 - val2;
+      if((result > val1)) space->cf = 1;
+      if(result == 0) space->zf = 0;
+      switch(ad3){
+        case 1:
+          space->gp[conv3] = result;
+          break;
+        case 2:
+          space->cp[conv3] = result;
+          break;
+        case 3:
+          space->zf = result;
+          break;
+        case 4:
+          space->cf = result;
+          break;
+        case 5:
+          return 1; /*Can't set input register!*/        
+          break;
+        case 6:
+          space->ou = result;
+      }
+      break;
+  }
+  return 0;
+}
+
+
+uint hadd(uint op[4], vmem *space){
+  uint ad1;
+  uint ad2;
+  uint ad3;
+
+  uint conv1;
+  uint conv2;
+  uint conv3;
+
+  uint val1;
+  uint val2;
+
+  uint result;
+
+  switch(op[3]){
+    case 0:
+      ad1 = addrcheck(op[0]);
+      ad2 = addrcheck(op[1]);
+      ad3 = addrcheck(op[2]);
+
+      conv1 = addrconvert(ad1, op[0]);
+      conv2 = addrconvert(ad2, op[1]);
+      conv3 = addrconvert(ad3, op[2]);
+      switch(ad1){
+        case 1:
+          val1 = space->gp[conv1];
+          break;
+        case 2:
+          val1 = space->cp[conv1];
+          break;
+        case 3:
+          val1 = space->zf;
+          break;
+        case 4:
+          val1 = space->cf;
+          break;
+        case 5:
+          val1 = space->in;
+          break;
+        case 6:
+          return 1; /*Can't read output register!*/
+      }
+      switch(ad2) {
+        case 1:
+          val2 = space->gp[conv2];
+          break;
+        case 2:
+          val2 = space->cp[conv2];
+          break;
+        case 3:
+          val2 = space->zf;
+          break;
+        case 4:
+          val2 = space->cf;
+          break;
+        case 5:
+          val2 = space->in;
+          break;
+        case 6:
+          return 1; /*Can't read output register!*/        
+          break;
+      }
+      result = val1 + val2;
+      if((result < val1) || (result < val2)) space->cf = 1;
+      if(result == 0) space->zf = 0;
+      switch(ad3){
+        case 1:
+          space->gp[conv3] = result;
+          break;
+        case 2:
+          space->cp[conv3] = result;
+          break;
+        case 3:
+          space->zf = result;
+          break;
+        case 4:
+          space->cf = result;
+          break;
+        case 5:
+          return 1; /*Can't set input register!*/        
+          break;
+        case 6:
+          space->ou = result;
+          break;
+      }
+      break;
+    case 2:
+      ad1 = addrcheck(op[0]);
+      ad3 = addrcheck(op[2]);
+
+      conv1 = addrconvert(ad1, op[0]);
+      conv3 = addrconvert(ad3, op[2]);
+      switch(ad1){
+        case 1:
+          val1 = space->gp[conv1];
+          break;
+        case 2:
+          val1 = space->cp[conv1];
+          break;
+        case 3:
+          val1 = space->zf;
+          break;
+        case 4:
+          val1 = space->cf;
+          break;
+        case 5:
+          val1 = space->in;
+          break;
+        case 6:
+          return 1; /*Can't read output register!*/
+          break;
+      }
+      val2 = op[1];
+      result = val1 + val2;
+      if((result < val1) || (result < val2)) space->cf = 1;
+      if(result == 0) space->zf = 0;
+      switch(ad3){
+        case 1:
+          space->gp[conv3] = result;
+          break;
+        case 2:
+          space->cp[conv3] = result;
+          break;
+        case 3:
+          space->zf = result;
+          break;
+        case 4:
+          space->cf = result;
+          break;
+        case 5:
+          return 1; /*Can't set input register!*/        
+          break;
+        case 6:
+          space->ou = result;
+          break;
+      }
+      break;
+    case 4:
+      ad2 = addrcheck(op[1]);
+      ad3 = addrcheck(op[2]);
+
+      conv2 = addrconvert(ad2, op[1]);
+      conv3 = addrconvert(ad3, op[2]);
+
+      val1 = op[0];
+
+      switch(ad2) {
+        case 1:
+          val2 = space->gp[conv2];
+          break;
+        case 2:
+          val2 = space->cp[conv2];
+          break;
+        case 3:
+          val2 = space->zf;
+          break;
+        case 4:
+          val2 = space->cf;
+          break;
+        case 5:
+          val2 = space->in;
+          break;
+        case 6:
+          return 1; /*Can't read output register!*/        
+          break;
+      }
+
+      result = val1 + val2;
+      if((result < val1) || (result < val2)) space->cf = 1;
+      if(result == 0) space->zf = 0;
+      switch(ad3){
+        case 1:
+          space->gp[conv3] = result;
+          break;
+        case 2:
+          space->cp[conv3] = result;
+          break;
+        case 3:
+          space->zf = result;
+          break;
+        case 4:
+          space->cf = result;
+          break;
+        case 5:
+          return 1; /*Can't set input register!*/        
+          break;
+        case 6:
+          space->ou = result;
+          break;
+      }
+      break;
+    case 6:
+      ad3 = addrcheck(op[2]);
+
+      conv3 = addrconvert(ad3, op[2]);
+
+      val1 = op[0];
+      val2 = op[1];
+
+      result = val1 + val2;
+      if((result < val1) || (result < val2)) space->cf = 1;
+      if(result == 0) space->zf = 0;
+      switch(ad3){
+        case 1:
+          space->gp[conv3] = result;
+          break;
+        case 2:
+          space->cp[conv3] = result;
+          break;
+        case 3:
+          space->zf = result;
+          break;
+        case 4:
+          space->cf = result;
+          break;
+        case 5:
+          return 1; /*Can't set input register!*/        
+          break;
+        case 6:
+          space->ou = result;
+          break;
+      }
+      break;
+  }
+  return 0;
+}
+
+uint hset(uint op[4], vmem *space){
+  uint ad1;
+  uint ad2;
+
+  uint conv1;
+  uint conv2;
+
+  uint val;
 
   switch (op[3]){
     case 0:
@@ -119,7 +574,7 @@ unsigned int hset(unsigned int op[4], vmem *space){
           val = space->in;
           break;
         case 6: ;
-          val = space->ou;
+          return 1; /*Can't read output register!*/
           break;
         default:
           return 1; /*ERROR, WE DON'T KNOW WHAT THAT ADDRESS MEANS*/
@@ -139,7 +594,7 @@ unsigned int hset(unsigned int op[4], vmem *space){
           space->cf = val;          
           break;
         case 5: ;
-          space->in = val;          
+          return 1; /*Can't set input register!*/
           break;
         case 6: ;
           space->ou = val;          
@@ -170,7 +625,7 @@ unsigned int hset(unsigned int op[4], vmem *space){
           space->cf = val;          
           break;
         case 5: ;
-          space->in = val;          
+          return 0; /*Can't set input register!*/          
           break;
         case 6: ;
           space->ou = val;          
@@ -195,7 +650,8 @@ mem fxmem(xmem code) {
   return memory;
 }
 
-int execnext(mem *program){
+uint execnext(mem *program){
+  uint errno;
   if (program->co < MEMSIZE){
     switch (program->m1.inst[program->co]) {
       case halt:
@@ -209,20 +665,36 @@ int execnext(mem *program){
         program->co += 1;
         return 0;
       case set:
-        hset(program->m1.opnd[program->co], &program->m2);
+        errno = hset(program->m1.opnd[program->co], &program->m2);
         program->co += 1;
         return 0;
       case jmp:
         program->co = program->m1.opnd[program->co][0];
         return 0;
       case jcz:
-        if (!program->m2.zf)
+        if (program->m2.zf == 0)
           program->co = program->m1.opnd[program->co][0];
         return 0;
       case add:
-        break;
+        errno = hadd(program->m1.opnd[program->co], &program->m2);
+        program->co += 1;
+        if(errno != 0) {
+          #ifdef EOF
+          printf("ERROR\n");
+          #endif
+          return 2; /*EXECUTION ERROR*/    
+        }
+        return 0;
       case sub:
-        break;
+        errno = hsub(program->m1.opnd[program->co], &program->m2);
+        program->co += 1;
+        if(errno != 0) {
+          #ifdef EOF
+          printf("ERROR\n");
+          #endif
+          return 2; /*EXECUTION ERROR*/    
+        }
+        return 0;
       case and:
         break;
       case or:
@@ -238,5 +710,7 @@ int execnext(mem *program){
   #if defined(EOF)
     printf("UNIMPLEMENTED\n");
   #endif
-  return -1; /*UNIMPLEMENTED*/
+  return 1; /*UNIMPLEMENTED*/
 }
+/*if ((num1 + num2 < num2) || (num1 + num2 < num1))*/
+/*if ((num1 - num2 > num1))*/

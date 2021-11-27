@@ -27,7 +27,8 @@ OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE WORK.*
 /*Nomagno's boring VM interface and instruction set*/
 
 #define MEMSIZE 4096
-
+typedef unsigned char uchar;
+typedef unsigned int uint;
 /*Nomagno's boring instruction set
 
 (AT THE BOTTOM OF THIS BIG COMMENT BLOCK YOU HAVE THE ACTUAL CODE)
@@ -84,7 +85,7 @@ typedef struct {
 
   /*Every second, third and fourth bytes*/
   /*int because we need this to be at least 16 bits by default*/
-  unsigned int opnd[MEMSIZE][4]; 
+  uint opnd[MEMSIZE][4]; 
   /*The fourth row of the array indicates which arguments are addresses, trough its least significant 3 bits.
   E.G 000 ALL ADDRESSES -- 101 FIRST AND THIRD ARE LITERALS*/ 
   /*0x2000 to 0x2FFF*/
@@ -93,31 +94,31 @@ typedef struct {
 /*Data memory*/
 typedef struct {
   /*Zero flag, 0xFFFF*/
-  unsigned char zf; 
+  uchar zf; 
 
   /*Carry flag, 0xFFFE*/
-  unsigned char cf; 
+  uchar cf; 
 
   /*Input register, read-only, 0xFFFD*/
-  unsigned char in;
+  uchar in;
 
   /*Output register, write-only, 0xFFFC*/
-  unsigned char ou;
+  uchar ou;
 
   /*GEN mem, 0x0000 to 0x0FFF*/
-  unsigned char gp[MEMSIZE]; 
+  uchar gp[MEMSIZE]; 
 
   /*CPU mem, 0x1000 to 0x1FFF*/
-  unsigned char cp[MEMSIZE]; 
+  uchar cp[MEMSIZE]; 
 } vmem;
 
 typedef struct {
   xmem m1;
   vmem m2;
-  unsigned long int co; 
+  uint co; 
   /*Instruction counter*/
 
-  unsigned char hf; 
+  uchar hf; 
   /*Halt flag, 1 if it has halted.*/
 } mem;
 
@@ -126,4 +127,4 @@ typedef struct {
 
 extern mem fxmem(xmem code); /*Generate mem struct from xmem struct*/
 
-extern int execnext(mem *program); /*Execute one instruction from the program*/
+extern uint execnext(mem *program); /*Execute one instruction from the program*/
