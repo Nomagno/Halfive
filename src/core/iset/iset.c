@@ -86,6 +86,707 @@ void hnop(void){
   return;
 }
 
+uint hand(uint op[4], vmem *space){
+  uint ad1;
+  uint ad2;
+  uint ad3;
+
+  uint conv1;
+  uint conv2;
+  uint conv3;
+
+  uint val1;
+  uint val2;
+
+  switch(op[3]) {
+    case 0:
+      ad1 = addrcheck(op[0]);
+      ad2 = addrcheck(op[1]);
+      ad3 = addrcheck(op[2]);
+
+      conv1 = addrconvert(ad1, op[0]);
+      conv2 = addrconvert(ad2, op[1]);
+      conv3 = addrconvert(ad3, op[2]);
+      switch(ad1){
+        case 1:
+          val1 = space->gp[conv1];
+          break;
+        case 2:
+          val1 = space->cp[conv1];
+          break;
+        case 3:
+          val1 = space->zf;
+          break;
+        case 4:
+          val1 = space->cf;
+          break;
+        case 5:
+          val1 = space->in;
+          break;
+        case 6:
+          return 1; /*Can't read output register!*/
+          break;
+      }
+      switch(ad2){
+        case 1:
+          val2 = space->gp[conv2];
+          break;
+        case 2:
+          val2 = space->cp[conv2];
+          break;
+        case 3:
+          val2 = space->zf;
+          break;
+        case 4:
+          val2 = space->cf;
+          break;
+        case 5:
+          val2 = space->in;
+          break;
+        case 6:
+          return 1; /*Can't read output register!*/
+          break;
+      }
+      switch(ad3) {
+        case 1:
+          space->gp[conv3] = val1 & val2;
+          break;
+        case 2:
+          space->cp[conv3] = val1 & val2;
+          break;
+        case 3:
+          space->zf = val1 & val2;
+          break;
+        case 4:
+          space->cf = val1 & val2;
+          break;
+        case 5:
+          return 1; /*Can't set input register!*/        
+          break;
+        case 6:
+          space->ou = val1 & val2;
+          #ifdef EOF
+          printf("%i\n", space->ou);
+          #endif
+          break;
+        default:
+          return 3; /*We don't know what that address means*/
+      }
+      break;    
+    case 4:
+      ad2 = addrcheck(op[1]);
+      ad3 = addrcheck(op[2]);
+
+      conv2 = addrconvert(ad2, op[1]);
+      conv3 = addrconvert(ad3, op[2]);
+
+      val1 = op[0];
+      switch(ad2){
+        case 1:
+          val2 = space->gp[conv2];
+          break;
+        case 2:
+          val2 = space->cp[conv2];
+          break;
+        case 3:
+          val2 = space->zf;
+          break;
+        case 4:
+          val2 = space->cf;
+          break;
+        case 5:
+          val2 = space->in;
+          break;
+        case 6:
+          return 1; /*Can't read output register!*/
+          break;
+      }
+      switch(ad3) {
+        case 1:
+          space->gp[conv3] = val1 & val2;
+          break;
+        case 2:
+          space->cp[conv3] = val1 & val2;
+          break;
+        case 3:
+          space->zf = val1 & val2;
+          break;
+        case 4:
+          space->cf = val1 & val2;
+          break;
+        case 5:
+          return 1; /*Can't set input register!*/        
+          break;
+        case 6:
+          space->ou = val1 & val2;
+          #ifdef EOF
+          printf("%i\n", space->ou);
+          #endif
+          break;
+        default:
+          return 3; /*We don't know what that address means*/
+      }
+      break;    
+    case 2:
+      ad1 = addrcheck(op[0]);
+      ad3 = addrcheck(op[2]);
+
+      conv1 = addrconvert(ad1, op[0]);
+      conv3 = addrconvert(ad3, op[2]);
+
+      val2 = op[1];
+      switch(ad1){
+        case 1:
+          val1 = space->gp[conv1];
+          break;
+        case 2:
+          val1 = space->cp[conv1];
+          break;
+        case 3:
+          val1 = space->zf;
+          break;
+        case 4:
+          val1 = space->cf;
+          break;
+        case 5:
+          val1 = space->in;
+          break;
+        case 6:
+          return 1; /*Can't read output register!*/
+          break;
+      }
+      switch(ad3) {
+        case 1:
+          space->gp[conv3] = val1 & val2;
+          break;
+        case 2:
+          space->cp[conv3] = val1 & val2;
+          break;
+        case 3:
+          space->zf = val1 & val2;
+          break;
+        case 4:
+          space->cf = val1 & val2;
+          break;
+        case 5:
+          return 1; /*Can't set input register!*/        
+          break;
+        case 6:
+          space->ou = val1 & val2;
+          #ifdef EOF
+          printf("%i\n", space->ou);
+          #endif
+          break;
+        default:
+          return 3; /*We don't know what that address means*/
+      }
+      break;    
+
+  }
+  return 0;
+}
+
+
+uint hxor(uint op[4], vmem *space){
+  uint ad1;
+  uint ad2;
+  uint ad3;
+
+  uint conv1;
+  uint conv2;
+  uint conv3;
+
+  uint val1;
+  uint val2;
+
+  switch(op[3]) {
+    case 0:
+      ad1 = addrcheck(op[0]);
+      ad2 = addrcheck(op[1]);
+      ad3 = addrcheck(op[2]);
+
+      conv1 = addrconvert(ad1, op[0]);
+      conv2 = addrconvert(ad2, op[1]);
+      conv3 = addrconvert(ad3, op[2]);
+      switch(ad1){
+        case 1:
+          val1 = space->gp[conv1];
+          break;
+        case 2:
+          val1 = space->cp[conv1];
+          break;
+        case 3:
+          val1 = space->zf;
+          break;
+        case 4:
+          val1 = space->cf;
+          break;
+        case 5:
+          val1 = space->in;
+          break;
+        case 6:
+          return 1; /*Can't read output register!*/
+          break;
+      }
+      switch(ad2){
+        case 1:
+          val2 = space->gp[conv2];
+          break;
+        case 2:
+          val2 = space->cp[conv2];
+          break;
+        case 3:
+          val2 = space->zf;
+          break;
+        case 4:
+          val2 = space->cf;
+          break;
+        case 5:
+          val2 = space->in;
+          break;
+        case 6:
+          return 1; /*Can't read output register!*/
+          break;
+      }
+      switch(ad3) {
+        case 1:
+          space->gp[conv3] = val1 ^ val2;
+          break;
+        case 2:
+          space->cp[conv3] = val1 ^ val2;
+          break;
+        case 3:
+          space->zf = val1 ^ val2;
+          break;
+        case 4:
+          space->cf = val1 ^ val2;
+          break;
+        case 5:
+          return 1; /*Can't set input register!*/        
+          break;
+        case 6:
+          space->ou = val1 ^ val2;
+          #ifdef EOF
+          printf("%i\n", space->ou);
+          #endif
+          break;
+        default:
+          return 3; /*We don't know what that address means*/
+      }
+      break;    
+    case 4:
+      ad2 = addrcheck(op[1]);
+      ad3 = addrcheck(op[2]);
+
+      conv2 = addrconvert(ad2, op[1]);
+      conv3 = addrconvert(ad3, op[2]);
+
+      val1 = op[0];
+      switch(ad2){
+        case 1:
+          val2 = space->gp[conv2];
+          break;
+        case 2:
+          val2 = space->cp[conv2];
+          break;
+        case 3:
+          val2 = space->zf;
+          break;
+        case 4:
+          val2 = space->cf;
+          break;
+        case 5:
+          val2 = space->in;
+          break;
+        case 6:
+          return 1; /*Can't read output register!*/
+          break;
+      }
+      switch(ad3) {
+        case 1:
+          space->gp[conv3] = val1 ^ val2;
+          break;
+        case 2:
+          space->cp[conv3] = val1 ^ val2;
+          break;
+        case 3:
+          space->zf = val1 ^ val2;
+          break;
+        case 4:
+          space->cf = val1 ^ val2;
+          break;
+        case 5:
+          return 1; /*Can't set input register!*/        
+          break;
+        case 6:
+          space->ou = val1 ^ val2;
+          #ifdef EOF
+          printf("%i\n", space->ou);
+          #endif
+          break;
+        default:
+          return 3; /*We don't know what that address means*/
+      }
+      break;    
+    case 2:
+      ad1 = addrcheck(op[0]);
+      ad3 = addrcheck(op[2]);
+
+      conv1 = addrconvert(ad1, op[0]);
+      conv3 = addrconvert(ad3, op[2]);
+
+      val2 = op[1];
+      switch(ad1){
+        case 1:
+          val1 = space->gp[conv1];
+          break;
+        case 2:
+          val1 = space->cp[conv1];
+          break;
+        case 3:
+          val1 = space->zf;
+          break;
+        case 4:
+          val1 = space->cf;
+          break;
+        case 5:
+          val1 = space->in;
+          break;
+        case 6:
+          return 1; /*Can't read output register!*/
+          break;
+      }
+      switch(ad3) {
+        case 1:
+          space->gp[conv3] = val1 ^ val2;
+          break;
+        case 2:
+          space->cp[conv3] = val1 ^ val2;
+          break;
+        case 3:
+          space->zf = val1 ^ val2;
+          break;
+        case 4:
+          space->cf = val1 ^ val2;
+          break;
+        case 5:
+          return 1; /*Can't set input register!*/        
+          break;
+        case 6:
+          space->ou = val1 ^ val2;
+          #ifdef EOF
+          printf("%i\n", space->ou);
+          #endif
+          break;
+        default:
+          return 3; /*We don't know what that address means*/
+      }
+      break;    
+
+  }
+  return 0;
+}
+
+
+uint hor(uint op[4], vmem *space){
+  uint ad1;
+  uint ad2;
+  uint ad3;
+
+  uint conv1;
+  uint conv2;
+  uint conv3;
+
+  uint val1;
+  uint val2;
+
+  switch(op[3]) {
+    case 0:
+      ad1 = addrcheck(op[0]);
+      ad2 = addrcheck(op[1]);
+      ad3 = addrcheck(op[2]);
+
+      conv1 = addrconvert(ad1, op[0]);
+      conv2 = addrconvert(ad2, op[1]);
+      conv3 = addrconvert(ad3, op[2]);
+      switch(ad1){
+        case 1:
+          val1 = space->gp[conv1];
+          break;
+        case 2:
+          val1 = space->cp[conv1];
+          break;
+        case 3:
+          val1 = space->zf;
+          break;
+        case 4:
+          val1 = space->cf;
+          break;
+        case 5:
+          val1 = space->in;
+          break;
+        case 6:
+          return 1; /*Can't read output register!*/
+          break;
+      }
+      switch(ad2){
+        case 1:
+          val2 = space->gp[conv2];
+          break;
+        case 2:
+          val2 = space->cp[conv2];
+          break;
+        case 3:
+          val2 = space->zf;
+          break;
+        case 4:
+          val2 = space->cf;
+          break;
+        case 5:
+          val2 = space->in;
+          break;
+        case 6:
+          return 1; /*Can't read output register!*/
+          break;
+      }
+      switch(ad3) {
+        case 1:
+          space->gp[conv3] = val1 | val2;
+          break;
+        case 2:
+          space->cp[conv3] = val1 | val2;
+          break;
+        case 3:
+          space->zf = val1 | val2;
+          break;
+        case 4:
+          space->cf = val1 | val2;
+          break;
+        case 5:
+          return 1; /*Can't set input register!*/        
+          break;
+        case 6:
+          space->ou = val1 | val2;
+          #ifdef EOF
+          printf("%i\n", space->ou);
+          #endif
+          break;
+        default:
+          return 3; /*We don't know what that address means*/
+      }
+      break;    
+    case 4:
+      ad2 = addrcheck(op[1]);
+      ad3 = addrcheck(op[2]);
+
+      conv2 = addrconvert(ad2, op[1]);
+      conv3 = addrconvert(ad3, op[2]);
+
+      val1 = op[0];
+      switch(ad2){
+        case 1:
+          val2 = space->gp[conv2];
+          break;
+        case 2:
+          val2 = space->cp[conv2];
+          break;
+        case 3:
+          val2 = space->zf;
+          break;
+        case 4:
+          val2 = space->cf;
+          break;
+        case 5:
+          val2 = space->in;
+          break;
+        case 6:
+          return 1; /*Can't read output register!*/
+          break;
+      }
+      switch(ad3) {
+        case 1:
+          space->gp[conv3] = val1 | val2;
+          break;
+        case 2:
+          space->cp[conv3] = val1 | val2;
+          break;
+        case 3:
+          space->zf = val1 | val2;
+          break;
+        case 4:
+          space->cf = val1 | val2;
+          break;
+        case 5:
+          return 1; /*Can't set input register!*/        
+          break;
+        case 6:
+          space->ou = val1 | val2;
+          #ifdef EOF
+          printf("%i\n", space->ou);
+          #endif
+          break;
+        default:
+          return 3; /*We don't know what that address means*/
+      }
+      break;    
+    case 2:
+      ad1 = addrcheck(op[0]);
+      ad3 = addrcheck(op[2]);
+
+      conv1 = addrconvert(ad1, op[0]);
+      conv3 = addrconvert(ad3, op[2]);
+
+      val2 = op[1];
+      switch(ad1){
+        case 1:
+          val1 = space->gp[conv1];
+          break;
+        case 2:
+          val1 = space->cp[conv1];
+          break;
+        case 3:
+          val1 = space->zf;
+          break;
+        case 4:
+          val1 = space->cf;
+          break;
+        case 5:
+          val1 = space->in;
+          break;
+        case 6:
+          return 1; /*Can't read output register!*/
+          break;
+      }
+      switch(ad3) {
+        case 1:
+          space->gp[conv3] = val1 | val2;
+          break;
+        case 2:
+          space->cp[conv3] = val1 | val2;
+          break;
+        case 3:
+          space->zf = val1 | val2;
+          break;
+        case 4:
+          space->cf = val1 | val2;
+          break;
+        case 5:
+          return 1; /*Can't set input register!*/        
+          break;
+        case 6:
+          space->ou = val1 | val2;
+          #ifdef EOF
+          printf("%i\n", space->ou);
+          #endif
+          break;
+        default:
+          return 3; /*We don't know what that address means*/
+      }
+      break;    
+
+  }
+  return 0;
+}
+
+
+uint hnot(uint op[4], vmem *space){
+  uint ad1;
+  uint ad2;
+
+  uint conv1;
+  uint conv2;
+
+  uint val1;
+  switch(op[3]) {
+    case 0:
+      ad1 = addrcheck(op[0]);
+      ad2 = addrcheck(op[1]);
+
+      conv1 = addrconvert(ad1, op[0]);
+      conv2 = addrconvert(ad2, op[1]);
+      switch(ad1){
+        case 1:
+          val1 = space->gp[conv1];
+          break;
+        case 2:
+          val1 = space->cp[conv1];
+          break;
+        case 3:
+          val1 = space->zf;
+          break;
+        case 4:
+          val1 = space->cf;
+          break;
+        case 5:
+          val1 = space->in;
+          break;
+        case 6:
+          return 1; /*Can't read output register!*/
+          break;
+      }
+      switch(ad2) {
+        case 1:
+          space->gp[conv2] = ~val1;
+          break;
+        case 2:
+          space->cp[conv2] = ~val1;
+          break;
+        case 3:
+          space->zf = ~val1;
+          break;
+        case 4:
+          space->cf = ~val1;
+          break;
+        case 5:
+          return 1; /*Can't set input register!*/        
+          break;
+        case 6:
+          space->ou = ~val1;
+          #ifdef EOF
+          printf("%i\n", space->ou);
+          #endif
+          break;
+      }
+      break;    
+    case 4:
+      ad2 = addrcheck(op[1]);
+
+      conv2 = addrconvert(ad2, op[1]);
+
+      val1 = op[0];
+      switch(ad2) {
+        case 1:
+          space->gp[conv2] = ~val1;
+          break;
+        case 2:
+          space->cp[conv2] = ~val1;
+          break;
+        case 3:
+          space->zf = ~val1;
+          break;
+        case 4:
+          space->cf = ~val1;
+          break;
+        case 5:
+          return 1; /*Can't set input register!*/        
+          break;
+        case 6:
+          space->ou = ~val1;
+          #ifdef EOF
+          printf("%i\n", space->ou);
+          #endif
+          break;
+        default:
+          return 3; /*We don't know what that address means*/
+      }
+      break;    
+    default:
+      return 2; /*wrong usage*/
+      break;
+  }
+  return 0;
+}
+
 uint hsub(uint op[4], vmem *space, uchar do_save){
   uint ad1;
   uint ad2;
@@ -129,6 +830,8 @@ uint hsub(uint op[4], vmem *space, uchar do_save){
         case 6:
           return 1; /*Can't read output register!*/
           break;
+        default:
+          return 3; /*We don't know what that address means*/
       }
       switch(ad2) {
         case 1:
@@ -149,6 +852,8 @@ uint hsub(uint op[4], vmem *space, uchar do_save){
         case 6:
           return 1; /*Can't read output register!*/        
           break;
+        default:
+          return 3; /*We don't know what that address means*/
       }
       result = val1 - val2;
       if((result > val1)) space->cf = 1;
@@ -172,7 +877,12 @@ uint hsub(uint op[4], vmem *space, uchar do_save){
           break;
         case 6:
           space->ou = result;
+          #ifdef EOF
+          printf("%i\n", space->ou);
+          #endif
           break;
+        default:
+          return 3; /*We don't know what that address means*/
       };
       }
       break;
@@ -202,6 +912,8 @@ uint hsub(uint op[4], vmem *space, uchar do_save){
         case 6:
           return 1; /*Can't read output register!*/
           break;
+        default:
+          return 3; /*We don't know what that address means*/
       }
       val2 = op[1];
       result = val1 - val2;
@@ -226,7 +938,12 @@ uint hsub(uint op[4], vmem *space, uchar do_save){
           break;
         case 6:
           space->ou = result;
+          #ifdef EOF
+          printf("%i\n", space->ou);
+          #endif
           break;
+        default:
+          return 3; /*We don't know what that address means*/
       }
       }
       break;
@@ -257,6 +974,8 @@ uint hsub(uint op[4], vmem *space, uchar do_save){
         case 6:
           return 1; /*Can't read output register!*/        
           break;
+        default:
+          return 3; /*We don't know what that address means*/
       }
 
       result = val1 - val2;
@@ -281,7 +1000,12 @@ uint hsub(uint op[4], vmem *space, uchar do_save){
           break;
         case 6:
           space->ou = result;
+          #ifdef EOF
+          printf("%i\n", space->ou);
+          #endif
           break;
+        default:
+          return 3; /*We don't know what that address means*/
       }
       }
       break;
@@ -314,9 +1038,17 @@ uint hsub(uint op[4], vmem *space, uchar do_save){
           break;
         case 6:
           space->ou = result;
+          #ifdef EOF
+          printf("%i\n", space->ou);
+          #endif
+          break;
+        default:
+          return 3; /*We don't know what that address means*/
       }
       }
       break;
+    default:
+      return 2; /*wrong usage*/
   }
   return 0;
 }
@@ -363,6 +1095,8 @@ uint hadd(uint op[4], vmem *space){
           break;
         case 6:
           return 1; /*Can't read output register!*/
+        default:
+          return 3; /*We don't know what that address means*/
       }
       switch(ad2) {
         case 1:
@@ -383,6 +1117,8 @@ uint hadd(uint op[4], vmem *space){
         case 6:
           return 1; /*Can't read output register!*/        
           break;
+        default:
+          return 3; /*We don't know what that address means*/
       }
       result = val1 + val2;
       if((result < val1) || (result < val2)) space->cf = 1;
@@ -405,7 +1141,12 @@ uint hadd(uint op[4], vmem *space){
           break;
         case 6:
           space->ou = result;
+          #ifdef EOF
+          printf("%i\n", space->ou);
+          #endif
           break;
+        default:
+          return 3; /*We don't know what that address means*/
       }
       break;
     case 2:
@@ -433,6 +1174,8 @@ uint hadd(uint op[4], vmem *space){
         case 6:
           return 1; /*Can't read output register!*/
           break;
+        default:
+          return 3; /*We don't know what that address means*/
       }
       val2 = op[1];
       result = val1 + val2;
@@ -456,7 +1199,12 @@ uint hadd(uint op[4], vmem *space){
           break;
         case 6:
           space->ou = result;
+          #ifdef EOF
+          printf("%i\n", space->ou);
+          #endif
           break;
+        default:
+          return 3; /*We don't know what that address means*/
       }
       break;
     case 4:
@@ -487,6 +1235,8 @@ uint hadd(uint op[4], vmem *space){
         case 6:
           return 1; /*Can't read output register!*/        
           break;
+        default:
+          return 3; /*We don't know what that address means*/
       }
 
       result = val1 + val2;
@@ -510,7 +1260,12 @@ uint hadd(uint op[4], vmem *space){
           break;
         case 6:
           space->ou = result;
+          #ifdef EOF
+          printf("%i\n", space->ou);
+          #endif
           break;
+        default:
+          return 3; /*We don't know what that address means*/
       }
       break;
     case 6:
@@ -542,10 +1297,16 @@ uint hadd(uint op[4], vmem *space){
           break;
         case 6:
           space->ou = result;
+          #ifdef EOF
+          printf("%i\n", space->ou);
+          #endif
           break;
-      }
+        default:
+          return 3; /*We don't know what that address means*/
+        }
       break;
-  }
+    default:
+      return 2; /*wrong usage*/  }
   return 0;
 }
 
@@ -607,7 +1368,7 @@ uint hset(uint op[4], vmem *space){
         case 6: ;
           space->ou = val;          
           #ifdef EOF
-          printf("%i\n", val);
+          printf("%i\n", space->ou);
           #endif
           break;
         default:
@@ -638,7 +1399,7 @@ uint hset(uint op[4], vmem *space){
         case 6: ;
           space->ou = val;          
           #ifdef EOF
-          printf("%i\n", val);
+          printf("%i\n", space->ou);
           #endif
           break;
         default:
@@ -706,11 +1467,35 @@ uint execnext(mem *program){
       case and:
         break;
       case or:
-        break;
+        errno = hor(program->m1.opnd[program->co], &program->m2); /*Substract but don't save*/
+        program->co += 1;
+        if(errno != 0) {
+          #ifdef EOF
+          printf("ERROR\n");
+          #endif
+          return 2; /*EXECUTION ERROR*/    
+          }
+        return 0;
       case xor:
-        break;
+        errno = hxor(program->m1.opnd[program->co], &program->m2); /*Substract but don't save*/
+        program->co += 1;
+        if(errno != 0) {
+          #ifdef EOF
+          printf("ERROR\n");
+          #endif
+          return 2; /*EXECUTION ERROR*/    
+          }
+        return 0;
       case not:
-        break;
+        errno = hnot(program->m1.opnd[program->co], &program->m2); /*Substract but don't save*/
+        program->co += 1;
+        if(errno != 0) {
+          #ifdef EOF
+          printf("ERROR\n");
+          #endif
+          return 2; /*EXECUTION ERROR*/    
+          }
+        return 0;
       case cmp:
         errno = hsub(program->m1.opnd[program->co], &program->m2, 0); /*Substract but don't save*/
         program->co += 1;
@@ -719,14 +1504,13 @@ uint execnext(mem *program){
           printf("ERROR\n");
           #endif
           return 2; /*EXECUTION ERROR*/    
+          }
         }
         return 0;
-    };
-  }
+      }
+ 
   #if defined(EOF)
     printf("UNIMPLEMENTED\n");
   #endif
   return 1; /*UNIMPLEMENTED*/
 }
-/*if ((num1 + num2 < num2) || (num1 + num2 < num1))*/
-/*if ((num1 - num2 > num1))*/

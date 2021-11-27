@@ -26,7 +26,9 @@ OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE WORK.s
 
 #include "hwt.h"
 #include "hwnet.h"
-#include "uuid.h"
+#include "uuid/uuid.h"
+#include "iset/iset.h"
+#include "msg-c/msg-c.h"
 
 #define RACENUM 32
 
