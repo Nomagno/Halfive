@@ -72,8 +72,8 @@ typedef enum {
   or =  8,  /* V1 V2 R3; binary or*/
   xor = 9, /* V1 V2 R3; binary exclusive or*/
   not = 10, /* V1 R2; binary negation*/
-  cmp = 11 /* V1 V2 ; if V1 is bigger than V2, sets the carry flag to 1 and the zero flag to 1
-                      if V1 is smaller than V2, sets the carry flag to 0 and the zero flag to 1
+  cmp = 11 /* V1 V2 ; if V1 is bigger than V2, sets the carry flag to 0 and the zero flag to 1
+                      if V1 is smaller than V2, sets the carry flag to 1 and the zero flag to 0
                       if V1 is equal to V2, sets the carry flag to 0 and the zero flag to 0*/
 } iset;
 
