@@ -281,7 +281,40 @@ uint hand(uint op[4], vmem *space){
           return 3; /*We don't know what that address means*/
       }
       break;    
+    case 6:
+      ad3 = addrcheck(op[2]);
 
+      conv3 = addrconvert(ad3, op[2]);
+
+      val2 = op[1];
+      val1 = op[0];
+
+      switch(ad3) {
+        case 1:
+          space->gp[conv3] = val1 & val2;
+          break;
+        case 2:
+          space->cp[conv3] = val1 & val2;
+          break;
+        case 3:
+          space->zf = val1 & val2;
+          break;
+        case 4:
+          space->cf = val1 & val2;
+          break;
+        case 5:
+          return 1; /*Can't set input register!*/        
+          break;
+        case 6:
+          space->ou = val1 & val2;
+          #ifdef EOF
+          printf("%i\n", space->ou);
+          #endif
+          break;
+        default:
+          return 3; /*We don't know what that address means*/
+      }
+      break;    
   }
   return 0;
 }
@@ -482,7 +515,42 @@ uint hxor(uint op[4], vmem *space){
           return 3; /*We don't know what that address means*/
       }
       break;    
+    case 6:
+      ad3 = addrcheck(op[2]);
 
+      conv3 = addrconvert(ad3, op[2]);
+
+      val2 = op[1];
+      val1 = op[0];
+
+      switch(ad3) {
+        case 1:
+          space->gp[conv3] = val1 ^ val2;
+          break;
+        case 2:
+          space->cp[conv3] = val1 ^ val2;
+          break;
+        case 3:
+          space->zf = val1 ^ val2;
+          break;
+        case 4:
+          space->cf = val1 ^ val2;
+          break;
+        case 5:
+          return 1; /*Can't set input register!*/        
+          break;
+        case 6:
+          space->ou = val1 ^ val2;
+          #ifdef EOF
+          printf("%i\n", space->ou);
+          #endif
+          break;
+        default:
+          return 3; /*We don't know what that address means*/
+      }
+      break;    
+    default:
+      return 2; /*WRONG USAGE*/
   }
   return 0;
 }
@@ -683,6 +751,40 @@ uint hor(uint op[4], vmem *space){
           return 3; /*We don't know what that address means*/
       }
       break;    
+    case 6:
+      ad3 = addrcheck(op[2]);
+
+      conv3 = addrconvert(ad3, op[2]);
+
+      val2 = op[1];
+      val1 = op[0];
+
+      switch(ad3) {
+        case 1:
+          space->gp[conv3] = val1 | val2;
+          break;
+        case 2:
+          space->cp[conv3] = val1 | val2;
+          break;
+        case 3:
+          space->zf = val1 | val2;
+          break;
+        case 4:
+          space->cf = val1 | val2;
+          break;
+        case 5:
+          return 1; /*Can't set input register!*/        
+          break;
+        case 6:
+          space->ou = val1 | val2;
+          #ifdef EOF
+          printf("%i\n", space->ou);
+          #endif
+          break;
+        default:
+          return 3; /*We don't know what that address means*/
+      }
+      break;    
 
   }
   return 0;
@@ -857,7 +959,10 @@ uint hsub(uint op[4], vmem *space, uchar do_save){
       }
       result = val1 - val2;
       if((result > val1)) space->cf = 1;
+      else space->cf = 0;
+
       if(result == 0) space->zf = 0;
+      else space->zf = 1;
       if(do_save) {
       switch(ad3){
         case 1:
@@ -918,7 +1023,11 @@ uint hsub(uint op[4], vmem *space, uchar do_save){
       val2 = op[1];
       result = val1 - val2;
       if((result > val1)) space->cf = 1;
+      else space->cf = 0;
+
       if(result == 0) space->zf = 0;
+      else space->zf = 1;
+
       if(do_save) {
       switch(ad3){
         case 1:
@@ -980,7 +1089,11 @@ uint hsub(uint op[4], vmem *space, uchar do_save){
 
       result = val1 - val2;
       if((result > val1)) space->cf = 1;
+      else space->cf = 0;
+
       if(result == 0) space->zf = 0;
+      else space->zf = 1;
+
       if(do_save) {
       switch(ad3){
         case 1:
@@ -1018,7 +1131,11 @@ uint hsub(uint op[4], vmem *space, uchar do_save){
 
       result = val1 - val2;
       if((result > val1)) space->cf = 1;
+      else space->cf = 0;
+
       if(result == 0) space->zf = 0;
+      else space->zf = 1;
+
       if(do_save) {
       switch(ad3){
         case 1:
@@ -1122,7 +1239,11 @@ uint hadd(uint op[4], vmem *space){
       }
       result = val1 + val2;
       if((result < val1) || (result < val2)) space->cf = 1;
+      else space->cf = 0;
+
       if(result == 0) space->zf = 0;
+      else space->zf = 1;
+
       switch(ad3){
         case 1:
           space->gp[conv3] = result;
@@ -1180,7 +1301,11 @@ uint hadd(uint op[4], vmem *space){
       val2 = op[1];
       result = val1 + val2;
       if((result < val1) || (result < val2)) space->cf = 1;
+      else space->cf = 0;
+
       if(result == 0) space->zf = 0;
+      else space->zf = 1;
+
       switch(ad3){
         case 1:
           space->gp[conv3] = result;
@@ -1241,7 +1366,11 @@ uint hadd(uint op[4], vmem *space){
 
       result = val1 + val2;
       if((result < val1) || (result < val2)) space->cf = 1;
+      else space->cf = 0;
+
       if(result == 0) space->zf = 0;
+      else space->zf = 1;
+
       switch(ad3){
         case 1:
           space->gp[conv3] = result;
@@ -1278,7 +1407,11 @@ uint hadd(uint op[4], vmem *space){
 
       result = val1 + val2;
       if((result < val1) || (result < val2)) space->cf = 1;
+      else space->zf = 0;
+
       if(result == 0) space->zf = 0;
+      else space->zf = 1;
+
       switch(ad3){
         case 1:
           space->gp[conv3] = result;
@@ -1443,6 +1576,8 @@ uint execnext(mem *program){
       case jcz:
         if (program->m2.zf == 0)
           program->co = program->m1.opnd[program->co][0];
+        else
+          program->co += 1;
         return 0;
       case add:
         errno = hadd(program->m1.opnd[program->co], &program->m2);
@@ -1465,7 +1600,15 @@ uint execnext(mem *program){
         }
         return 0;
       case and:
-        break;
+        errno = hand(program->m1.opnd[program->co], &program->m2); /*Substract but don't save*/
+        program->co += 1;
+        if(errno != 0) {
+          #ifdef EOF
+          printf("ERROR\n");
+          #endif
+          return 2; /*EXECUTION ERROR*/    
+          }
+        return 0;
       case or:
         errno = hor(program->m1.opnd[program->co], &program->m2); /*Substract but don't save*/
         program->co += 1;
