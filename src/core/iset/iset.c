@@ -1221,10 +1221,10 @@ uint execnext(mem *program) {
       errno = hset(program->m1.opnd[program->co], &program->m2);
       program->co += 1;
       return 0;
-    case jmp:
+    case jmp: /*TODO: Refactor into function that also takes an address*/
       program->co = program->m1.opnd[program->co][0];
       return 0;
-    case jcz:
+    case jcz: /*TODO: Refactor into function that also takes an address*/
       if (program->m2.zf == 0)
         program->co = program->m1.opnd[program->co][0];
       else

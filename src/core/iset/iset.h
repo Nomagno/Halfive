@@ -50,20 +50,46 @@ Literals that are not addresses should be enclosed in square braces e.g. [6]
       BINARY: 00000100 0010 0110 0001 0011 0010 0000 0000
         NOTE: You can safely ignore the most significant bit of the second value (0010), since only the least significant 3 code which arguments are literals.
       DECIMAL: 4 2 6 1 3 2 0 0
-      ASSEMBLY: (4-bit args) add 1 [3] [2]; halt;
+      ASSEMBLY: bits 4; add 1 [3] [2]; halt;
       ENGLISH: 
         This binary contains 4-bit args. 
         The first instruction has the middle argument as a literal.
         Add the CONTENTS of register 1 and the literal integer '3', then put the result into register '2'. 
         Halt.
+
+  ASSEMBLY FORMAT:
+    It codes almost directly to the binary format. The available instructions are: {halt, nop, jmp, jcz, set, add, sub, not, and, xor, or, not}
+    The following pseudo instructons are available: {bits, START, END, CALL}
+
+    The syntax is the following:
+      instruction ARG1 ARG2 ARG3;
+    Where ARGx is a number
+    Instructions are terminated by semicolon ';'
+
+    For arguments labeled 'Value' (NOT for arguments labeled 'Register'), literals are allowed in the form [ARGx] (Number enclosed in brackets)
+    The enum below specifies in a comment the behaviour of each proper instruction and the corresponding
+
+    PSEUDO INSTRUCTIONS (THEY DO NOT GO IN FOR THE PROGRAM'S):
+      bits Lx; Takes ONLY literal, it has to go at the start of every assembly program to determine the number of maximum bits of each argument
+
+    SUBROUTINES (Labels, really):
+      START Sx; Start of subroutine. Takes ANY string prefixed by underscore '_' (E.G. '_MYFUNC'). The assembler SHALL insert a 'jmp' instruction to the next (Non-subroutine) instruction in its place (So if it is encountered in normal execution, the whole subroutine up until the END is ignored). The assembler SHALL keep track of the number of the next (real) instruction
+
+      END Sx; End of subroutine. Takes ANY string prefixed by underscore '_' (E.G. '_MYFUNC'). The assembler SHALL replace it with a 'jmp' instruction to an arbitrary (CPU address space) register that references an as of yet unknown part of the program
+
+      CALL Sx; Start of subroutine. Takes ANY string prefixed by underscore '_' (E.G. '_MYFUNC'). The assembler SHALL replace it with two instructions: 
+        1. a 'set' instruction that sets the same address assigned in 'END' to the number of the next (real) instruction
+        2. a 'jmp' instruction to the start of the subroutine (the number kept track of in START)
+    The objective of this is to have re-callable pieces of code that don't get in the way of normal programming
 */
 typedef enum {
-  /*IMPORTANT NOTE: LITERALS ARE ONLY ALLOWED IN REGISTER ARGUMENTS DOCUMENTED AS Vx, NOT IP or Rx*/
+  /*THE INSTRUCTION COUNTING SHALL START AT 0, NOT 1*/
+  /*IMPORTANT NOTE: LITERALS ARE ONLY ALLOWED IN REGISTER ARGUMENTS DOCUMENTED AS VALUES 'Vx', NOT IN REGISTERS 'Rx'*/
   halt = 0, /* ; halt*/
   nop = 1, /* ; do nothing*/
   set = 2, /* V1 R2; set address R2 to value V1*/
-  jmp = 3, /* IP; hand execution to instruction*/
-  jcz = 4, /* IP; if ZF == 0, jmp to IP*/
+  jmp = 3, /* V1; hand execution to instruction numbered V1*/
+  jcz = 4, /* V1; if ZF == 0, jmp to instrucion V1*/
   /*ADD trough to NOT: put result of doing 
   stuff with Vn values into Rn address*/
   add = 5, /* V1 V2 R3; addition, carry goes to carry flag*/
