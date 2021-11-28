@@ -61,6 +61,7 @@ int main(void){
   /*STEP 2*/
   mycode.inst[2] = jmp;
   mycode.opnd[2][0] = 5;
+  mycode.opnd[2][3] = 4;
 
   /*STEP 3*/
   mycode.inst[3] = add;
@@ -83,6 +84,7 @@ int main(void){
   /*STEP 5*/
   mycode.inst[6] = jcz;
   mycode.opnd[6][0] = 3;
+  mycode.opnd[6][3] = 4;
 
   /*STEP 6*/
   mycode.inst[7] = cmp;

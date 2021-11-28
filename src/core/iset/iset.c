@@ -412,6 +412,47 @@ uint hbin(uint op[4], vmem *space, uint flag) {
   return 0;
 }
 
+uint hjump(uint op[4], vmem *space, uint *co){
+  uint adr;
+  uint conv;
+
+  switch(op[3]){
+  	case 0:
+  	  adr = addrcheck(op[0]);
+  	  conv = addrconvert(adr, op[0]);
+  	  switch(adr){
+  	case 1:
+  	  *co = space->gp[conv];
+      break;
+    case 2:
+  	  *co = space->cp[conv];
+      break;
+    case 3:
+  	  *co = space->zf;
+      break;
+    case 4:
+  	  *co = space->cf;
+      break;
+    case 5:
+  	  *co = space->in;
+       break;
+    case 6:
+      return 1; /*You can't read the output register!*/
+      break;
+    default:
+      return 3; /*We don't know what that address means*/
+  	  }
+  	  break;
+  	case 4:
+  	  *co = op[0];
+  	  break;
+  	default:
+  	  return 3; /*Wrong usage*/
+  	  break;
+  }
+  return 0;
+}
+
 uint hnot(uint op[4], vmem *space) {
   uint ad1;
   uint ad2;
@@ -1221,14 +1262,28 @@ uint execnext(mem *program) {
       errno = hset(program->m1.opnd[program->co], &program->m2);
       program->co += 1;
       return 0;
-    case jmp: /*TODO: Refactor into function that also takes an address*/
-      program->co = program->m1.opnd[program->co][0];
+    case jmp:
+      errno = hjump(program->m1.opnd[program->co], &program->m2, &program->co);
+      if (errno != 0) {
+#ifdef EOF
+        printf("ERROR\n");
+#endif
+        return 2; /*EXECUTION ERROR*/
+      }
       return 0;
-    case jcz: /*TODO: Refactor into function that also takes an address*/
+    case jcz:
       if (program->m2.zf == 0)
-        program->co = program->m1.opnd[program->co][0];
-      else
+        errno = hjump(program->m1.opnd[program->co], &program->m2, &program->co);
+      else {
         program->co += 1;
+        errno = 0;
+      }
+      if (errno != 0) {
+#ifdef EOF
+        printf("ERROR\n");
+#endif
+        return 2; /*EXECUTION ERROR*/
+      }
       return 0;
     case add:
       errno = hadd(program->m1.opnd[program->co], &program->m2);
