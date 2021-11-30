@@ -75,7 +75,7 @@ Literals that are not addresses should be enclosed in square braces e.g. [6]
     SUBROUTINES (Labels, really):
       START Sx; Start of subroutine. Takes ANY string prefixed by underscore '_' (E.G. '_MYFUNC'). The assembler SHALL insert a 'jmp' instruction to the next (Non-subroutine) instruction in its place (So if it is encountered in normal execution, the whole subroutine up until the END is ignored). The assembler SHALL keep track of the number of the next (real) instruction
 
-      END Sx; End of subroutine. Takes ANY string prefixed by underscore '_' (E.G. '_MYFUNC'). The assembler SHALL replace it with a 'jmp' instruction to an arbitrary (CPU address space) register that references an as of yet unknown part of the program
+      END Sx; End of subroutine. Takes ANY 6-CHARACTER UPPERCASE STRING (A-Z) prefixed by underscore '_' (E.G. '_MYFUNC'). The assembler SHALL replace it with a 'jmp' instruction to an arbitrary (CPU address space) register that references an as of yet unknown part of the program
 
       CALL Sx; Start of subroutine. Takes ANY string prefixed by underscore '_' (E.G. '_MYFUNC'). The assembler SHALL replace it with two instructions: 
         1. a 'set' instruction that sets the same address assigned in 'END' to the number of the next (real) instruction
