@@ -33,7 +33,8 @@ typedef unsigned int uint;
 
 (AT THE BOTTOM OF THIS BIG COMMENT BLOCK YOU HAVE THE ACTUAL CODE)
 
-Instructions are terminated by semicolon, and the number of arguments shown in comments is REQUIRED
+COMMENTS ARE FROM SEMICOLON ';' UNTIL NEWLINE '\n'
+Instructions are terminated by newline, and the number of arguments shown in comments is REQUIRED
 Literals that are not addresses should be enclosed in square braces e.g. [6]
 
 
@@ -50,7 +51,7 @@ Literals that are not addresses should be enclosed in square braces e.g. [6]
       BINARY: 00000100 0010 0110 0001 0011 0010 0000 0000
         NOTE: You can safely ignore the most significant bit of the second value (0010), since only the least significant 3 code which arguments are literals.
       DECIMAL: 4 2 6 1 3 2 0 0
-      ASSEMBLY: bits 4; add 1 [3] [2]; halt;
+      ASSEMBLY: bits 4\n add 1 [3] [2]\n halt
       ENGLISH: 
         This binary contains 4-bit args. 
         The first instruction has the middle argument as a literal.
@@ -62,9 +63,9 @@ Literals that are not addresses should be enclosed in square braces e.g. [6]
     The following pseudo instructons are available: {bits, START, END, CALL}
 
     The syntax is the following:
-      instruction ARG1 ARG2 ARG3;
+      instruction ARG1 ARG2 ARG3\n
     Where ARGx is a number
-    Instructions are terminated by semicolon ';'
+    Instructions are terminated by newline '\n'
 
     For arguments labeled 'Value' (NOT for arguments labeled 'Register'), literals are allowed in the form [ARGx] (Number enclosed in brackets)
     The enum below specifies in a comment the behaviour of each proper instruction and the corresponding
@@ -73,7 +74,7 @@ Literals that are not addresses should be enclosed in square braces e.g. [6]
       bits Lx; Takes ONLY literal, it has to go at the start of every assembly program to determine the number of maximum bits of each argument
 
     SUBROUTINES (Labels, really):
-      START Sx; Start of subroutine. Takes ANY string prefixed by underscore '_' (E.G. '_MYFUNC'). The assembler SHALL insert a 'jmp' instruction to the next (Non-subroutine) instruction in its place (So if it is encountered in normal execution, the whole subroutine up until the END is ignored). The assembler SHALL keep track of the number of the next (real) instruction
+      START Sxn; Start of subroutine. Takes ANY string prefixed by underscore '_' (E.G. '_MYFUNC'). The assembler SHALL insert a 'jmp' instruction to the next (Non-subroutine) instruction in its place (So if it is encountered in normal execution, the whole subroutine up until the END is ignored). The assembler SHALL keep track of the number of the next (real) instruction
 
       END Sx; End of subroutine. Takes ANY 6-CHARACTER UPPERCASE STRING (A-Z) prefixed by underscore '_' (E.G. '_MYFUNC'). The assembler SHALL replace it with a 'jmp' instruction to an arbitrary (CPU address space) register that references an as of yet unknown part of the program
 
