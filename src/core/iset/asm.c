@@ -89,10 +89,13 @@ uint asmparse(char *linestr, iset *inst, uint opnds[4]) {
   char *token = strtok(linestr, " ");
   iset myinst;
   int i = 0;
+  uint retval = 0;
   while ((token != NULL) && (i < 3)) {
 
     if ((myinst = _isinst(token)) != 16) {
       *inst = myinst;
+      if(myinst > 11)
+        retval = 1; /*THERE IS STUFF TO PREPROCESS*/
     } else if (_isxupdigit(token[0])) {
       opnds[i] = (uint)strtoul(token, NULL, 16);
       i += 1;
@@ -104,14 +107,12 @@ uint asmparse(char *linestr, iset *inst, uint opnds[4]) {
       opnds[3] = (opnds[3] | (1 << (2 - i)));
 
       i += 1;
-    } else if (myinst > 11) {
-      return 1; /*THERE IS STUFF TO PREPROCESS*/
     } else {
       return 2; /*CATASTROPHIC ERROR*/
     }
     token = strtok(NULL, " ");
   }
-  return 0;
+  return retval;
 }
 
 int main(int argc, char**argv) {
