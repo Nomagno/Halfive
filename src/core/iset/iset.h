@@ -33,7 +33,6 @@ typedef unsigned int uint;
 
 (AT THE BOTTOM OF THIS BIG COMMENT BLOCK YOU HAVE THE ACTUAL CODE)
 
-COMMENTS ARE FROM SEMICOLON ';' UNTIL NEWLINE '\n'
 Instructions are terminated by newline, and the number of arguments shown in comments is REQUIRED
 Literals that are not addresses should be enclosed in square braces e.g. [6]
 
