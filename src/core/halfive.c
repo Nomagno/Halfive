@@ -30,7 +30,7 @@ int H5Init(FILE *trck, world *stage) {
 	/*
 	Initializes the 'stage' world struct
 
-	The 'trck' parameter most be a pointer to a track file, which will then be converted to a proper hwtrack struct
+	The 'trck' parameter must be a pointer to a track file, which will then be converted to a proper hwtrack struct
 
 	The 'stage' parameter will then be initialized appropiately, containing appropiate 'simulated properties' appropiate for starting a race in the track.
 
