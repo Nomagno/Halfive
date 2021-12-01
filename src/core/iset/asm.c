@@ -97,7 +97,8 @@ uint asmparse(char *linestr, iset *inst, uint opnds[4]) {
       opnds[i] = (uint)strtoul(token, NULL, 16);
       i += 1;
     } else if (token[0] == '[') {
-      token[0] = ' ';
+      token[0] = token[1];
+      token[1] = '_';
       opnds[i] = (uint)strtoul(token, NULL, 16);
 
       opnds[3] = (opnds[3] | (1 << (2 - i)));
@@ -119,13 +120,18 @@ int main(int argc, char**argv) {
   char arr[30];
   FILE *inputfile = fopen(argv[1], "r");
   xmem code = {0};
-
-  while (fscanf(inputfile, "%29[^\n] ", arr) != EOF) {
-    asmparse(arr, &code.inst[0], code.opnd[0]);
+  int i = 0;
+  while (fscanf(inputfile, "%[^\n] ", arr) != EOF) {
+    asmparse(arr, &code.inst[i], code.opnd[i]);
+    i+=1;
   }
+/*  printf("1: %i\n2: %i\n3: %i\n4: %i\n1_: %i\n2_: %i\n3_: %i\n4_: %i\n",
+  code.opnd[0][0], code.opnd[0][1], code.opnd[0][2], code.opnd[0][3], 
+  code.opnd[1][0], code.opnd[1][1], code.opnd[1][2], code.opnd[1][3]);
+*/
   mem prog = fxmem(code);
   int errno = 0;
-
+  printf("PROGRAM OUTPUT:\n");
   while((!prog.hf) && (!errno))
     errno = execnext(&prog);
   return errno;
