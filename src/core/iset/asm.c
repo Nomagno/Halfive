@@ -100,8 +100,7 @@ uint asmparse(char *linestr, iset *inst, uint opnds[4]) {
       opnds[i] = (uint)strtoul(token, NULL, 16);
       i += 1;
     } else if (token[0] == '[') {
-      token[0] = token[1];
-      token[1] = '_';
+      token += 1;
       opnds[i] = (uint)strtoul(token, NULL, 16);
 
       opnds[3] = (opnds[3] | (1 << (2 - i)));
