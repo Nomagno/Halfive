@@ -87,17 +87,17 @@ COPYRIGHT OR OTHER LEGAL PRIVILEGE BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
 LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE WORK.	*/
 	function sliderChange() {
-
 	var slider1 = document.getElementById("iblock1").value;
 	var slider2 = document.getElementById("iblock2").value;
 
-  var url = "/post";
+    var url = "/post";
 	var params = "pos1=" + slider1 + "&" + "pos2=" + slider2;
-	var http = new XMLHttpRequest();
 
+	var http = new XMLHttpRequest();
 	http.open('POST', url, true);
 	http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 	http.send(params);
+
 	console.log("Hopefully sent a POST request to: " + url)
 	}
 	</script>
