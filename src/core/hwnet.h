@@ -22,7 +22,8 @@ LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE,
 AND NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS, ASSEMBLERS, OR HOLDERS OF
 COPYRIGHT OR OTHER LEGAL PRIVILEGE BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
 LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
-OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE WORK.*/
+OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
+WORK.*/
 
 #include "../../external/json_parser/jsmn.h"
 #include <stdio.h>
@@ -39,7 +40,7 @@ struct player_data_server {
 	enum TYPE1 flags_1; /*If it is -1, SHOULD BE LEFT EMPTY*/
 	enum TYPE2 flags_2; /*If it is -1, SHOULD BE LEFT EMPTY*/
 	enum TYPE3 flags_3; /*If it is -1, SHOULD BE LEFT EMPTY*/
-	int leaderboard; /*If it is -1, SHOULD NOT BE SEND*/
+	int leaderboard;    /*If it is -1, SHOULD NOT BE SEND*/
 
 	int position1;
 	int position2;
@@ -65,7 +66,5 @@ typedef struct {
 	struct player_data_client player_data[MAXPLAYERS_HWNET];
 } hwpack_client;
 
-extern int cli_parse(char[], hwpack_client*);
-extern int serv_parse(char[], hwpack_server*);
-
-
+extern int cli_parse(char[], hwpack_client *);
+extern int serv_parse(char[], hwpack_server *);

@@ -99,7 +99,7 @@ maddinter(ReturnType, Call, Params)
 -ReturnType is, well, the return type of the method (function).
 -Call is the name of the method.
 -Params is the type signature of the method/function, enclosed in parentheses
-like if you were declaring a function normally 
+like if you were declaring a function normally
 -EXAMPLE: -MsgAddInterface(void,
 do_stuff, (int just_a_number, MsgSelfRef(Primitive) *self)) -In the example, we
 add an interface for a method do_stuff() with return type void, with arguments
@@ -107,9 +107,9 @@ add an interface for a method do_stuff() with return type void, with arguments
 syntactic sugar for a pointer to an instance of the object it is part of. For
 example, you could make an object Primitive, and implement this method as a
 functions that returns the addition of just_a_number and a private member of the
-instance. 
+instance.
 -In more OOP terms: This is how you declare an interface you can then
-implement. 
+implement.
 -You can make a function with this type signature, and assign it to
 an instance of Primitive.
 
@@ -117,14 +117,14 @@ an instance of Primitive.
 ADDITIONAL FUNCTIONS:
 
 yield(var, val)
--Where var is global, you can use a switch statement on it 
+-Where var is global, you can use a switch statement on it
 -to barely simulate a coroutine with no callstack (or stack)
 
 yclear(var)
 -Resets var
 
 makefuncptr(type, name)
--Typedef a function pointer with 'type' return type, 
+-Typedef a function pointer with 'type' return type,
 -and any number of non-variadic parameters, to 'name'
 
 MACRO CONSTANTS:
@@ -138,8 +138,8 @@ ARRUNIT: Just a utility thing
 
 /*THE MACROS*/
 #define FUNC_CHOOSER_DEF(_f1, _f2, _f3, _f4, _f5, _f6, _f7, _f8, _f9, _f10,    \
-                         ...)                                                  \
-  _f10
+			 ...)                                                  \
+	_f10
 
 /*VARIADIC MsgNewClass DEFINITIONS, START (SEARCH FOR 'END' TO SKIP)*/
 #define MsgNewClass_0() Need_two_arguments abort;
@@ -150,78 +150,78 @@ TOP super -> void *super
 ONLY SPECIFY THE TYPE OF THE THINGY IT INHERITS FROM
 */
 #define MsgNewClass_2(name, inherits)                                          \
-  typedef struct MsgStruct_##name {                                            \
-    inherits super;                                                            \
-  } MsgObj_##name
+	typedef struct MsgStruct_##name {                                      \
+		inherits super;                                                \
+	} MsgObj_##name
 
 #define MsgNewClass_3(name, inherits, field1)                                  \
-  typedef struct MsgStruct_##name {                                            \
-    inherits super;                                                            \
-    field1;                                                                    \
-  } MsgObj_##name
+	typedef struct MsgStruct_##name {                                      \
+		inherits super;                                                \
+		field1;                                                        \
+	} MsgObj_##name
 
 #define MsgNewClass_4(name, inherits, field1, field2)                          \
-  typedef struct MsgStruct_##name {                                            \
-    inherits super;                                                            \
-    field1;                                                                    \
-    field2;                                                                    \
-  } MsgObj_##name
+	typedef struct MsgStruct_##name {                                      \
+		inherits super;                                                \
+		field1;                                                        \
+		field2;                                                        \
+	} MsgObj_##name
 
 #define MsgNewClass_5(name, inherits, field1, field2, field3)                  \
-  typedef struct MsgStruct_##name {                                            \
-    inherits super;                                                            \
-    field1;                                                                    \
-    field2;                                                                    \
-    field3;                                                                    \
-  } MsgObj_##name
+	typedef struct MsgStruct_##name {                                      \
+		inherits super;                                                \
+		field1;                                                        \
+		field2;                                                        \
+		field3;                                                        \
+	} MsgObj_##name
 
 #define MsgNewClass_6(name, inherits, field1, field2, field3, field4)          \
-  typedef struct MsgStruct_##name {                                            \
-    inherits super;                                                            \
-    field1;                                                                    \
-    field2;                                                                    \
-    field3;                                                                    \
-    field4;                                                                    \
-  } MsgObj_##name
+	typedef struct MsgStruct_##name {                                      \
+		inherits super;                                                \
+		field1;                                                        \
+		field2;                                                        \
+		field3;                                                        \
+		field4;                                                        \
+	} MsgObj_##name
 
 #define MsgNewClass_7(name, inherits, field1, field2, field3, field4, field5)  \
-  typedef struct MsgStruct_##name {                                            \
-    inherits super;                                                            \
-    field1;                                                                    \
-    field2;                                                                    \
-    field3;                                                                    \
-    field4;                                                                    \
-  } MsgObj_##name
+	typedef struct MsgStruct_##name {                                      \
+		inherits super;                                                \
+		field1;                                                        \
+		field2;                                                        \
+		field3;                                                        \
+		field4;                                                        \
+	} MsgObj_##name
 
 #define MsgNewClass_8(name, inherits, field1, field2, field3, field4, field5,  \
-                      field6)                                                  \
-  typedef struct MsgStruct_##name {                                            \
-    inherits super;                                                            \
-    field1;                                                                    \
-    field2;                                                                    \
-    field3;                                                                    \
-    field4;                                                                    \
-  } MsgObj_##name
+		      field6)                                                  \
+	typedef struct MsgStruct_##name {                                      \
+		inherits super;                                                \
+		field1;                                                        \
+		field2;                                                        \
+		field3;                                                        \
+		field4;                                                        \
+	} MsgObj_##name
 
 #define MsgNewClass_9(name, inherits, field1, field2, field3, field4, field5,  \
-                      field6, field7)                                          \
-  typedef struct MsgStruct_##name {                                            \
-    inherits super;                                                            \
-    field1;                                                                    \
-    field2;                                                                    \
-    field3;                                                                    \
-    field4;                                                                    \
-  } MsgObj_##name
+		      field6, field7)                                          \
+	typedef struct MsgStruct_##name {                                      \
+		inherits super;                                                \
+		field1;                                                        \
+		field2;                                                        \
+		field3;                                                        \
+		field4;                                                        \
+	} MsgObj_##name
 
 #define MsgNewClass_MACRO_CHOOSER(...)                                         \
-  MsgNewClass_CHOOSE_FROM_ARG_COUNT(NO_ARG_EXPANDER __VA_ARGS__())
+	MsgNewClass_CHOOSE_FROM_ARG_COUNT(NO_ARG_EXPANDER __VA_ARGS__())
 #define MsgNewClass_FUNC_RECOMPOSER(argsWithParentheses)                       \
-  FUNC_CHOOSER_DEF argsWithParentheses
+	FUNC_CHOOSER_DEF argsWithParentheses
 #define MsgNewClass_CHOOSE_FROM_ARG_COUNT(...)                                 \
-  MsgNewClass_FUNC_RECOMPOSER((__VA_ARGS__, MsgNewClass_9, MsgNewClass_8,      \
-                               MsgNewClass_7, MsgNewClass_6, MsgNewClass_5,    \
-                               MsgNewClass_4, MsgNewClass_3, MsgNewClass_2,    \
-                               MsgNewClass_1, MsgNewClass_0))
+	MsgNewClass_FUNC_RECOMPOSER(                                           \
+	    (__VA_ARGS__, MsgNewClass_9, MsgNewClass_8, MsgNewClass_7,         \
+	     MsgNewClass_6, MsgNewClass_5, MsgNewClass_4, MsgNewClass_3,       \
+	     MsgNewClass_2, MsgNewClass_1, MsgNewClass_0))
 #define MsgNewClass_NO_ARG_EXPANDER() , , , , , , , , , MsgNewClass_0
 #define maddclass(...) MsgNewClass_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
 /*VARIADIC MsgNewClass DEFINITIONS, END*/
@@ -231,83 +231,83 @@ ONLY SPECIFY THE TYPE OF THE THINGY IT INHERITS FROM
 #define MsgAddPublic_1(a) Need_two_arguments abort;
 
 #define MsgAddPublic_2(strname, par1)                                          \
-  struct {                                                                     \
-    par1;                                                                      \
-  } Pub##strname
+	struct {                                                               \
+		par1;                                                          \
+	} Pub##strname
 
 #define MsgAddPublic_3(strname, par1, par2)                                    \
-  struct {                                                                     \
-    par1;                                                                      \
-    par2;                                                                      \
-  } Pub##strname
+	struct {                                                               \
+		par1;                                                          \
+		par2;                                                          \
+	} Pub##strname
 
 #define MsgAddPublic_4(strname, par1, par2, par3)                              \
-  struct {                                                                     \
-    par1;                                                                      \
-    par2;                                                                      \
-    par3;                                                                      \
-  } Pub##strname
+	struct {                                                               \
+		par1;                                                          \
+		par2;                                                          \
+		par3;                                                          \
+	} Pub##strname
 
 #define MsgAddPublic_5(strname, par1, par2, par3, par4)                        \
-  struct {                                                                     \
-    par1;                                                                      \
-    par2;                                                                      \
-    par3;                                                                      \
-    par4;                                                                      \
-  } Pub##strname
+	struct {                                                               \
+		par1;                                                          \
+		par2;                                                          \
+		par3;                                                          \
+		par4;                                                          \
+	} Pub##strname
 
 #define MsgAddPublic_6(strname, par1, par2, par3, par4, par5)                  \
-  struct {                                                                     \
-    par1;                                                                      \
-    par2;                                                                      \
-    par3;                                                                      \
-    par4;                                                                      \
-    par5;                                                                      \
-  } Pub##strname
+	struct {                                                               \
+		par1;                                                          \
+		par2;                                                          \
+		par3;                                                          \
+		par4;                                                          \
+		par5;                                                          \
+	} Pub##strname
 
 #define MsgAddPublic_7(strname, par1, par2, par3, par4, par5, par6)            \
-  struct {                                                                     \
-    par1;                                                                      \
-    par2;                                                                      \
-    par3;                                                                      \
-    par4;                                                                      \
-    par5;                                                                      \
-    par6;                                                                      \
-  } Pub##strname
+	struct {                                                               \
+		par1;                                                          \
+		par2;                                                          \
+		par3;                                                          \
+		par4;                                                          \
+		par5;                                                          \
+		par6;                                                          \
+	} Pub##strname
 
 #define MsgAddPublic_8(strname, par1, par2, par3, par4, par5, par6, par7)      \
-  struct {                                                                     \
-    par1;                                                                      \
-    par2;                                                                      \
-    par3;                                                                      \
-    par4;                                                                      \
-    par5;                                                                      \
-    par6;                                                                      \
-    par7;                                                                      \
-  } Pub##strname
+	struct {                                                               \
+		par1;                                                          \
+		par2;                                                          \
+		par3;                                                          \
+		par4;                                                          \
+		par5;                                                          \
+		par6;                                                          \
+		par7;                                                          \
+	} Pub##strname
 
 #define MsgAddPublic_9(strname, par1, par2, par3, par4, par5, par6, par7,      \
-                       par8)                                                   \
-  struct {                                                                     \
-    par1;                                                                      \
-    par2;                                                                      \
-    par3;                                                                      \
-    par4;                                                                      \
-    par5;                                                                      \
-    par6;                                                                      \
-    par7;                                                                      \
-    par8;                                                                      \
-  } Pub##strname
+		       par8)                                                   \
+	struct {                                                               \
+		par1;                                                          \
+		par2;                                                          \
+		par3;                                                          \
+		par4;                                                          \
+		par5;                                                          \
+		par6;                                                          \
+		par7;                                                          \
+		par8;                                                          \
+	} Pub##strname
 
 #define MsgAddPublic_MACRO_CHOOSER(...)                                        \
-  MsgAddPublic_CHOOSE_FROM_ARG_COUNT(NO_ARG_EXPANDER __VA_ARGS__())
+	MsgAddPublic_CHOOSE_FROM_ARG_COUNT(NO_ARG_EXPANDER __VA_ARGS__())
 #define MsgAddPublic_FUNC_RECOMPOSER(argsWithParentheses)                      \
-  FUNC_CHOOSER_DEF argsWithParentheses
+	FUNC_CHOOSER_DEF argsWithParentheses
 #define MsgAddPublic_CHOOSE_FROM_ARG_COUNT(...)                                \
-  MsgAddPublic_FUNC_RECOMPOSER(                                                \
-      (__VA_ARGS__, MsgAddPublic_9, MsgAddPublic_8, MsgAddPublic_7,            \
-       MsgAddPublic_6, MsgAddPublic_5, MsgAddPublic_4, MsgAddPublic_3,         \
-       MsgAddPublic_2, MsgAddPublic_1, MsgAddPublic_0))
+	MsgAddPublic_FUNC_RECOMPOSER(                                          \
+	    (__VA_ARGS__, MsgAddPublic_9, MsgAddPublic_8, MsgAddPublic_7,      \
+	     MsgAddPublic_6, MsgAddPublic_5, MsgAddPublic_4, MsgAddPublic_3,   \
+	     MsgAddPublic_2, MsgAddPublic_1, MsgAddPublic_0))
 #define MsgAddPublic_NO_ARG_EXPANDER() , , , , , , , , , MsgAddPublic_0
 #define maddpub(...) MsgAddPublic_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
 /*VARIADIC MsgAddPublic DEFINITIONS, END*/
@@ -318,71 +318,72 @@ ONLY SPECIFY THE TYPE OF THE THINGY IT INHERITS FROM
 #define MsgAddPrivate_2(a, b) Need_three_arguments abort;
 
 #define MsgAddPrivate_3(strname, suffix, par1)                                 \
-  struct {                                                                     \
-    par1##suffix;                                                              \
-  } Priv##strname
+	struct {                                                               \
+		par1##suffix;                                                  \
+	} Priv##strname
 
 #define MsgAddPrivate_4(strname, suffix, par1, par2)                           \
-  struct {                                                                     \
-    par1##suffix;                                                              \
-    par2##suffix;                                                              \
-  } Priv##strname
+	struct {                                                               \
+		par1##suffix;                                                  \
+		par2##suffix;                                                  \
+	} Priv##strname
 
 #define MsgAddPrivate_5(strname, suffix, par1, par2, par3)                     \
-  struct {                                                                     \
-    par1##suffix;                                                              \
-    par2##suffix;                                                              \
-    par3##suffix;                                                              \
-  } Priv##strname;
+	struct {                                                               \
+		par1##suffix;                                                  \
+		par2##suffix;                                                  \
+		par3##suffix;                                                  \
+	} Priv##strname;
 
 #define MsgAddPrivate_6(strname, suffix, par1, par2, par3, par4)               \
-  struct {                                                                     \
-    par1##suffix;                                                              \
-    par2##suffix;                                                              \
-    par3##suffix;                                                              \
-    par4##suffix;                                                              \
-  } Priv##strname
+	struct {                                                               \
+		par1##suffix;                                                  \
+		par2##suffix;                                                  \
+		par3##suffix;                                                  \
+		par4##suffix;                                                  \
+	} Priv##strname
 
 #define MsgAddPrivate7(strname, suffix, par1, par2, par3, par4, par5)          \
-  struct {                                                                     \
-    par1##suffix;                                                              \
-    par2##suffix;                                                              \
-    par3##suffix;                                                              \
-    par4##suffix;                                                              \
-    par5##suffix;                                                              \
-  } Priv##strname
+	struct {                                                               \
+		par1##suffix;                                                  \
+		par2##suffix;                                                  \
+		par3##suffix;                                                  \
+		par4##suffix;                                                  \
+		par5##suffix;                                                  \
+	} Priv##strname
 
 #define MsgAddPrivate_8(strname, suffix, par1, par2, par3, par4, par5, par6)   \
-  struct {                                                                     \
-    par1##suffix;                                                              \
-    par2##suffix;                                                              \
-    par3##suffix;                                                              \
-    par4##suffix;                                                              \
-    par5##suffix;                                                              \
-    par6##suffix;                                                              \
-  } Priv##strname
+	struct {                                                               \
+		par1##suffix;                                                  \
+		par2##suffix;                                                  \
+		par3##suffix;                                                  \
+		par4##suffix;                                                  \
+		par5##suffix;                                                  \
+		par6##suffix;                                                  \
+	} Priv##strname
 
 #define MsgAddPrivate_9(strname, suffix, par1, par2, par3, par4, par5, par6,   \
-                        par7)                                                  \
-  struct {                                                                     \
-    par1##suffix;                                                              \
-    par2##suffix;                                                              \
-    par3##suffix;                                                              \
-    par4##suffix;                                                              \
-    par5##suffix;                                                              \
-    par6##suffix;                                                              \
-    par7##suffix;                                                              \
-  } Priv##strname
+			par7)                                                  \
+	struct {                                                               \
+		par1##suffix;                                                  \
+		par2##suffix;                                                  \
+		par3##suffix;                                                  \
+		par4##suffix;                                                  \
+		par5##suffix;                                                  \
+		par6##suffix;                                                  \
+		par7##suffix;                                                  \
+	} Priv##strname
 
 #define MsgAddPrivate_MACRO_CHOOSER(...)                                       \
-  MsgAddPrivate_CHOOSE_FROM_ARG_COUNT(NO_ARG_EXPANDER __VA_ARGS__())
+	MsgAddPrivate_CHOOSE_FROM_ARG_COUNT(NO_ARG_EXPANDER __VA_ARGS__())
 #define MsgAddPrivate_FUNC_RECOMPOSER(argsWithParentheses)                     \
-  FUNC_CHOOSER_DEF argsWithParentheses
+	FUNC_CHOOSER_DEF argsWithParentheses
 #define MsgAddPrivate_CHOOSE_FROM_ARG_COUNT(...)                               \
-  MsgAddPrivate_FUNC_RECOMPOSER(                                               \
-      (__VA_ARGS__, MsgAddPrivate_9, MsgAddPrivate_8, MsgAddPrivate_7,         \
-       MsgAddPrivate_6, MsgAddPrivate_5, MsgAddPrivate_4, MsgAddPrivate_3,     \
-       MsgAddPrivate_2, MsgAddPrivate_1, MsgAddPrivate_0))
+	MsgAddPrivate_FUNC_RECOMPOSER(                                         \
+	    (__VA_ARGS__, MsgAddPrivate_9, MsgAddPrivate_8, MsgAddPrivate_7,   \
+	     MsgAddPrivate_6, MsgAddPrivate_5, MsgAddPrivate_4,                \
+	     MsgAddPrivate_3, MsgAddPrivate_2, MsgAddPrivate_1,                \
+	     MsgAddPrivate_0))
 #define MsgAddPrivate_NO_ARG_EXPANDER() , , , , , , , , , MsgAddPrivate_0
 #define maddpriv(...) MsgAddPrivate_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
 /*VARIADIC MsgAddPrivate DEFINITIONS, END*/
@@ -394,15 +395,15 @@ ONLY SPECIFY THE TYPE OF THE THINGY IT INHERITS FROM
 #define mselfref(Class) struct MsgStruct_##Class
 
 /*Add interface (method)*/
-#define maddinter(functype, fieldname, funcparams)                       \
-  functype(*fieldname) funcparams
+#define maddinter(functype, fieldname, funcparams)                             \
+	functype(*fieldname) funcparams
 
 /*Reference public member of an instance of a Class*/
 #define mgetpub(Instance, type, member) Instance.Pub##type.member
 
 /*Reference private member of an instance of an object*/
-#define mgetpriv(Instance, type, suffix, member)                       \
-  Instance.Priv##type.member##suffix
+#define mgetpriv(Instance, type, suffix, member)                               \
+	Instance.Priv##type.member##suffix
 
 /*For classes without inheritance*/
 #define TOP void *
@@ -410,41 +411,30 @@ ONLY SPECIFY THE TYPE OF THE THINGY IT INHERITS FROM
 /*For arguments that are left empty*/
 #define EMPTY void *
 
-
 /*
-  Where var is global, you can use a switch statement 
+  Where var is global, you can use a switch statement
   on it to barely simulate a coroutine with no callstack
 */
-#define yield(var, val) \
-var += 1; \
-return val
+#define yield(var, val)                                                        \
+	var += 1;                                                              \
+	return val
 
 /*Resets var*/
-#define yclear(var) \
-var = 0
+#define yclear(var) var = 0
 
 #define ARRUNIT 50
 
 /*
-  Typedef a function pointer with 'type' return type, 
+  Typedef a function pointer with 'type' return type,
   and any number of non-variadic parameters, to 'name'
 */
-#define makefuncptr(type, name) \
-typedef type (*name)()
+#define makefuncptr(type, name) typedef type (*name)()
 
-
-
-
-maddclass(
-	Primitive,
-	TOP,
-	maddpub(
-		Primitive,
-		_Bool isInit,
-		maddinter(int, init, (mselfref(Primitive) *self)) 
-		/*You could have a constructor instead of an initializer*/
-	 )
-);
+maddclass(Primitive, TOP,
+	  maddpub(Primitive, _Bool isInit,
+		  maddinter(int, init, (mselfref(Primitive) * self))
+		  /*You could have a constructor instead of an initializer*/
+		  ));
 
 /*INITIALIZATION OF PRIMITIVE*/
-extern int __PrimitiveInit(mrefclass(Primitive) *self);
+extern int __PrimitiveInit(mrefclass(Primitive) * self);

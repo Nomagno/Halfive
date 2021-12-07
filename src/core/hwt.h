@@ -23,18 +23,17 @@ LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE,
 AND NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS, ASSEMBLERS, OR HOLDERS OF
 COPYRIGHT OR OTHER LEGAL PRIVILEGE BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
 LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
-OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE WORK.*/
+OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
+WORK.*/
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include "../../external/toml_parser/toml.h"
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 /* To calculate point [t] of the Bezier curve:
  A*(1-t)^2 + B*2t(1-t) + C*t^2
 */
-
 
 enum TIME { day, night };
 enum SPEED { normal, boost, antiboost };
@@ -44,40 +43,39 @@ enum BIOME { forest, desert, snow };
 enum COLORS { white, red, blue, yellow, green, pink };
 
 struct _biome {
-  enum COLORS main_color;
-  enum BIOME the_biome;
+	enum COLORS main_color;
+	enum BIOME the_biome;
 };
 
 struct point {
-  int x;
-  int y;
+	int x;
+	int y;
 };
 
 struct bezier {
-  struct point p1;
-  struct point p2;
-  struct point p3;
+	struct point p1;
+	struct point p2;
+	struct point p3;
 };
 
 struct segment {
-  struct bezier shape;
+	struct bezier shape;
 	unsigned int width;
 
-  enum SPEED speed;
-  enum RACING_LINE racing_line;
-  enum GUARDRAILS guardrails;
+	enum SPEED speed;
+	enum RACING_LINE racing_line;
+	enum GUARDRAILS guardrails;
 };
 
 typedef struct {
-  char name[20];
+	char name[20];
 
-  struct _biome biome;
-  enum TIME time;
-  unsigned int max_players;
+	struct _biome biome;
+	enum TIME time;
+	unsigned int max_players;
 
 	unsigned int segment_number;
-  struct segment segments[40];
+	struct segment segments[40];
 } hwtrack;
 
 extern hwtrack get_track(FILE *);
-
