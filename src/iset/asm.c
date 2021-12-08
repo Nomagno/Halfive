@@ -120,18 +120,22 @@ uint asmparse(char *linestr, iset *inst, uint opnds[4])
 
 int main(int argc, char **argv)
 {
-	/*Requires input file and output (DRIVE) file as arguments*/
+	/*Requires code file and drive file as arguments*/
 	if (argc < 2)
 		return 1;
 	char arr[30];
-	FILE *inputfile = fopen(argv[1], "r");
+	FILE *codefile = fopen(argv[1], "r");
+	FILE *drivefile = fopen(argv[2], "r+");
+
 	xmem code = {0};
 	int i = 0;
-	while (fscanf(inputfile, "%[^\n] ", arr) != EOF) {
+	while (fscanf(codefile, "%[^\n] ", arr) != EOF) {
 		asmparse(arr, &code.inst[i], code.opnd[i]);
 		i += 1;
 	}
 	mem prog = fxmem(code);
+	fread(prog.m2.dr, 1, sizeof(prog.m2.dr), drivefile);
+
 	int errno = 0;
 	while ((!prog.hf) && (!errno)) {
 		if ((prog.m1.opnd[prog.co][0] == 0xFFFD) ||
@@ -143,9 +147,11 @@ int main(int argc, char **argv)
 		errno = execnext(&prog);
 	}
 	if(prog.hf){
-		FILE *outputfile = fopen(argv[2], "wb");
-		fwrite(prog.m2.dr, 1, sizeof(prog.m2.dr), outputfile);
-		fclose(outputfile);
+		fseek(drivefile, 0, SEEK_SET);
+		fwrite(prog.m2.dr, 1, sizeof(prog.m2.dr), drivefile);
 	}
+
+	fclose(codefile);
+	fclose(drivefile);
 	return errno;
 }
