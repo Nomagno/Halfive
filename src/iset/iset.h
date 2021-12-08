@@ -140,6 +140,24 @@ typedef struct {
 
 /*Data memory*/
 typedef struct {
+	/*GEN mem, 0x0000 to 0x3FFF*/
+	uchar gp[MEMSIZE*4];
+
+	/*CPU mem, 0x4000 to 0x5FFF*/
+	uchar cp[MEMSIZE*2];
+
+	/*DRIVE (persistent) mem, 0x6000 to 0xDFFF
+	  Note: I recommend implementing the VM in such
+	  a way this gets written to a file on HALT*/
+	uchar dr[MEMSIZE*8];
+
+	/*CALLSTACK, 0xE000 to 0xEFFF
+	  Note: this isn't meant to give subroutines local variables,
+	  just the ability to do recursion with the jmp instruction.
+	  An additional 'push' instruction with special syntax is probably
+	  required for it to be useful*/
+	uchar cs[MEMSIZE];
+
 	/*Zero flag, 0xFFFF*/
 	uchar zf;
 
@@ -151,12 +169,6 @@ typedef struct {
 
 	/*Output register, write-only, 0xFFFC*/
 	uchar ou;
-
-	/*GEN mem, 0x0000 to 0x0FFF*/
-	uchar gp[MEMSIZE];
-
-	/*CPU mem, 0x1000 to 0x1FFF*/
-	uchar cp[MEMSIZE];
 } vmem;
 
 typedef struct {

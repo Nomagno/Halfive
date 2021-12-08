@@ -43,14 +43,20 @@ addrcheck() returns the actual address space of the argument address
 4: CARRY FLAG
 5: INPUT REGISTER (READ-ONLY)
 6: OUTPUT REGISTER (WRITE-ONLY)
+7: PERSISTENT STORAGE
+8: CALL STACK
 */
 uint addrcheck(uint arg)
 {
-	if (arg < 0x1FFF) /*(MEMSIZE*2)*/ {
-		if (arg < 0x0FFF) /*MEMSIZE*/
-			return 1;
+	if (arg <= 0x3FFF)
+		return 1;
+	else if (arg <= 0x5FFF)
 		return 2;
-	} else if (arg == 0xFFFF)
+	else if (arg <= 0xDFFF)
+		return 7;
+	else if (arg <= 0xEFFF)
+		return 8;
+	else if (arg == 0xFFFF)
 		return 3;
 	else if (arg == 0xFFFE)
 		return 4;
@@ -70,7 +76,7 @@ uint addrconvert(uint arg, uint addr)
 	case 1:
 		return addr;
 	case 2:
-		return (addr - 0x0FFF);
+		return (addr - 0x4000);
 	case 3:
 		return 0;
 	case 4:
@@ -79,6 +85,10 @@ uint addrconvert(uint arg, uint addr)
 		return 0;
 	case 6:
 		return 0;
+	case 7:
+		return (addr - 0x6000);
+	case 8:
+		return (addr - 0xE000);
 	default:
 		return UADDR;
 	}
@@ -127,6 +137,12 @@ uint hbin(uint op[4], vmem *space, uint flag)
 		case 6:
 			return 1; /*Can't read output register!*/
 			break;
+		case 7:
+			val1 = space->dr[conv1];
+			break;
+		case 8:
+			val1 = space->cs[conv1];
+			break;
 		}
 		switch (ad2) {
 		case 1:
@@ -146,6 +162,12 @@ uint hbin(uint op[4], vmem *space, uint flag)
 			break;
 		case 6:
 			return 1; /*Can't read output register!*/
+			break;
+		case 7:
+			val2 = space->dr[conv2];
+			break;
+		case 8:
+			val2 = space->cs[conv2];
 			break;
 		}
 		switch (ad3) {
@@ -193,6 +215,22 @@ uint hbin(uint op[4], vmem *space, uint flag)
 #ifdef EOF
 			printf("%i\n", space->ou);
 #endif
+			break;
+		case 7:
+			if (flag == 1)
+				space->dr[conv3] = val1 & val2;
+			else if (flag == 2)
+				space->dr[conv3] = val1 | val2;
+			else if (flag == 3)
+				space->dr[conv3] = val1 ^ val2;
+			break;
+		case 8:
+			if (flag == 1)
+				space->cs[conv3] = val1 & val2;
+			else if (flag == 2)
+				space->cs[conv3] = val1 | val2;
+			else if (flag == 3)
+				space->cs[conv3] = val1 ^ val2;
 			break;
 		default:
 			return 3; /*We don't know what that address means*/
@@ -225,6 +263,12 @@ uint hbin(uint op[4], vmem *space, uint flag)
 		case 6:
 			return 1; /*Can't read output register!*/
 			break;
+		case 7:
+			val2 = space->dr[conv2];
+			break;
+		case 8:
+			val2 = space->cs[conv2];
+			break;
 		}
 		switch (ad3) {
 		case 1:
@@ -271,6 +315,22 @@ uint hbin(uint op[4], vmem *space, uint flag)
 #ifdef EOF
 			printf("%i\n", space->ou);
 #endif
+			break;
+		case 7:
+			if (flag == 1)
+				space->dr[conv3] = val1 & val2;
+			else if (flag == 2)
+				space->dr[conv3] = val1 | val2;
+			else if (flag == 3)
+				space->dr[conv3] = val1 ^ val2;
+			break;
+		case 8:
+			if (flag == 1)
+				space->cs[conv3] = val1 & val2;
+			else if (flag == 2)
+				space->cs[conv3] = val1 | val2;
+			else if (flag == 3)
+				space->cs[conv3] = val1 ^ val2;
 			break;
 		default:
 			return 3; /*We don't know what that address means*/
@@ -303,6 +363,12 @@ uint hbin(uint op[4], vmem *space, uint flag)
 		case 6:
 			return 1; /*Can't read output register!*/
 			break;
+		case 7:
+			val1 = space->dr[conv1];
+			break;
+		case 8:
+			val1 = space->cs[conv1];
+			break;
 		}
 		switch (ad3) {
 		case 1:
@@ -349,6 +415,22 @@ uint hbin(uint op[4], vmem *space, uint flag)
 #ifdef EOF
 			printf("%i\n", space->ou);
 #endif
+			break;
+		case 7:
+			if (flag == 1)
+				space->dr[conv3] = val1 & val2;
+			else if (flag == 2)
+				space->dr[conv3] = val1 | val2;
+			else if (flag == 3)
+				space->dr[conv3] = val1 ^ val2;
+			break;
+		case 8:
+			if (flag == 1)
+				space->cs[conv3] = val1 & val2;
+			else if (flag == 2)
+				space->cs[conv3] = val1 | val2;
+			else if (flag == 3)
+				space->cs[conv3] = val1 ^ val2;
 			break;
 		default:
 			return 3; /*We don't know what that address means*/
@@ -408,6 +490,22 @@ uint hbin(uint op[4], vmem *space, uint flag)
 			printf("%i\n", space->ou);
 #endif
 			break;
+		case 7:
+			if (flag == 1)
+				space->dr[conv3] = val1 & val2;
+			else if (flag == 2)
+				space->dr[conv3] = val1 | val2;
+			else if (flag == 3)
+				space->dr[conv3] = val1 ^ val2;
+			break;
+		case 8:
+			if (flag == 1)
+				space->cs[conv3] = val1 & val2;
+			else if (flag == 2)
+				space->cs[conv3] = val1 | val2;
+			else if (flag == 3)
+				space->cs[conv3] = val1 ^ val2;
+			break;
 		default:
 			return 3; /*We don't know what that address means*/
 		}
@@ -442,6 +540,12 @@ uint hjump(uint op[4], vmem *space, uint *co)
 			break;
 		case 6:
 			return 1; /*You can't read the output register!*/
+			break;
+		case 7:
+			*co = space->dr[conv];
+			break;
+		case 8:
+			*co = space->cs[conv];
 			break;
 		default:
 			return 3; /*We don't know what that address means*/
@@ -492,6 +596,12 @@ uint hnot(uint op[4], vmem *space)
 		case 6:
 			return 1; /*Can't read output register!*/
 			break;
+		case 7:
+			val1 = space->dr[conv1];
+			break;
+		case 8:
+			val1 = space->cs[conv1];
+			break;
 		}
 		switch (ad2) {
 		case 1:
@@ -514,6 +624,12 @@ uint hnot(uint op[4], vmem *space)
 #ifdef EOF
 			printf("%i\n", space->ou);
 #endif
+			break;
+		case 7:
+			space->dr[conv2] = ~val1;
+			break;
+		case 8:
+			space->cs[conv2] = ~val1;
 			break;
 		}
 		break;
@@ -544,6 +660,12 @@ uint hnot(uint op[4], vmem *space)
 #ifdef EOF
 			printf("%i\n", space->ou);
 #endif
+			break;
+		case 7:
+			space->dr[conv2] = ~val1;
+			break;
+		case 8:
+			space->cs[conv2] = ~val1;
 			break;
 		default:
 			return 3; /*We don't know what that address means*/
@@ -599,6 +721,12 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 		case 6:
 			return 1; /*Can't read output register!*/
 			break;
+		case 7:
+			val1 = space->dr[conv1];
+			break;
+		case 8:
+			val1 = space->cs[conv1];
+			break;
 		default:
 			return 3; /*We don't know what that address means*/
 		}
@@ -620,6 +748,12 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 			break;
 		case 6:
 			return 1; /*Can't read output register!*/
+			break;
+		case 7:
+			val2 = space->dr[conv2];
+			break;
+		case 8:
+			val2 = space->cs[conv2];
 			break;
 		default:
 			return 3; /*We don't know what that address means*/
@@ -657,6 +791,12 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 				printf("%i\n", space->ou);
 #endif
 				break;
+			case 7:
+				space->dr[conv3] = result;
+				break;
+			case 8:
+				space->cs[conv3] = result;
+				break;
 			default:
 				return 3; /*We don't know what that address
 					     means*/
@@ -687,6 +827,12 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 			break;
 		case 6:
 			return 1; /*Can't read output register!*/
+			break;
+		case 7:
+			val1 = space->dr[conv1];
+			break;
+		case 8:
+			val1 = space->cs[conv1];
 			break;
 		default:
 			return 3; /*We don't know what that address means*/
@@ -726,6 +872,12 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 				printf("%i\n", space->ou);
 #endif
 				break;
+			case 7:
+				space->dr[conv3] = result;
+				break;
+			case 8:
+				space->cs[conv3] = result;
+				break;
 			default:
 				return 3; /*We don't know what that address
 					     means*/
@@ -758,6 +910,12 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 			break;
 		case 6:
 			return 1; /*Can't read output register!*/
+			break;
+		case 7:
+			val2 = space->dr[conv2];
+			break;
+		case 8:
+			val2 = space->cs[conv2];
 			break;
 		default:
 			return 3; /*We don't know what that address means*/
@@ -796,6 +954,12 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 #ifdef EOF
 				printf("%i\n", space->ou);
 #endif
+				break;
+			case 7:
+				space->dr[conv3] = result;
+				break;
+			case 8:
+				space->cs[conv3] = result;
 				break;
 			default:
 				return 3; /*We don't know what that address
@@ -843,6 +1007,12 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 #ifdef EOF
 				printf("%i\n", space->ou);
 #endif
+				break;
+			case 7:
+				space->dr[conv3] = result;
+				break;
+			case 8:
+				space->cs[conv3] = result;
 				break;
 			default:
 				return 3; /*We don't know what that address
@@ -898,6 +1068,13 @@ uint hadd(uint op[4], vmem *space)
 			break;
 		case 6:
 			return 1; /*Can't read output register!*/
+			break;
+		case 7:
+			val1 = space->dr[conv1];
+			break;
+		case 8:
+			val1 = space->cs[conv1];
+			break;
 		default:
 			return 3; /*We don't know what that address means*/
 		}
@@ -919,6 +1096,12 @@ uint hadd(uint op[4], vmem *space)
 			break;
 		case 6:
 			return 1; /*Can't read output register!*/
+			break;
+		case 7:
+			val2 = space->dr[conv2];
+			break;
+		case 8:
+			val2 = space->cs[conv2];
 			break;
 		default:
 			return 3; /*We don't know what that address means*/
@@ -956,6 +1139,12 @@ uint hadd(uint op[4], vmem *space)
 			printf("%i\n", space->ou);
 #endif
 			break;
+		case 7:
+			space->dr[conv3] = result;
+			break;
+		case 8:
+			space->cs[conv3] = result;
+			break;
 		default:
 			return 3; /*We don't know what that address means*/
 		}
@@ -984,6 +1173,12 @@ uint hadd(uint op[4], vmem *space)
 			break;
 		case 6:
 			return 1; /*Can't read output register!*/
+			break;
+		case 7:
+			val1 = space->dr[conv1];
+			break;
+		case 8:
+			val1 = space->cs[conv1];
 			break;
 		default:
 			return 3; /*We don't know what that address means*/
@@ -1022,6 +1217,12 @@ uint hadd(uint op[4], vmem *space)
 			printf("%i\n", space->ou);
 #endif
 			break;
+		case 7:
+			space->dr[conv3] = result;
+			break;
+		case 8:
+			space->cs[conv3] = result;
+			break;
 		default:
 			return 3; /*We don't know what that address means*/
 		}
@@ -1053,6 +1254,12 @@ uint hadd(uint op[4], vmem *space)
 			break;
 		case 6:
 			return 1; /*Can't read output register!*/
+			break;
+		case 7:
+			val2 = space->dr[conv2];
+			break;
+		case 8:
+			val2 = space->cs[conv2];
 			break;
 		default:
 			return 3; /*We don't know what that address means*/
@@ -1090,6 +1297,12 @@ uint hadd(uint op[4], vmem *space)
 #ifdef EOF
 			printf("%i\n", space->ou);
 #endif
+			break;
+		case 7:
+			space->dr[conv3] = result;
+			break;
+		case 8:
+			space->cs[conv3] = result;
 			break;
 		default:
 			return 3; /*We don't know what that address means*/
@@ -1135,6 +1348,12 @@ uint hadd(uint op[4], vmem *space)
 #ifdef EOF
 			printf("%i\n", space->ou);
 #endif
+			break;
+		case 7:
+			space->dr[conv3] = result;
+			break;
+		case 8:
+			space->cs[conv3] = result;
 			break;
 		default:
 			return 3; /*We don't know what that address means*/
@@ -1182,6 +1401,12 @@ uint hset(uint op[4], vmem *space)
 		case 6:;
 			return 1; /*Can't read output register!*/
 			break;
+		case 7:
+			val = space->dr[conv1];
+			break;
+		case 8:
+			val = space->cs[conv1];
+			break;
 		default:
 			return 1; /*ERROR, WE DON'T KNOW WHAT THAT ADDRESS
 				     MEANS*/
@@ -1208,6 +1433,12 @@ uint hset(uint op[4], vmem *space)
 #ifdef EOF
 			printf("%i\n", space->ou);
 #endif
+			break;
+		case 7:
+			space->dr[conv2] = val;
+			break;
+		case 8:
+			space->cs[conv2] = val;
 			break;
 		default:
 			return 1; /*ERROR, WE DON'T KNOW WHAT THAT ADDRESS
@@ -1240,6 +1471,12 @@ uint hset(uint op[4], vmem *space)
 #ifdef EOF
 			printf("%i\n", space->ou);
 #endif
+			break;
+		case 7:
+			space->dr[conv2] = val;
+			break;
+		case 8:
+			space->cs[conv2] = val;
 			break;
 		default:
 			return 1; /*ERROR, WE DON'T KNOW WHAT THAT ADDRESS

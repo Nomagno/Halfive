@@ -120,7 +120,8 @@ uint asmparse(char *linestr, iset *inst, uint opnds[4])
 
 int main(int argc, char **argv)
 {
-	if (argc < 1)
+	/*Requires input file and output (DRIVE) file as arguments*/
+	if (argc < 2)
 		return 1;
 	char arr[30];
 	FILE *inputfile = fopen(argv[1], "r");
@@ -140,6 +141,11 @@ int main(int argc, char **argv)
 			putchar('\n');
 		}
 		errno = execnext(&prog);
+	}
+	if(prog.hf){
+		FILE *outputfile = fopen(argv[2], "wb");
+		fwrite(prog.m2.dr, 1, sizeof(prog.m2.dr), outputfile);
+		fclose(outputfile);
 	}
 	return errno;
 }
