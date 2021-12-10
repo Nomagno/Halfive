@@ -1383,7 +1383,7 @@ mem fxmem(xmem code)
 uint execnext(mem *program)
 {
 	uint errno;
-	if (program->co < MEMSIZE) {
+	if (program->co < (MEMSIZE*4)) {
 		switch (program->m1.inst[program->co]) {
 		case halt:
 			program->hf = 1;

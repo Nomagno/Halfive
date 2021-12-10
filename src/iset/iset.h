@@ -126,12 +126,12 @@ typedef enum {
 /*Execution memory*/
 typedef struct {
 	/*Every first byte*/
-	iset inst[MEMSIZE];
+	iset inst[MEMSIZE*4];
 	/*0x2000 to 0x2FFF*/
 
 	/*Every second, third and fourth bytes*/
 	/*int because we need this to be at least 16 bits by default*/
-	uint opnd[MEMSIZE][4];
+	uint opnd[MEMSIZE*4][4];
 	/*The fourth row of the array indicates which arguments are addresses,
 	trough its least significant 3 bits.
 	E.G 000 ALL ADDRESSES -- 101 FIRST AND THIRD ARE LITERALS*/
@@ -143,7 +143,7 @@ typedef struct {
 	  just the ability to do recursion with the jmp instruction.
 	  An additional 'push' instruction with special syntax is probably
 	  required for it to be useful*/
-	uchar cs[MEMSIZE];
+	uchar cs[MEMSIZE*4];
 
 } xmem;
 
