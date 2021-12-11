@@ -25,12 +25,24 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
-/*Nomagno's boring VM interface and instruction set*/
-
 #define MEMSIZE 4096
+#define MEMSMALL 1024
+
 typedef unsigned char uchar;
 typedef unsigned int uint;
-/*Nomagno's boring instruction set
+
+/*Unimplemented fractionary number instruction set extension.
+  Ideally, rational number operations are performed by reading
+  and writing three contiguous memory cells, representing
+  numerator, denominator and sign*/
+typedef struct {
+	uchar num; /*Numerator*/
+	uchar denom; /*Denominator*/
+	_Bool sign; /*0 - positive, 1 - negative*/
+} rational;
+
+
+/*Nomagno's boring VM interface and instruction set
 
 (AT THE BOTTOM OF THIS BIG COMMENT BLOCK YOU HAVE THE ACTUAL CODE)
 
@@ -62,8 +74,6 @@ result into register '2'. Halt.
   ASSEMBLY FORMAT:
     It codes almost directly to the binary format. The available instructions
 are: {halt, nop, jmp, jcz, set, add, sub, not, and, xor, or, not} The following
-pseudo instructons are available: {bits, START, END, CALL}
-
     The syntax is the following:
       instruction ARG1 ARG2 ARG3\n
     Where ARGx is a number
@@ -73,31 +83,8 @@ pseudo instructons are available: {bits, START, END, CALL}
 literals are allowed in the form [ARGx] (Number enclosed in brackets) The enum
 below specifies in a comment the behaviour of each proper instruction and the
 corresponding
-
-    PSEUDO INSTRUCTIONS (THEY DO NOT GO IN FOR THE PROGRAM'S):
-      bits Lx; Takes ONLY literal, it has to go at the start of every assembly
-program to determine the number of maximum bits of each argument
-
-    SUBROUTINES (Labels, really):
-      START Sxn; Start of subroutine. Takes ANY string prefixed by underscore
-'_' (E.G. '_MYFUNC'). The assembler SHALL insert a 'jmp' instruction to the next
-(Non-subroutine) instruction in its place (So if it is encountered in normal
-execution, the whole subroutine up until the END is ignored). The assembler
-SHALL keep track of the number of the next (real) instruction
-
-      END Sx; End of subroutine. Takes ANY 6-CHARACTER UPPERCASE STRING (A-Z)
-prefixed by underscore '_' (E.G. '_MYFUNC'). The assembler SHALL replace it with
-a 'jmp' instruction to an arbitrary (CPU address space) register that references
-an as of yet unknown part of the program
-
-      CALL Sx; Start of subroutine. Takes ANY string prefixed by underscore '_'
-(E.G. '_MYFUNC'). The assembler SHALL replace it with two instructions:
-	1. a 'set' instruction that sets the same address assigned in 'END' to
-the number of the next (real) instruction
-	2. a 'jmp' instruction to the start of the subroutine (the number kept
-track of in START) The objective of this is to have re-callable pieces of code
-that don't get in the way of normal programming
 */
+
 typedef enum {
 	/*THE INSTRUCTION COUNTING SHALL START AT 0, NOT 1*/
 	/*IMPORTANT NOTE: LITERALS ARE ONLY ALLOWED IN REGISTER ARGUMENTS
@@ -109,41 +96,37 @@ typedef enum {
 	jcz = 4,  /* V1; if ZF == 0, jmp to instrucion V1*/
 	/*ADD trough to NOT: put result of doing
 	stuff with Vn values into Rn address*/
-	add = 5, /* V1 V2 R3; addition, carry goes to carry flag*/
-	sub =
-	    6, /* V1 V2 R3; substraction, carry flag set if result is negative*/
-	    and = 7, /* V1 V2 R3; binary and*/
-	or = 8,      /* V1 V2 R3; binary or*/
-	xor = 9,     /* V1 V2 R3; binary exclusive or*/
-	not = 10,    /* V1 R2; binary negation*/
-	cmp =
-	    11 /* V1 V2 ; if V1 is bigger than V2, sets the carry flag to 0 and
+	add = 5,  /* V1 V2 R3; addition, carry goes to carry flag*/
+	sub = 6,  /* V1 V2 R3; substraction, carry flag set if result is negative*/
+	and = 7,  /* V1 V2 R3; binary and*/
+	or = 8,   /* V1 V2 R3; binary or*/
+	xor = 9,  /* V1 V2 R3; binary exclusive or*/
+	not = 10, /* V1 R2; binary negation*/
+	cmp = 11, /* V1 V2; if V1 is bigger than V2, sets the carry flag to 0 and
 		  the zero flag to 1 if V1 is smaller than V2, sets the carry
 		  flag to 1 and the zero flag to 0 if V1 is equal to V2, sets
 		  the carry flag to 0 and the zero flag to 0*/
+	/*SUBS, SUBE, CALL: manage the callstack*/
+	subs = 12, /* ID; Marks the start of a subroutine with the literal
+		      ( '[]' brace enclosed ) identifier ID.
+		     Add*/
+	sube = 13, /*ID; Marks the end of subroutine ID. Pop program counter from stack (return)*/
+	call = 14 /* ID; Push program counter to callstack, then jump to the instruction line of the subroutine*/
 } iset;
 
 /*Execution memory*/
 typedef struct {
 	/*Every first byte*/
 	iset inst[MEMSIZE*4];
-	/*0x2000 to 0x2FFF*/
 
 	/*Every second, third and fourth bytes*/
 	/*int because we need this to be at least 16 bits by default*/
 	uint opnd[MEMSIZE*4][4];
 	/*The fourth row of the array indicates which arguments are addresses,
 	trough its least significant 3 bits.
-	E.G 000 ALL ADDRESSES -- 101 FIRST AND THIRD ARE LITERALS*/
-	/*0x2000 to 0x2FFF*/
+``	E.G 000 ALL ADDRESSES -- 101 FIRST AND THIRD ARE LITERALS*/
 
-
-	/*CALLSTACK
-	  Note: this isn't meant to give subroutines local variables,
-	  just the ability to do recursion with the jmp instruction.
-	  An additional 'push' instruction with special syntax is probably
-	  required for it to be useful*/
-	uchar cs[MEMSIZE*4];
+	uchar cs[MEMSMALL][8];
 
 } xmem;
 

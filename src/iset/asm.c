@@ -73,17 +73,12 @@ iset _isinst(char *instr)
 		return not ;
 	else if (strcmp(instr, "cmp") == 0)
 		return cmp;
-	/*THE SET OF INSTRUCTIONS 12, 13, 14, 15 CORRESPONDS TO THE
-	 * PSEUDO-INSTRUCTIONS {bits, START, END, CALL} AND SHALL BE
-	 * PREPROCESSED ACCORDINGLY*/
-	else if (strcmp(instr, "bits") == 0)
-		return 12;
-	else if (strcmp(instr, "START") == 0)
-		return 13;
-	else if (strcmp(instr, "END") == 0)
-		return 14;
-	else if (strcmp(instr, "CALL") == 0)
-		return 15;
+	else if (strcmp(instr, "subs") == 0)
+		return subs;
+	else if (strcmp(instr, "sube") == 0)
+		return sube;
+	else if (strcmp(instr, "call") == 0)
+		return call;
 	else
 		return 16;
 }
@@ -93,13 +88,10 @@ uint asmparse(char *linestr, iset *inst, uint opnds[4])
 	char *token = strtok(linestr, " ");
 	iset myinst;
 	int i = 0;
-	uint retval = 0;
 	while ((token != NULL) && (i < 3)) {
 
 		if ((myinst = _isinst(token)) != 16) {
 			*inst = myinst;
-			if (myinst > 11)
-				retval = 1; /*THERE IS STUFF TO PREPROCESS*/
 		} else if (_isxupdigit(token[0])) {
 			opnds[i] = (uint)strtoul(token, NULL, 16);
 			i += 1;
@@ -115,7 +107,7 @@ uint asmparse(char *linestr, iset *inst, uint opnds[4])
 		}
 		token = strtok(NULL, " ");
 	}
-	return retval;
+	return 0;
 }
 
 int main(int argc, char **argv)

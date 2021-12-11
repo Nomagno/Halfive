@@ -44,7 +44,6 @@ addrcheck() returns the actual address space of the argument address
 5: INPUT REGISTER (READ-ONLY)
 6: OUTPUT REGISTER (WRITE-ONLY)
 7: PERSISTENT STORAGE
-8: CALL STACK
 */
 uint addrcheck(uint arg)
 {
@@ -1505,8 +1504,14 @@ uint execnext(mem *program)
 #endif
 				return 2; /*EXECUTION ERROR*/
 			}
+			return 0;
+		case subs: /*UNIMPLEMENTED*/
+			break;
+		case sube: /*UNIMPLEMENTED*/
+			break;
+		case call: /*UNIMPLEMENTED*/
+			break;
 		}
-		return 0;
 	}
 
 #if defined(EOF)
