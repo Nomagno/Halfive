@@ -117,7 +117,7 @@ int main(int argc, char **argv)
 		return 1;
 	char arr[30];
 	FILE *codefile = fopen(argv[1], "r");
-	FILE *drivefile = fopen(argv[2], "r+");
+	FILE *drivefile = fopen(argv[2], "r");
 
 	xmem code = {0};
 	int i = 0;
@@ -138,11 +138,6 @@ int main(int argc, char **argv)
 		}
 		errno = execnext(&prog);
 	}
-	if(prog.hf){
-		fseek(drivefile, 0, SEEK_SET);
-		fwrite(prog.m2.dr, 1, sizeof(prog.m2.dr), drivefile);
-	}
-
 	fclose(codefile);
 	fclose(drivefile);
 	return errno;

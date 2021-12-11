@@ -49,9 +49,7 @@ uint addrcheck(uint arg)
 {
 	if (arg <= 0x3FFF)
 		return 1;
-	else if (arg <= 0x5FFF)
-		return 2;
-	else if (arg <= 0xDFFF)
+	else if (arg <= 0xBFFF)
 		return 7;
 	else if (arg == 0xFFFF)
 		return 3;
@@ -72,8 +70,6 @@ uint addrconvert(uint arg, uint addr)
 		return UADDR;
 	case 1:
 		return addr;
-	case 2:
-		return (addr - 0x4000);
 	case 3:
 		return 0;
 	case 4:
@@ -83,7 +79,7 @@ uint addrconvert(uint arg, uint addr)
 	case 6:
 		return 0;
 	case 7:
-		return (addr - 0x6000);
+		return (addr - 0x4000);
 	default:
 		return UADDR;
 	}
@@ -117,9 +113,6 @@ uint hbin(uint op[4], vmem *space, uint flag)
 		case 1:
 			val1 = space->gp[conv1];
 			break;
-		case 2:
-			val1 = space->cp[conv1];
-			break;
 		case 3:
 			val1 = space->zf;
 			break;
@@ -130,6 +123,9 @@ uint hbin(uint op[4], vmem *space, uint flag)
 			val1 = space->in;
 			break;
 		case 6:
+#ifdef EOF
+			printf("ERROR\n");
+#endif
 			return 1; /*Can't read output register!*/
 			break;
 		case 7:
@@ -139,9 +135,6 @@ uint hbin(uint op[4], vmem *space, uint flag)
 		switch (ad2) {
 		case 1:
 			val2 = space->gp[conv2];
-			break;
-		case 2:
-			val2 = space->cp[conv2];
 			break;
 		case 3:
 			val2 = space->zf;
@@ -153,6 +146,9 @@ uint hbin(uint op[4], vmem *space, uint flag)
 			val2 = space->in;
 			break;
 		case 6:
+#ifdef EOF
+			printf("ERROR\n");
+#endif
 			return 1; /*Can't read output register!*/
 			break;
 		case 7:
@@ -167,14 +163,6 @@ uint hbin(uint op[4], vmem *space, uint flag)
 				space->gp[conv3] = val1 | val2;
 			else if (flag == 3)
 				space->gp[conv3] = val1 ^ val2;
-			break;
-		case 2:
-			if (flag == 1)
-				space->cp[conv3] = val1 & val2;
-			else if (flag == 2)
-				space->cp[conv3] = val1 | val2;
-			else if (flag == 3)
-				space->cp[conv3] = val1 ^ val2;
 			break;
 		case 3:
 			if (flag == 1)
@@ -193,6 +181,9 @@ uint hbin(uint op[4], vmem *space, uint flag)
 				space->cf = val1 ^ val2;
 			break;
 		case 5:
+#ifdef EOF
+			printf("ERROR\n");
+#endif
 			return 1; /*You can't set the input register!*/
 		case 6:
 			if (flag == 1)
@@ -206,12 +197,10 @@ uint hbin(uint op[4], vmem *space, uint flag)
 #endif
 			break;
 		case 7:
-			if (flag == 1)
-				space->dr[conv3] = val1 & val2;
-			else if (flag == 2)
-				space->dr[conv3] = val1 | val2;
-			else if (flag == 3)
-				space->dr[conv3] = val1 ^ val2;
+#ifdef EOF
+			printf("ERROR\n");
+#endif
+			return 1; /*You can't set the drive!*/
 			break;
 		default:
 			return 3; /*We don't know what that address means*/
@@ -229,9 +218,6 @@ uint hbin(uint op[4], vmem *space, uint flag)
 		case 1:
 			val2 = space->gp[conv2];
 			break;
-		case 2:
-			val2 = space->cp[conv2];
-			break;
 		case 3:
 			val2 = space->zf;
 			break;
@@ -242,6 +228,9 @@ uint hbin(uint op[4], vmem *space, uint flag)
 			val2 = space->in;
 			break;
 		case 6:
+#ifdef EOF
+			printf("ERROR\n");
+#endif
 			return 1; /*Can't read output register!*/
 			break;
 		case 7:
@@ -256,14 +245,6 @@ uint hbin(uint op[4], vmem *space, uint flag)
 				space->gp[conv3] = val1 | val2;
 			else if (flag == 3)
 				space->gp[conv3] = val1 ^ val2;
-			break;
-		case 2:
-			if (flag == 1)
-				space->cp[conv3] = val1 & val2;
-			else if (flag == 2)
-				space->cp[conv3] = val1 | val2;
-			else if (flag == 3)
-				space->cp[conv3] = val1 ^ val2;
 			break;
 		case 3:
 			if (flag == 1)
@@ -282,6 +263,9 @@ uint hbin(uint op[4], vmem *space, uint flag)
 				space->cf = val1 ^ val2;
 			break;
 		case 5:
+#ifdef EOF
+			printf("ERROR\n");
+#endif
 			return 1; /*You can't set the input register!*/
 		case 6:
 			if (flag == 1)
@@ -295,12 +279,10 @@ uint hbin(uint op[4], vmem *space, uint flag)
 #endif
 			break;
 		case 7:
-			if (flag == 1)
-				space->dr[conv3] = val1 & val2;
-			else if (flag == 2)
-				space->dr[conv3] = val1 | val2;
-			else if (flag == 3)
-				space->dr[conv3] = val1 ^ val2;
+#ifdef EOF
+			printf("ERROR\n");
+#endif
+			return 1; /*You can't set the drive!*/
 			break;
 		default:
 			return 3; /*We don't know what that address means*/
@@ -318,9 +300,6 @@ uint hbin(uint op[4], vmem *space, uint flag)
 		case 1:
 			val1 = space->gp[conv1];
 			break;
-		case 2:
-			val1 = space->cp[conv1];
-			break;
 		case 3:
 			val1 = space->zf;
 			break;
@@ -331,6 +310,9 @@ uint hbin(uint op[4], vmem *space, uint flag)
 			val1 = space->in;
 			break;
 		case 6:
+#ifdef EOF
+			printf("ERROR\n");
+#endif
 			return 1; /*Can't read output register!*/
 			break;
 		case 7:
@@ -345,14 +327,6 @@ uint hbin(uint op[4], vmem *space, uint flag)
 				space->gp[conv3] = val1 | val2;
 			else if (flag == 3)
 				space->gp[conv3] = val1 ^ val2;
-			break;
-		case 2:
-			if (flag == 1)
-				space->cp[conv3] = val1 & val2;
-			else if (flag == 2)
-				space->cp[conv3] = val1 | val2;
-			else if (flag == 3)
-				space->cp[conv3] = val1 ^ val2;
 			break;
 		case 3:
 			if (flag == 1)
@@ -371,6 +345,9 @@ uint hbin(uint op[4], vmem *space, uint flag)
 				space->cf = val1 ^ val2;
 			break;
 		case 5:
+#ifdef EOF
+			printf("ERROR\n");
+#endif
 			return 1; /*You can't set the input register!*/
 		case 6:
 			if (flag == 1)
@@ -384,12 +361,10 @@ uint hbin(uint op[4], vmem *space, uint flag)
 #endif
 			break;
 		case 7:
-			if (flag == 1)
-				space->dr[conv3] = val1 & val2;
-			else if (flag == 2)
-				space->dr[conv3] = val1 | val2;
-			else if (flag == 3)
-				space->dr[conv3] = val1 ^ val2;
+#ifdef EOF
+			printf("ERROR\n");
+#endif
+			return 1; /*You can't set the drive!*/
 			break;
 		default:
 			return 3; /*We don't know what that address means*/
@@ -412,14 +387,6 @@ uint hbin(uint op[4], vmem *space, uint flag)
 			else if (flag == 3)
 				space->gp[conv3] = val1 ^ val2;
 			break;
-		case 2:
-			if (flag == 1)
-				space->cp[conv3] = val1 & val2;
-			else if (flag == 2)
-				space->cp[conv3] = val1 | val2;
-			else if (flag == 3)
-				space->cp[conv3] = val1 ^ val2;
-			break;
 		case 3:
 			if (flag == 1)
 				space->zf = val1 & val2;
@@ -437,6 +404,9 @@ uint hbin(uint op[4], vmem *space, uint flag)
 				space->cf = val1 ^ val2;
 			break;
 		case 5:
+#ifdef EOF
+			printf("ERROR\n");
+#endif
 			return 1; /*You can't set the input register!*/
 		case 6:
 			if (flag == 1)
@@ -450,12 +420,10 @@ uint hbin(uint op[4], vmem *space, uint flag)
 #endif
 			break;
 		case 7:
-			if (flag == 1)
-				space->dr[conv3] = val1 & val2;
-			else if (flag == 2)
-				space->dr[conv3] = val1 | val2;
-			else if (flag == 3)
-				space->dr[conv3] = val1 ^ val2;
+#ifdef EOF
+			printf("ERROR\n");
+#endif
+			return 1; /*You can't set the drive!*/
 			break;
 		default:
 			return 3; /*We don't know what that address means*/
@@ -477,9 +445,6 @@ uint hjump(uint op[4], vmem *space, uint *co)
 		case 1:
 			*co = space->gp[conv];
 			break;
-		case 2:
-			*co = space->cp[conv];
-			break;
 		case 3:
 			*co = space->zf;
 			break;
@@ -490,6 +455,9 @@ uint hjump(uint op[4], vmem *space, uint *co)
 			*co = space->in;
 			break;
 		case 6:
+#ifdef EOF
+			printf("ERROR\n");
+#endif
 			return 1; /*You can't read the output register!*/
 			break;
 		case 7:
@@ -529,9 +497,6 @@ uint hnot(uint op[4], vmem *space)
 		case 1:
 			val1 = space->gp[conv1];
 			break;
-		case 2:
-			val1 = space->cp[conv1];
-			break;
 		case 3:
 			val1 = space->zf;
 			break;
@@ -542,6 +507,9 @@ uint hnot(uint op[4], vmem *space)
 			val1 = space->in;
 			break;
 		case 6:
+#ifdef EOF
+			printf("ERROR\n");
+#endif
 			return 1; /*Can't read output register!*/
 			break;
 		case 7:
@@ -552,9 +520,6 @@ uint hnot(uint op[4], vmem *space)
 		case 1:
 			space->gp[conv2] = ~val1;
 			break;
-		case 2:
-			space->cp[conv2] = ~val1;
-			break;
 		case 3:
 			space->zf = ~val1;
 			break;
@@ -562,6 +527,9 @@ uint hnot(uint op[4], vmem *space)
 			space->cf = ~val1;
 			break;
 		case 5:
+#ifdef EOF
+			printf("ERROR\n");
+#endif
 			return 1; /*Can't set input register!*/
 			break;
 		case 6:
@@ -571,7 +539,10 @@ uint hnot(uint op[4], vmem *space)
 #endif
 			break;
 		case 7:
-			space->dr[conv2] = ~val1;
+#ifdef EOF
+			printf("ERROR\n");
+#endif
+			return 1; /*You can't set the drive!*/
 			break;
 		}
 		break;
@@ -585,9 +556,6 @@ uint hnot(uint op[4], vmem *space)
 		case 1:
 			space->gp[conv2] = ~val1;
 			break;
-		case 2:
-			space->cp[conv2] = ~val1;
-			break;
 		case 3:
 			space->zf = ~val1;
 			break;
@@ -595,6 +563,9 @@ uint hnot(uint op[4], vmem *space)
 			space->cf = ~val1;
 			break;
 		case 5:
+#ifdef EOF
+			printf("ERROR\n");
+#endif
 			return 1; /*Can't set input register!*/
 			break;
 		case 6:
@@ -604,7 +575,10 @@ uint hnot(uint op[4], vmem *space)
 #endif
 			break;
 		case 7:
-			space->dr[conv2] = ~val1;
+#ifdef EOF
+			printf("ERROR\n");
+#endif
+			return 1; /*You can't set the drive!*/
 			break;
 		default:
 			return 3; /*We don't know what that address means*/
@@ -645,9 +619,6 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 		case 1:
 			val1 = space->gp[conv1];
 			break;
-		case 2:
-			val1 = space->cp[conv1];
-			break;
 		case 3:
 			val1 = space->zf;
 			break;
@@ -658,6 +629,9 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 			val1 = space->in;
 			break;
 		case 6:
+#ifdef EOF
+			printf("ERROR\n");
+#endif
 			return 1; /*Can't read output register!*/
 			break;
 		case 7:
@@ -670,9 +644,6 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 		case 1:
 			val2 = space->gp[conv2];
 			break;
-		case 2:
-			val2 = space->cp[conv2];
-			break;
 		case 3:
 			val2 = space->zf;
 			break;
@@ -683,6 +654,9 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 			val2 = space->in;
 			break;
 		case 6:
+#ifdef EOF
+			printf("ERROR\n");
+#endif
 			return 1; /*Can't read output register!*/
 			break;
 		case 7:
@@ -706,9 +680,6 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 			case 1:
 				space->gp[conv3] = result;
 				break;
-			case 2:
-				space->cp[conv3] = result;
-				break;
 			case 3:
 				space->zf = result;
 				break;
@@ -716,6 +687,9 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 				space->cf = result;
 				break;
 			case 5:
+#ifdef EOF
+				printf("ERROR\n");
+#endif
 				return 1; /*Can't set input register!*/
 				break;
 			case 6:
@@ -725,7 +699,10 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 #endif
 				break;
 			case 7:
-				space->dr[conv3] = result;
+#ifdef EOF
+				printf("ERROR\n");
+#endif
+				return 1; /*You can't set the drive!*/
 				break;
 			default:
 				return 3; /*We don't know what that address
@@ -743,9 +720,6 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 		case 1:
 			val1 = space->gp[conv1];
 			break;
-		case 2:
-			val1 = space->cp[conv1];
-			break;
 		case 3:
 			val1 = space->zf;
 			break;
@@ -756,6 +730,9 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 			val1 = space->in;
 			break;
 		case 6:
+#ifdef EOF
+			printf("ERROR\n");
+#endif
 			return 1; /*Can't read output register!*/
 			break;
 		case 7:
@@ -781,9 +758,6 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 			case 1:
 				space->gp[conv3] = result;
 				break;
-			case 2:
-				space->cp[conv3] = result;
-				break;
 			case 3:
 				space->zf = result;
 				break;
@@ -791,6 +765,9 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 				space->cf = result;
 				break;
 			case 5:
+#ifdef EOF
+				printf("ERROR\n");
+#endif
 				return 1; /*Can't set input register!*/
 				break;
 			case 6:
@@ -800,7 +777,10 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 #endif
 				break;
 			case 7:
-				space->dr[conv3] = result;
+#ifdef EOF
+				printf("ERROR\n");
+#endif
+				return 1; /*You can't set the drive!*/
 				break;
 			default:
 				return 3; /*We don't know what that address
@@ -820,9 +800,6 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 		case 1:
 			val2 = space->gp[conv2];
 			break;
-		case 2:
-			val2 = space->cp[conv2];
-			break;
 		case 3:
 			val2 = space->zf;
 			break;
@@ -833,6 +810,9 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 			val2 = space->in;
 			break;
 		case 6:
+#ifdef EOF
+			printf("ERROR\n");
+#endif
 			return 1; /*Can't read output register!*/
 			break;
 		case 7:
@@ -858,9 +838,6 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 			case 1:
 				space->gp[conv3] = result;
 				break;
-			case 2:
-				space->cp[conv3] = result;
-				break;
 			case 3:
 				space->zf = result;
 				break;
@@ -868,6 +845,9 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 				space->cf = result;
 				break;
 			case 5:
+#ifdef EOF
+				printf("ERROR\n");
+#endif
 				return 1; /*Can't set input register!*/
 				break;
 			case 6:
@@ -877,7 +857,10 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 #endif
 				break;
 			case 7:
-				space->dr[conv3] = result;
+#ifdef EOF
+				printf("ERROR\n");
+#endif
+				return 1; /*You can't set the drive!*/
 				break;
 			default:
 				return 3; /*We don't know what that address
@@ -908,9 +891,6 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 			case 1:
 				space->gp[conv3] = result;
 				break;
-			case 2:
-				space->cp[conv3] = result;
-				break;
 			case 3:
 				space->zf = result;
 				break;
@@ -918,6 +898,9 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 				space->cf = result;
 				break;
 			case 5:
+#ifdef EOF
+				printf("ERROR\n");
+#endif
 				return 1; /*Can't set input register!*/
 				break;
 			case 6:
@@ -927,7 +910,10 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 #endif
 				break;
 			case 7:
-				space->dr[conv3] = result;
+#ifdef EOF
+				printf("ERROR\n");
+#endif
+				return 1; /*You can't set the drive!*/
 				break;
 			default:
 				return 3; /*We don't know what that address
@@ -969,9 +955,6 @@ uint hadd(uint op[4], vmem *space)
 		case 1:
 			val1 = space->gp[conv1];
 			break;
-		case 2:
-			val1 = space->cp[conv1];
-			break;
 		case 3:
 			val1 = space->zf;
 			break;
@@ -982,6 +965,9 @@ uint hadd(uint op[4], vmem *space)
 			val1 = space->in;
 			break;
 		case 6:
+#ifdef EOF
+			printf("ERROR\n");
+#endif
 			return 1; /*Can't read output register!*/
 			break;
 		case 7:
@@ -994,9 +980,6 @@ uint hadd(uint op[4], vmem *space)
 		case 1:
 			val2 = space->gp[conv2];
 			break;
-		case 2:
-			val2 = space->cp[conv2];
-			break;
 		case 3:
 			val2 = space->zf;
 			break;
@@ -1007,6 +990,9 @@ uint hadd(uint op[4], vmem *space)
 			val2 = space->in;
 			break;
 		case 6:
+#ifdef EOF
+			printf("ERROR\n");
+#endif
 			return 1; /*Can't read output register!*/
 			break;
 		case 7:
@@ -1030,9 +1016,6 @@ uint hadd(uint op[4], vmem *space)
 		case 1:
 			space->gp[conv3] = result;
 			break;
-		case 2:
-			space->cp[conv3] = result;
-			break;
 		case 3:
 			space->zf = result;
 			break;
@@ -1040,6 +1023,9 @@ uint hadd(uint op[4], vmem *space)
 			space->cf = result;
 			break;
 		case 5:
+#ifdef EOF
+			printf("ERROR\n");
+#endif
 			return 1; /*Can't set input register!*/
 			break;
 		case 6:
@@ -1049,7 +1035,10 @@ uint hadd(uint op[4], vmem *space)
 #endif
 			break;
 		case 7:
-			space->dr[conv3] = result;
+#ifdef EOF
+			printf("ERROR\n");
+#endif
+			return 1; /*You can't set the drive!*/
 			break;
 		default:
 			return 3; /*We don't know what that address means*/
@@ -1065,9 +1054,6 @@ uint hadd(uint op[4], vmem *space)
 		case 1:
 			val1 = space->gp[conv1];
 			break;
-		case 2:
-			val1 = space->cp[conv1];
-			break;
 		case 3:
 			val1 = space->zf;
 			break;
@@ -1078,6 +1064,9 @@ uint hadd(uint op[4], vmem *space)
 			val1 = space->in;
 			break;
 		case 6:
+#ifdef EOF
+			printf("ERROR\n");
+#endif
 			return 1; /*Can't read output register!*/
 			break;
 		case 7:
@@ -1102,9 +1091,6 @@ uint hadd(uint op[4], vmem *space)
 		case 1:
 			space->gp[conv3] = result;
 			break;
-		case 2:
-			space->cp[conv3] = result;
-			break;
 		case 3:
 			space->zf = result;
 			break;
@@ -1112,7 +1098,10 @@ uint hadd(uint op[4], vmem *space)
 			space->cf = result;
 			break;
 		case 5:
-			return 1; /*Can't set input register!*/
+#ifdef EOF
+			printf("ERROR\n");
+#endif
+			return 1; /*You can't set the drive!*/
 			break;
 		case 6:
 			space->ou = result;
@@ -1121,7 +1110,10 @@ uint hadd(uint op[4], vmem *space)
 #endif
 			break;
 		case 7:
-			space->dr[conv3] = result;
+#ifdef EOF
+			printf("ERROR\n");
+#endif
+			return 1; /*You can't set the drive!*/
 			break;
 		default:
 			return 3; /*We don't know what that address means*/
@@ -1140,9 +1132,6 @@ uint hadd(uint op[4], vmem *space)
 		case 1:
 			val2 = space->gp[conv2];
 			break;
-		case 2:
-			val2 = space->cp[conv2];
-			break;
 		case 3:
 			val2 = space->zf;
 			break;
@@ -1153,6 +1142,9 @@ uint hadd(uint op[4], vmem *space)
 			val2 = space->in;
 			break;
 		case 6:
+#ifdef EOF
+			printf("ERROR\n");
+#endif
 			return 1; /*Can't read output register!*/
 			break;
 		case 7:
@@ -1177,9 +1169,6 @@ uint hadd(uint op[4], vmem *space)
 		case 1:
 			space->gp[conv3] = result;
 			break;
-		case 2:
-			space->cp[conv3] = result;
-			break;
 		case 3:
 			space->zf = result;
 			break;
@@ -1187,6 +1176,9 @@ uint hadd(uint op[4], vmem *space)
 			space->cf = result;
 			break;
 		case 5:
+#ifdef EOF
+			printf("ERROR\n");
+#endif
 			return 1; /*Can't set input register!*/
 			break;
 		case 6:
@@ -1196,7 +1188,10 @@ uint hadd(uint op[4], vmem *space)
 #endif
 			break;
 		case 7:
-			space->dr[conv3] = result;
+#ifdef EOF
+			printf("ERROR\n");
+#endif
+			return 1; /*You can't set the drive!*/
 			break;
 		default:
 			return 3; /*We don't know what that address means*/
@@ -1225,9 +1220,6 @@ uint hadd(uint op[4], vmem *space)
 		case 1:
 			space->gp[conv3] = result;
 			break;
-		case 2:
-			space->cp[conv3] = result;
-			break;
 		case 3:
 			space->zf = result;
 			break;
@@ -1235,6 +1227,9 @@ uint hadd(uint op[4], vmem *space)
 			space->cf = result;
 			break;
 		case 5:
+#ifdef EOF
+			printf("ERROR\n");
+#endif
 			return 1; /*Can't set input register!*/
 			break;
 		case 6:
@@ -1244,7 +1239,10 @@ uint hadd(uint op[4], vmem *space)
 #endif
 			break;
 		case 7:
-			space->dr[conv3] = result;
+#ifdef EOF
+			printf("ERROR\n");
+#endif
+			return 1; /*You can't set the drive!*/
 			break;
 		default:
 			return 3; /*We don't know what that address means*/
@@ -1277,9 +1275,6 @@ uint hset(uint op[4], vmem *space)
 		case 1:;
 			val = space->gp[conv1];
 			break;
-		case 2:;
-			val = space->cp[conv1];
-			break;
 		case 3:;
 			val = space->zf;
 			break;
@@ -1290,12 +1285,18 @@ uint hset(uint op[4], vmem *space)
 			val = space->in;
 			break;
 		case 6:;
+#ifdef EOF
+			printf("ERROR\n");
+#endif
 			return 1; /*Can't read output register!*/
 			break;
 		case 7:
 			val = space->dr[conv1];
 			break;
 		default:
+#ifdef EOF
+			printf("ERROR\n");
+#endif
 			return 1; /*ERROR, WE DON'T KNOW WHAT THAT ADDRESS
 				     MEANS*/
 		}
@@ -1304,9 +1305,6 @@ uint hset(uint op[4], vmem *space)
 		case 1:;
 			space->gp[conv2] = val;
 			break;
-		case 2:;
-			space->cp[conv2] = val;
-			break;
 		case 3:;
 			space->zf = val;
 			break;
@@ -1314,6 +1312,9 @@ uint hset(uint op[4], vmem *space)
 			space->cf = val;
 			break;
 		case 5:;
+#ifdef EOF
+			printf("ERROR\n");
+#endif
 			return 1; /*Can't set input register!*/
 			break;
 		case 6:;
@@ -1323,9 +1324,15 @@ uint hset(uint op[4], vmem *space)
 #endif
 			break;
 		case 7:
-			space->dr[conv2] = val;
+#ifdef EOF
+			printf("ERROR\n");
+#endif
+			return 1; /*You can't set the drive!*/
 			break;
 		default:
+#ifdef EOF
+			printf("ERROR\n");
+#endif
 			return 1; /*ERROR, WE DON'T KNOW WHAT THAT ADDRESS
 				     MEANS*/
 		}
@@ -1338,9 +1345,6 @@ uint hset(uint op[4], vmem *space)
 		switch (ad2) {
 		case 1:;
 			space->gp[conv2] = val;
-			break;
-		case 2:;
-			space->cp[conv2] = val;
 			break;
 		case 3:;
 			space->zf = val;
@@ -1358,14 +1362,23 @@ uint hset(uint op[4], vmem *space)
 #endif
 			break;
 		case 7:
-			space->dr[conv2] = val;
+#ifdef EOF
+			printf("ERROR\n");
+#endif
+			return 1; /*You can't set the drive!*/
 			break;
 		default:
+#ifdef EOF
+			printf("ERROR\n");
+#endif
 			return 1; /*ERROR, WE DON'T KNOW WHAT THAT ADDRESS
 				     MEANS*/
 		}
 		break;
 	default:
+#ifdef EOF
+		printf("ERROR\n");
+#endif
 		return 1; /*ERROR, THE INSTRUCTION IS WRONG*/
 	}
 	return 2; /*SOMETHING WENT TERRIBLY WRONG*/
@@ -1382,7 +1395,7 @@ mem fxmem(xmem code)
 uint execnext(mem *program)
 {
 	uint errno;
-	if (program->co < (MEMSIZE*4)) {
+	if (program->co < (MEMSIZE * 4)) {
 		switch (program->m1.inst[program->co]) {
 		case halt:
 			program->hf = 1;
@@ -1403,9 +1416,6 @@ uint execnext(mem *program)
 			errno = hjump(program->m1.opnd[program->co],
 				      &program->m2, &program->co);
 			if (errno != 0) {
-#ifdef EOF
-				printf("ERROR\n");
-#endif
 				return 2; /*EXECUTION ERROR*/
 			}
 			return 0;
@@ -1418,9 +1428,6 @@ uint execnext(mem *program)
 				errno = 0;
 			}
 			if (errno != 0) {
-#ifdef EOF
-				printf("ERROR\n");
-#endif
 				return 2; /*EXECUTION ERROR*/
 			}
 			return 0;
@@ -1429,9 +1436,6 @@ uint execnext(mem *program)
 			    hadd(program->m1.opnd[program->co], &program->m2);
 			program->co += 1;
 			if (errno != 0) {
-#ifdef EOF
-				printf("ERROR\n");
-#endif
 				return 2; /*EXECUTION ERROR*/
 			}
 			return 0;
@@ -1440,9 +1444,6 @@ uint execnext(mem *program)
 				     &program->m2, 1); /*Substract and save*/
 			program->co += 1;
 			if (errno != 0) {
-#ifdef EOF
-				printf("ERROR\n");
-#endif
 				return 2; /*EXECUTION ERROR*/
 			}
 			return 0;
@@ -1452,9 +1453,6 @@ uint execnext(mem *program)
 				 1); /*Substract but don't save*/
 			program->co += 1;
 			if (errno != 0) {
-#ifdef EOF
-				printf("ERROR\n");
-#endif
 				return 2; /*EXECUTION ERROR*/
 			}
 			return 0;
@@ -1464,9 +1462,6 @@ uint execnext(mem *program)
 				 2); /*Substract but don't save*/
 			program->co += 1;
 			if (errno != 0) {
-#ifdef EOF
-				printf("ERROR\n");
-#endif
 				return 2; /*EXECUTION ERROR*/
 			}
 			return 0;
@@ -1476,9 +1471,6 @@ uint execnext(mem *program)
 				 3); /*Substract but don't save*/
 			program->co += 1;
 			if (errno != 0) {
-#ifdef EOF
-				printf("ERROR\n");
-#endif
 				return 2; /*EXECUTION ERROR*/
 			}
 			return 0;
@@ -1487,9 +1479,6 @@ uint execnext(mem *program)
 				     &program->m2); /*Substract but don't save*/
 			program->co += 1;
 			if (errno != 0) {
-#ifdef EOF
-				printf("ERROR\n");
-#endif
 				return 2; /*EXECUTION ERROR*/
 			}
 			return 0;
@@ -1499,9 +1488,6 @@ uint execnext(mem *program)
 				 0); /*Substract but don't save*/
 			program->co += 1;
 			if (errno != 0) {
-#ifdef EOF
-				printf("ERROR\n");
-#endif
 				return 2; /*EXECUTION ERROR*/
 			}
 			return 0;
@@ -1512,6 +1498,7 @@ uint execnext(mem *program)
 		case call: /*UNIMPLEMENTED*/
 			break;
 		}
+		return 0;
 	}
 
 #if defined(EOF)

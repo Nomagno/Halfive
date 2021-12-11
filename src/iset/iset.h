@@ -111,7 +111,8 @@ typedef enum {
 		      ( '[]' brace enclosed ) identifier ID.
 		     Add*/
 	sube = 13, /*ID; Marks the end of subroutine ID. Pop program counter from stack (return)*/
-	call = 14 /* ID; Push program counter to callstack, then jump to the instruction line of the subroutine*/
+	call = 14 /* ID; Push program counter to callstack, then jump to the instruction 'SUBS'
+		     that marks the start of the subroutine*/
 } iset;
 
 /*Execution memory*/
@@ -124,9 +125,7 @@ typedef struct {
 	uint opnd[MEMSIZE*4][4];
 	/*The fourth row of the array indicates which arguments are addresses,
 	trough its least significant 3 bits.
-``	E.G 000 ALL ADDRESSES -- 101 FIRST AND THIRD ARE LITERALS*/
-
-	uchar cs[MEMSMALL][8];
+	E.G 000 ALL ADDRESSES -- 101 FIRST AND THIRD ARE LITERALS*/
 
 } xmem;
 
@@ -135,12 +134,7 @@ typedef struct {
 	/*GEN mem, 0x0000 to 0x3FFF*/
 	uchar gp[MEMSIZE*4];
 
-	/*CPU mem, 0x4000 to 0x5FFF*/
-	uchar cp[MEMSIZE*2];
-
-	/*DRIVE (persistent) mem, 0x6000 to 0xDFFF
-	  Note: I recommend implementing the VM in such
-	  a way this gets written to a file on HALT*/
+	/*DRIVE (persistent) mem, read-only 0x4000 to 0xBFFF*/
 	uchar dr[MEMSIZE*8];
 
 	/*Zero flag, 0xFFFF*/
@@ -154,6 +148,9 @@ typedef struct {
 
 	/*Output register, write-only, 0xFFFC*/
 	uchar ou;
+
+	/*Callstack, NOT MEMORY MAPPED*/
+	uchar cs[MEMSMALL];
 } vmem;
 
 typedef struct {
