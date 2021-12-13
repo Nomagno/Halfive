@@ -1,74 +1,38 @@
 # Half-World Document Specification (The encoding format of HWT)
 #### SPDX identifier: COIL-1.0
-#### HWDOC is a subset of TOML 1.0
+#### HWDOC is a simple storage format for slightly nested data, encoded in ASCII
 
-#### It is recommended to use the ".hwdoc" extension for HWDOC documents (where applicable).
-#### HWDOC is identified by the MIME type `text/hwdoc`
-
-***
-### The only supported features: 
-	- Tables 
-	- Key-Value pairs 
-	- Values as arrays of strings 
-	- One level of subtables 
-	- Comments 
-
-### Length limitations (Quotes that aren't part of the names don't count):
-	- Arrays | 20 elements
-	- Strings | 20 chars
-	- Key names | 20 chars
-	- Table names  (Not including subtables) | 20 chars
-	- Table names (Including subtables) | 41 chars
-	- Comments | UNLIMITED
+### It is recommended to use the ".hwdoc" extension for HWDOC documents (where applicable).
+### HWDOC is identified by the MIME type `text/hwdoc`
 
 ***
 
-### Everything else is officially unsupported. Examples:
-	- Numbers
-	- Strings not inside arrays
-	- The top-level table does not exist
-	- Level 2 Nested tables
-	- Arrays of tables
-	- Nested arrays
-	- Referencing
-	
-#### Example of what to do below
+#### The relationships between data are determined by three bytes:
+ - Values after a key are dictated by a simple space, ' ' (ASCII code 32, byte 0x20)
+ - End of a section name or key-value pair is dictated by a newline, '\n' (ASCII code 10, byte 0x0A)
+ - A child of a section (can be a key-value pair or another section) is dictated by a horizontal tab, '\t' (ASCII code 9, byte 0x09)
+ - These three bytes are to be understood as "whitespace characters"
+
+#### The types of elemtns are determined by these rules:
+ - Sections, strings that do not contain whitespace, prefixed with underscore '_' (ASCII code 95, byte 0x5F) e.g. "_My_SECTION1"
+ - Keys, strings that do not contain whitespace, NOT prefixed with underscore e.g. "My_Key1"
+ - Values, strings that do contain whitespace, located after a key (separated by a simple space, 0x20), e.g. "mykey MYVal_!2"
+***
+
+#### Example:
 
 ```
-#PRETTY MUCH ONLY STUFF SEEN HERE IS VALID
-
-[table]
-
-    [table.1]
-        name = ["john", "doe"]
-        age = ["5", "fwive"]
-        verboseage = ["fwive", "5"]
-        foo = ["bar"]
-
-    [table."1.5"] 
-    #Empty Subtable named 1.5
-
-    [table.2]
-        ageofjohn = ["five", "5", "fwive"]
-
-[thesecondtable]
-	name = ["The Second"]
+_SUPER_SECTION
+	first_key 1 6 !k
+	_SUB_SECTION
+		second_key
+_SECOND_SUPER_SECTION
 ```
-#### Example of what NOT to do below
+
+#### Same encoded with newline marked as '\n' and horiznontal tab marked as '\n':
 
 ```
-#ALL OF THIS IS INVALID
-
-#THERE IS NO TOP LEVEL TABLE
-a="t" #ONLY ARRAYS OF STRINGS ARE SUPPORTED
-a=1 #ONLY ARRAYS OF STRINGS ARE SUPPORTED
-a=[1,2] #ONLY ARRAYS OF STRINGS ARE SUPPORTED
-
-    [table.1] #THERE IS NO IMPLICIT TABLE CREATION
-        verboseage = ["fwive", ["4", "5"]] #NESTED ARRAYS ARE NOT SUPPORTED
-        "twentycharacterslong" = ["twentyandsixcharacterslong"] #MAX NAME CHARACTER LENGTH IS 20
-
-    [table.1.5] #LEVEL TWO SUBTABLES ARE NOT SUPPORTED 
-
-        ageofjohn = 5.0001 #ONLY ARRAYS OF STRINGS ARE SUPPORTED
+_SUPER_SECTION\n\tfirst_key 1 6 !k\n\t_SUB_SECTION\n\t\tsecond_key\n_SECOND_SUPER_SECTION
 ```
+
+#### '_SUPER_SECTION' is a section that contains a key 'first_key', (with values '1', '2' and '!') and another section '_SUB_SECTION', which contains a key without values 'second_key'. After '_SUPER_SECTION', there is '_SECOND_SUPER_SECTION', an empty section

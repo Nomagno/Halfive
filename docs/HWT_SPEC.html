@@ -10,72 +10,65 @@ h1,h2,h3{
 line-height:1.2
 }
 </style>
+	<title>Half-World</title>
+	<meta name="description" content="The Universal racing game protocol">
 </head>
+
 <h1>Half-World Track (Encoding) Specification</h1>
-<h4>SPDX identifier: COIL-1.0</h4> 
+<h4>SPDX identifier: COIL-1.0</h4>
 <h4>Please read the HWDOC format specification before this one.</h4>
 <h4>Arguments between parentheses are variable and should be replaced according to their respective explanations.</h4>
 <h4>It is recommended to use the &#x201C;.hwt&#x201D; extension for HWT documents (where applicable).</h4>
 <h4>HWT is identified by the MIME type <code>text/hwt</code></h4>
 <h3>The HWT format:</h3>
 <hr />
-<pre><code>[track]
+<pre><code>_TRACK
+    (param) (value)
+    ...
 
-(param) = [&quot;(value)&quot;]
-...
-
-[segments]
-
-[segments.1]
-
-shape = [&quot;(p1x)&quot;, &quot;(p1y)&quot;, &quot;(p2x)&quot;, &quot;(p2y)&quot;, &quot;(p3x)&quot;, &quot;(p3y)&quot;]
-width = [&quot;(w)&quot;]
-local_param = [&quot;(local_param)&quot;] #param IS OPTIONAL
-
-[segments.2]
-
-shape = [&quot;(p1x)&quot;, &quot;(p1y)&quot;, &quot;(p2x)&quot;, &quot;(p2y)&quot;, &quot;(p3x)&quot;, &quot;(p3y)&quot;]
-width = [&quot;(w)&quot;]</code></pre>
+_SEGMENTS
+    _SEGMENTS_1
+        shape (p1x) (p1y) (p2x) (p2y) (p3x) (p3y)
+        width (w)
+        local_param (local_param)
+    _SEGMENTS_2
+        shape (p1x) (p1y) (p2x) (p2y) (p3x) (p3y)
+        width (w)
+    ...</code></pre>
 <hr />
 <h3>EXPLANATION:</h3>
-<p>Always start the file with the track table, followed by flags/settings, of course replacing param and value for the parameter and the value. After the track table comes the segments table. Here you define the segments, from one to a maximum of 40.</p>
+<p>Always start the file with the track section, followed by flags/settings, of course replacing param and value for the parameter and the value. After the track table comes the segments table. Here you define the segments, from one to a maximum of 40.</p>
 <p>Where all numbers are integers, p1 and p2 are bezier curve anchors, p3 is a bezier curve control point, and w is the track width from 1 to 5.</p>
 <p>Aditionally, you can add special properties for that segment with local_param.</p>
 <hr />
 <p>AVAILABLE GLOBAL PARAMETERS:</p>
-<p><code>name = "TRCKNAME"</code></p>
+<p><code>name trckname</code></p>
 <p>#THE NAME HAS TO BE AN EIGHT CHARACTER ALPHANUMERICAL STRING THAT IS NOT &#x2019;_DEFAULT&#x2019;</p>
-<p><code>time = "night"/"day"</code></p>
-<p><code>biome = "desert"/"snow"/"forest"</code> #AN ADDITIONAL &#x201C;color - white/red/blue/yellow/green/pink&#x201D; PARAMETER WILl BE GENERATED FROM THE BIOME. IF YOU ONLY CARE ABOUT THE COLOR OF THE STAGE/TRACK BACKGROUND, PLEASE STILL SPECIFY A BIOME</p>
-<p><code>max_players = "(NUMBER)"</code></p>
+<p><code>time night/day</code></p>
+<p><code>biome = desert/snow/forest</code> #AN ADDITIONAL &#x201C;color - white/red/blue/yellow/green/pink&#x201D; PARAMETER WILl BE GENERATED FROM THE BIOME. IF YOU ONLY CARE ABOUT THE COLOR OF THE STAGE/TRACK BACKGROUND, PLEASE STILL SPECIFY A BIOME</p>
+<p><code>max_players (NUMBER)</code></p>
 <hr />
 <h3>AVAILABLE SEGMENT PARAMETERS (Include ONE of these in the local_param value):</h3>
-<p>&#x201C;boost&#x201D;/&#x201C;antiboost&#x201D;</p>
-<p>&#x201C;finish_line&#x201D;/&#x201C;checkpoint&#x201D;</p>
-<p>&#x201C;guardrails&#x201D;/&#x201C;electric_guardrails&#x201D;</p>
+<p>boost/antiboost</p>
+<p>finish_line/checkpoint</p>
+<p>guardrails/electric_guardrails</p>
 <h3>EXAMPLE DRAWN FROM THE triangular_parade.hwt TRACK</h3>
 <hr />
-<pre><code>[track]
-time = [&quot;night&quot;]
-biome =  [&quot;forest&quot;]
-max_players = [&quot;6&quot;]
+<pre><code>_TRACK
+    time night
+    biome forest
+    max_players 6
 
-[segments]
-
-[segments.1]
-
-shape = [&quot;28&quot;, &quot;36&quot;, &quot;50&quot;, &quot;30&quot;, &quot;40&quot;, &quot;40&quot;] 
-width = [&quot;5&quot;]
-local_param = [&quot;finish_line&quot;]
-
-[segments.2]
-
-shape = [&quot;50&quot;, &quot;30&quot;, &quot;37&quot;, &quot;-50&quot;, &quot;60&quot;, &quot;-80&quot;] 
-width = [&quot;3&quot;]
-local_param = [&quot;checkpoint&quot;]
-
-[segments.3]
-
-shape = [&quot;37&quot;, &quot;-50&quot;, &quot;28&quot;, &quot;36&quot;, &quot;-50&quot;, &quot;-80&quot;] 
-width = [&quot;5&quot;]
-local_param = [&quot;boost&quot;]</code></pre>
+_SEGMENTS
+    _SEGMENTS_1
+        shape 28 36 50 30 40 40
+        width 5
+        local_param finish_line
+    _SEGMENTS_2
+        shape 50 30 37 -50 60 -80
+        width 3
+        local_param checkpoint
+    _SEGMENTS_3
+        shape 37 -50 28 36 -50 -80
+        width 5
+        local_param boost</code></pre>

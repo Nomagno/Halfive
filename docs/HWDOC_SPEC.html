@@ -10,66 +10,35 @@ h1,h2,h3{
 line-height:1.2
 }
 </style>
+	<title>Half-World</title>
+	<meta name="description" content="The Universal racing game protocol">
 </head>
-<h1>Half-World Document Specification (The encoding format of HWT)</h1>
-<h4>SPDX identifier: COIL-1.0</h4> 
-<h4>HWDOC is a subset of TOML 1.0</h4>
-<h4>It is recommended to use the &#x201C;.hwdoc&#x201D; extension for HWDOC documents (where applicable).</h4>
-<h4>HWDOC is identified by the MIME type <code>text/hwdoc</code></h4>
+
+<h1>Half-World Document Specification (The encoding format of HWT and HWNET)</h1>
+<h4>SPDX identifier: COIL-1.0</h4>
+<h4>HWDOC is a simple storage format for data with simple relationships</h4>
+<h3>It is recommended to use the &#x201C;.hwdoc&#x201D; extension for HWDOC documents (where applicable).</h3>
+<h3>HWDOC is identified by the MIME type <code>text/hwdoc</code></h3>
+<hr/>
+<h4>There are four main elements in the format:</h4>
+<ul>
+<li>Sections, alphanumerical character A-Z a-z 0-9 &#x2018;<em>&#x2019;, prefixed with underscore &#x2019;</em>&#x2019; e.g.&#xA0;&#x2019;_My_SECTION1&#x2019;</li>
+<li>Keys, alphanumerical character A-Z a-z 0-9 &#x2018;<em>&#x2019;, NOT prefixed with underscore &#x2019;</em>&#x2019; e.g.&#xA0;&#x2018;My_Key1&#x2019;</li>
+<li>Values, any printable non-whitespace ASCII character after a key, e.g.&#xA0;&#x2018;mykey MYVal_!2&#x2019;</li>
+</ul>
+<h4The relationships between data are determined by three characters:</h4>
+<ul>
+<li>Values after a key are dictated by a simple space, &#x2019; &#x2019; (ASCII code 32)</li>
+<li>End of a section or key-value pair is dictated by a newline, &#x2018;&#x2019; (ASCII code 10)</li>
+<li>A child of a section (can be a key-value pair or another section) is dictated by a horizontal tab, &#x2019; (ASCII code 9)</li>
+</ul>
 <hr />
-<h3>The only supported features:</h3>
-<pre><code>- Tables 
-- Key-Value pairs 
-- Values as arrays of strings 
-- One level of subtables 
-- Comments </code></pre>
-<h3>Length limitations (Quotes that aren&#x2019;t part of the names don&#x2019;t count):</h3>
-<pre><code>- Arrays | 20 elements
-- Strings | 20 chars
-- Key names | 20 chars
-- Table names  (Not including subtables) | 20 chars
-- Table names (Including subtables) | 41 chars
-- Comments | UNLIMITED</code></pre>
-<hr />
-<h3>Everything else is officially unsupported. Examples:</h3>
-<pre><code>- Numbers
-- Strings not inside arrays
-- The top-level table does not exist
-- Level 2 Nested tables
-- Arrays of tables
-- Nested arrays
-- Referencing</code></pre>
-<h4>Example of what to do below</h4>
-<pre><code>#PRETTY MUCH ONLY STUFF SEEN HERE IS VALID
-
-[table]
-
-    [table.1]
-        name = [&quot;john&quot;, &quot;doe&quot;]
-        age = [&quot;5&quot;, &quot;fwive&quot;]
-        verboseage = [&quot;fwive&quot;, &quot;5&quot;]
-        foo = [&quot;bar&quot;]
-
-    [table.&quot;1.5&quot;] 
-    #Empty Subtable named 1.5
-
-    [table.2]
-        ageofjohn = [&quot;five&quot;, &quot;5&quot;, &quot;fwive&quot;]
-
-[thesecondtable]
-    name = [&quot;The Second&quot;]</code></pre>
-<h4>Example of what NOT to do below</h4>
-<pre><code>#ALL OF THIS IS INVALID
-
-#THERE IS NO TOP LEVEL TABLE
-a=&quot;t&quot; #ONLY ARRAYS OF STRINGS ARE SUPPORTED
-a=1 #ONLY ARRAYS OF STRINGS ARE SUPPORTED
-a=[1,2] #ONLY ARRAYS OF STRINGS ARE SUPPORTED
-
-    [table.1] #THERE IS NO IMPLICIT TABLE CREATION
-        verboseage = [&quot;fwive&quot;, [&quot;4&quot;, &quot;5&quot;]] #NESTED ARRAYS ARE NOT SUPPORTED
-        &quot;twentycharacterslong&quot; = [&quot;twentyandsixcharacterslong&quot;] #MAX NAME CHARACTER LENGTH IS 20
-
-    [table.1.5] #LEVEL TWO SUBTABLES ARE NOT SUPPORTED 
-
-        ageofjohn = 5.0001 #ONLY ARRAYS OF STRINGS ARE SUPPORTED</code></pre>
+<h4>Example:</h4>
+<pre><code>_SUPER_SECTION
+    first_key 1 6 !k
+    _SUB_SECTION
+        second_key
+_SECOND_SUPER_SECTION</code></pre>
+<h4>Same encoded with newline marked as &#x2018;&#x2019; and horizontal tab marked as &#x2018;&#x2019;:</h4>
+<pre><code>_SUPER_SECTION\n\tfirst_key 1 6 !k\n\t_SUB_SECTION\n\t\tsecond_key\n_SECOND_SUPER_SECTION</code></pre>
+<h4>&#x2019;_SUPER_SECTION&#x2019; is a section that contains a key &#x2018;first_key&#x2019;, (with values &#x2018;1&#x2019;, &#x2018;2&#x2019; and &#x2018;!&#x2019;) and another section &#x2019;_SUB_SECTION&#x2019;, which contains a key without values &#x2018;second_key&#x2019;. After &#x2019;_SUPER_SECTION&#x2019;, there is &#x2019;_SECOND_SUPER_SECTION&#x2019;, an empty section</h4>
