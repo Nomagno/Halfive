@@ -10,35 +10,36 @@ h1,h2,h3{
 line-height:1.2
 }
 </style>
-	<title>Half-World</title>
+	<title>Half-World Document</title>
 	<meta name="description" content="The Universal racing game protocol">
 </head>
+<body>
 
-<h1>Half-World Document Specification (The encoding format of HWT and HWNET)</h1>
+<h1>Half-World Document Specification (The encoding format of HWT)</h1>
 <h4>SPDX identifier: COIL-1.0</h4>
-<h4>HWDOC is a simple storage format for data with simple relationships</h4>
+<h4>HWDOC is a simple storage format for slightly nested data</h4>
 <h3>It is recommended to use the &#x201C;.hwdoc&#x201D; extension for HWDOC documents (where applicable).</h3>
 <h3>HWDOC is identified by the MIME type <code>text/hwdoc</code></h3>
-<hr/>
-<h4>There are four main elements in the format:</h4>
-<ul>
-<li>Sections, alphanumerical character A-Z a-z 0-9 &#x2018;<em>&#x2019;, prefixed with underscore &#x2019;</em>&#x2019; e.g.&#xA0;&#x2019;_My_SECTION1&#x2019;</li>
-<li>Keys, alphanumerical character A-Z a-z 0-9 &#x2018;<em>&#x2019;, NOT prefixed with underscore &#x2019;</em>&#x2019; e.g.&#xA0;&#x2018;My_Key1&#x2019;</li>
-<li>Values, any printable non-whitespace ASCII character after a key, e.g.&#xA0;&#x2018;mykey MYVal_!2&#x2019;</li>
-</ul>
-<h4The relationships between data are determined by three characters:</h4>
-<ul>
-<li>Values after a key are dictated by a simple space, &#x2019; &#x2019; (ASCII code 32)</li>
-<li>End of a section or key-value pair is dictated by a newline, &#x2018;&#x2019; (ASCII code 10)</li>
-<li>A child of a section (can be a key-value pair or another section) is dictated by a horizontal tab, &#x2019; (ASCII code 9)</li>
-</ul>
 <hr />
+<h4>The relationships between data are determined by three bytes:</h4>
+<ul>
+<li>Values after a key are dictated by a simple space, &#x2019; &#x2019; (ASCII code 32, byte 0x20)</li>
+<li>End of a section name or key-value pair is dictated by a newline, &#x2018;&#x2019; (ASCII code 10, byte 0x0A)</li>
+<li>A child of a section (can be a key-value pair or another section) is dictated by a horizontal tab, &#x2019; (ASCII code 9, byte 0x09)</li>
+<li>These three bytes are to be understood as &#x201C;whitespace characters&#x201D;</li>
+</ul>
+<h4>The types of elements are determined by these rules:</h4>
+<ul>
+<li>Sections, strings that do not contain whitespace, prefixed with underscore &#x2019;_&#x2019; (ASCII code 95, byte 0x5F) e.g.&#xA0;"_My_SECTION1"</li>
+<li>Keys, strings that do not contain whitespace, NOT prefixed with underscore e.g.&#xA0;&#x201C;My_Key1&#x201D;</li>
+<li>Values, strings that do contain whitespace, located after a key (separated by a simple space, 0x20), e.g.&#xA0;&#x201C;mykey MYVal_!2&#x201D; ***</li>
+</ul>
 <h4>Example:</h4>
 <pre><code>_SUPER_SECTION
     first_key 1 6 !k
     _SUB_SECTION
         second_key
 _SECOND_SUPER_SECTION</code></pre>
-<h4>Same encoded with newline marked as &#x2018;&#x2019; and horizontal tab marked as &#x2018;&#x2019;:</h4>
+<h4>Same encoded with newline marked as &#x2018;&#x2019; and horiznontal tab marked as &#x2018;&#x2019;:</h4>
 <pre><code>_SUPER_SECTION\n\tfirst_key 1 6 !k\n\t_SUB_SECTION\n\t\tsecond_key\n_SECOND_SUPER_SECTION</code></pre>
 <h4>&#x2019;_SUPER_SECTION&#x2019; is a section that contains a key &#x2018;first_key&#x2019;, (with values &#x2018;1&#x2019;, &#x2018;2&#x2019; and &#x2018;!&#x2019;) and another section &#x2019;_SUB_SECTION&#x2019;, which contains a key without values &#x2018;second_key&#x2019;. After &#x2019;_SUPER_SECTION&#x2019;, there is &#x2019;_SECOND_SUPER_SECTION&#x2019;, an empty section</h4>

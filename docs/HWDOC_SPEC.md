@@ -1,6 +1,6 @@
 # Half-World Document Specification (The encoding format of HWT)
 #### SPDX identifier: COIL-1.0
-#### HWDOC is a simple storage format for slightly nested data, encoded in ASCII
+#### HWDOC is a simple storage format for slightly nested data
 
 ### It is recommended to use the ".hwdoc" extension for HWDOC documents (where applicable).
 ### HWDOC is identified by the MIME type `text/hwdoc`
@@ -13,7 +13,7 @@
  - A child of a section (can be a key-value pair or another section) is dictated by a horizontal tab, '\t' (ASCII code 9, byte 0x09)
  - These three bytes are to be understood as "whitespace characters"
 
-#### The types of elemtns are determined by these rules:
+#### The types of elements are determined by these rules:
  - Sections, strings that do not contain whitespace, prefixed with underscore '_' (ASCII code 95, byte 0x5F) e.g. "_My_SECTION1"
  - Keys, strings that do not contain whitespace, NOT prefixed with underscore e.g. "My_Key1"
  - Values, strings that do contain whitespace, located after a key (separated by a simple space, 0x20), e.g. "mykey MYVal_!2"
