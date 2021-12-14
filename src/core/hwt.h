@@ -26,11 +26,6 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
-#include "../../external/toml_parser/toml.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 /* To calculate point [t] of the Bezier curve:
  A*(1-t)^2 + B*2t(1-t) + C*t^2
 */
@@ -78,5 +73,5 @@ typedef struct {
 	struct segment segments[40];
 } hwtrack;
 
-extern int cli_parse(char[], hwpack_client *);
-extern int serv_parse(char[], hwpack_server *);
+extern int cli_parse(char*, hwtrack *);
+extern int serv_parse(char*, hwtrack *);

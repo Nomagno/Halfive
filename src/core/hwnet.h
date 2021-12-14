@@ -25,9 +25,6 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #define MAXCHAR_HWNET 9
 #define MAXPLAYERS_HWNET 32
 
@@ -65,5 +62,5 @@ typedef struct {
 	struct player_data_client player_data[MAXPLAYERS_HWNET];
 } hwpack_client;
 
-extern int cli_parse(char[], hwpack_client *);
-extern int serv_parse(char[], hwpack_server *);
+extern int cli_parse(char*, hwpack_client *);
+extern int serv_parse(char*, hwpack_server *);
