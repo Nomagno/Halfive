@@ -429,12 +429,3 @@ ONLY SPECIFY THE TYPE OF THE THINGY IT INHERITS FROM
   and any number of non-variadic parameters, to 'name'
 */
 #define makefuncptr(type, name) typedef type (*name)()
-
-maddclass(Primitive, TOP,
-	  maddpub(Primitive, _Bool isInit,
-		  maddinter(int, init, (mselfref(Primitive) * self))
-		  /*You could have a constructor instead of an initializer*/
-		  ));
-
-/*INITIALIZATION OF PRIMITIVE*/
-extern int __PrimitiveInit(mrefclass(Primitive) * self);
