@@ -25,6 +25,7 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
+/*READ THE HWVM SPEC*/
 #define MEMSIZE 4096
 #define MEMSMALL 1024
 
@@ -42,7 +43,7 @@ typedef struct {
 } rational;
 
 
-/*Nomagno's boring VM interface and instruction set
+/*Half-World Virtual Machine
 
 (AT THE BOTTOM OF THIS BIG COMMENT BLOCK YOU HAVE THE ACTUAL CODE)
 
@@ -51,22 +52,19 @@ comments is REQUIRED Literals that are not addresses should be enclosed in
 square braces e.g. [6]
 
 
-  BINARY FORMAT:
-  You can turn this into a little binary format where you start
-  with the number of bits of each arguments (N) as an 8-bit value,
-  then code each instruction as 4 bits of which the least significant 3 indicate
+BINARY FORMAT:
+You code each instruction as 4 bits of which the least significant 3 indicate
 which arguments are literals and which addresses (1010 - first is literal,
-second address, third literal, fourth doesn't matter), then 4 bits fir the
+second address, third literal, fourth doesn't matter), then 4 bits for the
 instructions themselves (check the enum values, max 12), then simply read the
-corresponding number of N-bit 'arguments' (0-3), and repeat. EXAMPLE:
+corresponding number of 16-bit 'arguments' (0-3), and repeat. EXAMPLE:
 
-      BINARY: 00000100 0010 0110 0001 0011 0010 0000 0000
+      BINARY: 0010 0000000000000001 0000000000000011 0000000000000010 0000 0000000000000000
 	NOTE: You can safely ignore the most significant bit of the second value
 (0010), since only the least significant 3 code which arguments are literals.
-      DECIMAL: 4 2 6 1 3 2 0 0
-      ASSEMBLY: bits 4\n add 1 [3] [2]\n halt
+      DECIMAL: 2 1 3 2 0 0
+      ASSEMBLY:add 1 [3] 2\n halt
       ENGLISH:
-	This binary contains 4-bit args.
 	The first instruction has the middle argument as a literal.
 	Add the CONTENTS of register 1 and the literal integer '3', then put the
 result into register '2'. Halt.
@@ -83,6 +81,22 @@ are: {halt, nop, jmp, jcz, set, add, sub, not, and, xor, or, not, subs, sube, ca
 literals are allowed in the form [ARGx] (Number enclosed in brackets) The enum
 below specifies in a comment the behaviour of each proper instruction and the
 corresponding
+
+EXAMPLE (THE LINE NUMBERING AND EVERYTHING AFTER THE '#' IN EACH LINE IS NOT PART OF THE LANGUAGE):
+
+```
+0. set [33] FFFC # Write literal 0x33 (51, 00110011) to the OUTPUT REGISTER
+1. jmp 4 # Jump to instruction 4
+2. sub [4] 3 # Do the subtraction [4] - 3. We don't know what address three contains, but it will set the zero flag if it is 0x4
+3. jcz 7 # If the previous comparison was indeed correct and address 3 contains 0x4, jump to instruction 7
+4. add [FE] [8] FFFC # Write the addition of 0xFE (254, 11111110) and 0x8 (8, 00001000) to the OUTPUT register. It should regult in OVERFLOW
+5. set FFFE FFFF # Copy the carry flag to the zero flag
+6. jcnz 8 # If the zero flag is not zero (it shouldn't be, there was overflow and the carry flag was cloned!), jump to instruction 8
+7.
+8. jmp 2 # Jump to instruction 2
+9. halt
+```
+
 */
 
 typedef enum {
@@ -170,7 +184,7 @@ typedef struct {
 	uint skip_co[MEMSMALL]; /*Counter values subs has to skip to*/
 } mem;
 
-/*Nomagno's boring VM interface*/
+/*Half-World VM interface*/
 
 extern mem fxmem(xmem code); /*Generate mem struct from xmem struct*/
 

@@ -25,10 +25,10 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.s*/
 
-#include "../iset/iset.h"
+#include "hwvm/hwvm.h"
 #include "../msg-c/msg-c.h"
-#include "hwnet.h"
-#include "hwt.h"
+#include "hwnet/hwnet.h"
+#include "hwt/hwt.h"
 #include "uuid/uuid.h"
 
 #define RACENUM 32
