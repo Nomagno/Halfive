@@ -79,6 +79,8 @@ iset _isinst(char *instr)
 		return sube;
 	else if (strcmp(instr, "call") == 0)
 		return call;
+	else if (strcmp(instr, "jcnz") == 0)
+		return jcnz;
 	else
 		return 16;
 }

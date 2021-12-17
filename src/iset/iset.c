@@ -464,6 +464,18 @@ uint execnext(mem *program)
 				return 2; /*EXECUTION ERROR*/
 			}
 			return 0;
+		case jcnz:
+			if (program->m2.zf == 1)
+				errno = hjump(program->m1.opnd[program->m2.co],
+					      &program->m2, &program->m2.co);
+			else {
+				program->m2.co += 1;
+				errno = 0;
+			}
+			if (errno != 0) {
+				return 2; /*EXECUTION ERROR*/
+			}
+			return 0;
 		case add:
 			errno = hbop(program->m1.opnd[program->m2.co],
 				     &program->m2, 1, 1);

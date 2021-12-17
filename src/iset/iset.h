@@ -73,7 +73,7 @@ result into register '2'. Halt.
 
   ASSEMBLY FORMAT:
     It codes almost directly to the binary format. The available instructions
-are: {halt, nop, jmp, jcz, set, add, sub, not, and, xor, or, not, subs, sube, call}
+are: {halt, nop, jmp, jcz, set, add, sub, not, and, xor, or, not, subs, sube, call, jcnz}
     The syntax is the following:
       instruction ARGx ARGx ARGx\n
     Where ARGx is an address (Rx), a literal (ID), or either (Vx)
@@ -112,7 +112,8 @@ typedef enum {
 		     Add*/
 	sube = 13, /*ID; Marks the end of subroutine ID. It JMPs to the instruction
 			after the corresponding CALL instruction.*/
-	call = 14 /* ID; JMP to the start of execution (post-SUBS) of subroutine ID*/
+	call = 14, /* ID; JMP to the start of execution (post-SUBS) of subroutine ID*/
+	jcnz = 15 /* V1; if ZF != 0, jmp to instrucion V1*/
 } iset;
 
 /*Execution memory*/
