@@ -24,7 +24,6 @@ COPYRIGHT OR OTHER LEGAL PRIVILEGE BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
 LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
-
 #include "iset.h"
 #include <stdio.h>
 /*<stdio.h> IS NOT NEEDED, IT ONLY ADDS
@@ -59,6 +58,8 @@ uint addrcheck(uint arg)
 		return 5;
 	else if (arg == 0xFFFC)
 		return 6;
+	else if (arg == 0xFFFB)
+		return 2;
 	else
 		return 0;
 }
@@ -70,6 +71,8 @@ uint addrconvert(uint arg, uint addr)
 		return UADDR;
 	case 1:
 		return addr;
+	case 2:
+		return 0;
 	case 3:
 		return 0;
 	case 4:
@@ -83,6 +86,70 @@ uint addrconvert(uint arg, uint addr)
 	default:
 		return UADDR;
 	}
+}
+
+/*INCREDIBLY COMMON BOILERPLATE MOVED TO OWN FUNCTION*/
+uint auxset(uint *val, vmem *space, uint ad, uint conv, _Bool do_write)
+{
+	if (!do_write) {
+		switch (ad) {
+		case 1:;
+			*val = space->gp[conv];
+			break;
+		case 2:;
+			*val = space->co;
+			break;
+		case 3:;
+			*val = space->zf;
+			break;
+		case 4:;
+			*val = space->cf;
+			break;
+		case 5:;
+			*val = space->in;
+			break;
+		case 6:;
+			return 1; /*Can't read output register!*/
+			break;
+		case 7:
+			*val = space->dr[conv];
+			break;
+		default:
+			return 1; /*ERROR, WE DON'T KNOW WHAT THAT ADDRESS
+				     MEANS*/
+		}
+	} else {
+		switch (ad) {
+		case 1:;
+			space->gp[conv] = *val;
+			break;
+		case 2:;
+			return 1; /*Can't set program counter! You can use JMP for that*/
+			break;
+		case 3:;
+			space->zf = *val;
+			break;
+		case 4:;
+			space->cf = *val;
+			break;
+		case 5:;
+			return 1; /*Can't set input register!*/
+			break;
+		case 6:;
+			space->ou = *val;
+#ifdef EOF
+			printf("%i\n", space->ou);
+#endif
+			break;
+		case 7:
+			return 1;                   /*You can't set the drive!*/
+			break;
+		default:
+			return 1; /*ERROR, WE DON'T KNOW WHAT THAT ADDRESS
+				     MEANS*/
+		}
+	}
+	return 0;
 }
 
 void hnop(void) { return; }
@@ -99,336 +166,55 @@ uint hbin(uint op[4], vmem *space, uint flag)
 
 	uint val1;
 	uint val2;
+	uint result;
 
-	switch (op[3]) {
-	case 0:
+	if (op[3] != (op[3] | 4)) {
 		ad1 = addrcheck(op[0]);
-		ad2 = addrcheck(op[1]);
-		ad3 = addrcheck(op[2]);
-
 		conv1 = addrconvert(ad1, op[0]);
-		conv2 = addrconvert(ad2, op[1]);
-		conv3 = addrconvert(ad3, op[2]);
-		switch (ad1) {
-		case 1:
-			val1 = space->gp[conv1];
-			break;
-		case 3:
-			val1 = space->zf;
-			break;
-		case 4:
-			val1 = space->cf;
-			break;
-		case 5:
-			val1 = space->in;
-			break;
-		case 6:
+		if (auxset(&val1, space, ad1, conv1, 0)) {
 #ifdef EOF
 			printf("ERROR\n");
 #endif
-			return 1; /*Can't read output register!*/
-			break;
-		case 7:
-			val1 = space->dr[conv1];
-			break;
+			return 1;
 		}
-		switch (ad2) {
-		case 1:
-			val2 = space->gp[conv2];
-			break;
-		case 3:
-			val2 = space->zf;
-			break;
-		case 4:
-			val2 = space->cf;
-			break;
-		case 5:
-			val2 = space->in;
-			break;
-		case 6:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*Can't read output register!*/
-			break;
-		case 7:
-			val2 = space->dr[conv2];
-			break;
-		}
-		switch (ad3) {
-		case 1:
-			if (flag == 1)
-				space->gp[conv3] = val1 & val2;
-			else if (flag == 2)
-				space->gp[conv3] = val1 | val2;
-			else if (flag == 3)
-				space->gp[conv3] = val1 ^ val2;
-			break;
-		case 3:
-			if (flag == 1)
-				space->zf = val1 & val2;
-			else if (flag == 2)
-				space->zf = val1 | val2;
-			else if (flag == 3)
-				space->zf = val1 ^ val2;
-			break;
-		case 4:
-			if (flag == 1)
-				space->cf = val1 & val2;
-			else if (flag == 2)
-				space->cf = val1 | val2;
-			else if (flag == 3)
-				space->cf = val1 ^ val2;
-			break;
-		case 5:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*You can't set the input register!*/
-		case 6:
-			if (flag == 1)
-				space->ou = val1 & val2;
-			else if (flag == 2)
-				space->ou = val1 | val2;
-			else if (flag == 3)
-				space->ou = val1 ^ val2;
-#ifdef EOF
-			printf("%i\n", space->ou);
-#endif
-			break;
-		case 7:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*You can't set the drive!*/
-			break;
-		default:
-			return 3; /*We don't know what that address means*/
-		}
-		break;
-	case 4:
-		ad2 = addrcheck(op[1]);
-		ad3 = addrcheck(op[2]);
-
-		conv2 = addrconvert(ad2, op[1]);
-		conv3 = addrconvert(ad3, op[2]);
-
+	} else {
 		val1 = op[0];
-		switch (ad2) {
-		case 1:
-			val2 = space->gp[conv2];
-			break;
-		case 3:
-			val2 = space->zf;
-			break;
-		case 4:
-			val2 = space->cf;
-			break;
-		case 5:
-			val2 = space->in;
-			break;
-		case 6:
+	}
+
+	if (op[3] != (op[3] | 2)) {
+		ad2 = addrcheck(op[1]);
+		conv2 = addrconvert(ad2, op[1]);
+		if (auxset(&val2, space, ad2, conv2, 0)) {
 #ifdef EOF
 			printf("ERROR\n");
 #endif
-			return 1; /*Can't read output register!*/
-			break;
-		case 7:
-			val2 = space->dr[conv2];
-			break;
+			return 1;
 		}
-		switch (ad3) {
-		case 1:
-			if (flag == 1)
-				space->gp[conv3] = val1 & val2;
-			else if (flag == 2)
-				space->gp[conv3] = val1 | val2;
-			else if (flag == 3)
-				space->gp[conv3] = val1 ^ val2;
-			break;
-		case 3:
-			if (flag == 1)
-				space->zf = val1 & val2;
-			else if (flag == 2)
-				space->zf = val1 | val2;
-			else if (flag == 3)
-				space->zf = val1 ^ val2;
-			break;
-		case 4:
-			if (flag == 1)
-				space->cf = val1 & val2;
-			else if (flag == 2)
-				space->cf = val1 | val2;
-			else if (flag == 3)
-				space->cf = val1 ^ val2;
-			break;
-		case 5:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*You can't set the input register!*/
-		case 6:
-			if (flag == 1)
-				space->ou = val1 & val2;
-			else if (flag == 2)
-				space->ou = val1 | val2;
-			else if (flag == 3)
-				space->ou = val1 ^ val2;
-#ifdef EOF
-			printf("%i\n", space->ou);
-#endif
-			break;
-		case 7:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*You can't set the drive!*/
-			break;
-		default:
-			return 3; /*We don't know what that address means*/
-		}
+	} else {
+		val2 = op[1];
+	}
+
+	switch(flag){
+	case 1:
+		result = val1 & val2;
 		break;
 	case 2:
-		ad1 = addrcheck(op[0]);
-		ad3 = addrcheck(op[2]);
-
-		conv1 = addrconvert(ad1, op[0]);
-		conv3 = addrconvert(ad3, op[2]);
-
-		val2 = op[1];
-		switch (ad1) {
-		case 1:
-			val1 = space->gp[conv1];
-			break;
-		case 3:
-			val1 = space->zf;
-			break;
-		case 4:
-			val1 = space->cf;
-			break;
-		case 5:
-			val1 = space->in;
-			break;
-		case 6:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*Can't read output register!*/
-			break;
-		case 7:
-			val1 = space->dr[conv1];
-			break;
-		}
-		switch (ad3) {
-		case 1:
-			if (flag == 1)
-				space->gp[conv3] = val1 & val2;
-			else if (flag == 2)
-				space->gp[conv3] = val1 | val2;
-			else if (flag == 3)
-				space->gp[conv3] = val1 ^ val2;
-			break;
-		case 3:
-			if (flag == 1)
-				space->zf = val1 & val2;
-			else if (flag == 2)
-				space->zf = val1 | val2;
-			else if (flag == 3)
-				space->zf = val1 ^ val2;
-			break;
-		case 4:
-			if (flag == 1)
-				space->cf = val1 & val2;
-			else if (flag == 2)
-				space->cf = val1 | val2;
-			else if (flag == 3)
-				space->cf = val1 ^ val2;
-			break;
-		case 5:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*You can't set the input register!*/
-		case 6:
-			if (flag == 1)
-				space->ou = val1 & val2;
-			else if (flag == 2)
-				space->ou = val1 | val2;
-			else if (flag == 3)
-				space->ou = val1 ^ val2;
-#ifdef EOF
-			printf("%i\n", space->ou);
-#endif
-			break;
-		case 7:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*You can't set the drive!*/
-			break;
-		default:
-			return 3; /*We don't know what that address means*/
-		}
+		result = val1 | val2;
 		break;
-	case 6:
-		ad3 = addrcheck(op[2]);
-
-		conv3 = addrconvert(ad3, op[2]);
-
-		val2 = op[1];
-		val1 = op[0];
-
-		switch (ad3) {
-		case 1:
-			if (flag == 1)
-				space->gp[conv3] = val1 & val2;
-			else if (flag == 2)
-				space->gp[conv3] = val1 | val2;
-			else if (flag == 3)
-				space->gp[conv3] = val1 ^ val2;
-			break;
-		case 3:
-			if (flag == 1)
-				space->zf = val1 & val2;
-			else if (flag == 2)
-				space->zf = val1 | val2;
-			else if (flag == 3)
-				space->zf = val1 ^ val2;
-			break;
-		case 4:
-			if (flag == 1)
-				space->cf = val1 & val2;
-			else if (flag == 2)
-				space->cf = val1 | val2;
-			else if (flag == 3)
-				space->cf = val1 ^ val2;
-			break;
-		case 5:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*You can't set the input register!*/
-		case 6:
-			if (flag == 1)
-				space->ou = val1 & val2;
-			else if (flag == 2)
-				space->ou = val1 | val2;
-			else if (flag == 3)
-				space->ou = val1 ^ val2;
-#ifdef EOF
-			printf("%i\n", space->ou);
-#endif
-			break;
-		case 7:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*You can't set the drive!*/
-			break;
-		default:
-			return 3; /*We don't know what that address means*/
-		}
+	case 3:
+		result = val1 ^ val2;
+		break;
 	}
+
+	ad3 = addrcheck(op[2]);
+	conv3 = addrconvert(ad3, op[2]);
+	if (auxset(&result, space, ad3, conv3, 1)) {
+#ifdef EOF
+		printf("ERROR\n");
+#endif
+		return 1;
+	}
+
 	return 0;
 }
 
@@ -436,44 +222,21 @@ uint hjump(uint op[4], vmem *space, uint *co)
 {
 	uint adr;
 	uint conv;
+	uint val;
 
-	switch (op[3]) {
-	case 0:
+	if (op[3] != (op[3] | 4)) {
 		adr = addrcheck(op[0]);
 		conv = addrconvert(adr, op[0]);
-		switch (adr) {
-		case 1:
-			*co = space->gp[conv];
-			break;
-		case 3:
-			*co = space->zf;
-			break;
-		case 4:
-			*co = space->cf;
-			break;
-		case 5:
-			*co = space->in;
-			break;
-		case 6:
+		if (auxset(&val, space, adr, conv, 0)) {
 #ifdef EOF
 			printf("ERROR\n");
 #endif
-			return 1; /*You can't read the output register!*/
-			break;
-		case 7:
-			*co = space->dr[conv];
-			break;
-		default:
-			return 3; /*We don't know what that address means*/
+			return 1;
 		}
-		break;
-	case 4:
-		*co = op[0];
-		break;
-	default:
-		return 3; /*Wrong usage*/
-		break;
+	} else {
+		val = op[0];
 	}
+	*co = val;
 	return 0;
 }
 
@@ -486,112 +249,33 @@ uint hnot(uint op[4], vmem *space)
 	uint conv2;
 
 	uint val1;
-	switch (op[3]) {
-	case 0:
+	if (op[3] != (op[3] | 4)) {
 		ad1 = addrcheck(op[0]);
-		ad2 = addrcheck(op[1]);
-
 		conv1 = addrconvert(ad1, op[0]);
-		conv2 = addrconvert(ad2, op[1]);
-		switch (ad1) {
-		case 1:
-			val1 = space->gp[conv1];
-			break;
-		case 3:
-			val1 = space->zf;
-			break;
-		case 4:
-			val1 = space->cf;
-			break;
-		case 5:
-			val1 = space->in;
-			break;
-		case 6:
+		if (auxset(&val1, space, ad1, conv1, 0)) {
 #ifdef EOF
 			printf("ERROR\n");
 #endif
-			return 1; /*Can't read output register!*/
-			break;
-		case 7:
-			val1 = space->dr[conv1];
-			break;
+			return 1;
 		}
-		switch (ad2) {
-		case 1:
-			space->gp[conv2] = ~val1;
-			break;
-		case 3:
-			space->zf = ~val1;
-			break;
-		case 4:
-			space->cf = ~val1;
-			break;
-		case 5:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*Can't set input register!*/
-			break;
-		case 6:
-			space->ou = ~val1;
-#ifdef EOF
-			printf("%i\n", space->ou);
-#endif
-			break;
-		case 7:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*You can't set the drive!*/
-			break;
-		}
-		break;
-	case 4:
-		ad2 = addrcheck(op[1]);
-
-		conv2 = addrconvert(ad2, op[1]);
-
+	} else {
 		val1 = op[0];
-		switch (ad2) {
-		case 1:
-			space->gp[conv2] = ~val1;
-			break;
-		case 3:
-			space->zf = ~val1;
-			break;
-		case 4:
-			space->cf = ~val1;
-			break;
-		case 5:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*Can't set input register!*/
-			break;
-		case 6:
-			space->ou = ~val1;
-#ifdef EOF
-			printf("%i\n", space->ou);
-#endif
-			break;
-		case 7:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*You can't set the drive!*/
-			break;
-		default:
-			return 3; /*We don't know what that address means*/
-		}
-		break;
-	default:
-		return 2; /*wrong usage*/
-		break;
 	}
+	val1 = ~val1;
+
+	ad2 = addrcheck(op[1]);
+	conv2 = addrconvert(ad2, op[1]);
+	if (auxset(&val1, space, ad2, conv2, 1)) {
+#ifdef EOF
+		printf("ERROR\n");
+#endif
+		return 1;
+	}
+
 	return 0;
 }
 
-uint hsub(uint op[4], vmem *space, uchar do_save)
+uint hbop(uint op[4], vmem *space, _Bool do_save, _Bool do_add)
 {
 	uint ad1;
 	uint ad2;
@@ -606,275 +290,44 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 
 	uint result;
 
-	switch (op[3]) {
-	case 0:
+	if (op[3] != (op[3] | 4)) {
 		ad1 = addrcheck(op[0]);
-		ad2 = addrcheck(op[1]);
-		ad3 = addrcheck(op[2]);
-
 		conv1 = addrconvert(ad1, op[0]);
-		conv2 = addrconvert(ad2, op[1]);
-		conv3 = addrconvert(ad3, op[2]);
-		switch (ad1) {
-		case 1:
-			val1 = space->gp[conv1];
-			break;
-		case 3:
-			val1 = space->zf;
-			break;
-		case 4:
-			val1 = space->cf;
-			break;
-		case 5:
-			val1 = space->in;
-			break;
-		case 6:
+		if (auxset(&val1, space, ad1, conv1, 0)) {
 #ifdef EOF
 			printf("ERROR\n");
 #endif
-			return 1; /*Can't read output register!*/
-			break;
-		case 7:
-			val1 = space->dr[conv1];
-			break;
-		default:
-			return 3; /*We don't know what that address means*/
+			return 1;
 		}
-		switch (ad2) {
-		case 1:
-			val2 = space->gp[conv2];
-			break;
-		case 3:
-			val2 = space->zf;
-			break;
-		case 4:
-			val2 = space->cf;
-			break;
-		case 5:
-			val2 = space->in;
-			break;
-		case 6:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*Can't read output register!*/
-			break;
-		case 7:
-			val2 = space->dr[conv2];
-			break;
-		default:
-			return 3; /*We don't know what that address means*/
-		}
-		result = val1 - val2;
-		if ((result > val1))
-			space->cf = 1;
-		else
-			space->cf = 0;
+	} else {
+		val1 = op[0];
+	}
 
-		if (result == 0)
-			space->zf = 0;
-		else
-			space->zf = 1;
-		if (do_save) {
-			switch (ad3) {
-			case 1:
-				space->gp[conv3] = result;
-				break;
-			case 3:
-				space->zf = result;
-				break;
-			case 4:
-				space->cf = result;
-				break;
-			case 5:
-#ifdef EOF
-				printf("ERROR\n");
-#endif
-				return 1; /*Can't set input register!*/
-				break;
-			case 6:
-				space->ou = result;
-#ifdef EOF
-				printf("%i\n", space->ou);
-#endif
-				break;
-			case 7:
-#ifdef EOF
-				printf("ERROR\n");
-#endif
-				return 1; /*You can't set the drive!*/
-				break;
-			default:
-				return 3; /*We don't know what that address
-					     means*/
-			};
-		}
-		break;
-	case 2:
-		ad1 = addrcheck(op[0]);
-		ad3 = addrcheck(op[2]);
-
-		conv1 = addrconvert(ad1, op[0]);
-		conv3 = addrconvert(ad3, op[2]);
-		switch (ad1) {
-		case 1:
-			val1 = space->gp[conv1];
-			break;
-		case 3:
-			val1 = space->zf;
-			break;
-		case 4:
-			val1 = space->cf;
-			break;
-		case 5:
-			val1 = space->in;
-			break;
-		case 6:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*Can't read output register!*/
-			break;
-		case 7:
-			val1 = space->dr[conv1];
-			break;
-		default:
-			return 3; /*We don't know what that address means*/
-		}
-		val2 = op[1];
-		result = val1 - val2;
-		if ((result > val1))
-			space->cf = 1;
-		else
-			space->cf = 0;
-
-		if (result == 0)
-			space->zf = 0;
-		else
-			space->zf = 1;
-
-		if (do_save) {
-			switch (ad3) {
-			case 1:
-				space->gp[conv3] = result;
-				break;
-			case 3:
-				space->zf = result;
-				break;
-			case 4:
-				space->cf = result;
-				break;
-			case 5:
-#ifdef EOF
-				printf("ERROR\n");
-#endif
-				return 1; /*Can't set input register!*/
-				break;
-			case 6:
-				space->ou = result;
-#ifdef EOF
-				printf("%i\n", space->ou);
-#endif
-				break;
-			case 7:
-#ifdef EOF
-				printf("ERROR\n");
-#endif
-				return 1; /*You can't set the drive!*/
-				break;
-			default:
-				return 3; /*We don't know what that address
-					     means*/
-			}
-		}
-		break;
-	case 4:
+	if (op[3] != (op[3] | 2)) {
 		ad2 = addrcheck(op[1]);
-		ad3 = addrcheck(op[2]);
-
 		conv2 = addrconvert(ad2, op[1]);
-		conv3 = addrconvert(ad3, op[2]);
-		val1 = op[0];
-
-		switch (ad2) {
-		case 1:
-			val2 = space->gp[conv2];
-			break;
-		case 3:
-			val2 = space->zf;
-			break;
-		case 4:
-			val2 = space->cf;
-			break;
-		case 5:
-			val2 = space->in;
-			break;
-		case 6:
+		if (auxset(&val2, space, ad2, conv2, 0)) {
 #ifdef EOF
 			printf("ERROR\n");
 #endif
-			return 1; /*Can't read output register!*/
-			break;
-		case 7:
-			val2 = space->dr[conv2];
-			break;
-		default:
-			return 3; /*We don't know what that address means*/
+			return 1;
 		}
-
-		result = val1 - val2;
-		if ((result > val1))
-			space->cf = 1;
-		else
-			space->cf = 0;
-
-		if (result == 0)
-			space->zf = 0;
-		else
-			space->zf = 1;
-
-		if (do_save) {
-			switch (ad3) {
-			case 1:
-				space->gp[conv3] = result;
-				break;
-			case 3:
-				space->zf = result;
-				break;
-			case 4:
-				space->cf = result;
-				break;
-			case 5:
-#ifdef EOF
-				printf("ERROR\n");
-#endif
-				return 1; /*Can't set input register!*/
-				break;
-			case 6:
-				space->ou = result;
-#ifdef EOF
-				printf("%i\n", space->ou);
-#endif
-				break;
-			case 7:
-#ifdef EOF
-				printf("ERROR\n");
-#endif
-				return 1; /*You can't set the drive!*/
-				break;
-			default:
-				return 3; /*We don't know what that address
-					     means*/
-			}
-		}
-		break;
-	case 6:
-		ad3 = addrcheck(op[2]);
-
-		conv3 = addrconvert(ad3, op[2]);
-		val1 = op[0];
+	} else {
 		val2 = op[1];
+	}
 
+	if (do_add) {
+		result = val1 + val2;
+		if ((result < val1) || (result < val2))
+			space->cf = 1;
+		else
+			space->cf = 0;
+
+		if (result == 0)
+			space->zf = 0;
+		else
+			space->zf = 1;
+	} else {
 		result = val1 - val2;
 		if ((result > val1))
 			space->cf = 1;
@@ -885,374 +338,50 @@ uint hsub(uint op[4], vmem *space, uchar do_save)
 			space->zf = 0;
 		else
 			space->zf = 1;
-
-		if (do_save) {
-			switch (ad3) {
-			case 1:
-				space->gp[conv3] = result;
-				break;
-			case 3:
-				space->zf = result;
-				break;
-			case 4:
-				space->cf = result;
-				break;
-			case 5:
+	}
+	if (do_save) {
+		ad3 = addrcheck(op[2]);
+		conv3 = addrconvert(ad3, op[2]);
+		if (auxset(&result, space, ad3, conv3, 1)) {
 #ifdef EOF
-				printf("ERROR\n");
+			printf("ERROR\n");
 #endif
-				return 1; /*Can't set input register!*/
-				break;
-			case 6:
-				space->ou = result;
-#ifdef EOF
-				printf("%i\n", space->ou);
-#endif
-				break;
-			case 7:
-#ifdef EOF
-				printf("ERROR\n");
-#endif
-				return 1; /*You can't set the drive!*/
-				break;
-			default:
-				return 3; /*We don't know what that address
-					     means*/
-			}
+			return 1;
 		}
-		break;
-	default:
-		return 2; /*wrong usage*/
 	}
 	return 0;
 }
 
-uint hadd(uint op[4], vmem *space)
-{
-	uint ad1;
-	uint ad2;
-	uint ad3;
-
-	uint conv1;
-	uint conv2;
-	uint conv3;
-
-	uint val1;
-	uint val2;
-
-	uint result;
-
-	switch (op[3]) {
-	case 0:
-		ad1 = addrcheck(op[0]);
-		ad2 = addrcheck(op[1]);
-		ad3 = addrcheck(op[2]);
-
-		conv1 = addrconvert(ad1, op[0]);
-		conv2 = addrconvert(ad2, op[1]);
-		conv3 = addrconvert(ad3, op[2]);
-		switch (ad1) {
-		case 1:
-			val1 = space->gp[conv1];
-			break;
-		case 3:
-			val1 = space->zf;
-			break;
-		case 4:
-			val1 = space->cf;
-			break;
-		case 5:
-			val1 = space->in;
-			break;
-		case 6:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*Can't read output register!*/
-			break;
-		case 7:
-			val1 = space->dr[conv1];
-			break;
-		default:
-			return 3; /*We don't know what that address means*/
-		}
-		switch (ad2) {
-		case 1:
-			val2 = space->gp[conv2];
-			break;
-		case 3:
-			val2 = space->zf;
-			break;
-		case 4:
-			val2 = space->cf;
-			break;
-		case 5:
-			val2 = space->in;
-			break;
-		case 6:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*Can't read output register!*/
-			break;
-		case 7:
-			val2 = space->dr[conv2];
-			break;
-		default:
-			return 3; /*We don't know what that address means*/
-		}
-		result = val1 + val2;
-		if ((result < val1) || (result < val2))
-			space->cf = 1;
-		else
-			space->cf = 0;
-
-		if (result == 0)
-			space->zf = 0;
-		else
-			space->zf = 1;
-
-		switch (ad3) {
-		case 1:
-			space->gp[conv3] = result;
-			break;
-		case 3:
-			space->zf = result;
-			break;
-		case 4:
-			space->cf = result;
-			break;
-		case 5:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*Can't set input register!*/
-			break;
-		case 6:
-			space->ou = result;
-#ifdef EOF
-			printf("%i\n", space->ou);
-#endif
-			break;
-		case 7:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*You can't set the drive!*/
-			break;
-		default:
-			return 3; /*We don't know what that address means*/
-		}
-		break;
-	case 2:
-		ad1 = addrcheck(op[0]);
-		ad3 = addrcheck(op[2]);
-
-		conv1 = addrconvert(ad1, op[0]);
-		conv3 = addrconvert(ad3, op[2]);
-		switch (ad1) {
-		case 1:
-			val1 = space->gp[conv1];
-			break;
-		case 3:
-			val1 = space->zf;
-			break;
-		case 4:
-			val1 = space->cf;
-			break;
-		case 5:
-			val1 = space->in;
-			break;
-		case 6:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*Can't read output register!*/
-			break;
-		case 7:
-			val1 = space->dr[conv1];
-			break;
-		default:
-			return 3; /*We don't know what that address means*/
-		}
-		val2 = op[1];
-		result = val1 + val2;
-		if ((result < val1) || (result < val2))
-			space->cf = 1;
-		else
-			space->cf = 0;
-
-		if (result == 0)
-			space->zf = 0;
-		else
-			space->zf = 1;
-
-		switch (ad3) {
-		case 1:
-			space->gp[conv3] = result;
-			break;
-		case 3:
-			space->zf = result;
-			break;
-		case 4:
-			space->cf = result;
-			break;
-		case 5:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*You can't set the drive!*/
-			break;
-		case 6:
-			space->ou = result;
-#ifdef EOF
-			printf("%i\n", space->ou);
-#endif
-			break;
-		case 7:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*You can't set the drive!*/
-			break;
-		default:
-			return 3; /*We don't know what that address means*/
-		}
-		break;
-	case 4:
-		ad2 = addrcheck(op[1]);
-		ad3 = addrcheck(op[2]);
-
-		conv2 = addrconvert(ad2, op[1]);
-		conv3 = addrconvert(ad3, op[2]);
-
-		val1 = op[0];
-
-		switch (ad2) {
-		case 1:
-			val2 = space->gp[conv2];
-			break;
-		case 3:
-			val2 = space->zf;
-			break;
-		case 4:
-			val2 = space->cf;
-			break;
-		case 5:
-			val2 = space->in;
-			break;
-		case 6:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*Can't read output register!*/
-			break;
-		case 7:
-			val2 = space->dr[conv2];
-			break;
-		default:
-			return 3; /*We don't know what that address means*/
-		}
-
-		result = val1 + val2;
-		if ((result < val1) || (result < val2))
-			space->cf = 1;
-		else
-			space->cf = 0;
-
-		if (result == 0)
-			space->zf = 0;
-		else
-			space->zf = 1;
-
-		switch (ad3) {
-		case 1:
-			space->gp[conv3] = result;
-			break;
-		case 3:
-			space->zf = result;
-			break;
-		case 4:
-			space->cf = result;
-			break;
-		case 5:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*Can't set input register!*/
-			break;
-		case 6:
-			space->ou = result;
-#ifdef EOF
-			printf("%i\n", space->ou);
-#endif
-			break;
-		case 7:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*You can't set the drive!*/
-			break;
-		default:
-			return 3; /*We don't know what that address means*/
-		}
-		break;
-	case 6:
-		ad3 = addrcheck(op[2]);
-
-		conv3 = addrconvert(ad3, op[2]);
-
-		val1 = op[0];
-		val2 = op[1];
-
-		result = val1 + val2;
-		if ((result < val1) || (result < val2))
-			space->cf = 1;
-		else
-			space->zf = 0;
-
-		if (result == 0)
-			space->zf = 0;
-		else
-			space->zf = 1;
-
-		switch (ad3) {
-		case 1:
-			space->gp[conv3] = result;
-			break;
-		case 3:
-			space->zf = result;
-			break;
-		case 4:
-			space->cf = result;
-			break;
-		case 5:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*Can't set input register!*/
-			break;
-		case 6:
-			space->ou = result;
-#ifdef EOF
-			printf("%i\n", space->ou);
-#endif
-			break;
-		case 7:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*You can't set the drive!*/
-			break;
-		default:
-			return 3; /*We don't know what that address means*/
-		}
-		break;
-	default:
-		return 2; /*wrong usage*/
-	}
+uint hcall(uint *co, uint id, mem *prog){
+	prog->return_co[id] = *co;
+	*co = prog->sub_co[id];
 	return 0;
 }
+
+uint hsubs(uint *co, uint id, mem *prog){
+	uint val = 0; /*It is impossible counter 0
+			is a safe place to return to,
+			which is why it is an error value*/
+	prog->sub_co[id] = *co;
+	for(int i = 0; (long unsigned int)i < (sizeof(prog->m1.inst) - (*co + 1)); i++){
+		if(prog->m1.inst[*co + 1 + i] == sube){
+			val = *co + 1 + i;
+			break;
+		}
+	}
+	if(val)
+		*co = val;
+	else
+		return 1;
+
+	return 0;
+}
+
+uint hsube(uint *co, uint id, mem *prog){
+	*co = prog->return_co[id];
+	return 0;
+}
+
 
 uint hset(uint op[4], vmem *space)
 {
@@ -1264,124 +393,28 @@ uint hset(uint op[4], vmem *space)
 
 	uint val;
 
-	switch (op[3]) {
-	case 0:
-		ad1 = addrcheck(op[0]);
-		ad2 = addrcheck(op[1]);
-
-		conv1 = addrconvert(ad1, op[0]);
-		conv2 = addrconvert(ad2, op[1]);
-		switch (ad1) {
-		case 1:;
-			val = space->gp[conv1];
-			break;
-		case 3:;
-			val = space->zf;
-			break;
-		case 4:;
-			val = space->cf;
-			break;
-		case 5:;
-			val = space->in;
-			break;
-		case 6:;
+	ad1 = addrcheck(op[0]);
+	conv1 = addrconvert(ad1, op[0]);
+	if (op[3] != (op[3] | 4)) {
+		if (auxset(&val, space, ad1, conv1, 0)) {
 #ifdef EOF
 			printf("ERROR\n");
 #endif
-			return 1; /*Can't read output register!*/
-			break;
-		case 7:
-			val = space->dr[conv1];
-			break;
-		default:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*ERROR, WE DON'T KNOW WHAT THAT ADDRESS
-				     MEANS*/
+			return 1;
 		}
-
-		switch (ad2) {
-		case 1:;
-			space->gp[conv2] = val;
-			break;
-		case 3:;
-			space->zf = val;
-			break;
-		case 4:;
-			space->cf = val;
-			break;
-		case 5:;
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*Can't set input register!*/
-			break;
-		case 6:;
-			space->ou = val;
-#ifdef EOF
-			printf("%i\n", space->ou);
-#endif
-			break;
-		case 7:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*You can't set the drive!*/
-			break;
-		default:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*ERROR, WE DON'T KNOW WHAT THAT ADDRESS
-				     MEANS*/
-		}
-		break;
-	case 4:
+	} else {
 		val = op[0];
-		ad2 = addrcheck(op[1]);
+	}
 
-		conv2 = addrconvert(ad2, op[1]);
-		switch (ad2) {
-		case 1:;
-			space->gp[conv2] = val;
-			break;
-		case 3:;
-			space->zf = val;
-			break;
-		case 4:;
-			space->cf = val;
-			break;
-		case 5:;
-			return 0; /*Can't set input register!*/
-			break;
-		case 6:;
-			space->ou = val;
-#ifdef EOF
-			printf("%i\n", space->ou);
-#endif
-			break;
-		case 7:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*You can't set the drive!*/
-			break;
-		default:
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1; /*ERROR, WE DON'T KNOW WHAT THAT ADDRESS
-				     MEANS*/
-		}
-		break;
-	default:
+	ad2 = addrcheck(op[1]);
+	conv2 = addrconvert(ad2, op[1]);
+	if (auxset(&val, space, ad2, conv2, 1)) {
 #ifdef EOF
 		printf("ERROR\n");
 #endif
-		return 1; /*ERROR, THE INSTRUCTION IS WRONG*/
+		return 1;
 	}
-	return 2; /*SOMETHING WENT TERRIBLY WRONG*/
+	return 0;
 }
 
 mem fxmem(xmem code)
@@ -1395,36 +428,36 @@ mem fxmem(xmem code)
 uint execnext(mem *program)
 {
 	uint errno;
-	if (program->co < (MEMSIZE * 4)) {
-		switch (program->m1.inst[program->co]) {
+	if (program->m2.co < (MEMSIZE * 4)) {
+		switch (program->m1.inst[program->m2.co]) {
 		case halt:
 			program->hf = 1;
-			program->co += 1;
+			program->m2.co += 1;
 #ifdef EOF
 			printf("HALT\n");
 #endif
 			return 0;
 		case nop:
-			program->co += 1;
+			program->m2.co += 1;
 			return 0;
 		case set:
 			errno =
-			    hset(program->m1.opnd[program->co], &program->m2);
-			program->co += 1;
+			    hset(program->m1.opnd[program->m2.co], &program->m2);
+			program->m2.co += 1;
 			return 0;
 		case jmp:
-			errno = hjump(program->m1.opnd[program->co],
-				      &program->m2, &program->co);
+			errno = hjump(program->m1.opnd[program->m2.co],
+				      &program->m2, &program->m2.co);
 			if (errno != 0) {
 				return 2; /*EXECUTION ERROR*/
 			}
 			return 0;
 		case jcz:
 			if (program->m2.zf == 0)
-				errno = hjump(program->m1.opnd[program->co],
-					      &program->m2, &program->co);
+				errno = hjump(program->m1.opnd[program->m2.co],
+					      &program->m2, &program->m2.co);
 			else {
-				program->co += 1;
+				program->m2.co += 1;
 				errno = 0;
 			}
 			if (errno != 0) {
@@ -1432,73 +465,90 @@ uint execnext(mem *program)
 			}
 			return 0;
 		case add:
-			errno =
-			    hadd(program->m1.opnd[program->co], &program->m2);
-			program->co += 1;
+			errno = hbop(program->m1.opnd[program->m2.co],
+				     &program->m2, 1, 1);
+			program->m2.co += 1;
 			if (errno != 0) {
 				return 2; /*EXECUTION ERROR*/
 			}
 			return 0;
 		case sub:
-			errno = hsub(program->m1.opnd[program->co],
-				     &program->m2, 1); /*Substract and save*/
-			program->co += 1;
+			errno = hbop(program->m1.opnd[program->m2.co],
+				     &program->m2, 1, 0); /*Substract and save*/
+			program->m2.co += 1;
 			if (errno != 0) {
 				return 2; /*EXECUTION ERROR*/
 			}
 			return 0;
 		case and:
 			errno =
-			    hbin(program->m1.opnd[program->co], &program->m2,
+			    hbin(program->m1.opnd[program->m2.co], &program->m2,
 				 1); /*Substract but don't save*/
-			program->co += 1;
+			program->m2.co += 1;
 			if (errno != 0) {
 				return 2; /*EXECUTION ERROR*/
 			}
 			return 0;
 		case or:
 			errno =
-			    hbin(program->m1.opnd[program->co], &program->m2,
+			    hbin(program->m1.opnd[program->m2.co], &program->m2,
 				 2); /*Substract but don't save*/
-			program->co += 1;
+			program->m2.co += 1;
 			if (errno != 0) {
 				return 2; /*EXECUTION ERROR*/
 			}
 			return 0;
 		case xor:
 			errno =
-			    hbin(program->m1.opnd[program->co], &program->m2,
+			    hbin(program->m1.opnd[program->m2.co], &program->m2,
 				 3); /*Substract but don't save*/
-			program->co += 1;
+			program->m2.co += 1;
 			if (errno != 0) {
 				return 2; /*EXECUTION ERROR*/
 			}
 			return 0;
 		case not:
-			errno = hnot(program->m1.opnd[program->co],
+			errno = hnot(program->m1.opnd[program->m2.co],
 				     &program->m2); /*Substract but don't save*/
-			program->co += 1;
+			program->m2.co += 1;
 			if (errno != 0) {
 				return 2; /*EXECUTION ERROR*/
 			}
 			return 0;
 		case cmp:
 			errno =
-			    hsub(program->m1.opnd[program->co], &program->m2,
+			    hbop(program->m1.opnd[program->m2.co], &program->m2, 1,
 				 0); /*Substract but don't save*/
-			program->co += 1;
+			program->m2.co += 1;
 			if (errno != 0) {
 				return 2; /*EXECUTION ERROR*/
 			}
 			return 0;
 		case subs: /*UNIMPLEMENTED*/
-			break;
+			errno =
+			    hsubs(&(program->m2.co), program->m1.opnd[program->m2.co][0], program); /*Mark start of subroutine*/
+			program->m2.co += 1;
+			if (errno != 0) {
+				return 2; /*EXECUTION ERROR*/
+			}
+			return 0;
 		case sube: /*UNIMPLEMENTED*/
-			break;
+			errno =
+			    hsube(&(program->m2.co), program->m1.opnd[program->m2.co][0], program); /*Mark end of subroutine*/
+			program->m2.co += 1;
+			if (errno != 0) {
+				return 2; /*EXECUTION ERROR*/
+			}
+			return 0;
 		case call: /*UNIMPLEMENTED*/
-			break;
+			errno =
+			    hcall(&(program->m2.co), program->m1.opnd[program->m2.co][0], program); /*Call subroutine*/
+			program->m2.co += 1;
+			if (errno != 0) {
+				return 2; /*EXECUTION ERROR*/
+			}
+			return 0;
 		}
-		return 0;
 	}
 
 #if defined(EOF)

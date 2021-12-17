@@ -73,10 +73,10 @@ result into register '2'. Halt.
 
   ASSEMBLY FORMAT:
     It codes almost directly to the binary format. The available instructions
-are: {halt, nop, jmp, jcz, set, add, sub, not, and, xor, or, not} The following
+are: {halt, nop, jmp, jcz, set, add, sub, not, and, xor, or, not, subs, sube, call}
     The syntax is the following:
-      instruction ARG1 ARG2 ARG3\n
-    Where ARGx is a number
+      instruction ARGx ARGx ARGx\n
+    Where ARGx is an address (Rx), a literal (ID), or either (Vx)
     Instructions are terminated by newline '\n'
 
     For arguments labeled 'Value' (NOT for arguments labeled 'Register'),
@@ -106,13 +106,13 @@ typedef enum {
 		  the zero flag to 1 if V1 is smaller than V2, sets the carry
 		  flag to 1 and the zero flag to 0 if V1 is equal to V2, sets
 		  the carry flag to 0 and the zero flag to 0*/
-	/*SUBS, SUBE, CALL: manage the callstack*/
+	/*SUBS, SUBE, CALL: Stackless subroutines*/
 	subs = 12, /* ID; Marks the start of a subroutine with the literal
 		      ( '[]' brace enclosed ) identifier ID.
 		     Add*/
-	sube = 13, /*ID; Marks the end of subroutine ID. Pop program counter from stack (return)*/
-	call = 14 /* ID; Push program counter to callstack, then jump to the instruction 'SUBS'
-		     that marks the start of the subroutine*/
+	sube = 13, /*ID; Marks the end of subroutine ID. It JMPs to the instruction
+			after the corresponding CALL instruction.*/
+	call = 14 /* ID; JMP to the start of execution (post-SUBS) of subroutine ID*/
 } iset;
 
 /*Execution memory*/
@@ -149,18 +149,24 @@ typedef struct {
 	/*Output register, write-only, 0xFFFC*/
 	uchar ou;
 
-	/*Callstack, NOT MEMORY MAPPED*/
-	uchar cs[MEMSMALL];
+	/*Program counter, read-only, 0xFFFB*/
+	uint co;
+
 } vmem;
 
 typedef struct {
-	xmem m1;
-	vmem m2;
-	uint co;
-	/*Instruction counter*/
+	xmem m1; /*Code memory*/
+	vmem m2; /*Data memory*/
 
-	uchar hf;
-	/*Halt flag, 1 if it has halted.*/
+	uchar hf; /*Halt flag, 1 if it has halted.*/
+
+	uint sub_co[MEMSMALL]; /*For storing counter values corresponding to the SUBS
+				instruction of each subroutine ID*/
+
+	uint return_co[MEMSMALL]; /*For storing counter values corresponding to the execution
+				environment of the branch that executes CALLS, for each subroutine ID*/
+
+	uint skip_co[MEMSMALL]; /*Counter values subs has to skip to*/
 } mem;
 
 /*Nomagno's boring VM interface*/

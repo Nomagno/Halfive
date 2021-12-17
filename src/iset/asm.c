@@ -130,8 +130,8 @@ int main(int argc, char **argv)
 
 	int errno = 0;
 	while ((!prog.hf) && (!errno)) {
-		if ((prog.m1.opnd[prog.co][0] == 0xFFFD) ||
-		    (prog.m1.opnd[prog.co][1] == 0xFFFD)) {
+		if ((prog.m1.opnd[prog.m2.co][0] == 0xFFFD) ||
+		    (prog.m1.opnd[prog.m2.co][1] == 0xFFFD)) {
 			putchar('>');
 			prog.m2.in = getchar();
 			putchar('\n');
