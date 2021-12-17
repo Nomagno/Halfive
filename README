@@ -16,11 +16,20 @@ It has no implementation requirements
 
 List of specifications and corresponding mime types:
 	Encoding formats:
-		Half-World Document (HWDOC) -- text/hwdoc
+		Half-World Document (HWDOC)
+			- text/hwdoc
 
 	Domain-specific data formats:
-		Half-World Network (HWNET) -- text/hwnet
-		Half-World Track (HWT) -- text/hwt
+		Half-World Network (HWNET)
+			- text/hwnet
+		Half-World Track (HWT) 
+			- text/hwt
+
+	General-purpose tools:
+		Half-World Virtual Machine (HWVM)
+			- text/hwvm
+			- application/hwbin
+			- application/hwdrive
 
 If you read all specifications in the docs, you should be able to:
  - Use HWNET as a basic communications standard
