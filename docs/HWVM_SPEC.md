@@ -1,4 +1,4 @@
-# Half-World Track (Encoding) Specification
+# Half-World Virtual Machine Specification
 
 #### SPDX identifier: COIL-1.0
 
