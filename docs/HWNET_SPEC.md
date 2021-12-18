@@ -1,6 +1,7 @@
 # Half-World Network Specification
 
 #### SPDX identifier: COIL-1.0
+#### Copyright Nomagno 2021
 
 #### HWNET is designed to work in any transport layer that is capable of handling packet payloads of up to 400 bytes, with *any* amount of packet loss and connection instability. As such, it performs no verification of player identity, but it is fairly trivial to extend it to do such a thing. It *should* be impossible to write a compliant, sane packet that exceeds 400 ASCII characters/bytes in length, however there is plenty of room to expand until the more realistic 1000+ bytes that most protocols can handle, which leaves rooms for extensions to touch this specification.
 

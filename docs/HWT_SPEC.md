@@ -1,6 +1,7 @@
 # Half-World Track (Encoding) Specification
 
 #### SPDX identifier: COIL-1.0
+#### Copyright Nomagno 2021
 #### Please read the HWDOC format specification before this one.
 #### Arguments between parentheses are variable and should be replaced according to their respective explanations.
 

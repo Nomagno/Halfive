@@ -1,5 +1,6 @@
 # Half-World Document Specification (The encoding format of HWT)
 #### SPDX identifier: COIL-1.0
+#### Copyright Nomagno 2021
 #### HWDOC is a simple storage format for slightly nested data
 
 ### It is recommended to use the ".hwdoc" extension for HWDOC documents (where applicable).

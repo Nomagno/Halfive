@@ -1,4 +1,6 @@
 /*
+Copyright Nomagno 2021
+
 Redistributions, modified or unmodified, in whole or in part, must retain
 applicable notices of copyright or other legal privilege, these conditions, and
 the following license terms and disclaimer.  Subject to these conditions, each
@@ -24,6 +26,7 @@ COPYRIGHT OR OTHER LEGAL PRIVILEGE BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
 LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
+
 #include "hwvm.h"
 #include <stdio.h>
 /*<stdio.h> IS NOT NEEDED, IT ONLY ADDS
