@@ -32,17 +32,6 @@ WORK.*/
 typedef unsigned char uchar;
 typedef unsigned int uint;
 
-/*Unimplemented fractionary number instruction set extension.
-  Ideally, rational number operations are performed by reading
-  and writing three contiguous memory cells, representing
-  numerator, denominator and sign*/
-typedef struct {
-	uchar num; /*Numerator*/
-	uchar denom; /*Denominator*/
-	_Bool sign; /*0 - positive, 1 - negative*/
-} rational;
-
-
 /*Half-World Virtual Machine
 
 (AT THE BOTTOM OF THIS BIG COMMENT BLOCK YOU HAVE THE ACTUAL CODE)
