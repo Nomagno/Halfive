@@ -28,11 +28,8 @@ OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
 #include "hwvm.h"
-#include <stdlib.h>
-#include <string.h>
-
-#include <stdio.h>
-/*STDIO.H IS ONLY NEEDED FOR main()*/
+#include "hwstring.c"
+#define NULL (void *)0
 
 uint _isxupdigit(uchar inchar)
 {
@@ -51,37 +48,37 @@ uint _isxupdigit(uchar inchar)
 
 iset _isinst(char *instr)
 {
-	if (strcmp(instr, "halt") == 0)
+	if (hwstrcmp(instr, "halt") == 0)
 		return halt;
-	else if (strcmp(instr, "nop") == 0)
+	else if (hwstrcmp(instr, "nop") == 0)
 		return nop;
-	else if (strcmp(instr, "set") == 0)
+	else if (hwstrcmp(instr, "set") == 0)
 		return set;
-	else if (strcmp(instr, "jmp") == 0)
+	else if (hwstrcmp(instr, "jmp") == 0)
 		return jmp;
-	else if (strcmp(instr, "jcz") == 0)
+	else if (hwstrcmp(instr, "jcz") == 0)
 		return jcz;
-	else if (strcmp(instr, "add") == 0)
+	else if (hwstrcmp(instr, "add") == 0)
 		return add;
-	else if (strcmp(instr, "sub") == 0)
+	else if (hwstrcmp(instr, "sub") == 0)
 		return sub;
-	else if (strcmp(instr, "and") == 0)
+	else if (hwstrcmp(instr, "and") == 0)
 		return and;
-	else if (strcmp(instr, "or") == 0)
+	else if (hwstrcmp(instr, "or") == 0)
 		return or ;
-	else if (strcmp(instr, "xor") == 0)
+	else if (hwstrcmp(instr, "xor") == 0)
 		return xor;
-	else if (strcmp(instr, "not") == 0)
+	else if (hwstrcmp(instr, "not") == 0)
 		return not ;
-	else if (strcmp(instr, "cmp") == 0)
+	else if (hwstrcmp(instr, "cmp") == 0)
 		return cmp;
-	else if (strcmp(instr, "subs") == 0)
+	else if (hwstrcmp(instr, "subs") == 0)
 		return subs;
-	else if (strcmp(instr, "sube") == 0)
+	else if (hwstrcmp(instr, "sube") == 0)
 		return sube;
-	else if (strcmp(instr, "call") == 0)
+	else if (hwstrcmp(instr, "call") == 0)
 		return call;
-	else if (strcmp(instr, "jcnz") == 0)
+	else if (hwstrcmp(instr, "jcnz") == 0)
 		return jcnz;
 	else
 		return 16;
@@ -89,7 +86,7 @@ iset _isinst(char *instr)
 
 uint asmparse(char *linestr, iset *inst, uint opnds[4])
 {
-	char *token = strtok(linestr, " ");
+	char *token = hwstrtok(linestr, " ");
 	iset myinst;
 	int i = 0;
 	while ((token != NULL) && (i < 3)) {
@@ -97,11 +94,11 @@ uint asmparse(char *linestr, iset *inst, uint opnds[4])
 		if ((myinst = _isinst(token)) != 16) {
 			*inst = myinst;
 		} else if (_isxupdigit(token[0])) {
-			opnds[i] = (uint)strtoul(token, NULL, 16);
+			opnds[i] = (uint)hwstrtoul(token, NULL, 16);
 			i += 1;
 		} else if (token[0] == '[') {
 			token += 1;
-			opnds[i] = (uint)strtoul(token, NULL, 16);
+			opnds[i] = (uint)hwstrtoul(token, NULL, 16);
 
 			opnds[3] = (opnds[3] | (1 << (2 - i)));
 
@@ -109,11 +106,16 @@ uint asmparse(char *linestr, iset *inst, uint opnds[4])
 		} else {
 			return 2; /*CATASTROPHIC ERROR*/
 		}
-		token = strtok(NULL, " ");
+		token = hwstrtok(NULL, " ");
 	}
 	return 0;
 }
 
+#define HWASSEMBLY
+
+#ifdef HWASSEMBLY
+
+#include <stdio.h>
 int main(int argc, char **argv)
 {
 	/*Requires code file and drive file as arguments*/
@@ -146,3 +148,4 @@ int main(int argc, char **argv)
 	fclose(drivefile);
 	return errno;
 }
+#endif
