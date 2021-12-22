@@ -103,6 +103,13 @@ uint asmparse(char *linestr, iset *inst, uint opnds[4])
 			opnds[3] = (opnds[3] | (1 << (2 - i)));
 
 			i += 1;
+		} else if (token[0] == '{') {
+			token += 1;
+			opnds[i] = (uint)hwstrtoul(token, NULL, 16);
+			opnds[3] = (opnds[3] | 8);
+			opnds[3] = (opnds[3] | (1 << (2 - i)));
+
+			i += 1;
 		} else {
 			return 2; /*CATASTROPHIC ERROR*/
 		}

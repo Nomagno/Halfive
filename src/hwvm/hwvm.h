@@ -39,20 +39,21 @@ typedef unsigned int uint;
 (AT THE BOTTOM OF THIS BIG COMMENT BLOCK YOU HAVE THE ACTUAL CODE)
 
 Instructions are terminated by newline, and the number of arguments shown in
-comments is REQUIRED Literals that are not addresses should be enclosed in
-square braces e.g. [6]
-
+comments is REQUIRED
+Literals should be enclosed in square braces e.g. [6]
+Pointers should be enclosed in key braces e.g. {6}
 
 BINARY FORMAT:
 You code each instruction as 4 bits of which the least significant 3 indicate
-which arguments are literals and which addresses (1010 - first is literal,
-second address, third literal, fourth doesn't matter), then 4 bits for the
-instructions themselves (check the enum values, max 12), then simply read the
-corresponding number of 16-bit 'arguments' (0-3), and repeat. EXAMPLE:
+which arguments are literals and which addresses, and the fourth indicates if the
+literals are pointers or not (0101 - from right to left:  first is literal,
+second address, third literal, fourth indicates they are literals and NOT pointers),
+then 4 bits for the instructions themselves (check the enum values, max 12), then simply read the
+corresponding number of 16-bit 'arguments' (0-3), and repeat.
+
+EXAMPLE:
 
       BINARY: 0010 0000000000000001 0000000000000011 0000000000000010 0000 0000000000000000
-	NOTE: You can safely ignore the most significant bit of the second value
-(0010), since only the least significant 3 code which arguments are literals.
       DECIMAL: 2 1 3 2 0 0
       ASSEMBLY:add 1 [3] 2\n halt
       ENGLISH:
@@ -68,24 +69,17 @@ are: {halt, nop, jmp, jcz, set, add, sub, not, and, xor, or, not, subs, sube, ca
     Where ARGx is an address (Rx), a literal (ID), or either (Vx)
     Instructions are terminated by newline '\n'
 
-    For arguments labeled 'Value' (NOT for arguments labeled 'Register'),
-literals are allowed in the form [ARGx] (Number enclosed in brackets) The enum
-below specifies in a comment the behaviour of each proper instruction and the
-corresponding
 
-EXAMPLE (THE LINE NUMBERING AND EVERYTHING AFTER THE '#' IN EACH LINE IS NOT PART OF THE LANGUAGE):
+For arguments labeled 'Value' (NOT for arguments labeled 'Register'),
+addresses are allowed in the form ARGx,
+literals are allowed in the form [ARGx] (Number enclosed in brackets), and
+pointers are allowed in the form {ARGx}, BUT THEY SHALL NOT BE COMBINED LIKE IN {ARG1} [ARG2]
 
-```
-0. set [33] FFFC # Write literal 0x33 (51, 00110011) to the OUTPUT REGISTER
-1. jmp 4 # Jump to instruction 4
-2. sub [4] 3 # Do the subtraction [4] - 3. We don't know what address three contains, but it will set the zero flag if it is 0x4
-3. jcz 7 # If the previous comparison was indeed correct and address 3 contains 0x4, jump to instruction 7
-4. add [FE] [8] FFFC # Write the addition of 0xFE (254, 11111110) and 0x8 (8, 00001000) to the OUTPUT register. It should regult in OVERFLOW
-5. set FFFE FFFF # Copy the carry flag to the zero flag
-6. jcnz 8 # If the zero flag is not zero (it shouldn't be, there was overflow and the carry flag was cloned!), jump to instruction 8
-7.
-8. jmp 2 # Jump to instruction 2
-9. halt
+For arguments labeled 'Register' (NOT for arguments labeled 'Value'),
+addresses are allowed in the form ARGx,
+pointers are allowed in the form {ARGx}, BUT LITERALS ARE NOT ALLOWED
+
+The enum below specifies in a comment the behaviour of each instruction and the type of its arguments
 ```
 
 */

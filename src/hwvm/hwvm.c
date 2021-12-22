@@ -92,12 +92,20 @@ uint addrconvert(uint arg, uint addr)
 }
 
 /*INCREDIBLY COMMON BOILERPLATE MOVED TO OWN FUNCTION*/
-uint auxset(uint *val, vmem *space, uint ad, uint conv, _Bool do_write)
+uint auxset(uint *val, vmem *space, uint ad, uint conv, _Bool do_write, _Bool isptr)
 {
 	if (!do_write) {
 		switch (ad) {
-		case 1:;
-			*val = space->gp[conv];
+		case 1:; /*If we're dealing with a pointer, treat the value of two contiguous byes as the address and check
+			if is within bounds. Else just*/
+			if(isptr){
+				unsigned ptrval = (((uint)space->gp[conv] << 8) | space->gp[conv+1]);
+				unsigned adptr = addrcheck(ptrval);
+				unsigned adptrconv = addrconvert(adptr, ptrval);
+				if (adptr == 1) { *val = space->gp[adptrconv]; }
+				else if (adptr == 7) { *val = space->dr[adptrconv]; }
+			} else
+				*val = space->gp[conv];
 			break;
 		case 2:;
 			*val = space->co;
@@ -114,8 +122,16 @@ uint auxset(uint *val, vmem *space, uint ad, uint conv, _Bool do_write)
 		case 6:;
 			return 1; /*Can't read output register!*/
 			break;
-		case 7:
-			*val = space->dr[conv];
+		case 7: /*If we're dealing with a pointer, treat the value of two contiguous byes as the address and check
+			if is within bounds. Else just*/
+			if(isptr){
+				unsigned ptrval = (((uint)space->dr[conv] << 8) + space->dr[conv+1]);
+				unsigned adptr = addrcheck(ptrval);
+				unsigned adptrconv = addrconvert(adptr, ptrval);
+				if (adptr == 1) *val = space->gp[adptrconv];
+				else if (adptr == 7) *val = space->dr[adptrconv];
+			} else
+				*val = space->gp[conv];
 			break;
 		default:
 			return 1; /*ERROR, WE DON'T KNOW WHAT THAT ADDRESS
@@ -123,8 +139,16 @@ uint auxset(uint *val, vmem *space, uint ad, uint conv, _Bool do_write)
 		}
 	} else {
 		switch (ad) {
-		case 1:;
-			space->gp[conv] = *val;
+		case 1:; /*If we're dealing with a pointer, treat the value of two contiguous byes as the address and check
+			if is within bounds. Else just*/
+			if(isptr){
+				unsigned ptrval = (((uint)space->gp[conv] << 8) + space->gp[conv+1]);
+				unsigned adptr = addrcheck(ptrval);
+				unsigned adptrconv = addrconvert(adptr, ptrval);
+				if (adptr == 1) space->gp[adptrconv] = *val;
+				else if (adptr == 7) return 1; /*You can't set the drive!*/
+			} else
+				space->gp[conv] = *val;
 			break;
 		case 2:;
 			return 1; /*Can't set program counter! You can use JMP for that*/
@@ -145,7 +169,7 @@ uint auxset(uint *val, vmem *space, uint ad, uint conv, _Bool do_write)
 #endif
 			break;
 		case 7:
-			return 1;                   /*You can't set the drive!*/
+			return 1; /*You can't set the drive!*/
 			break;
 		default:
 			return 1; /*ERROR, WE DON'T KNOW WHAT THAT ADDRESS
@@ -171,30 +195,48 @@ uint hbin(uint op[4], vmem *space, uint flag)
 	uint val2;
 	uint result;
 
+	ad1 = addrcheck(op[0]);
+	conv1 = addrconvert(ad1, op[0]);
 	if (op[3] != (op[3] | 4)) {
-		ad1 = addrcheck(op[0]);
-		conv1 = addrconvert(ad1, op[0]);
-		if (auxset(&val1, space, ad1, conv1, 0)) {
+		if (auxset(&val1, space, ad1, conv1, 0, 0)) {
 #ifdef EOF
 			printf("ERROR\n");
 #endif
 			return 1;
 		}
 	} else {
-		val1 = op[0];
+		if (op[3] >> 3){
+		if (auxset(&val1, space, ad1, conv1, 0, 1)){
+#ifdef EOF
+			printf("ERROR\n");
+#endif
+			return 1;
+		}
+		} else {
+			val1 = op[0];
+		}
 	}
 
+	ad2 = addrcheck(op[1]);
+	conv2 = addrconvert(ad2, op[1]);
 	if (op[3] != (op[3] | 2)) {
-		ad2 = addrcheck(op[1]);
-		conv2 = addrconvert(ad2, op[1]);
-		if (auxset(&val2, space, ad2, conv2, 0)) {
+		if (auxset(&val2, space, ad2, conv2, 0, 0)) {
 #ifdef EOF
 			printf("ERROR\n");
 #endif
 			return 1;
 		}
 	} else {
-		val2 = op[1];
+		if (op[3] >> 3){
+		if (auxset(&val2, space, ad2, conv2, 0, 1)){
+#ifdef EOF
+			printf("ERROR\n");
+#endif
+			return 1;
+		}
+		} else {
+			val2 = op[1];
+		}
 	}
 
 	switch(flag){
@@ -211,7 +253,7 @@ uint hbin(uint op[4], vmem *space, uint flag)
 
 	ad3 = addrcheck(op[2]);
 	conv3 = addrconvert(ad3, op[2]);
-	if (auxset(&result, space, ad3, conv3, 1)) {
+	if (auxset(&result, space, ad3, conv3, 1, (op[3] >> 3))) {
 #ifdef EOF
 		printf("ERROR\n");
 #endif
@@ -227,17 +269,26 @@ uint hjump(uint op[4], vmem *space, uint *co)
 	uint conv;
 	uint val;
 
+	adr = addrcheck(op[0]);
+	conv = addrconvert(adr, op[0]);
 	if (op[3] != (op[3] | 4)) {
-		adr = addrcheck(op[0]);
-		conv = addrconvert(adr, op[0]);
-		if (auxset(&val, space, adr, conv, 0)) {
+		if (auxset(&val, space, adr, conv, 0, 0)) {
 #ifdef EOF
 			printf("ERROR\n");
 #endif
 			return 1;
 		}
 	} else {
-		val = op[0];
+		if (op[3] >> 3){
+		if (auxset(&val, space, adr, conv, 0, 1)){
+#ifdef EOF
+			printf("ERROR\n");
+#endif
+			return 1;
+		}
+		} else {
+			val = op[0];
+		}
 	}
 	*co = val;
 	return 0;
@@ -252,23 +303,33 @@ uint hnot(uint op[4], vmem *space)
 	uint conv2;
 
 	uint val1;
+
+	ad1 = addrcheck(op[0]);
+	conv1 = addrconvert(ad1, op[0]);
 	if (op[3] != (op[3] | 4)) {
-		ad1 = addrcheck(op[0]);
-		conv1 = addrconvert(ad1, op[0]);
-		if (auxset(&val1, space, ad1, conv1, 0)) {
+		if (auxset(&val1, space, ad1, conv1, 0, 0)) {
 #ifdef EOF
 			printf("ERROR\n");
 #endif
 			return 1;
 		}
 	} else {
-		val1 = op[0];
+		if (op[3] >> 3){
+		if (auxset(&val1, space, ad1, conv1, 0, 1)){
+#ifdef EOF
+			printf("ERROR\n");
+#endif
+			return 1;
+		}
+		} else {
+			val1 = op[0];
+		}
 	}
 	val1 = ~val1;
 
 	ad2 = addrcheck(op[1]);
 	conv2 = addrconvert(ad2, op[1]);
-	if (auxset(&val1, space, ad2, conv2, 1)) {
+	if (auxset(&val1, space, ad2, conv2, 1, (op[3] >> 3))) {
 #ifdef EOF
 		printf("ERROR\n");
 #endif
@@ -293,30 +354,48 @@ uint hbop(uint op[4], vmem *space, _Bool do_save, _Bool do_add)
 
 	uint result;
 
+	ad1 = addrcheck(op[0]);
+	conv1 = addrconvert(ad1, op[0]);
 	if (op[3] != (op[3] | 4)) {
-		ad1 = addrcheck(op[0]);
-		conv1 = addrconvert(ad1, op[0]);
-		if (auxset(&val1, space, ad1, conv1, 0)) {
+		if (auxset(&val1, space, ad1, conv1, 0, 0)) {
 #ifdef EOF
 			printf("ERROR\n");
 #endif
 			return 1;
 		}
 	} else {
-		val1 = op[0];
+		if (op[3] >> 3){
+		if (auxset(&val1, space, ad1, conv1, 0, 1)){
+#ifdef EOF
+			printf("ERROR\n");
+#endif
+			return 1;
+		}
+		} else {
+			val1 = op[0];
+		}
 	}
 
+	ad2 = addrcheck(op[1]);
+	conv2 = addrconvert(ad2, op[1]);
 	if (op[3] != (op[3] | 2)) {
-		ad2 = addrcheck(op[1]);
-		conv2 = addrconvert(ad2, op[1]);
-		if (auxset(&val2, space, ad2, conv2, 0)) {
+		if (auxset(&val2, space, ad2, conv2, 0, 0)) {
 #ifdef EOF
 			printf("ERROR\n");
 #endif
 			return 1;
 		}
 	} else {
-		val2 = op[1];
+		if (op[3] >> 3){
+		if (auxset(&val2, space, ad2, conv2, 0, 1)){
+#ifdef EOF
+			printf("ERROR\n");
+#endif
+			return 1;
+		}
+		} else {
+			val2 = op[1];
+		}
 	}
 
 	if (do_add) {
@@ -342,10 +421,11 @@ uint hbop(uint op[4], vmem *space, _Bool do_save, _Bool do_add)
 		else
 			space->zf = 1;
 	}
+
+	ad3 = addrcheck(op[2]);
+	conv3 = addrconvert(ad3, op[2]);
 	if (do_save) {
-		ad3 = addrcheck(op[2]);
-		conv3 = addrconvert(ad3, op[2]);
-		if (auxset(&result, space, ad3, conv3, 1)) {
+		if (auxset(&result, space, ad3, conv3, 1, (op[3] >> 3))) {
 #ifdef EOF
 			printf("ERROR\n");
 #endif
@@ -399,19 +479,28 @@ uint hset(uint op[4], vmem *space)
 	ad1 = addrcheck(op[0]);
 	conv1 = addrconvert(ad1, op[0]);
 	if (op[3] != (op[3] | 4)) {
-		if (auxset(&val, space, ad1, conv1, 0)) {
+		if (auxset(&val, space, ad1, conv1, 0, 0)) {
 #ifdef EOF
 			printf("ERROR\n");
 #endif
 			return 1;
 		}
 	} else {
-		val = op[0];
+		if (op[3] >> 3){
+		if (auxset(&val, space, ad1, conv1, 0, 1)){
+#ifdef EOF
+			printf("ERROR\n");
+#endif
+			return 1;
+		}
+		} else {
+			val = op[0];
+		}
 	}
 
 	ad2 = addrcheck(op[1]);
 	conv2 = addrconvert(ad2, op[1]);
-	if (auxset(&val, space, ad2, conv2, 1)) {
+	if (auxset(&val, space, ad2, conv2, 1, (op[3] >> 3))) {
 #ifdef EOF
 		printf("ERROR\n");
 #endif

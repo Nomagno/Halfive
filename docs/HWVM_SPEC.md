@@ -16,7 +16,7 @@
 #### The Half-World virtual machine, henceforth referred to HWVM, is a standardized, but not fully defined, execution engine for code. This code may be interpreted directly from the assembly format, executed directly from the binary format, or executed in any other equivalent way.
 
 ### The HWVM Instruction notation
-#### The instruction set for the virtual machine is composed of precisely 16 instructions, whose functioning is documented with the following notation: `inst ARG1 ARG2 ARG3`, where ARGx may be noted as either Vx, Rx, or ID. There are two types of arguments: literals and addresses. Literals are enclosed in square brackets `[XXXX]`, and addresses are not `XXXX`. Both are always written down in hexadecimal base when not talking about the binary format. Arguments of type Vx take both literals and addresses, those of type Rx take only addresses, and the ones denoted ID take only literals.
+#### The instruction set for the virtual machine is composed of precisely 16 instructions, whose functioning is documented with the following notation: `inst ARG1 ARG2 ARG3`, where ARGx may be noted as either Vx, Rx, or ID. There are three types of arguments: literals, pointers, and addresses. Literals are enclosed in square brackets `[XXXX]`, pointers in keys `{XXXX}`, and addresses are not `XXXX`. All are always written down in hexadecimal base when not talking about the binary format. Arguments of type Vx take literals, pointers and addresses, those of type Rx take only addresses and pointers, and the ones denoted ID take only literals. POINTERS AND LITERALS SHALL NEVER BE COMBINED IN AN INSTRUCTION'S ARGUMENTS
 
 ### HWVM Memory layout (Code memory and data memory)
 #### IMPORTANT NOTE: ALL MEMORY IN CODE AND DATA MEMBERS HAS TO BE INITIALIZED TO 0 (ZERO)!
@@ -26,11 +26,11 @@
 
 #### It is encouraged to denote two basic memory units trough constants, variables, or identifiers: `HWVM_MEMSIZE`, and `HWVM_MEMSMALL`. `HWVM_MEMSIZE` denotes the basic amount of bytes/integers that may be allocated, and is 0x1000. `HWVM_MEMSMALL` denotes a fraction of `HWVM_MEMSIZE`, meant for more precise assignments, 0x400.
 
-#### Note: Altough bytes can only hold 8 bits of information, and so literals may only range from 0x00 to 0xFF, the address space of the VM is 16 bits, and the machine must hence be able to read addresses ranging from 0x0000 to 0xFFFF.
+#### Note: Altough bytes can only hold 8 bits of information, and so literals may only range from 0x00 to 0xFF, the address space of the VM is 16 bits, and the machine must hence be able to read addresses ranging from 0x0000 to 0xFFFF. *Pointers are memory addresses read as the value of two contiguous bytes from memory*
 
 ### There are two structures inside the code member:
 #### The instruction storage can hold 0x4000 bytes/ints, or four times the value of HWVM_MEMSIZE.
-#### The operand storage can hold at least 0x4000 GROUPS OF FOUR INTEGERS, that is three arguments and a literal specifier. The literal specifier denotes which of the three first operands are arguments, from left to right, in THE LEAST THREE SIGNIFICANT BINARY BITS: 111 (7) means all three are arguments are literals, 110 (6) means only the first two, 101 (5) means only the first and third, 100 (4) means only the first, 010 (2) means only the second, 001 (1) means only the third, 011 (3) means the second and third, and 000 (0) means none are literals. Those arguments that are not literals are implicitly addresses.
+#### The operand storage can hold at least 0x4000 GROUPS OF FOUR INTEGERS, that is three arguments and a literal/pointer specifier. The literal/pointer specifier denotes which of the three first operands are literals, from left to right, in THE LEAST THREE SIGNIFICANT BINARY BITS, AND THEY ARE POINTERS IF THE FOURTH IS ONE: 1111 means all three are arguments are pointers, 0110 means only the first two are literals, 1101 means only the first and third are pointers, 1100 means only the first is a pointer, 0010 means only the second is literal, 1001 means only the third is a pointer. Those arguments that are not literals are implicitly addresses.
 #### Each row (of 4 elements) of the two dimensional operand array corresponds to the same index of the onedimensional instruction array, and each instruction takes a fixed number of arguments. Hence, it is unambiguous which operands have to be read at each index of the operand array.
 #### Both of these blocks of memory SHALL be filled prior to execution, be it reading from the later specified assembly, the later specified binary format, or some other format.
 
@@ -57,7 +57,7 @@
 
 ### The instruction set
 
-#### There are currently SIXTEEN (16) instructions, each numbered with the decimal number in PARENTHESIS `()` for later reference. Each instruction takes the number of register, value, or ID arguments specified, and only that number (it is an ERROR to specify MORE or LESS). In values Vx, if an address is specified, the instruction SHALL read the value of that address. If a literal is specified, the instruction SHALL perform no address reading and use that literal. In addresses Rx, literals are an ERROR. In idenfitications ID, addresses are an ERROR.
+#### There are currently SIXTEEN (16) instructions, each numbered with the decimal number in PARENTHESIS `()` for later reference. Each instruction takes the number of register, value, or ID arguments specified, and only that number (it is an ERROR to specify MORE or LESS). In values Vx, if an address is specified, the instruction SHALL read the value of that address. If a literal is specified, the instruction SHALL perform no address reading and use that literal. If a pointer is specified, the instruction shall read the value of the address pointed two by THAT ADDRESS AND THE NEXT ONE (e.g. {2} denotes the contents of memory address 0x02 and 0x03, TREATED AS A SINGLE 16-BIT INTEGER). In addresses Rx, literals are an ERROR but pointers are ALLOWED. In idenfitications ID, addresses or pointers are an ERROR. LITERALS AND POINTERS SHALL NEVER BE SPECIFIED TOGETHER IN THE SAME ARGUMENT LIST
 
 ```
 halt (0) - TAKES NO ARGUMENTS, STOPS PROGRAM EXECUTION
@@ -70,7 +70,7 @@ sub (6) V1 V2 R3 - SUBSTRACT V2 *FROM* V1, WRITE THE RESULT TO R3. SETS CARRY/ZE
 and (7) V1 V2 R3 - PERFORM A BINARY 'and' ON V1 AND V2, WRITE THE RESULT TO R3
 or (8) V1 V2 R3 - PERFORM A BINARY 'or' ON V1 AND V2, WRITE THE RESULT TO R3
 xor (9) V1 V2 R3 - PERFORM A BINARY 'xor' ON V1 AND V2, WRITE THE RESULT TO R3
-xor (10) V1 R2 - PERFORM A BINARY 'xor' ON V1, WRITE THE RESULT TO R2
+not (10) V1 R2 - PERFORM A BINARY 'not' ON V1, WRITE THE RESULT TO R2
 cmp (11) V1, V2 - SUBSTACT V2 *FROM* V1, BUT *WITHOUT* SAVING THE RESULT. SETS CARRY/ZERO FLAGS APPROPIATELY
 subs (12) ID - SEE SECTION BELOW
 sube (13) ID - SEE SECTION BELOW
@@ -88,16 +88,16 @@ jcnz (15) V1 - jmp TO V1 *IF* 0xFFFF IS ONE (1)
 #### The sube instruction SHALL set the program counter to the corresponding RETURNCOUNT of the ID argument.
 
 ### Assembly language
-#### The assembly language is the exact representation of instructions, literals, and addresses that has been discussed so far (comments are not part of the language, but they are designated by everything after a `#` here, for clarity porpuses. The line numbering is not part of the language, either, it's just to make keeping track of the program counter easier):
+#### The assembly language is the exact representation of instructions, literals, pointers and addresses that has been discussed so far (comments are not part of the language, but they are designated by everything after a `#` here, for clarity porpuses. The line numbering is not part of the language, either, it's just to make keeping track of the program counter easier):
 ```
 0. set [33] FFFC # Write literal 0x33 (51, 00110011) to the OUTPUT REGISTER
 1. jmp 4 # Jump to instruction 4
-2. sub [4] 3 # Do the subtraction [4] - 3. We don't know what address three contains, but it will set the zero flag if it is 0x4
+2. cmp [4] 3 # Do the subtraction [4] - 3. We don't know what address three contains, but it will set the zero flag if it is 0x4
 3. jcz 7 # If the previous comparison was indeed correct and address 3 contains 0x4, jump to instruction 7
 4. add [FE] [8] FFFC # Write the addition of 0xFE (254, 11111110) and 0x8 (8, 00001000) to the OUTPUT register. It should regult in OVERFLOW
 5. set FFFE FFFF # Copy the carry flag to the zero flag
 6. jcnz 8 # If the zero flag is not zero (it shouldn't be, there was overflow and the carry flag was cloned!), jump to instruction 8
-7.
+7. halt
 8. jmp 2 # Jump to instruction 2
 9. halt
 ```
@@ -107,14 +107,15 @@ jcnz (15) V1 - jmp TO V1 *IF* 0xFFFF IS ONE (1)
 ```
 BINARY FORMAT:
 You code each instruction as 4 bits of which the least significant 3 indicate
-which arguments are literals and which addresses (1010 - first is literal,
-second address, third literal, fourth doesn't matter), then 4 bits for the
-instructions themselves (check the enum values, max 12), then simply read the
-corresponding number of 16-bit 'arguments' (0-3), and repeat. EXAMPLE:
+which arguments are literals and which addresses, and the fourth indicates if the
+literals are pointers or not (0101 - from right to left:  first is literal,
+second address, third literal, fourth indicates they are literals and NOT pointers),
+then 4 bits for the instructions themselves (check the enum values, max 12), then simply read the
+corresponding number of 16-bit 'arguments' (0-3), and repeat.
+
+EXAMPLE:
 
       BINARY: 0010 0000000000000001 0000000000000011 0000000000000010 0000 0000000000000000
-	NOTE: You can safely ignore the most significant bit of the second value
-(0010), since only the least significant 3 code which arguments are literals.
       DECIMAL: 2 1 3 2 0 0
       ASSEMBLY:add 1 [3] 2\n halt
       ENGLISH:
