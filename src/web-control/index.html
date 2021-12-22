@@ -1,0 +1,107 @@
+<head>
+	<meta name="viewport" content="width=device-width, user-scalable=no">
+</head>
+
+<body>
+
+	<style>
+		.cont1{
+		  position: absolute;
+	    top: 0;
+		  width: 80%;
+			height: 35%;
+		}
+		.cont2{
+		  position: absolute;
+	    bottom: 0;
+		  width: 80%;
+			height: 35%;
+		}
+		.block1{
+			appearance: none;
+			position: absolute;
+		  width: 70%;
+			height: 40%;
+	    top: 25%;
+	    left: 25%;
+			background: #d3d3d3;
+		}
+		.block2{
+			appearance: none;
+			position: absolute;
+		  width: 70%;
+			height: 40%;
+			bottom: 25%;
+	    left: 25%;
+			background: #d3d3d3;
+		}
+		.infonojs{
+			position: absolute;
+			bottom:60%;
+	    left: 25%;
+		  width: 50%;
+		}
+		.infogen{
+			position: absolute;
+			bottom:40%;
+	    left: 25%;
+		  width: 50%;
+		}
+	</style>
+
+	<noscript>
+		<div class="infonojs">
+		This document needs JavaScript code to function. It is fully Free/Libre and Open Source. Thank you for visiting our page. <br />
+		</div>
+	</noscript>
+		<div class="infogen">
+		There should be a slider below and a slider above this text. The position of these sliders will be broadcasted to the server. <br />
+		</div>
+
+	<div class="cont1"><input type="range" min="0" max="100" value="0" class="block1" id="iblock1" oninput="sliderChange()"></input></div>
+	<div class="cont2"><input type="range" min="0" max="100" value="0" class="block2" id="iblock2" oninput="sliderChange()"></input></div>
+	<script>
+	/*
+Copyright Nomagno 2021
+
+Redistributions, modified or unmodified, in whole or in part, must retain
+applicable notices of copyright or other legal privilege, these conditions, and
+the following license terms and disclaimer.  Subject to these conditions, each
+holder of copyright or other legal privileges, author or assembler, and
+contributor of this work, henceforth "licensor", hereby grants to any person
+who obtains a copy of this work in any form:
+
+1. Permission to reproduce, modify, distribute, publish, sell, sublicense, use,
+and/or otherwise deal in the licensed material without restriction.
+
+2. A perpetual, worldwide, non-exclusive, royalty-free, gratis, irrevocable
+patent license to make, have made, provide, transfer, import, use, and/or
+otherwise deal in the licensed material without restriction, for any and all
+patents held by such licensor and necessarily infringed by the form of the work
+upon distribution of that licensor's contribution to the work under the terms
+of this license.
+
+NO WARRANTY OF ANY KIND IS IMPLIED BY, OR SHOULD BE INFERRED FROM, THIS LICENSE
+OR THE ACT OF DISTRIBUTION UNDER THE TERMS OF THIS LICENSE, INCLUDING BUT NOT
+LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE,
+AND NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS, ASSEMBLERS, OR HOLDERS OF
+COPYRIGHT OR OTHER LEGAL PRIVILEGE BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
+LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
+OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE WORK.	*/
+	function sliderChange() {
+	var slider1 = document.getElementById("iblock1").value;
+	var slider2 = document.getElementById("iblock2").value;
+
+    var url = "/post";
+	var params = "pos1=" + slider1 + "&" + "pos2=" + slider2;
+
+	var http = new XMLHttpRequest();
+	http.open('POST', url, true);
+	http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	http.send(params);
+
+	console.log("Hopefully sent a POST request to: " + url)
+	}
+	</script>
+
+</body>

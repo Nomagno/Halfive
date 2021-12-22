@@ -1,0 +1,87 @@
+<head>
+<style type="text/css">
+body{
+line-height:1.6;
+font-size:18px;
+color:#444;
+padding:0
+10px}
+h1,h2,h3{
+line-height:1.2
+}
+</style>
+	<title>Half-World Network</title>
+	<meta name="description" content="The Universal racing game protocol">
+</head>
+
+<h1>Half-World Network Specification</h1>
+<h4>SPDX identifier: COIL-1.0</h4>
+<h4>Copyright Nomagno 2021</h4>
+<p>HWNET is designed to work in any transport layer that is capable of handling packet payloads of up to 400 bytes, with <em>any</em> amount of packet loss and connection instability. As such, it performs no verification of player identity, but it is fairly trivial to extend it to do such a thing. It <em>should</em> be impossible to write a compliant, sane packet that exceeds 400 ASCII characters/bytes in length, however there is plenty of room to expand until the more realistic 1000+ bytes that most protocols can handle, which leaves rooms for extensions to touch this specification.</p>
+<p>It is recommended to use the &#x201C;.hwnet&#x201D; extension for HWNET documents (where applicable). HWNET is identified by the MIME type <code>text/hwnet</code></p>
+<h3>HWNET is a specification for racing game communication</h3>
+<hr />
+<p>When querying the node that is acting as the server or &#x2018;MASTER&#x2019;, the following format should be followed:</p>
+<h4>CLIENT NODE FORMAT:</h4>
+<pre><code>_USER
+    id (identification) ...
+
+_DATA
+    exten (ext)
+    _DATA_(id)
+        thrusters (thru1) (thru2) (steer)
+
+_QUERY
+    mode (mode)</code></pre>
+<hr />
+<p>Where (identification) is the desired player number(s) to control, however the client node may not request more than 4. where (ext) is the extension the client wants to use. The client should be prepared to roll back to basic &#x2018;HalfWrld&#x2019; if the server does not reply in the expected format of the extension.</p>
+<p>Where (thru1) is the value of the first thruster axis Where (thru2) is the value of the second thruster axis Where (steer) is the value of the steering axis</p>
+<p>Where (mode) is one of the letters described below</p>
+<h4>CLIENT NODE MODES:</h4>
+<p>r - RACE INFORMATION l - LEADERBOARD INFORMATION</p>
+<p>The server should reply to the IP address (or closest equivalent at the implementation&#x2019;s discretion, in case the protocol used is not IP) following this template: ***</p>
+<h4>MASTER NODE FORMAT:</h4>
+<pre><code>_DATA
+    track (trackname)
+    game (gamemode)
+    ext (extension)
+    1 (pos1) (pos2) (t1) (t2) (t3)
+    2 (pos1) (pos2) (t1) (t2) (t3)
+    3 (pos1) (pos2) (t1) (t2) (t3)
+    4 (pos1) (pos2) (t1) (t2) (t3)
+    6 (pos1) (pos2) (t1) (t2) (t3)
+    7 (pos1) (pos2) (t1) (t2) (t3)
+    8 (pos1) (pos2) (t1) (t2) (t3)</code></pre>
+<hr />
+<p>Where (trackname) is an eight character alphanumerical string that represents the track being used. Where (gamemode) is an eight character alphanumerical string that represents the gamemode being used. To indicate a normal race mode, it should be "_DEFAULT"</p>
+<p>Where (pos1) and (pos2) are a 2D representation of that player&#x2019;s vehicle position, and t1-3 are the flags described below.</p>
+<p>Note these flags are abstract and meant to give the client context, as opposed to any kind of computationally-specific indications. If the flag &#x2018;r&#x2019; is received as the client packet mode, race type 1, race type 2, and race type 3 flags shall be supplied. If the flag &#x2018;l&#x2019; is received, the leaderboard information should be supplied at (t1) flag, and the other two types should not be included.</p>
+<h4>MASTER NODE FLAGS:</h4>
+<hr />
+<h4>GAME STATE QUERY</h4>
+<p>r - RACE l - LEADERBOARD ***</p>
+<pre><code>RACE STATES
+
+- TYPE 1 - VEHICLE STATES -
+o - OFFTRACK
+u - DRIFT
+x - HURT
+s - SLOWER
+z - FASTER
+e - ELECTRIFIED
+c - CRASHED
+y - NONE
+
+- TYPE 2 - MOVEMENT STATES -
+f - FORWARDS
+b - BACKWARDS
+k - STARTUP
+i - STOPPED
+
+- TYPE 3 - CONNECTION STATES -
+a - CONNECTED
+m - MULTIPLEX
+t - TIMEOUT
+h - PAUSE</code></pre>
+<p>1 #### LEADERBOARD STATES TYPE 1</p>
+<p>(1..8) - POSITION</p>
