@@ -197,8 +197,6 @@ uint auxset(uint *val, vmem *space, uint ad, uint conv, _Bool do_write,
 	return 0;
 }
 
-void hnop(void) { return; }
-
 uint hbin(uint op[4], vmem *space, uint flag)
 {
 	uint ad1;
@@ -268,6 +266,10 @@ uint hbin(uint op[4], vmem *space, uint flag)
 		result = val1 ^ val2;
 		break;
 	}
+	if (result == 0)
+		space->zf = 0;
+	else
+		space->zf = 1;
 
 	ad3 = addrcheck(op[2]);
 	conv3 = addrconvert(ad3, op[2]);
@@ -416,29 +418,15 @@ uint hbop(uint op[4], vmem *space, _Bool do_save, _Bool do_add)
 		}
 	}
 
-	if (do_add) {
-		result = val1 + val2;
-		if ((result < val1) || (result < val2))
-			space->cf = 1;
-		else
-			space->cf = 0;
-
-		if (result == 0)
-			space->zf = 0;
-		else
-			space->zf = 1;
-	} else {
-		result = val1 - val2;
-		if ((result > val1))
-			space->cf = 1;
-		else
-			space->cf = 0;
-
-		if (result == 0)
-			space->zf = 0;
-		else
-			space->zf = 1;
-	}
+	result = (do_add) ? (val1 + val2) : (val1 - val2);
+	if ((do_add) ? ((result < val1) || (result < val2)) : (result > val1))
+		space->cf = 1;
+	else
+		space->cf = 0;
+	if (result == 0)
+		space->zf = 0;
+	else
+		space->zf = 1;
 
 	ad3 = addrcheck(op[2]);
 	conv3 = addrconvert(ad3, op[2]);
@@ -544,23 +532,23 @@ uint execnext(mem *program)
 	if (program->m2.co < (MEMSIZE * 4)) {
 		switch (program->m1.inst[program->m2.co]) {
 		case halt:
-			program->hf = 1;
+			program->hf = 1; /*Stop the CPU*/
 			program->m2.co += 1;
 #ifdef EOF
 			printf("HALT\n");
 #endif
 			return 0;
 		case nop:
-			program->m2.co += 1;
+			program->m2.co += 1; /*Do nothing*/
 			return 0;
 		case set:
 			errno = hset(program->m1.opnd[program->m2.co],
-				     &program->m2);
+				     &program->m2); /*Set address to value*/
 			program->m2.co += 1;
 			return 0;
 		case jmp:
 			errno = hjump(program->m1.opnd[program->m2.co],
-				      &program->m2, &program->m2.co);
+				      &program->m2, &program->m2.co); /*Jump*/
 			if (errno != 0) {
 				return 2; /*EXECUTION ERROR*/
 			}
@@ -568,7 +556,7 @@ uint execnext(mem *program)
 		case jcz:
 			if (program->m2.zf == 0)
 				errno = hjump(program->m1.opnd[program->m2.co],
-					      &program->m2, &program->m2.co);
+					      &program->m2, &program->m2.co); /*Jump if ZF is 0*/
 			else {
 				program->m2.co += 1;
 				errno = 0;
@@ -580,7 +568,7 @@ uint execnext(mem *program)
 		case jcnz:
 			if (program->m2.zf == 1)
 				errno = hjump(program->m1.opnd[program->m2.co],
-					      &program->m2, &program->m2.co);
+					      &program->m2, &program->m2.co); /*Jump if ZF is 1*/
 			else {
 				program->m2.co += 1;
 				errno = 0;
@@ -591,7 +579,7 @@ uint execnext(mem *program)
 			return 0;
 		case add:
 			errno = hbop(program->m1.opnd[program->m2.co],
-				     &program->m2, 1, 1);
+				     &program->m2, 1, 1); /*Add and save*/
 			program->m2.co += 1;
 			if (errno != 0) {
 				return 2; /*EXECUTION ERROR*/
@@ -608,7 +596,7 @@ uint execnext(mem *program)
 		case and:
 			errno =
 			    hbin(program->m1.opnd[program->m2.co], &program->m2,
-				 1); /*Substract but don't save*/
+				 1); /*Perform binary AND*/
 			program->m2.co += 1;
 			if (errno != 0) {
 				return 2; /*EXECUTION ERROR*/
@@ -617,7 +605,7 @@ uint execnext(mem *program)
 		case or:
 			errno =
 			    hbin(program->m1.opnd[program->m2.co], &program->m2,
-				 2); /*Substract but don't save*/
+				 2); /*Perform binary OR*/
 			program->m2.co += 1;
 			if (errno != 0) {
 				return 2; /*EXECUTION ERROR*/
@@ -626,7 +614,7 @@ uint execnext(mem *program)
 		case xor:
 			errno =
 			    hbin(program->m1.opnd[program->m2.co], &program->m2,
-				 3); /*Substract but don't save*/
+				 3); /*Perform binary EXCLUSIVE OR*/
 			program->m2.co += 1;
 			if (errno != 0) {
 				return 2; /*EXECUTION ERROR*/
@@ -634,7 +622,7 @@ uint execnext(mem *program)
 			return 0;
 		case not:
 			errno = hnot(program->m1.opnd[program->m2.co],
-				     &program->m2); /*Substract but don't save*/
+				     &program->m2); /*Perform binary NOT*/
 			program->m2.co += 1;
 			if (errno != 0) {
 				return 2; /*EXECUTION ERROR*/

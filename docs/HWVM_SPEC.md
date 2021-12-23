@@ -64,7 +64,7 @@ The instruction storage can hold 0x4000 bytes/ints, or four times the value of H
 
 - The 0xFFFE register is the CARRY FLAG. It is SET TO ONE (1) if there is UNDERFLOW (when performing SUBSTRACTION with the `sub` or `cmp` instructions), or OVERFLOW (when performing ADDITION with the `add` instruction). If the operation does NOt have any overflow or underflow, it is SET TO ZERO (0). It otherwise SHALL be just as modifiable as the GENERAL PURPOSE MEMORY.
 
-- the 0xFFFF register is the ZERO FLAG. It is SET TO ZERO (0) if the result of an ADDITION, SUBSTRACTION, or COMPARISON is ZERO. If the operation does NOT result in zero, it is SET TO ONE (1). It otherwise SHALL be just as modifiable as the GENERAL PURPOSE MEMORY.
+- the 0xFFFF register is the ZERO FLAG. It is SET TO ZERO (0) if the result of an ADDITION, SUBSTRACTION, COMPARISON, BINARY OR, BINARY XOR, BINARY AND, or BINARY NOT is ZERO. If the operation does NOT result in zero, it is SET TO ONE (1). It otherwise SHALL be just as modifiable as the GENERAL PURPOSE MEMORY. It SHELL be always set IF THE RESULT OF ONE OF THESE OPERATIONS IS ZERO, but ALWAYS BEFORE WRITING TO THE DESTINATION ADDRESS (IF THERE IS ONE IN THE INSTRUCTION'S SPECIFICATION).
 
 Extra note: the program counter is incremented every time an instruction is executed, however the jmp/jcz/jcnz instructions can forcible modify it without increasing it. All instructions in a program SHALL be LINEARLY NUMBERED from ZERO (0) the first to the last, and the program counter SHALL indicate execution of each instruction at any given time.
 
@@ -93,10 +93,10 @@ jmp (3) V1 - JUMP (MOVE THE PROGRAM COUNTER, HAND EXECUTION) *TO* VALUE V1
 jcz (4) V1 - jmp TO V1 *IF* 0xFFFF IS ZERO (0)
 add (5) V1 V2 R3 - ADD V1 AND V2, WRITE THE RESULT TO R3. SETS CARRY/ZERO FLAGS APPROPIATELY
 sub (6) V1 V2 R3 - SUBSTRACT V2 *FROM* V1, WRITE THE RESULT TO R3. SETS CARRY/ZERO FLAGS APPROPIATELY
-and (7) V1 V2 R3 - PERFORM A BINARY 'and' ON V1 AND V2, WRITE THE RESULT TO R3
-or (8) V1 V2 R3 - PERFORM A BINARY 'or' ON V1 AND V2, WRITE THE RESULT TO R3
-xor (9) V1 V2 R3 - PERFORM A BINARY 'xor' ON V1 AND V2, WRITE THE RESULT TO R3
-not (10) V1 R2 - PERFORM A BINARY 'not' ON V1, WRITE THE RESULT TO R2
+and (7) V1 V2 R3 - PERFORM A BINARY 'and' ON V1 AND V2, WRITE THE RESULT TO R3. SETS ZERO FLAG APPROPIATELY
+or (8) V1 V2 R3 - PERFORM A BINARY 'or' ON V1 AND V2, WRITE THE RESULT TO R3. SETS ZERO FLAG APPROPIATELY
+xor (9) V1 V2 R3 - PERFORM A BINARY 'xor' ON V1 AND V2, WRITE THE RESULT TO R3. SETS ZERO FLAG APPROPIATELY
+not (10) V1 R2 - PERFORM A BINARY 'not' ON V1, WRITE THE RESULT TO R2. SETS ZERO FLAG APPROPIATELY
 cmp (11) V1, V2 - SUBSTACT V2 *FROM* V1, BUT *WITHOUT* SAVING THE RESULT. SETS CARRY/ZERO FLAGS APPROPIATELY
 subs (12) ID - SEE SECTION BELOW
 sube (13) ID - SEE SECTION BELOW
