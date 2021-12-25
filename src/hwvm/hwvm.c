@@ -631,7 +631,7 @@ uint execnext(mem *program)
 		case cmp:
 			errno =
 			    hbop(program->m1.opnd[program->m2.co], &program->m2,
-				 1, 0); /*Substract but don't save*/
+				 0, 0); /*Substract but don't save*/
 			program->m2.co += 1;
 			if (errno != 0) {
 				return 2; /*EXECUTION ERROR*/
