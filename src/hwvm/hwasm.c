@@ -67,8 +67,8 @@ iset _isinst(char *instr)
 		return or ;
 	else if (hwstrcmp(instr, "xor") == 0)
 		return xor;
-	else if (hwstrcmp(instr, "not") == 0)
-		return not ;
+	else if (hwstrcmp(instr, "rot") == 0)
+		return rot;
 	else if (hwstrcmp(instr, "cmp") == 0)
 		return cmp;
 	else if (hwstrcmp(instr, "subs") == 0)
@@ -93,18 +93,18 @@ hwuint asmparse(char *linestr, iset *inst, hwuint opnds[4])
 		if ((myinst = _isinst(token)) != 16) {
 			*inst = myinst;
 		} else if (_isxupdigit(token[0])) {
-			opnds[i] = (hwuint)hwstrtoul(token, NULL, 16);
+			opnds[i] = (hwuint)hwstrtoul(token, (void*)0, 16);
 			i += 1;
 		} else if (token[0] == '[') {
 			token += 1;
-			opnds[i] = (hwuint)hwstrtoul(token, NULL, 16);
+			opnds[i] = (hwuint)hwstrtoul(token, (void*)0, 16);
 
 			opnds[3] = (opnds[3] | (1 << (2 - i)));
 
 			i += 1;
 		} else if (token[0] == '{') {
 			token += 1;
-			opnds[i] = (hwuint)hwstrtoul(token, NULL, 16);
+			opnds[i] = (hwuint)hwstrtoul(token, (void*)0, 16);
 			opnds[3] = (opnds[3] | 8);
 			opnds[3] = (opnds[3] | (1 << (2 - i)));
 
@@ -112,7 +112,7 @@ hwuint asmparse(char *linestr, iset *inst, hwuint opnds[4])
 		} else {
 			return 2; /*CATASTROPHIC ERROR*/
 		}
-		token = hwstrtok(NULL, " ");
+		token = hwstrtok((void*)0, " ");
 	}
 	return 0;
 }

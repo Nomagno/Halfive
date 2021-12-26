@@ -87,7 +87,7 @@ hwuint addrconvert(hwuint arg, hwuint addr)
 		return 0;
 	case 7:
 		return (addr - 0x4000);
-	case 8: 
+	case 8:
 		return 0;
 	default:
 		return UADDR;
@@ -293,6 +293,83 @@ hwuint hbin(hwuint op[4], vmem *space, hwuint flag)
 	return 0;
 }
 
+hwuint hrot(hwuint op[4], vmem *space)
+{
+	hwuint ad1;
+	hwuint ad2;
+	hwuint ad3;
+
+	hwuint conv1;
+	hwuint conv2;
+	hwuint conv3;
+
+	hwuint val1;
+	hwuint val2;
+	hwuint result;
+	_Bool do_nothing = 1;
+
+	ad1 = addrcheck(op[0]);
+	conv1 = addrconvert(ad1, op[0]);
+	if (op[3] != (op[3] | 4)) {
+		if (auxset(&val1, space, ad1, conv1, 0, 0)) {
+#ifdef EOF
+			printf("ERROR\n");
+#endif
+			return 1;
+		}
+	} else {
+		if (op[3] >> 3) {
+			if (auxset(&val1, space, ad1, conv1, 0, 1)) {
+#ifdef EOF
+				printf("ERROR\n");
+#endif
+				return 1;
+			}
+		} else {
+			val1 = op[0];
+		}
+	}
+
+	ad2 = addrcheck(op[1]);
+	conv2 = addrconvert(ad2, op[1]);
+	if (op[3] != (op[3] | 2)) {
+		if (auxset(&val2, space, ad2, conv2, 0, 0)) {
+#ifdef EOF
+			printf("ERROR\n");
+#endif
+			return 1;
+		}
+	} else {
+		if (op[3] >> 3) {
+			if (auxset(&val2, space, ad2, conv2, 0, 1)) {
+#ifdef EOF
+				printf("ERROR\n");
+#endif
+				return 1;
+			}
+		} else {
+			val2 = op[1];
+		}
+	}
+	if(val1 < 8)
+		result = val2 << val1;
+	else if(val1 < 16)
+		result = val2 >> (val1 - 8);
+	else
+		do_nothing = 0;
+
+	ad3 = addrcheck(op[2]);
+	conv3 = addrconvert(ad3, op[2]);
+	if (do_nothing && auxset(&result, space, ad3, conv3, 1, (op[3] >> 3))) {
+#ifdef EOF
+		printf("ERROR\n");
+#endif
+		return 1;
+	}
+
+	return 0;
+}
+
 hwuint hjump(hwuint op[4], vmem *space, hwuint *co)
 {
 	hwuint adr;
@@ -321,51 +398,6 @@ hwuint hjump(hwuint op[4], vmem *space, hwuint *co)
 		}
 	}
 	*co = val;
-	return 0;
-}
-
-hwuint hnot(hwuint op[4], vmem *space)
-{
-	hwuint ad1;
-	hwuint ad2;
-
-	hwuint conv1;
-	hwuint conv2;
-
-	hwuint val1;
-
-	ad1 = addrcheck(op[0]);
-	conv1 = addrconvert(ad1, op[0]);
-	if (op[3] != (op[3] | 4)) {
-		if (auxset(&val1, space, ad1, conv1, 0, 0)) {
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1;
-		}
-	} else {
-		if (op[3] >> 3) {
-			if (auxset(&val1, space, ad1, conv1, 0, 1)) {
-#ifdef EOF
-				printf("ERROR\n");
-#endif
-				return 1;
-			}
-		} else {
-			val1 = op[0];
-		}
-	}
-	val1 = ~val1;
-
-	ad2 = addrcheck(op[1]);
-	conv2 = addrconvert(ad2, op[1]);
-	if (auxset(&val1, space, ad2, conv2, 1, (op[3] >> 3))) {
-#ifdef EOF
-		printf("ERROR\n");
-#endif
-		return 1;
-	}
-
 	return 0;
 }
 
@@ -630,8 +662,8 @@ hwuint execnext(mem *program)
 				return 2; /*EXECUTION ERROR*/
 			}
 			return 0;
-		case not:
-			errno = hnot(program->m1.opnd[program->m2.co],
+		case rot:
+			errno = hrot(program->m1.opnd[program->m2.co],
 				     &program->m2); /*Perform binary NOT*/
 			program->m2.co += 1;
 			if (errno != 0) {

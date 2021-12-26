@@ -102,7 +102,7 @@ typedef enum {
 	    and = 7, /* V1 V2 R3; binary and*/
 	or = 8,      /* V1 V2 R3; binary or*/
 	xor = 9,     /* V1 V2 R3; binary exclusive or*/
-	not = 10,    /* V1 R2; binary negation*/
+	rot = 10,    /* V1 V2 R3; If V1 is 0-7, bitshift V2 LEFT by V1 bits. Else if V1 is 8-F, bitshift V2 RIGHT by (V1-8) bits. Else do nothing. Put the result into R3*/
 	cmp = 11,    /* V1 V2; if V1 is bigger than V2, sets the carry flag to 0
 		     and    the zero flag to 1 if V1 is smaller than V2, sets the
 		     carry    flag to 1 and the zero flag to 0 if V1 is equal to V2,
