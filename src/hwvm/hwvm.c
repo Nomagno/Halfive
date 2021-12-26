@@ -207,7 +207,7 @@ hwuint auxset(hwuint *val, vmem *space, hwuint ad, hwuint conv, _Bool do_write,
 	return 0;
 }
 
-hwuint hbin(hwuint op[4], vmem *space, hwuint flag)
+hwuint hbin(hwuint op[4], vmem *space, hwuint flag, _Bool do_save)
 {
 	hwuint ad1;
 	hwuint ad2;
@@ -219,7 +219,8 @@ hwuint hbin(hwuint op[4], vmem *space, hwuint flag)
 
 	hwuint val1;
 	hwuint val2;
-	hwuint result;
+	hwuchar result;
+	hwuint castresult;
 
 	ad1 = addrcheck(op[0]);
 	conv1 = addrconvert(ad1, op[0]);
@@ -267,27 +268,36 @@ hwuint hbin(hwuint op[4], vmem *space, hwuint flag)
 
 	switch (flag) {
 	case 1:
-		result = val1 & val2;
+		result = (hwuchar)val1 & (hwuchar)val2;
 		break;
 	case 2:
-		result = val1 | val2;
+		result = (hwuchar)val1 | (hwuchar)val2;
 		break;
 	case 3:
-		result = val1 ^ val2;
+		result = (hwuchar)val1 ^ (hwuchar)val2;
+		break;
+	case 4:
+		result = (hwuchar)val1 + (hwuchar)val2;
+		space->cf = (result < val1);
+		break;
+	case 5:
+		result = (hwuchar)val1 - (hwuchar)val2;
+		space->cf = (result > val1);
 		break;
 	}
-	if (result == 0)
-		space->zf = 0;
-	else
-		space->zf = 1;
+	if (result == 0) space->zf = 0;
+	else space->zf = 1;
 
+	if(do_save){
+	castresult = result;
 	ad3 = addrcheck(op[2]);
 	conv3 = addrconvert(ad3, op[2]);
-	if (auxset(&result, space, ad3, conv3, 1, (op[3] >> 3))) {
+	if (auxset(&castresult, space, ad3, conv3, 1, (op[3] >> 3))) {
 #ifdef EOF
 		printf("ERROR\n");
 #endif
 		return 1;
+	}
 	}
 
 	return 0;
@@ -398,88 +408,6 @@ hwuint hjump(hwuint op[4], vmem *space, hwuint *co)
 		}
 	}
 	*co = val;
-	return 0;
-}
-
-hwuint hbop(hwuint op[4], vmem *space, _Bool do_save, _Bool do_add)
-{
-	hwuint ad1;
-	hwuint ad2;
-	hwuint ad3;
-
-	hwuint conv1;
-	hwuint conv2;
-	hwuint conv3;
-
-	hwuint val1;
-	hwuint val2;
-
-	hwuint result;
-
-	ad1 = addrcheck(op[0]);
-	conv1 = addrconvert(ad1, op[0]);
-	if (op[3] != (op[3] | 4)) {
-		if (auxset(&val1, space, ad1, conv1, 0, 0)) {
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1;
-		}
-	} else {
-		if (op[3] >> 3) {
-			if (auxset(&val1, space, ad1, conv1, 0, 1)) {
-#ifdef EOF
-				printf("ERROR\n");
-#endif
-				return 1;
-			}
-		} else {
-			val1 = op[0];
-		}
-	}
-
-	ad2 = addrcheck(op[1]);
-	conv2 = addrconvert(ad2, op[1]);
-	if (op[3] != (op[3] | 2)) {
-		if (auxset(&val2, space, ad2, conv2, 0, 0)) {
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1;
-		}
-	} else {
-		if (op[3] >> 3) {
-			if (auxset(&val2, space, ad2, conv2, 0, 1)) {
-#ifdef EOF
-				printf("ERROR\n");
-#endif
-				return 1;
-			}
-		} else {
-			val2 = op[1];
-		}
-	}
-
-	result = (do_add) ? (val1 + val2) : (val1 - val2);
-	if ((do_add) ? ((result < val1) || (result < val2)) : (result > val1))
-		space->cf = 1;
-	else
-		space->cf = 0;
-	if (result == 0)
-		space->zf = 0;
-	else
-		space->zf = 1;
-
-	ad3 = addrcheck(op[2]);
-	conv3 = addrconvert(ad3, op[2]);
-	if (do_save) {
-		if (auxset(&result, space, ad3, conv3, 1, (op[3] >> 3))) {
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1;
-		}
-	}
 	return 0;
 }
 
@@ -620,16 +548,16 @@ hwuint execnext(mem *program)
 			}
 			return 0;
 		case add:
-			errno = hbop(program->m1.opnd[program->m2.co],
-				     &program->m2, 1, 1); /*Add and save*/
+			errno = hbin(program->m1.opnd[program->m2.co],
+				     &program->m2, 4, 1); /*Add and save*/
 			program->m2.co += 1;
 			if (errno != 0) {
 				return 2; /*EXECUTION ERROR*/
 			}
 			return 0;
 		case sub:
-			errno = hbop(program->m1.opnd[program->m2.co],
-				     &program->m2, 1, 0); /*Substract and save*/
+			errno = hbin(program->m1.opnd[program->m2.co],
+				     &program->m2, 5, 1); /*Substract and save*/
 			program->m2.co += 1;
 			if (errno != 0) {
 				return 2; /*EXECUTION ERROR*/
@@ -638,7 +566,7 @@ hwuint execnext(mem *program)
 		case and:
 			errno =
 			    hbin(program->m1.opnd[program->m2.co], &program->m2,
-				 1); /*Perform binary AND*/
+				 1, 1); /*Perform binary AND*/
 			program->m2.co += 1;
 			if (errno != 0) {
 				return 2; /*EXECUTION ERROR*/
@@ -647,7 +575,7 @@ hwuint execnext(mem *program)
 		case or:
 			errno =
 			    hbin(program->m1.opnd[program->m2.co], &program->m2,
-				 2); /*Perform binary OR*/
+				 2, 1); /*Perform binary OR*/
 			program->m2.co += 1;
 			if (errno != 0) {
 				return 2; /*EXECUTION ERROR*/
@@ -656,7 +584,7 @@ hwuint execnext(mem *program)
 		case xor:
 			errno =
 			    hbin(program->m1.opnd[program->m2.co], &program->m2,
-				 3); /*Perform binary EXCLUSIVE OR*/
+				 3, 1); /*Perform binary EXCLUSIVE OR*/
 			program->m2.co += 1;
 			if (errno != 0) {
 				return 2; /*EXECUTION ERROR*/
@@ -672,8 +600,8 @@ hwuint execnext(mem *program)
 			return 0;
 		case cmp:
 			errno =
-			    hbop(program->m1.opnd[program->m2.co], &program->m2,
-				 0, 0); /*Substract but don't save*/
+			    hbin(program->m1.opnd[program->m2.co], &program->m2,
+				 5, 0); /*Substract but don't save*/
 			program->m2.co += 1;
 			if (errno != 0) {
 				return 2; /*EXECUTION ERROR*/
