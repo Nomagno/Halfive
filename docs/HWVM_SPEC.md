@@ -54,9 +54,11 @@ The instruction storage can hold 0x4000 bytes/ints, or four times the value of H
 ##### Special registers (0xFFF0-0xFFFF):
 - The 0xFFF0 address always results in program error, and it can be safely used for this purpose by implementing.
 
-- The 0xFFF1 to 0xFFFB range is reserved for implementation-defined or future-standard-defined special registers.
+- The 0xFFF1 to 0xFFF9 range is reserved for implementation-defined or future-standard-defined special registers.
 
-- The 0xFFFB register is READ-ONLY (WRITING MIGHT RESULT IN EXECUTION ERROR), and represents the current program counter. It is writable trough the `jmp`, `jcz`, and `jcnz` instructions (specified later in the document).
+- The 0xFFFA register is READ-ONLY (WRITING MIGHT RESULT IN EXECUTION ERROR), and represents the current program counter (Higher 8 bits). It is writable trough the `jmp`, `jcz`, and `jcnz` instructions (specified later in the document).
+
+- The 0xFFFB register is READ-ONLY (WRITING MIGHT RESULT IN EXECUTION ERROR), and represents the current program counter (Lower 8 bits). It is writable trough the `jmp`, `jcz`, and `jcnz` instructions (specified later in the document).
 
 - The 0xFFFC register is WRITE-ONLY (READING MIGHT RESULT IN EXECUTION ERROR), and is the only OUTPUT REGISTER defined by this document. Any value written to it will be displayed to the user/programmer.
 
@@ -89,8 +91,8 @@ There are currently SIXTEEN (16) instructions, each numbered with the decimal nu
 halt (0) - TAKES NO ARGUMENTS, STOPS PROGRAM EXECUTION
 nop (1) - TAKES NO ARGUMENTS, DOES NOTHING FOR A FULL CYCLE
 set (2) V1 R2; SETS ADDRESS R2 *TO* VALUE V1
-jmp (3) V1 - JUMP (MOVE THE PROGRAM COUNTER, HAND EXECUTION) *TO* VALUE V1
-jcz (4) V1 - jmp TO V1 *IF* 0xFFFF IS ZERO (0)
+jmp (3) V1 - JUMP (MOVE THE PROGRAM COUNTER, HAND EXECUTION) *TO* VALUE V1.  Can take 16-bit literal, as a special exception
+jcz (4) V1 - jmp TO V1 *IF* 0xFFFF IS ZERO (0).  Can take 16-bit literal, as a special exception
 add (5) V1 V2 R3 - ADD V1 AND V2, WRITE THE RESULT TO R3. SETS CARRY/ZERO FLAGS APPROPIATELY
 sub (6) V1 V2 R3 - SUBSTRACT V2 *FROM* V1, WRITE THE RESULT TO R3. SETS CARRY/ZERO FLAGS APPROPIATELY
 and (7) V1 V2 R3 - PERFORM A BINARY 'and' ON V1 AND V2, WRITE THE RESULT TO R3. SETS ZERO FLAG APPROPIATELY
@@ -101,8 +103,7 @@ cmp (11) V1, V2 - SUBSTACT V2 *FROM* V1, BUT *WITHOUT* SAVING THE RESULT. SETS C
 subs (12) ID - SEE SECTION BELOW
 sube (13) ID - SEE SECTION BELOW
 call (14) ID - SEE SECTION BELOW
-jcnz (15) V1 - jmp TO V1 *IF* 0xFFFF IS ONE (1)
-
+jcnz (15) V1 - jmp TO V1 *IF* 0xFFFF IS ONE (1). Can take 16-bit literal, as a special exception
 ```
 
 ***

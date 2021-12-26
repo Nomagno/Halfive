@@ -29,9 +29,8 @@ WORK.*/
 
 #include "hwstring.c"
 #include "hwvm.h"
-#define NULL (void *)0
 
-uint _isxupdigit(uchar inchar)
+hwuint _isxupdigit(hwuchar inchar)
 {
 	if ((inchar == 'A') || (inchar == 'a') || (inchar == 'B') ||
 	    (inchar == 'b') || (inchar == 'C') || (inchar == 'c') ||
@@ -84,28 +83,28 @@ iset _isinst(char *instr)
 		return 16;
 }
 
-uint asmparse(char *linestr, iset *inst, uint opnds[4])
+hwuint asmparse(char *linestr, iset *inst, hwuint opnds[4])
 {
 	char *token = hwstrtok(linestr, " ");
 	iset myinst;
 	int i = 0;
-	while ((token != NULL) && (i < 3)) {
+	while ((token != (void*)0) && (i < 3)) {
 
 		if ((myinst = _isinst(token)) != 16) {
 			*inst = myinst;
 		} else if (_isxupdigit(token[0])) {
-			opnds[i] = (uint)hwstrtoul(token, NULL, 16);
+			opnds[i] = (hwuint)hwstrtoul(token, NULL, 16);
 			i += 1;
 		} else if (token[0] == '[') {
 			token += 1;
-			opnds[i] = (uint)hwstrtoul(token, NULL, 16);
+			opnds[i] = (hwuint)hwstrtoul(token, NULL, 16);
 
 			opnds[3] = (opnds[3] | (1 << (2 - i)));
 
 			i += 1;
 		} else if (token[0] == '{') {
 			token += 1;
-			opnds[i] = (uint)hwstrtoul(token, NULL, 16);
+			opnds[i] = (hwuint)hwstrtoul(token, NULL, 16);
 			opnds[3] = (opnds[3] | 8);
 			opnds[3] = (opnds[3] | (1 << (2 - i)));
 

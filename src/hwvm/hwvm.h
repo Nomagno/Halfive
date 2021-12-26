@@ -30,9 +30,10 @@ WORK.*/
 /*READ THE HWVM SPEC*/
 #define MEMSIZE 4096
 #define MEMSMALL 1024
+#include <stdint.h>
 
-typedef unsigned char uchar;
-typedef unsigned int uint;
+typedef uint8_t hwuchar;
+typedef uint16_t hwuint;
 
 /*Half-World Virtual Machine
 
@@ -124,7 +125,7 @@ typedef struct {
 
 	/*Every second, third and fourth bytes*/
 	/*int because we need this to be at least 16 bits by default*/
-	uint opnd[MEMSIZE * 4][4];
+	hwuint opnd[MEMSIZE * 4][4];
 	/*The fourth row of the array indicates which arguments are addresses,
 	trough its least significant 3 bits.
 	E.G 000 ALL ADDRESSES -- 101 FIRST AND THIRD ARE LITERALS*/
@@ -134,25 +135,25 @@ typedef struct {
 /*Data memory*/
 typedef struct {
 	/*GEN mem, 0x0000 to 0x3FFF*/
-	uchar gp[MEMSIZE * 4];
+	hwuchar gp[MEMSIZE * 4];
 
 	/*DRIVE (persistent) mem, read-only 0x4000 to 0xBFFF*/
-	uchar dr[MEMSIZE * 8];
+	hwuchar dr[MEMSIZE * 8];
 
 	/*Zero flag, 0xFFFF*/
-	uchar zf;
+	hwuchar zf;
 
 	/*Carry flag, 0xFFFE*/
-	uchar cf;
+	hwuchar cf;
 
 	/*Input register, read-only, 0xFFFD*/
-	uchar in;
+	hwuchar in;
 
 	/*Output register, write-only, 0xFFFC*/
-	uchar ou;
+	hwuchar ou;
 
 	/*Program counter, read-only, 0xFFFB*/
-	uint co;
+	hwuint co;
 
 } vmem;
 
@@ -160,20 +161,20 @@ typedef struct {
 	xmem m1; /*Code memory*/
 	vmem m2; /*Data memory*/
 
-	uchar hf; /*Halt flag, 1 if it has halted.*/
+	hwuchar hf; /*Halt flag, 1 if it has halted.*/
 
-	uint sub_co[MEMSMALL]; /*For storing counter values corresponding to the
+	hwuint sub_co[MEMSMALL]; /*For storing counter values corresponding to the
 				SUBS instruction of each subroutine ID*/
 
-	uint return_co[MEMSMALL]; /*For storing counter values corresponding to
+	hwuint return_co[MEMSMALL]; /*For storing counter values corresponding to
 				the execution environment of the branch that
 				executes CALLS, for each subroutine ID*/
 
-	uint skip_co[MEMSMALL]; /*Counter values subs has to skip to*/
+	hwuint skip_co[MEMSMALL]; /*Counter values subs has to skip to*/
 } mem;
 
 /*Half-World VM interface*/
 
 extern mem fxmem(xmem code); /*Generate mem struct from xmem struct*/
 
-extern uint execnext(mem *program); /*Execute one instruction from the program*/
+extern hwuint execnext(mem *program); /*Execute one instruction from the program*/

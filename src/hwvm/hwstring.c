@@ -23,8 +23,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 #define N (UCHAR_MAX + 1)
 
-typedef unsigned char uchar;
-typedef unsigned uint;
+typedef unsigned char suchar;
+typedef unsigned suint;
 typedef unsigned long ulong;
 
 ulong hwstrtoul(char *nptr, char **endptr, int base)
@@ -142,15 +142,15 @@ char *hwstrtok(char *s, char *b)
 	char map[N] = {0}, *os;
 
 	while (*b)
-		map[*(uchar *)b++] = 1;
+		map[*(suchar *)b++] = 1;
 	if (s == 0)
 		s = under_rock;
-	while (map[*(uchar *)s++])
+	while (map[*(suchar *)s++])
 		;
 	if (*--s == 0)
 		return 0;
 	os = s;
-	while (map[*(uchar *)s] == 0)
+	while (map[*(suchar *)s] == 0)
 		if (*s++ == 0) {
 			under_rock = s - 1;
 			return os;

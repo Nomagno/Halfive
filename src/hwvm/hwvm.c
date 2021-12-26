@@ -31,7 +31,6 @@ WORK.*/
 #include <stdio.h>
 /*<stdio.h> IS NOT NEEDED, IT ONLY ADDS
 PRINTING AND TESTING FUNCTIONALITY*/
-
 #define UADDR 0xFFF0
 /*Unknown address*/
 
@@ -47,7 +46,7 @@ addrcheck() returns the actual address space of the argument address
 6: OUTPUT REGISTER (WRITE-ONLY)
 7: PERSISTENT STORAGE
 */
-uint addrcheck(uint arg)
+hwuint addrcheck(hwuint arg)
 {
 	if (arg <= 0x3FFF)
 		return 1;
@@ -63,11 +62,13 @@ uint addrcheck(uint arg)
 		return 6;
 	else if (arg == 0xFFFB)
 		return 2;
+	else if (arg == 0xFFFA)
+		return 8;
 	else
 		return 0;
 }
 
-uint addrconvert(uint arg, uint addr)
+hwuint addrconvert(hwuint arg, hwuint addr)
 {
 	switch (arg) {
 	case 0:
@@ -86,13 +87,15 @@ uint addrconvert(uint arg, uint addr)
 		return 0;
 	case 7:
 		return (addr - 0x4000);
+	case 8: 
+		return 0;
 	default:
 		return UADDR;
 	}
 }
 
 /*INCREDIBLY COMMON BOILERPLATE MOVED TO OWN FUNCTION*/
-uint auxset(uint *val, vmem *space, uint ad, uint conv, _Bool do_write,
+hwuint auxset(hwuint *val, vmem *space, hwuint ad, hwuint conv, _Bool do_write,
 	    _Bool isptr)
 {
 	if (!do_write) {
@@ -102,7 +105,7 @@ uint auxset(uint *val, vmem *space, uint ad, uint conv, _Bool do_write,
 			within bounds. Else just*/
 			if (isptr) {
 				unsigned ptrval =
-				    (((uint)space->gp[conv] << 8) |
+				    (((hwuint)space->gp[conv] << 8) |
 				     space->gp[conv + 1]);
 				unsigned adptr = addrcheck(ptrval);
 				unsigned adptrconv = addrconvert(adptr, ptrval);
@@ -115,7 +118,10 @@ uint auxset(uint *val, vmem *space, uint ad, uint conv, _Bool do_write,
 				*val = space->gp[conv];
 			break;
 		case 2:;
-			*val = space->co;
+			*val = space->co & 0xFFFF;
+			break;
+		case 8:;
+			*val = space->co >> 8;
 			break;
 		case 3:;
 			*val = space->zf;
@@ -134,7 +140,7 @@ uint auxset(uint *val, vmem *space, uint ad, uint conv, _Bool do_write,
 			within bounds. Else just*/
 			if (isptr) {
 				unsigned ptrval =
-				    (((uint)space->dr[conv] << 8) +
+				    (((hwuint)space->dr[conv] << 8) +
 				     space->dr[conv + 1]);
 				unsigned adptr = addrcheck(ptrval);
 				unsigned adptrconv = addrconvert(adptr, ptrval);
@@ -156,7 +162,7 @@ uint auxset(uint *val, vmem *space, uint ad, uint conv, _Bool do_write,
 			within bounds. Else just*/
 			if (isptr) {
 				unsigned ptrval =
-				    (((uint)space->gp[conv] << 8) +
+				    (((hwuint)space->gp[conv] << 8) +
 				     space->gp[conv + 1]);
 				unsigned adptr = addrcheck(ptrval);
 				unsigned adptrconv = addrconvert(adptr, ptrval);
@@ -168,6 +174,10 @@ uint auxset(uint *val, vmem *space, uint ad, uint conv, _Bool do_write,
 				space->gp[conv] = *val;
 			break;
 		case 2:;
+			return 1; /*Can't set program counter! You can use JMP
+				     for that*/
+			break;
+		case 8:;
 			return 1; /*Can't set program counter! You can use JMP
 				     for that*/
 			break;
@@ -197,19 +207,19 @@ uint auxset(uint *val, vmem *space, uint ad, uint conv, _Bool do_write,
 	return 0;
 }
 
-uint hbin(uint op[4], vmem *space, uint flag)
+hwuint hbin(hwuint op[4], vmem *space, hwuint flag)
 {
-	uint ad1;
-	uint ad2;
-	uint ad3;
+	hwuint ad1;
+	hwuint ad2;
+	hwuint ad3;
 
-	uint conv1;
-	uint conv2;
-	uint conv3;
+	hwuint conv1;
+	hwuint conv2;
+	hwuint conv3;
 
-	uint val1;
-	uint val2;
-	uint result;
+	hwuint val1;
+	hwuint val2;
+	hwuint result;
 
 	ad1 = addrcheck(op[0]);
 	conv1 = addrconvert(ad1, op[0]);
@@ -283,11 +293,11 @@ uint hbin(uint op[4], vmem *space, uint flag)
 	return 0;
 }
 
-uint hjump(uint op[4], vmem *space, uint *co)
+hwuint hjump(hwuint op[4], vmem *space, hwuint *co)
 {
-	uint adr;
-	uint conv;
-	uint val;
+	hwuint adr;
+	hwuint conv;
+	hwuint val;
 
 	adr = addrcheck(op[0]);
 	conv = addrconvert(adr, op[0]);
@@ -314,15 +324,15 @@ uint hjump(uint op[4], vmem *space, uint *co)
 	return 0;
 }
 
-uint hnot(uint op[4], vmem *space)
+hwuint hnot(hwuint op[4], vmem *space)
 {
-	uint ad1;
-	uint ad2;
+	hwuint ad1;
+	hwuint ad2;
 
-	uint conv1;
-	uint conv2;
+	hwuint conv1;
+	hwuint conv2;
 
-	uint val1;
+	hwuint val1;
 
 	ad1 = addrcheck(op[0]);
 	conv1 = addrconvert(ad1, op[0]);
@@ -359,20 +369,20 @@ uint hnot(uint op[4], vmem *space)
 	return 0;
 }
 
-uint hbop(uint op[4], vmem *space, _Bool do_save, _Bool do_add)
+hwuint hbop(hwuint op[4], vmem *space, _Bool do_save, _Bool do_add)
 {
-	uint ad1;
-	uint ad2;
-	uint ad3;
+	hwuint ad1;
+	hwuint ad2;
+	hwuint ad3;
 
-	uint conv1;
-	uint conv2;
-	uint conv3;
+	hwuint conv1;
+	hwuint conv2;
+	hwuint conv3;
 
-	uint val1;
-	uint val2;
+	hwuint val1;
+	hwuint val2;
 
-	uint result;
+	hwuint result;
 
 	ad1 = addrcheck(op[0]);
 	conv1 = addrconvert(ad1, op[0]);
@@ -441,16 +451,16 @@ uint hbop(uint op[4], vmem *space, _Bool do_save, _Bool do_add)
 	return 0;
 }
 
-uint hcall(uint *co, uint id, mem *prog)
+hwuint hcall(hwuint *co, hwuint id, mem *prog)
 {
 	prog->return_co[id] = *co;
 	*co = prog->sub_co[id];
 	return 0;
 }
 
-uint hsubs(uint *co, uint id, mem *prog)
+hwuint hsubs(hwuint *co, hwuint id, mem *prog)
 {
-	uint val = 0; /*It is impossible counter 0
+	hwuint val = 0; /*It is impossible counter 0
 			is a safe place to return to,
 			which is why it is an error value*/
 	prog->sub_co[id] = *co;
@@ -469,21 +479,21 @@ uint hsubs(uint *co, uint id, mem *prog)
 	return 0;
 }
 
-uint hsube(uint *co, uint id, mem *prog)
+hwuint hsube(hwuint *co, hwuint id, mem *prog)
 {
 	*co = prog->return_co[id];
 	return 0;
 }
 
-uint hset(uint op[4], vmem *space)
+hwuint hset(hwuint op[4], vmem *space)
 {
-	uint ad1;
-	uint ad2;
+	hwuint ad1;
+	hwuint ad2;
 
-	uint conv1;
-	uint conv2;
+	hwuint conv1;
+	hwuint conv2;
 
-	uint val;
+	hwuint val;
 
 	ad1 = addrcheck(op[0]);
 	conv1 = addrconvert(ad1, op[0]);
@@ -526,9 +536,9 @@ mem fxmem(xmem code)
 	return memory;
 }
 
-uint execnext(mem *program)
+hwuint execnext(mem *program)
 {
-	uint errno;
+	hwuint errno;
 	if (program->m2.co < (MEMSIZE * 4)) {
 		switch (program->m1.inst[program->m2.co]) {
 		case halt:
