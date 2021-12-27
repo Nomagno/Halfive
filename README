@@ -34,10 +34,11 @@ List of specifications and corresponding mime types:
 If you read all specifications in the docs, you should be able to:
  - Use HWNET as a basic communications standard
  - Use HWT as a basic format for circuits
+ - Use HWVM as a basic runtime for user-generated content
 
 You can make your own extensions of these documents.
 To make them valid extensions, simply specify inside them an 8-character alphanumerical name (underscore hyphen 0-9 A-Z a-z, e.g "_My-Ext2").
 
 
 --- Licensing ---
-All files, except for msg-c.h, are released under the COIL license. Please see each individual file for more information
+All files, except for hwstring.h, are released under the COIL license. Please see each individual file for more information
