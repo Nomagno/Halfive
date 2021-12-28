@@ -20,17 +20,12 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 #include <limits.h>
+#include "hwstring.h"
 
-#define N (UCHAR_MAX + 1)
-
-typedef unsigned char suchar;
-typedef unsigned suint;
-typedef unsigned long ulong;
-
-ulong hwstrtoul(char *nptr, char **endptr, int base)
+sulong hwstrtoul(char *nptr, char **endptr, int base)
 {
 	char *p;
-	ulong n, nn, m;
+	sulong n, nn, m;
 	int c, ovfl, neg, v, ndig;
 
 	p = nptr;

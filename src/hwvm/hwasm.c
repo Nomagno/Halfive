@@ -27,7 +27,7 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
-#include "hwstring.c"
+#include "hwstring.h"
 #include "hwvm.h"
 
 hwuint _isxupdigit(hwuchar inchar)

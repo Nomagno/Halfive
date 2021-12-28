@@ -27,20 +27,11 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
-#include <stddef.h>
-#include <limits.h>
+#define N (UCHAR_MAX + 1)
+typedef unsigned char suchar;
+typedef unsigned suint;
+typedef unsigned long sulong;
 
-typedef enum{
-	SEC = 0,
-	KEY = 1,
-	VAL = 2
-} hwdoc_type;
-
-typedef struct{
-	hwdoc_type type;
-	int start;
-	int end;
-	int size;
-} hwdoc_tok;
-
-extern hwdoc_tok hwdoc_parse(char*, int tok_size, hwdoc_tok tokens[tok_size]);
+extern sulong hwstrtoul(char *, char **, int);
+int hwstrcmp(char *, char *);
+char *hwstrtok(char *, char *);
