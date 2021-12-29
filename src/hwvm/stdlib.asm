@@ -17,7 +17,7 @@ define(MEMCPY, [1])
 
 subs MEMSET
 ; ID: 0
-; Instruction count (DECIMAL): 9
+; Instruction count (DECIMAL): 10
 ; Memset subroutine interface addresses:
 ; Value to set - 0
 ; Start range - {1} (1 and 2 treated as 16-bit)
@@ -30,6 +30,7 @@ add FFFB [1] 11 ; This stores the relative inst ptr
 ; that marks the start of the loop
 set 0 {1} ; Start of loop, set address to value
 add [1] 2 2 ; Add one to LSB of address
+add FFFE 1 1 ; Add carry to MSB of address
 cmp 4 2 ; Compare current LSB with end LSB
 set FFFF 10 ; Store result to address 10
 cmp 3 1 ; Compare current MSB with end MSB
