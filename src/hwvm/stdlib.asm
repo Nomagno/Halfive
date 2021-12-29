@@ -68,7 +68,7 @@ add FFFB [9] 13 ; Set Instruction Pointer that will
 sub 6 4 11 ;Substract LSBs
 set FFFE 12 ; Save carry flag
 sub 5 3 10 ; Substract MSBs
-sub 12 10 10 ; Substract carry from result
+sub 10 12 10 ; Substract carry from result
 ; Add destination size to start address
 add 2 11 11 ; Add LSBs
 set FFFE 12 ; Save carry flag
