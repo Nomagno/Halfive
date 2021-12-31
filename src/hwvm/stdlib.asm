@@ -1,8 +1,8 @@
 ; Position-independent HWVM assembly stdlib
 
-; Run 'asmpp.sh 'file' > 'file>_p' to
+; Run 'asmpp.sh 'file' > 'file_p' to
 ; preprocess this file into assembler-ready format
-; (Runs m4 Unix command, removes comments, removes empty lines)
+; (Preprocess #d directives, remove comments, remove empty lines)
 
 ; All numbers here are expressed in hexadecimal base,
 ; unless otherwise stated
@@ -11,8 +11,8 @@
 ; Addresses 10-FF are reserved for subroutine internal usage
 
 ; Subroutine IDs 0-FF are reserved for stdlib
-define(MEMSET, [0])
-define(MEMCPY, [1])
+#d MEMSET,[0]
+#d MEMCPY,[1]
 
 
 subs MEMSET
