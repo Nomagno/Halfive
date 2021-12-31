@@ -64,5 +64,5 @@ typedef struct {
 	struct player_data_client player_data[MAXPLAYERS_HWNET];
 } hwpack_client;
 
-extern int hwnet_cli_parse(char*, hwpack_client *);
-extern int hwnet_serv_parse(char*, hwpack_server *);
+extern int hwnet_cli_parse(const char *input, hwpack_client *output);
+extern int hwnet_serv_parse(const char *, hwpack_server *output);

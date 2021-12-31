@@ -44,4 +44,5 @@ typedef struct{
 	int parent;
 } hwdoc_tok;
 
-extern int hwdoc_parse(char*, int, hwdoc_tok[]);
+extern int hwdoc_parse(char *input, int size, hwdoc_tok *toks);
+

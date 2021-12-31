@@ -87,5 +87,5 @@ typedef struct {
 
 extern int H5Init(char *trck, world *stage);
 extern int H5Sim(world *stage, unsigned int milli);
-extern int H5TransformServer(world stage, hwpack_server *serv, enum MODE mode);
-extern int H5TransformClient(world *stage, hwpack_client cli);
+extern int H5TransformServer(const world *stage, hwpack_server *serv, enum MODE mode);
+extern int H5TransformClient(world *stage, const hwpack_client *cli);
