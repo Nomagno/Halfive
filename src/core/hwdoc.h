@@ -27,6 +27,8 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
+/*Half-World Document tokenizer interface*/
+
 #include <stddef.h>
 #include <limits.h>
 
@@ -38,12 +40,9 @@ typedef enum{
 
 typedef struct{
 	hwdoc_type type;
-	int start;
-	int end;
-	int size;
+	int string_start;
+	int string_end;
 	int parent;
 } hwdoc_tok;
 
-extern int hwdoc_parse(char *input, int size, hwdoc_tok *toks);
-
-
+extern int hwdoc_parse(unsigned char *input, int size, hwdoc_tok *toks);
