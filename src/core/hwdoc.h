@@ -45,4 +45,4 @@ typedef struct{
 	int parent;
 } hwdoc_tok;
 
-extern int hwdoc_parse(unsigned char *input, int size, hwdoc_tok *toks);
+extern int hwdoc_parse(const unsigned char *input, int size, hwdoc_tok *toks);

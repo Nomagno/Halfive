@@ -30,7 +30,7 @@ WORK.*/
 #include "hwdoc.h"
 #include "hwvm/hwstring.h"
 
-int hwdoc_parse(unsigned char *input, int tok_size, hwdoc_tok *toks)
+int hwdoc_parse(const unsigned char *input, int tok_size, hwdoc_tok *toks)
 {
 	int i = 0,           /*Character iterator var*/
 	    j = 0,           /*Token iterator var*/

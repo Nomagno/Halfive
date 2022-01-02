@@ -72,6 +72,7 @@ typedef struct {
 } hwvi_ref;
 
 extern int hwvi_init(hwvi_ref *ref, size_t h, size_t w, hwvi_pixbuf *inbuf);
+extern int hwvi_getbuf(const char *spritename, hwvi_pixbuf *inbuf);
 extern int hwvi_setbuf(hwvi_ref *surf, const hwvi_pixbuf *inbuf);
 extern int hwvi_playsound(hwvi_ref *stream, _Bool do_block, const hwvi_sound *sound);
 extern int hwvi_getinput(hwvi_ref *tty, const hwvi_input *keys);
