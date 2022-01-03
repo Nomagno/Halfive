@@ -29,6 +29,7 @@ WORK.*/
 
 /*Half-World Document tokenizer interface*/
 
+#include "hwreq.h"
 #include <stddef.h>
 #include <limits.h>
 

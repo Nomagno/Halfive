@@ -26,7 +26,7 @@ COPYRIGHT OR OTHER LEGAL PRIVILEGE BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
 LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
-
+#include "hwreq.h"
 #include <stdint.h>
 #include <stddef.h>
 
@@ -42,12 +42,19 @@ typedef struct {
 	const size_t h;
 } hwvi_point;
 
+/*Pixel buffer*/
 typedef struct {
 	hwvi_point size;
 	uint16_t **pix;
 } hwvi_pixbuf;
 
+/*Direction keys,
+9 general-purpose buttons,
+2 mouse buttons,
+quit button*/
 enum hwvi_key {
+	up, down, 
+	left, right,
 	b1, b2, b3,
 	b4, b5, b6,
 	b7, b8, b9,
@@ -55,14 +62,15 @@ enum hwvi_key {
 };
 
 typedef struct {
-	enum hwvi_key keys[5];
-	uint8_t axis[4];
-	uint16_t cursor_x;
-	uint16_t cursor_y;
+	/*Only 8 keys at once*/
+	enum hwvi_key keys[8];
+	uint8_t axis[4]; /*Max 4 axis*/
+	uint16_t cursor_x; /*Mouse X*/
+	uint16_t cursor_y; /*Mouse Y*/
 } hwvi_input;
 
 typedef struct {
-	long int length_milliseconds;
+	int16_t length_milliseconds;
 	char name[16];
 } hwvi_sound;
 
@@ -74,6 +82,10 @@ typedef struct {
 	*/
 	char platform[16];
 	void *data;
+	/*Data to identify at
+	the very least the display,
+	but also possibly the sound 
+	and input devices*/
 } hwvi_ref;
 
 extern int hwvi_init(hwvi_ref *ref, 
@@ -84,21 +96,22 @@ extern hwvi_point hwvi_getbufsize(
 const char *spritename);
 /*Get size of sprite buffer*/
 
-extern int hwvi_getbufpix(const char *spritename, 
+extern int hwvi_getbufpix(const char *const spritename, 
 hwvi_pixbuf *inbuf);
 /*Ger sprite buffer copied*/
 
 extern int hwvi_setbuf(hwvi_ref *surf, 
-const hwvi_pixbuf *inbuf);
+const hwvi_pixbuf *const inbuf);
 /*Set display to buffer*/
 
 extern int hwvi_playsound(hwvi_ref *stream, 
-_Bool do_block, const hwvi_sound *sound);
+_Bool do_block, const hwvi_sound *const sound);
 /*Play sound in a blocking or nonblocking manner.
 It will get truncated or silence will be added, 
 if the specified length does not match that of
 the sound, ONLY IF the sound is blocking. Else
-the length parameter gets ignored*/
+the length parameter gets ignored. If it is -1, 
+it gets ignored in all cases.*/
 
 extern int hwvi_getinput(hwvi_ref *tty, 
 const hwvi_input *keys);

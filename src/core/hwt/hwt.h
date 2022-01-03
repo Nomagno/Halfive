@@ -31,6 +31,7 @@ WORK.*/
  A*(1-t)^2 + B*2t(1-t) + C*t^2
 */
 
+#include "../hwreq.h"
 enum TIME { day, night };
 enum SPEED { normal, boost, antiboost };
 enum RACING_LINE { no, finish_line, checkpoint };
