@@ -36,9 +36,14 @@ WORK.*/
 00000 00000 00000 0
 RED   GREEN BLUE  ALPHA
 */
+
 typedef struct {
 	const size_t w;
 	const size_t h;
+} hwvi_point;
+
+typedef struct {
+	hwvi_point size;
 	uint16_t **pix;
 } hwvi_pixbuf;
 
@@ -57,7 +62,7 @@ typedef struct {
 } hwvi_input;
 
 typedef struct {
-	int length;
+	long int length_milliseconds;
 	char name[16];
 } hwvi_sound;
 
@@ -71,8 +76,30 @@ typedef struct {
 	void *data;
 } hwvi_ref;
 
-extern int hwvi_init(hwvi_ref *ref, size_t h, size_t w, hwvi_pixbuf *inbuf);
-extern int hwvi_getbuf(const char *spritename, hwvi_pixbuf *inbuf);
-extern int hwvi_setbuf(hwvi_ref *surf, const hwvi_pixbuf *inbuf);
-extern int hwvi_playsound(hwvi_ref *stream, _Bool do_block, const hwvi_sound *sound);
-extern int hwvi_getinput(hwvi_ref *tty, const hwvi_input *keys);
+extern int hwvi_init(hwvi_ref *ref, 
+size_t h, size_t w, hwvi_pixbuf *inbuf); 
+/*Initialize display*/
+
+extern hwvi_point hwvi_getbufsize(
+const char *spritename);
+/*Get size of sprite buffer*/
+
+extern int hwvi_getbufpix(const char *spritename, 
+hwvi_pixbuf *inbuf);
+/*Ger sprite buffer copied*/
+
+extern int hwvi_setbuf(hwvi_ref *surf, 
+const hwvi_pixbuf *inbuf);
+/*Set display to buffer*/
+
+extern int hwvi_playsound(hwvi_ref *stream, 
+_Bool do_block, const hwvi_sound *sound);
+/*Play sound in a blocking or nonblocking manner.
+It will get truncated or silence will be added, 
+if the specified length does not match that of
+the sound, ONLY IF the sound is blocking. Else
+the length parameter gets ignored*/
+
+extern int hwvi_getinput(hwvi_ref *tty, 
+const hwvi_input *keys);
+/*Get current user input*/
