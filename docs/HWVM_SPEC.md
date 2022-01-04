@@ -66,9 +66,9 @@ The instruction storage can hold 0x4000 bytes/ints, or four times the value of H
 
 - The 0xFFFE register is the CARRY FLAG. It is SET TO ONE (1) if there is UNDERFLOW (when performing SUBSTRACTION with the `sub` or `cmp` instructions), or OVERFLOW (when performing ADDITION with the `add` instruction). If the operation does NOt have any overflow or underflow, it is SET TO ZERO (0). It otherwise SHALL be just as modifiable as the GENERAL PURPOSE MEMORY.
 
-- the 0xFFFF register is the ZERO FLAG. It is SET TO ZERO (0) if the result of an ADDITION, SUBSTRACTION, COMPARISON, BINARY OR, BINARY XOR, or BINARY AND is ZERO. If the operation does NOT result in zero, it is SET TO ONE (1). It otherwise SHALL be just as modifiable as the GENERAL PURPOSE MEMORY. It SHELL be always set IF THE RESULT OF ONE OF THESE OPERATIONS IS ZERO, but ALWAYS BEFORE WRITING TO THE DESTINATION ADDRESS (IF THERE IS ONE IN THE INSTRUCTION'S SPECIFICATION).
+- the 0xFFFF register is the ZERO FLAG. It is SET TO ZERO (0) if the result of an ADDITION, SUBSTRACTION, COMPARISON, BINARY OR, BINARY XOR, or BINARY AND is ZERO. If the operation does NOT result in zero, it is SET TO ONE (1). It otherwise SHALL be just as modifiable as the GENERAL PURPOSE MEMORY. It SHALL be always set IF THE RESULT OF ONE OF THESE OPERATIONS IS ZERO, but ALWAYS BEFORE WRITING TO THE DESTINATION ADDRESS. IF the result of one of this operations is NOT ZERO, it SHALL be set to ONE (1), but ALWAYS BEFORE WRITING TO THE DESTINATION ADDRESS.
 
-Extra note: the program counter is incremented every time an instruction is executed, however the jmp/jcz/jcnz instructions can forcible modify it without increasing it. All instructions in a program SHALL be LINEARLY NUMBERED from ZERO (0) the first to the last, and the program counter SHALL indicate execution of each instruction at any given time.
+Extra note: the program counter is incremented every time an instruction is executed, however the jmp/jcz/jcnz instructions can forcible modify it without increasing it, hence being the only instructions capable of taking 16-bit/integer literals. All instructions in a program SHALL be LINEARLY NUMBERED from ZERO (0) the first to the last, and the program counter SHALL indicate execution of each instruction at any given time.
 
 ***
 ### The instruction set
@@ -91,19 +91,21 @@ There are currently SIXTEEN (16) instructions, each numbered with the decimal nu
 halt (0) - TAKES NO ARGUMENTS, STOPS PROGRAM EXECUTION
 nop (1) - TAKES NO ARGUMENTS, DOES NOTHING FOR A FULL CYCLE
 set (2) V1 R2; SETS ADDRESS R2 *TO* VALUE V1
-jmp (3) V1 - JUMP (MOVE THE PROGRAM COUNTER, HAND EXECUTION) *TO* VALUE V1.  Can take 16-bit literal, as a special exception
-jcz (4) V1 - jmp TO V1 *IF* 0xFFFF IS ZERO (0).  Can take 16-bit literal, as a special exception
+jmp (3) V1 - JUMP (MOVE THE PROGRAM COUNTER, HAND EXECUTION) *TO* VALUE V1. Can take 16-bit literals
+jcz (4) V1 - jmp TO V1 *IF* 0xFFFF IS ZERO (0).  Can take 16-bit literals
 add (5) V1 V2 R3 - ADD V1 AND V2, WRITE THE RESULT TO R3. SETS CARRY/ZERO FLAGS APPROPIATELY
 sub (6) V1 V2 R3 - SUBSTRACT V2 *FROM* V1, WRITE THE RESULT TO R3. SETS CARRY/ZERO FLAGS APPROPIATELY
 and (7) V1 V2 R3 - PERFORM A BINARY 'and' ON V1 AND V2, WRITE THE RESULT TO R3. SETS ZERO FLAG APPROPIATELY
 or (8) V1 V2 R3 - PERFORM A BINARY 'or' ON V1 AND V2, WRITE THE RESULT TO R3. SETS ZERO FLAG APPROPIATELY
 xor (9) V1 V2 R3 - PERFORM A BINARY 'xor' ON V1 AND V2, WRITE THE RESULT TO R3. SETS ZERO FLAG APPROPIATELY
-rot (10) V1 V2 R3 - IF V1 IS 0 THROUGH 7, BITSHIFT V2 LEFT BY V1, WRITE THE RESULT TO R3. ELSE IF V1 IS 8 THROUGH F, BITSHIFT V2 RIGHT BY (V1 - 8), WRITE THE RESULT TO R3. ELSE DO NOTHING
+rot (10) V1 V2 R3 - IF V1 IS 0 THROUGH 7, BITSHIFT V2 LEFT BY V1, WRITE THE RESULT TO R3.
+    ELSE IF V1 IS 8 THROUGH F, BITSHIFT V2 RIGHT BY (V1 - 8), WRITE THE RESULT TO R3. ELSE DO NOTHING
+
 cmp (11) V1, V2 - SUBSTACT V2 *FROM* V1, BUT *WITHOUT* SAVING THE RESULT. SETS CARRY/ZERO FLAGS APPROPIATELY
 subs (12) ID - SEE SECTION BELOW
 sube (13) ID - SEE SECTION BELOW
 call (14) ID - SEE SECTION BELOW
-jcnz (15) V1 - jmp TO V1 *IF* 0xFFFF IS ONE (1). Can take 16-bit literal, as a special exception
+jcnz (15) V1 - jmp TO V1 *IF* 0xFFFF IS ONE (1). Can take 16-bit literals
 ```
 
 ***
@@ -126,11 +128,15 @@ jcnz (15) V1 - jmp TO V1 *IF* 0xFFFF IS ONE (1). Can take 16-bit literal, as a s
 ```
 0. set [33] FFFC # Write literal 0x33 (51, 00110011) to the OUTPUT REGISTER
 1. jmp 4 # Jump to instruction 4
-2. cmp [4] 3 # Do the subtraction [4] - 3. We don't know what address three contains, but it will set the zero flag if it is 0x4
-3. jcz 7 # If the previous comparison was indeed correct and address 3 contains 0x4, jump to instruction 7
-4. add [FE] [8] FFFC # Write the addition of 0xFE (254, 11111110) and 0x8 (8, 00001000) to the OUTPUT register. It should regult in OVERFLOW
+2. cmp [4] 3 # Do the subtraction [4] - 3. We don't know what address three contains,
+   but it will set the zero flag if it is 0x4
+3. jcz 7 # If the previous comparison was indeed correct and address 3 contains 0x4,
+   jump to instruction 7
+4. add [FE] [8] FFFC # Write the addition of 0xFE (254, 11111110) and 0x8 (8, 00001000)
+   to the OUTPUT register. It should regult in OVERFLOW
 5. set FFFE FFFF # Copy the carry flag to the zero flag
-6. jcnz 8 # If the zero flag is not zero (it shouldn't be, there was overflow and the carry flag was cloned!), jump to instruction 8
+6. jcnz 8 # If the zero flag is not zero (it shouldn't be, there was overflow and
+   the carry flag was cloned!), jump to instruction 8
 7. halt
 8. jmp 2 # Jump to instruction 2
 9. halt
@@ -138,25 +144,29 @@ jcnz (15) V1 - jmp TO V1 *IF* 0xFFFF IS ONE (1). Can take 16-bit literal, as a s
 
 ***
 ### Binary format
-An old specification of the format follows, however it still applies:
+A specification of the format follows, it still applies:
 ```
 BINARY FORMAT:
 You code each instruction as 4 bits of which the least significant 3 indicate
 which arguments are literals and which addresses, and the fourth indicates if the
-literals are pointers or not (0101 - from right to left:  first is literal,
-second address, third literal, fourth indicates they are literals and NOT pointers),
-then 4 bits for the instructions themselves (check the enum values, max 12), then simply read the
-corresponding number of 16-bit 'arguments' (0-3), and repeat.
+literals are pointers or not (0101 - from right to left:  third is literal,
+second address, first literal, fourth indicates they are literals and NOT pointers),
+then 4 bits for the instructions themselves (0-15), then
+simply read the corresponding number of 16-bit 'arguments' (0-3), and repeat.
 
 EXAMPLE:
 
-      BINARY: 0010 0000000000000001 0000000000000011 0000000000000010 0000 0000000000000000
-      DECIMAL: 2 1 3 2 0 0
-      ASSEMBLY:add 1 [3] 2\n halt
-      ENGLISH:
+BINARY:    0010 0101 0000000000000001 0000000000000011 0000000000000010 0000 0000000000000000
+DECIMAL:   2    5    1                3                2                0    0
+ASSEMBLY:       add  1               [3]               2               \n    halt
+ENGLISH:
 	The first instruction has the middle argument as a literal.
-	Add the CONTENTS of register 1 and the literal integer '3', then put the
-result into register '2'. Halt.
+	The first instruction is 'add'.
+	ADD the contents of Address 1 to the number 3, put the result into Address 2.
+
+	The second instruction has no arguments as literals.
+	The second instruction is 'halt'.
+	HALT.
 ```
 
 ***
