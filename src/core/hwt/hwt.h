@@ -75,5 +75,5 @@ typedef struct {
 	struct segment segments[40];
 } hwtrack;
 
-extern int hwt_cli_parse(char*, hwtrack *);
-extern int hwt_serv_parse(char*, hwtrack *);
+extern int hwt_cli_parse(char *, hwtrack *);
+extern int hwt_serv_parse(char *, hwtrack *);

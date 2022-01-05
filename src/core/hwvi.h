@@ -27,8 +27,8 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 #include "hwreq.h"
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 /*Half-Workd VIsual interface*/
 
@@ -53,18 +53,27 @@ typedef struct {
 2 mouse buttons,
 quit button*/
 enum hwvi_key {
-	up, down,
-	left, right,
-	b1, b2, b3,
-	b4, b5, b6,
-	b7, b8, b9,
-	m1, m2, quit
+	up = 0,
+	down = 1,
+	left = 2,
+	right = 3,
+	b1 = 4,
+	b2 = 5,
+	b3 = 6,
+	b4 = 7,
+	b5 = 8,
+	b6 = 9,
+	b7 = 10,
+	b8 = 11,
+	b9 = 12,
+	m1 = 13,
+	m2 = 14,
+	quit = 15
 };
 
 typedef struct {
-	/*Only 8 keys at once*/
-	enum hwvi_key keys[8];
-	uint8_t axis[4]; /*Max 4 axis*/
+	_Bool keys[16]; /*See enum for what each pos means*/
+	uint8_t axis[4];   /*Max 4 axis*/
 	uint16_t cursor_x; /*Mouse X*/
 	uint16_t cursor_y; /*Mouse Y*/
 } hwvi_input;
@@ -75,7 +84,7 @@ typedef struct {
 	_Bool loop_length_milli;
 	_Bool do_block;
 
-	char name[16];
+	char name[128];
 } hwvi_sound;
 
 typedef struct {
@@ -94,31 +103,26 @@ typedef struct {
 	*/
 } hwvi_ref;
 
-extern int hwvi_init(hwvi_ref *buf,
-size_t h, size_t w);
+extern int hwvi_init(hwvi_ref *buf, size_t h, size_t w);
 /*Initialize display*/
 
 extern int hwvi_destroy(hwvi_ref *ref);
 /*Exit gracefully*/
 
-extern int hwvi_getbufsize( size_t *h, size_t *w, const char *spritename);
+extern int hwvi_getbufsize(size_t *h, size_t *w, const char *spritename);
 /*Get size of sprite buffer*/
 
-extern int hwvi_getbufpix(const char *const spritename,
-hwvi_pixbuf *inbuf);
+extern int hwvi_getbufpix(const char *const spritename, hwvi_pixbuf *inbuf);
 /*Ger sprite buffer copied*/
 
-extern int hwvi_setbuf(hwvi_ref *surf,
-const hwvi_pixbuf *const inbuf);
+extern int hwvi_setbuf(hwvi_ref *surf, const hwvi_pixbuf *const inbuf);
 /*Set display to buffer*/
 
-extern int hwvi_playsound(hwvi_ref *stream,
-const hwvi_sound *const sound);
+extern int hwvi_playsound(hwvi_ref *stream, const hwvi_sound *const sound);
 /*Play in a nonblocking manner (within reason).
 The length of the sound will get adjusted if it
 is more than that of the sound itself.
 */
 
-extern int hwvi_getinput(hwvi_ref *tty,
-const hwvi_input *keys);
+extern int hwvi_getinput(hwvi_ref *tty, hwvi_input *keys);
 /*Get current user input*/

@@ -27,9 +27,9 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
-#include "hwreq.h"
 #include "hwdoc.h"
 #include "hwnet/hwnet.h"
+#include "hwreq.h"
 #include "hwt/hwt.h"
 #include "hwvm/hwstring.h"
 #include "hwvm/hwvm.h"
@@ -88,5 +88,6 @@ typedef struct {
 
 extern int H5Init(char *trck, world *stage);
 extern int H5Sim(world *stage, unsigned int milli);
-extern int H5TransformServer(const world *stage, hwpack_server *serv, enum MODE mode);
+extern int H5TransformServer(const world *stage, hwpack_server *serv,
+			     enum MODE mode);
 extern int H5TransformClient(world *stage, const hwpack_client *cli);

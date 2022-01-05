@@ -96,7 +96,7 @@ hwuint addrconvert(hwuint arg, hwuint addr)
 
 /*INCREDIBLY COMMON BOILERPLATE MOVED TO OWN FUNCTION*/
 hwuint auxset(hwuint *val, vmem *space, hwuint ad, hwuint conv, _Bool do_write,
-	    _Bool isptr)
+	      _Bool isptr)
 {
 	if (!do_write) {
 		switch (ad) {
@@ -209,8 +209,8 @@ hwuint auxset(hwuint *val, vmem *space, hwuint ad, hwuint conv, _Bool do_write,
 
 /*Meta-instruction that has two configurations:
 1. first and second arguments are (Pointer, literal, or address)
-    operate first and second and save result to third argument (Pointer, or address).
-    set flags accordingly (zero and possibly carry)
+    operate first and second and save result to third argument (Pointer, or
+address). set flags accordingly (zero and possibly carry)
 
 2. first and second arguments are (Pointer, literal, or address)
     operate first and second, set flags accordingly (zero and possibly carry).
@@ -240,7 +240,9 @@ hwuint hbin(hwuint op[4], vmem *space, hwuint flag, _Bool do_save)
 
 	ad1 = addrcheck(op[0]);
 	conv1 = addrconvert(ad1, op[0]);
-	if (op[3] != (op[3] | 4)) { /*We're dealing with an address, corresponding bit not set*/
+	if (op[3] !=
+	    (op[3] |
+	     4)) { /*We're dealing with an address, corresponding bit not set*/
 
 		if (auxset(&val1, space, ad1, conv1, 0, 0)) {
 #ifdef EOF
@@ -248,7 +250,8 @@ hwuint hbin(hwuint op[4], vmem *space, hwuint flag, _Bool do_save)
 #endif
 			return 1;
 		}
-	} else { /*We're dealing with a literal pointer, corresponding bit set AND literal bit set*/
+	} else { /*We're dealing with a literal pointer, corresponding bit set
+		    AND literal bit set*/
 		if (op[3] >> 3) {
 			if (auxset(&val1, space, ad1, conv1, 0, 1)) {
 #ifdef EOF
@@ -256,7 +259,8 @@ hwuint hbin(hwuint op[4], vmem *space, hwuint flag, _Bool do_save)
 #endif
 				return 1;
 			}
-		} else { /*We're dealing with a literal number, corresponding bit set AND literal bit not set*/
+		} else { /*We're dealing with a literal number, corresponding
+			    bit set AND literal bit not set*/
 			val1 = op[0];
 		}
 	}
@@ -264,21 +268,25 @@ hwuint hbin(hwuint op[4], vmem *space, hwuint flag, _Bool do_save)
 	ad2 = addrcheck(op[1]);
 	conv2 = addrconvert(ad2, op[1]);
 	if (op[3] != (op[3] | 2)) {
-		if (auxset(&val2, space, ad2, conv2, 0, 0)) { /*We're dealing with an address, corresponding bit not set*/
+		if (auxset(&val2, space, ad2, conv2, 0,
+			   0)) { /*We're dealing with an address, corresponding
+				    bit not set*/
 #ifdef EOF
 			printf("ERROR\n");
 #endif
 			return 1;
 		}
 	} else {
-		if (op[3] >> 3) { /*We're dealing with a literal pointer, corresponding bit set AND literal bit set*/
+		if (op[3] >> 3) { /*We're dealing with a literal pointer,
+				     corresponding bit set AND literal bit set*/
 			if (auxset(&val2, space, ad2, conv2, 0, 1)) {
 #ifdef EOF
 				printf("ERROR\n");
 #endif
 				return 1;
 			}
-		} else { /*We're dealing with a literal number, corresponding bit set AND literal bit not set*/
+		} else { /*We're dealing with a literal number, corresponding
+			    bit set AND literal bit not set*/
 			val2 = op[1];
 		}
 	}
@@ -302,29 +310,32 @@ hwuint hbin(hwuint op[4], vmem *space, hwuint flag, _Bool do_save)
 		space->cf = (result > val1);
 		break;
 	}
-	if (result == 0) space->zf = 0;
-	else space->zf = 1;
+	if (result == 0)
+		space->zf = 0;
+	else
+		space->zf = 1;
 
-	if(do_save){
-	castresult = result;
-	ad3 = addrcheck(op[2]);
-	conv3 = addrconvert(ad3, op[2]);
-	/*Implicit check for pointer vs address*/
-	if (auxset(&castresult, space, ad3, conv3, 1, ((op[3] >> 3) && (op[3] == (op[3] | 6))))) {
+	if (do_save) {
+		castresult = result;
+		ad3 = addrcheck(op[2]);
+		conv3 = addrconvert(ad3, op[2]);
+		/*Implicit check for pointer vs address*/
+		if (auxset(&castresult, space, ad3, conv3, 1,
+			   ((op[3] >> 3) && (op[3] == (op[3] | 6))))) {
 #ifdef EOF
-		printf("ERROR\n");
+			printf("ERROR\n");
 #endif
-		return 1;
-	}
+			return 1;
+		}
 	}
 
 	return 0;
 }
 
 /*Takes three arguments, if first is less than 8, bitshift left that many bits.
-         if first is less than 16, substract 8 and bitshift right that many bits.
-         if first is equal to or greater than 16, no nothing
-  Second argument is the operand to be bitshifted (Pointer, literal, or address)
+	 if first is less than 16, substract 8 and bitshift right that many
+  bits. if first is equal to or greater than 16, no nothing Second argument is
+  the operand to be bitshifted (Pointer, literal, or address)
   Third argument is destination address (Pointer, or address)*/
 hwuint hrot(hwuint op[4], vmem *space)
 {
@@ -343,7 +354,9 @@ hwuint hrot(hwuint op[4], vmem *space)
 
 	ad1 = addrcheck(op[0]);
 	conv1 = addrconvert(ad1, op[0]);
-	if (op[3] != (op[3] | 4)) { /*We're dealing with an address, corresponding bit not set*/
+	if (op[3] !=
+	    (op[3] |
+	     4)) { /*We're dealing with an address, corresponding bit not set*/
 		if (auxset(&val1, space, ad1, conv1, 0, 0)) {
 #ifdef EOF
 			printf("ERROR\n");
@@ -351,14 +364,16 @@ hwuint hrot(hwuint op[4], vmem *space)
 			return 1;
 		}
 	} else {
-		if (op[3] >> 3) { /*We're dealing with a literal pointer, corresponding bit set AND literal bit set*/
+		if (op[3] >> 3) { /*We're dealing with a literal pointer,
+				     corresponding bit set AND literal bit set*/
 			if (auxset(&val1, space, ad1, conv1, 0, 1)) {
 #ifdef EOF
 				printf("ERROR\n");
 #endif
 				return 1;
 			}
-		} else { /*We're dealing with a literal number, corresponding bit set AND literal bit not set*/
+		} else { /*We're dealing with a literal number, corresponding
+			    bit set AND literal bit not set*/
 			val1 = op[0];
 		}
 	}
@@ -384,9 +399,9 @@ hwuint hrot(hwuint op[4], vmem *space)
 			val2 = op[1];
 		}
 	}
-	if(val1 < 8)
+	if (val1 < 8)
 		result = val2 << val1;
-	else if(val1 < 16)
+	else if (val1 < 16)
 		result = val2 >> (val1 - 8);
 	else
 		do_nothing = 0;
@@ -394,7 +409,8 @@ hwuint hrot(hwuint op[4], vmem *space)
 	ad3 = addrcheck(op[2]);
 	conv3 = addrconvert(ad3, op[2]);
 	/*Implicit check for pointer vs address*/
-	if (do_nothing && auxset(&result, space, ad3, conv3, 1, ((op[3] >> 3) && (op[3] == (op[3] | 2))))) {
+	if (do_nothing && auxset(&result, space, ad3, conv3, 1,
+				 ((op[3] >> 3) && (op[3] == (op[3] | 2))))) {
 #ifdef EOF
 		printf("ERROR\n");
 #endif
@@ -404,7 +420,8 @@ hwuint hrot(hwuint op[4], vmem *space)
 	return 0;
 }
 
-/*Takes one argument, move program counter to value (Pointer, literal, or address)*/
+/*Takes one argument, move program counter to value (Pointer, literal, or
+ * address)*/
 hwuint hjump(hwuint op[4], vmem *space, hwuint *co)
 {
 	hwuint adr;
@@ -413,7 +430,9 @@ hwuint hjump(hwuint op[4], vmem *space, hwuint *co)
 
 	adr = addrcheck(op[0]);
 	conv = addrconvert(adr, op[0]);
-	if (op[3] != (op[3] | 4)) { /*We're dealing with an address, corresponding bit not set*/
+	if (op[3] !=
+	    (op[3] |
+	     4)) { /*We're dealing with an address, corresponding bit not set*/
 		if (auxset(&val, space, adr, conv, 0, 0)) {
 #ifdef EOF
 			printf("ERROR\n");
@@ -421,14 +440,16 @@ hwuint hjump(hwuint op[4], vmem *space, hwuint *co)
 			return 1;
 		}
 	} else {
-		if (op[3] >> 3) { /*We're dealing with a literal pointer, corresponding bit set AND literal bit set*/
+		if (op[3] >> 3) { /*We're dealing with a literal pointer,
+				     corresponding bit set AND literal bit set*/
 			if (auxset(&val, space, adr, conv, 0, 1)) {
 #ifdef EOF
 				printf("ERROR\n");
 #endif
 				return 1;
 			}
-		} else { /*We're dealing with a literal number, corresponding bit set AND literal bit not set*/
+		} else { /*We're dealing with a literal number, corresponding
+			    bit set AND literal bit not set*/
 			val = op[0];
 		}
 	}
@@ -493,7 +514,9 @@ hwuint hset(hwuint op[4], vmem *space)
 
 	ad1 = addrcheck(op[0]);
 	conv1 = addrconvert(ad1, op[0]);
-	if (op[3] != (op[3] | 4)) { /*We're dealing with an address, corresponding bit not set*/
+	if (op[3] !=
+	    (op[3] |
+	     4)) { /*We're dealing with an address, corresponding bit not set*/
 		if (auxset(&val, space, ad1, conv1, 0, 0)) {
 #ifdef EOF
 			printf("ERROR\n");
@@ -501,14 +524,16 @@ hwuint hset(hwuint op[4], vmem *space)
 			return 1;
 		}
 	} else {
-		if (op[3] >> 3) { /*We're dealing with a literal pointer, corresponding bit set AND literal bit set*/
+		if (op[3] >> 3) { /*We're dealing with a literal pointer,
+				     corresponding bit set AND literal bit set*/
 			if (auxset(&val, space, ad1, conv1, 0, 1)) {
 #ifdef EOF
 				printf("ERROR\n");
 #endif
 				return 1;
 			}
-		} else { /*We're dealing with a literal number, corresponding bit set AND literal bit not set*/
+		} else { /*We're dealing with a literal number, corresponding
+			    bit set AND literal bit not set*/
 			val = op[0];
 		}
 	}
@@ -516,7 +541,8 @@ hwuint hset(hwuint op[4], vmem *space)
 	ad2 = addrcheck(op[1]);
 	conv2 = addrconvert(ad2, op[1]);
 	/*Implicit check for pointer vs address*/
-	if (auxset(&val, space, ad2, conv2, 1, ((op[3] >> 3) && (op[3] == (op[3] | 2))))) {
+	if (auxset(&val, space, ad2, conv2, 1,
+		   ((op[3] >> 3) && (op[3] == (op[3] | 2))))) {
 #ifdef EOF
 		printf("ERROR\n");
 #endif
@@ -562,8 +588,10 @@ hwuint execnext(mem *program)
 			return 0;
 		case jcz:
 			if (program->m2.zf == 0)
-				errno = hjump(program->m1.opnd[program->m2.co],
-					      &program->m2, &program->m2.co); /*Jump if ZF is 0*/
+				errno =
+				    hjump(program->m1.opnd[program->m2.co],
+					  &program->m2,
+					  &program->m2.co); /*Jump if ZF is 0*/
 			else {
 				program->m2.co += 1;
 				errno = 0;
@@ -574,8 +602,10 @@ hwuint execnext(mem *program)
 			return 0;
 		case jcnz:
 			if (program->m2.zf == 1)
-				errno = hjump(program->m1.opnd[program->m2.co],
-					      &program->m2, &program->m2.co); /*Jump if ZF is 1*/
+				errno =
+				    hjump(program->m1.opnd[program->m2.co],
+					  &program->m2,
+					  &program->m2.co); /*Jump if ZF is 1*/
 			else {
 				program->m2.co += 1;
 				errno = 0;
@@ -601,18 +631,16 @@ hwuint execnext(mem *program)
 			}
 			return 0;
 		case and:
-			errno =
-			    hbin(program->m1.opnd[program->m2.co], &program->m2,
-				 1, 1); /*Perform binary AND*/
+			errno = hbin(program->m1.opnd[program->m2.co],
+				     &program->m2, 1, 1); /*Perform binary AND*/
 			program->m2.co += 1;
 			if (errno != 0) {
 				return 2; /*EXECUTION ERROR*/
 			}
 			return 0;
 		case or:
-			errno =
-			    hbin(program->m1.opnd[program->m2.co], &program->m2,
-				 2, 1); /*Perform binary OR*/
+			errno = hbin(program->m1.opnd[program->m2.co],
+				     &program->m2, 2, 1); /*Perform binary OR*/
 			program->m2.co += 1;
 			if (errno != 0) {
 				return 2; /*EXECUTION ERROR*/

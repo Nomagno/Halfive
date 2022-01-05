@@ -107,5 +107,6 @@ int hwdoc_parse(const unsigned char *input, int tok_size, hwdoc_tok *toks)
 /*
 EXAMPLE OF VALID HWDOC
 
-_ONE\n\tkey val1 val2 val3\n\tkey2 val1 val2 val3\n\t_SUBONE\n\t\tsubkey val0 val1 val2
+_ONE\n\tkey val1 val2 val3\n\tkey2 val1 val2 val3\n\t_SUBONE\n\t\tsubkey val0
+val1 val2
 */

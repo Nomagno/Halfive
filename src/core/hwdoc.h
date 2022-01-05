@@ -30,16 +30,12 @@ WORK.*/
 /*Half-World Document tokenizer interface*/
 
 #include "hwreq.h"
-#include <stddef.h>
 #include <limits.h>
+#include <stddef.h>
 
-typedef enum{
-	SEC = 0,
-	KEY = 1,
-	VAL = 2
-} hwdoc_type;
+typedef enum { SEC = 0, KEY = 1, VAL = 2 } hwdoc_type;
 
-typedef struct{
+typedef struct {
 	hwdoc_type type;
 	int string_start;
 	int string_end;
