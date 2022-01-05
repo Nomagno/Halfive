@@ -45,7 +45,7 @@ typedef struct {
 /*Pixel buffer*/
 typedef struct {
 	hwvi_point size;
-	uint16_t **pix;
+	uint16_t *pix;
 } hwvi_pixbuf;
 
 /*Direction keys,
@@ -53,7 +53,7 @@ typedef struct {
 2 mouse buttons,
 quit button*/
 enum hwvi_key {
-	up, down, 
+	up, down,
 	left, right,
 	b1, b2, b3,
 	b4, b5, b6,
@@ -70,7 +70,11 @@ typedef struct {
 } hwvi_input;
 
 typedef struct {
-	int16_t length_milliseconds;
+	int16_t length_milli;
+	_Bool do_loop;
+	_Bool loop_length_milli;
+	_Bool do_block;
+
 	char name[16];
 } hwvi_sound;
 
@@ -82,37 +86,39 @@ typedef struct {
 	*/
 	char platform[16];
 	void *data;
-	/*Data to identify at
+	/*Opaque hangle to identify at
 	the very least the display,
-	but also possibly the sound 
-	and input devices*/
+	but also possibly the sound
+	and input devices. It SHOULD
+	NOT be touched by the frontend.
+	*/
 } hwvi_ref;
 
-extern int hwvi_init(hwvi_ref *ref, 
-size_t h, size_t w, hwvi_pixbuf *inbuf); 
+extern int hwvi_init(hwvi_ref *buf,
+size_t h, size_t w);
 /*Initialize display*/
 
-extern hwvi_point hwvi_getbufsize(
-const char *spritename);
+extern int hwvi_destroy(hwvi_ref *ref);
+/*Exit gracefully*/
+
+extern int hwvi_getbufsize( size_t *h, size_t *w, const char *spritename);
 /*Get size of sprite buffer*/
 
-extern int hwvi_getbufpix(const char *const spritename, 
+extern int hwvi_getbufpix(const char *const spritename,
 hwvi_pixbuf *inbuf);
 /*Ger sprite buffer copied*/
 
-extern int hwvi_setbuf(hwvi_ref *surf, 
+extern int hwvi_setbuf(hwvi_ref *surf,
 const hwvi_pixbuf *const inbuf);
 /*Set display to buffer*/
 
-extern int hwvi_playsound(hwvi_ref *stream, 
-_Bool do_block, const hwvi_sound *const sound);
-/*Play sound in a blocking or nonblocking manner.
-It will get truncated or silence will be added, 
-if the specified length does not match that of
-the sound, ONLY IF the sound is blocking. Else
-the length parameter gets ignored. If it is -1, 
-it gets ignored in all cases.*/
+extern int hwvi_playsound(hwvi_ref *stream,
+const hwvi_sound *const sound);
+/*Play in a nonblocking manner (within reason).
+The length of the sound will get adjusted if it
+is more than that of the sound itself.
+*/
 
-extern int hwvi_getinput(hwvi_ref *tty, 
+extern int hwvi_getinput(hwvi_ref *tty,
 const hwvi_input *keys);
 /*Get current user input*/
