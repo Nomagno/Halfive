@@ -1,16 +1,15 @@
-HALF-WORLD, THE UNIVERSAL RACING GAME PROTOCOL
+HALF-WORLD, THE UNIVERSAL RACING GAME
 
 Half-World is a stateless protocol for racing games, and with a bit more work any 2D game that needs to be accessible, lightweight, and work under heavy/total packet loss.
 
-Half-Five (src folder) is a modular implementation of a racing game that adheres to Half-World.
+Half-Five (src folder) is a modular no-dependency implementation of a racing game that adheres to Half-World.
 It has a lot of C utility interfaces, such as:
-- HWT/HWNET reader (WIP)
-- Portable VM and assembly language
-- Small object-oriented macro header
-- UUIDv4 implementation
-- Declarative physics engine (WIP)
+- HWDOC reader (src/core/hwdoc.h)
+- HWNET/HWT reader (WIP) (src/core/hwnet/hwnet.h) (src/core/hwt/hwt.h)
+- Portable VM and assembly language (src/core/hwvm/hwvm.h)
+- Portable abstraction over graphics, sound, and input backends (stc/core/hwvi.h)
+- Declarative physics engine (WIP) (src/core/halfive.h)
 - Arbitrary-viewport ASCII 2D renderer (WIP)
-- Terminal frontend to tie it all together (WIP)
 
 It has no implementation requirements
 
@@ -22,7 +21,7 @@ List of specifications and corresponding mime types:
 	Domain-specific data formats:
 		Half-World Network (HWNET)
 			- text/hwnet
-		Half-World Track (HWT) 
+		Half-World Track (HWT)
 			- text/hwt
 
 	General-purpose tools:
@@ -36,9 +35,8 @@ If you read all specifications in the docs, you should be able to:
  - Use HWT as a basic format for circuits
  - Use HWVM as a basic runtime for user-generated content
 
-You can make your own extensions of these documents.
-To make them valid extensions, simply specify inside them an 8-character alphanumerical name (underscore hyphen 0-9 A-Z a-z, e.g "_My-Ext2").
+To make them extensions easily trackable, I recommand specifying inside them an 8-character alphanumerical name (underscore hyphen 0-9 A-Z a-z, e.g "_My-Ext2").
 
 
 --- Licensing ---
-All files, except for hwstring.h, are released under the COIL license. Please see each individual file for more information
+The whole project is released under the COIL license, as well as all original assets/code. Please see each file for individual licensing information, however.

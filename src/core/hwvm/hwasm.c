@@ -30,6 +30,83 @@ WORK.*/
 #include "hwstring.h"
 #include "hwvm.h"
 
+#define HWASSEMBLY
+#ifdef HWASSEMBLY
+
+hwuint asmparse(char *linestr, iset *inst, hwuint opnds[4]);
+iset _isinst(char *instr);
+hwuint _isxupdigit(hwuchar inchar);
+
+#include <stdio.h>
+int main(int argc, char **argv)
+{
+	/*Requires code file and drive file as arguments*/
+	if (argc < 2)
+		return 1;
+	char arr[30];
+	FILE *codefile = fopen(argv[1], "r");
+	FILE *drivefile = fopen(argv[2], "r");
+
+	xmem code = {0};
+	int i = 0;
+	while (fscanf(codefile, "%[^\n] ", arr) != EOF) {
+		asmparse(arr, &code.inst[i], code.opnd[i]);
+		i += 1;
+	}
+	mem prog = fxmem(code);
+	fread(prog.m2.dr, 1, sizeof(prog.m2.dr), drivefile);
+
+	int errno = 0;
+	while ((!prog.hf) && (!errno)) {
+		if ((prog.m1.opnd[prog.m2.co][0] == 0xFFFD) ||
+		    (prog.m1.opnd[prog.m2.co][1] == 0xFFFD)) {
+			putchar('>');
+			prog.m2.in = getchar();
+			putchar('\n');
+		}
+		errno = execnext(&prog);
+	}
+	fclose(codefile);
+	fclose(drivefile);
+	return errno;
+}
+#endif
+
+
+hwuint asmparse(char *linestr, iset *inst, hwuint opnds[4])
+{
+	char *token = hwstrtok(linestr, " ");
+	iset myinst;
+	int i = 0;
+	while ((token != (void *)0) && (i < 3)) {
+
+		if ((myinst = _isinst(token)) != 16) {
+			*inst = myinst;
+		} else if (_isxupdigit(token[0])) {
+			opnds[i] = (hwuint)hwstrtoul(token, (void *)0, 16);
+			i += 1;
+		} else if (token[0] == '[') {
+			token += 1;
+			opnds[i] = (hwuint)hwstrtoul(token, (void *)0, 16);
+
+			opnds[3] = (opnds[3] | (1 << (2 - i)));
+
+			i += 1;
+		} else if (token[0] == '{') {
+			token += 1;
+			opnds[i] = (hwuint)hwstrtoul(token, (void *)0, 16);
+			opnds[3] = (opnds[3] | 8);
+			opnds[3] = (opnds[3] | (1 << (2 - i)));
+
+			i += 1;
+		} else {
+			return 2; /*CATASTROPHIC ERROR*/
+		}
+		token = hwstrtok((void *)0, " ");
+	}
+	return 0;
+}
+
 hwuint _isxupdigit(hwuchar inchar)
 {
 	if ((inchar == 'A') || (inchar == 'a') || (inchar == 'B') ||
@@ -82,76 +159,3 @@ iset _isinst(char *instr)
 	else
 		return 16;
 }
-
-hwuint asmparse(char *linestr, iset *inst, hwuint opnds[4])
-{
-	char *token = hwstrtok(linestr, " ");
-	iset myinst;
-	int i = 0;
-	while ((token != (void *)0) && (i < 3)) {
-
-		if ((myinst = _isinst(token)) != 16) {
-			*inst = myinst;
-		} else if (_isxupdigit(token[0])) {
-			opnds[i] = (hwuint)hwstrtoul(token, (void *)0, 16);
-			i += 1;
-		} else if (token[0] == '[') {
-			token += 1;
-			opnds[i] = (hwuint)hwstrtoul(token, (void *)0, 16);
-
-			opnds[3] = (opnds[3] | (1 << (2 - i)));
-
-			i += 1;
-		} else if (token[0] == '{') {
-			token += 1;
-			opnds[i] = (hwuint)hwstrtoul(token, (void *)0, 16);
-			opnds[3] = (opnds[3] | 8);
-			opnds[3] = (opnds[3] | (1 << (2 - i)));
-
-			i += 1;
-		} else {
-			return 2; /*CATASTROPHIC ERROR*/
-		}
-		token = hwstrtok((void *)0, " ");
-	}
-	return 0;
-}
-
-#define HWASSEMBLY
-
-#ifdef HWASSEMBLY
-
-#include <stdio.h>
-int main(int argc, char **argv)
-{
-	/*Requires code file and drive file as arguments*/
-	if (argc < 2)
-		return 1;
-	char arr[30];
-	FILE *codefile = fopen(argv[1], "r");
-	FILE *drivefile = fopen(argv[2], "r");
-
-	xmem code = {0};
-	int i = 0;
-	while (fscanf(codefile, "%[^\n] ", arr) != EOF) {
-		asmparse(arr, &code.inst[i], code.opnd[i]);
-		i += 1;
-	}
-	mem prog = fxmem(code);
-	fread(prog.m2.dr, 1, sizeof(prog.m2.dr), drivefile);
-
-	int errno = 0;
-	while ((!prog.hf) && (!errno)) {
-		if ((prog.m1.opnd[prog.m2.co][0] == 0xFFFD) ||
-		    (prog.m1.opnd[prog.m2.co][1] == 0xFFFD)) {
-			putchar('>');
-			prog.m2.in = getchar();
-			putchar('\n');
-		}
-		errno = execnext(&prog);
-	}
-	fclose(codefile);
-	fclose(drivefile);
-	return errno;
-}
-#endif

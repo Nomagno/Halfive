@@ -58,6 +58,10 @@ quit, bX, mx, and keyX are booleans 0 or 1, axisX are 8-bit ints 0-255
 #include "hwvi.h"
 #include "hwreq.h"
 
+int hwvi_init(hwvi_ref *ref, size_t h, size_t w);
+int hwvi_destroy(hwvi_ref *ref);
+int hwvi_playsound(hwvi_ref *stream, const hwvi_sound *const insound);
+
 #define HWVI_GSERV_IMPL_SDL2
 #define HWVI_AUDIOSERV_IMPL_SDL2
 #define HWVI_STDINPUT_IMPL_PORTABLE
@@ -126,7 +130,7 @@ int hwvi_init(hwvi_ref *ref, size_t h, size_t w)
 	return 0;
 }
 
-extern int hwvi_destroy(hwvi_ref *ref)
+int hwvi_destroy(hwvi_ref *ref)
 {
 	SDL_DestroyWindow(((struct hwvi_sdl_track *)ref->data)->globwindow);
 #ifdef HWVI_AUDIOSERV_IMPL_SDL2
@@ -136,7 +140,7 @@ extern int hwvi_destroy(hwvi_ref *ref)
 	return 0;
 }
 
-extern int hwvi_setbuf(hwvi_ref *ref, const hwvi_pixbuf *const inbuf)
+int hwvi_setbuf(hwvi_ref *ref, const hwvi_pixbuf *const inbuf)
 {
 	SDL_Surface *surfptr = ((struct hwvi_sdl_track *)ref->data)->globsurf;
 	SDL_LockSurface(surfptr);
@@ -150,7 +154,7 @@ extern int hwvi_setbuf(hwvi_ref *ref, const hwvi_pixbuf *const inbuf)
 	return 0;
 }
 
-extern int hwvi_getbufsize(size_t *h, size_t *w, const char *spritename)
+int hwvi_getbufsize(size_t *h, size_t *w, const char *spritename)
 {
 	SDL_Surface *surfptr = SDL_LoadBMP(spritename);
 	*h = surfptr->h;
@@ -159,7 +163,7 @@ extern int hwvi_getbufsize(size_t *h, size_t *w, const char *spritename)
 	return 0;
 }
 
-extern int hwvi_getbufpix(const char *spritename, hwvi_pixbuf *inbuf)
+int hwvi_getbufpix(const char *spritename, hwvi_pixbuf *inbuf)
 {
 	SDL_Surface *surfptr = SDL_LoadBMP(spritename);
 	SDL_ConvertPixels(inbuf->size.w, inbuf->size.h, surfptr->format->format,
@@ -176,7 +180,7 @@ extern int hwvi_getbufpix(const char *spritename, hwvi_pixbuf *inbuf)
 
 /*For sound media caching*/
 
-extern int hwvi_playsound(hwvi_ref *stream, const hwvi_sound *const insound)
+int hwvi_playsound(hwvi_ref *stream, const hwvi_sound *const insound)
 {
 	uint8_t *buf;
 	uint32_t size;
@@ -196,7 +200,7 @@ extern int hwvi_playsound(hwvi_ref *stream, const hwvi_sound *const insound)
 
 #ifdef HWVI_STDINPUT_IMPL_PORTABLE
 #include <stdio.h>
-extern int hwvi_getinput(hwvi_ref *tty, hwvi_input *keys)
+int hwvi_getinput(hwvi_ref *tty, hwvi_input *keys)
 {
 	tty = tty;
 	int i = 0;

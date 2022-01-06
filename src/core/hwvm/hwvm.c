@@ -34,6 +34,175 @@ PRINTING AND TESTING FUNCTIONALITY*/
 #define UADDR 0xFFF0
 /*Unknown address*/
 
+mem fxmem(xmem code);
+hwuint execnext(mem *program);
+
+
+hwuint hbin(hwuint op[4], vmem *space, hwuint flag, _Bool do_save);
+hwuint hset(hwuint op[4], vmem *space);
+hwuint hjump(hwuint op[4], vmem *space, hwuint *co);
+hwuint hrot(hwuint op[4], vmem *space);
+hwuint hcall(hwuint *co, hwuint id, mem *prog);
+hwuint hsubs(hwuint *co, hwuint id, mem *prog);
+hwuint hsube(hwuint *co, hwuint id, mem *prog);
+
+mem fxmem(xmem code)
+{
+	mem memory = {0};
+	memory.m1 = code;
+	memory.m2.zf = 1;
+	return memory;
+}
+
+hwuint execnext(mem *program)
+{
+	hwuint errno;
+	if (program->m2.co < (MEMSIZE * 4)) {
+		switch (program->m1.inst[program->m2.co]) {
+		case halt:
+			program->hf = 1; /*Stop the CPU*/
+			program->m2.co += 1;
+#ifdef EOF
+			printf("HALT\n");
+#endif
+			return 0;
+		case nop:
+			program->m2.co += 1; /*Do nothing*/
+			return 0;
+		case set:
+			errno = hset(program->m1.opnd[program->m2.co],
+				     &program->m2); /*Set address to value*/
+			program->m2.co += 1;
+			return 0;
+		case jmp:
+			errno = hjump(program->m1.opnd[program->m2.co],
+				      &program->m2, &program->m2.co); /*Jump*/
+			if (errno != 0) {
+				return 2; /*EXECUTION ERROR*/
+			}
+			return 0;
+		case jcz:
+			if (program->m2.zf == 0)
+				errno =
+				    hjump(program->m1.opnd[program->m2.co],
+					  &program->m2,
+					  &program->m2.co); /*Jump if ZF is 0*/
+			else {
+				program->m2.co += 1;
+				errno = 0;
+			}
+			if (errno != 0) {
+				return 2; /*EXECUTION ERROR*/
+			}
+			return 0;
+		case jcnz:
+			if (program->m2.zf == 1)
+				errno =
+				    hjump(program->m1.opnd[program->m2.co],
+					  &program->m2,
+					  &program->m2.co); /*Jump if ZF is 1*/
+			else {
+				program->m2.co += 1;
+				errno = 0;
+			}
+			if (errno != 0) {
+				return 2; /*EXECUTION ERROR*/
+			}
+			return 0;
+		case add:
+			errno = hbin(program->m1.opnd[program->m2.co],
+				     &program->m2, 4, 1); /*Add and save*/
+			program->m2.co += 1;
+			if (errno != 0) {
+				return 2; /*EXECUTION ERROR*/
+			}
+			return 0;
+		case sub:
+			errno = hbin(program->m1.opnd[program->m2.co],
+				     &program->m2, 5, 1); /*Substract and save*/
+			program->m2.co += 1;
+			if (errno != 0) {
+				return 2; /*EXECUTION ERROR*/
+			}
+			return 0;
+		case and:
+			errno = hbin(program->m1.opnd[program->m2.co],
+				     &program->m2, 1, 1); /*Perform binary AND*/
+			program->m2.co += 1;
+			if (errno != 0) {
+				return 2; /*EXECUTION ERROR*/
+			}
+			return 0;
+		case or:
+			errno = hbin(program->m1.opnd[program->m2.co],
+				     &program->m2, 2, 1); /*Perform binary OR*/
+			program->m2.co += 1;
+			if (errno != 0) {
+				return 2; /*EXECUTION ERROR*/
+			}
+			return 0;
+		case xor:
+			errno =
+			    hbin(program->m1.opnd[program->m2.co], &program->m2,
+				 3, 1); /*Perform binary EXCLUSIVE OR*/
+			program->m2.co += 1;
+			if (errno != 0) {
+				return 2; /*EXECUTION ERROR*/
+			}
+			return 0;
+		case rot:
+			errno = hrot(program->m1.opnd[program->m2.co],
+				     &program->m2); /*Perform binary NOT*/
+			program->m2.co += 1;
+			if (errno != 0) {
+				return 2; /*EXECUTION ERROR*/
+			}
+			return 0;
+		case cmp:
+			errno =
+			    hbin(program->m1.opnd[program->m2.co], &program->m2,
+				 5, 0); /*Substract but don't save*/
+			program->m2.co += 1;
+			if (errno != 0) {
+				return 2; /*EXECUTION ERROR*/
+			}
+			return 0;
+		case subs: /*UNIMPLEMENTED*/
+			errno = hsubs(&(program->m2.co),
+				      program->m1.opnd[program->m2.co][0],
+				      program); /*Mark start of subroutine*/
+			program->m2.co += 1;
+			if (errno != 0) {
+				return 2; /*EXECUTION ERROR*/
+			}
+			return 0;
+		case sube: /*UNIMPLEMENTED*/
+			errno = hsube(&(program->m2.co),
+				      program->m1.opnd[program->m2.co][0],
+				      program); /*Mark end of subroutine*/
+			program->m2.co += 1;
+			if (errno != 0) {
+				return 2; /*EXECUTION ERROR*/
+			}
+			return 0;
+		case call: /*UNIMPLEMENTED*/
+			errno = hcall(&(program->m2.co),
+				      program->m1.opnd[program->m2.co][0],
+				      program); /*Call subroutine*/
+			program->m2.co += 1;
+			if (errno != 0) {
+				return 2; /*EXECUTION ERROR*/
+			}
+			return 0;
+		}
+	}
+
+#if defined(EOF)
+	printf("UNIMPLEMENTED\n");
+#endif
+	return 1; /*UNIMPLEMENTED*/
+}
+
 /*
 addrcheck() returns the actual address space of the argument address
 
@@ -46,6 +215,7 @@ addrcheck() returns the actual address space of the argument address
 6: OUTPUT REGISTER (WRITE-ONLY)
 7: PERSISTENT STORAGE
 */
+
 hwuint addrcheck(hwuint arg)
 {
 	if (arg <= 0x3FFF)
@@ -549,161 +719,4 @@ hwuint hset(hwuint op[4], vmem *space)
 		return 1;
 	}
 	return 0;
-}
-
-mem fxmem(xmem code)
-{
-	mem memory = {0};
-	memory.m1 = code;
-	memory.m2.zf = 1;
-	return memory;
-}
-
-hwuint execnext(mem *program)
-{
-	hwuint errno;
-	if (program->m2.co < (MEMSIZE * 4)) {
-		switch (program->m1.inst[program->m2.co]) {
-		case halt:
-			program->hf = 1; /*Stop the CPU*/
-			program->m2.co += 1;
-#ifdef EOF
-			printf("HALT\n");
-#endif
-			return 0;
-		case nop:
-			program->m2.co += 1; /*Do nothing*/
-			return 0;
-		case set:
-			errno = hset(program->m1.opnd[program->m2.co],
-				     &program->m2); /*Set address to value*/
-			program->m2.co += 1;
-			return 0;
-		case jmp:
-			errno = hjump(program->m1.opnd[program->m2.co],
-				      &program->m2, &program->m2.co); /*Jump*/
-			if (errno != 0) {
-				return 2; /*EXECUTION ERROR*/
-			}
-			return 0;
-		case jcz:
-			if (program->m2.zf == 0)
-				errno =
-				    hjump(program->m1.opnd[program->m2.co],
-					  &program->m2,
-					  &program->m2.co); /*Jump if ZF is 0*/
-			else {
-				program->m2.co += 1;
-				errno = 0;
-			}
-			if (errno != 0) {
-				return 2; /*EXECUTION ERROR*/
-			}
-			return 0;
-		case jcnz:
-			if (program->m2.zf == 1)
-				errno =
-				    hjump(program->m1.opnd[program->m2.co],
-					  &program->m2,
-					  &program->m2.co); /*Jump if ZF is 1*/
-			else {
-				program->m2.co += 1;
-				errno = 0;
-			}
-			if (errno != 0) {
-				return 2; /*EXECUTION ERROR*/
-			}
-			return 0;
-		case add:
-			errno = hbin(program->m1.opnd[program->m2.co],
-				     &program->m2, 4, 1); /*Add and save*/
-			program->m2.co += 1;
-			if (errno != 0) {
-				return 2; /*EXECUTION ERROR*/
-			}
-			return 0;
-		case sub:
-			errno = hbin(program->m1.opnd[program->m2.co],
-				     &program->m2, 5, 1); /*Substract and save*/
-			program->m2.co += 1;
-			if (errno != 0) {
-				return 2; /*EXECUTION ERROR*/
-			}
-			return 0;
-		case and:
-			errno = hbin(program->m1.opnd[program->m2.co],
-				     &program->m2, 1, 1); /*Perform binary AND*/
-			program->m2.co += 1;
-			if (errno != 0) {
-				return 2; /*EXECUTION ERROR*/
-			}
-			return 0;
-		case or:
-			errno = hbin(program->m1.opnd[program->m2.co],
-				     &program->m2, 2, 1); /*Perform binary OR*/
-			program->m2.co += 1;
-			if (errno != 0) {
-				return 2; /*EXECUTION ERROR*/
-			}
-			return 0;
-		case xor:
-			errno =
-			    hbin(program->m1.opnd[program->m2.co], &program->m2,
-				 3, 1); /*Perform binary EXCLUSIVE OR*/
-			program->m2.co += 1;
-			if (errno != 0) {
-				return 2; /*EXECUTION ERROR*/
-			}
-			return 0;
-		case rot:
-			errno = hrot(program->m1.opnd[program->m2.co],
-				     &program->m2); /*Perform binary NOT*/
-			program->m2.co += 1;
-			if (errno != 0) {
-				return 2; /*EXECUTION ERROR*/
-			}
-			return 0;
-		case cmp:
-			errno =
-			    hbin(program->m1.opnd[program->m2.co], &program->m2,
-				 5, 0); /*Substract but don't save*/
-			program->m2.co += 1;
-			if (errno != 0) {
-				return 2; /*EXECUTION ERROR*/
-			}
-			return 0;
-		case subs: /*UNIMPLEMENTED*/
-			errno = hsubs(&(program->m2.co),
-				      program->m1.opnd[program->m2.co][0],
-				      program); /*Mark start of subroutine*/
-			program->m2.co += 1;
-			if (errno != 0) {
-				return 2; /*EXECUTION ERROR*/
-			}
-			return 0;
-		case sube: /*UNIMPLEMENTED*/
-			errno = hsube(&(program->m2.co),
-				      program->m1.opnd[program->m2.co][0],
-				      program); /*Mark end of subroutine*/
-			program->m2.co += 1;
-			if (errno != 0) {
-				return 2; /*EXECUTION ERROR*/
-			}
-			return 0;
-		case call: /*UNIMPLEMENTED*/
-			errno = hcall(&(program->m2.co),
-				      program->m1.opnd[program->m2.co][0],
-				      program); /*Call subroutine*/
-			program->m2.co += 1;
-			if (errno != 0) {
-				return 2; /*EXECUTION ERROR*/
-			}
-			return 0;
-		}
-	}
-
-#if defined(EOF)
-	printf("UNIMPLEMENTED\n");
-#endif
-	return 1; /*UNIMPLEMENTED*/
 }
