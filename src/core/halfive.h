@@ -27,9 +27,9 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
+#include "hwreq.h"
 #include "hwdoc.h"
 #include "hwnet/hwnet.h"
-#include "hwreq.h"
 #include "hwt/hwt.h"
 #include "hwvm/hwstring.h"
 #include "hwvm/hwvm.h"
@@ -38,23 +38,23 @@ WORK.*/
 
 typedef struct {
 
-	/*Intrinsic properties of the car
-	  (BACKEND WILL NOT MODIFY THESE)*/
+	/*Intrinsic properties of the vehicle
+	  (BACKEND WILL NOT MODIFY THESE, FRONTEND CAN MODIFY THEM)*/
 
-	unsigned int width;          /*MILLIMETERS*/
-	unsigned int length;         /*MILLIMETERS*/
-	unsigned int baseline_speed; /*KILOMETERS PER HOUR*/
-	unsigned int baseline_accel; /*KILOMETERS PER HOUR SQUARED*/
-	unsigned int engineweight;   /*KILOGRAMS*/
+	uint16_t width;          /*MILLIMETERS*/
+	uint16_t length;         /*MILLIMETERS*/
+	uint16_t baseline_speed; /*METERS PER SECOND*/
+	uint16_t baseline_accel; /*METERS PER SECOND SQUARED*/
+	uint16_t engineweight;   /*GRAMS*/
 
 	/*Input properties of the car
-	 (BACKEND WILL NOT MODIFY THESE)*/
+	 (BACKEND WILL NOT MODIFY THESE, FRONTEND CAN MODIFY THEM)*/
 
 	_Bool active;       /*0 OR 1*/
-	unsigned int axis1; /*0 TO 65535*/
-	unsigned int axis2; /*0 TO 65535*/
-	unsigned int axis3; /*0 TO 65535*/
-	unsigned int axis4; /*0 TO 65535*/
+	uint16_t axis1; /*0 TO 65535*/
+	uint16_t axis2; /*0 TO 65535*/
+	uint16_t axis3; /*0 TO 65535*/
+	uint16_t axis4; /*0 TO 65535*/
 	_Bool btn1;         /*0 OR 1*/
 	_Bool btn2;         /*0 OR 1*/
 	_Bool btn3;         /*0 OR 1*/
@@ -66,28 +66,28 @@ typedef struct {
 	unsigned int leaderboard1; /*RACE LEADERBOARD POSITION*/
 	unsigned int leaderboard2; /*GLOBAL LEADERBOARD POSITION*/
 
-	int pos1;
-	int pos2;
-	int revolutions; /*ENGINE REVOLUTIONS PER MINUTE*/
+	uint16_t pos1;
+	uint16_t pos2;
+	uint16_t revolutions; /*ENGINE REVOLUTIONS PER MINUTE*/
 
-	int state1; /*FIRST INTERNAL STATE OF CAR, RESERVED FOR GRIP*/
-	int state2; /*SECOND INTERNAL STATE OF CAR, RESERVED FOR DAMAGE*/
-	int state3; /*THIRD INTERNAL STATE OF CAR*/
-	int state4; /*FOURTH INTERNAL STATE OF CAR*/
+	uint16_t state1; /*FIRST INTERNAL STATE OF CAR, RESERVED FOR GRIP*/
+	uint16_t state2; /*SECOND INTERNAL STATE OF CAR, RESERVED FOR DAMAGE*/
+	uint16_t state3; /*THIRD INTERNAL STATE OF CAR*/
+	uint16_t state4; /*FOURTH INTERNAL STATE OF CAR*/
 
-	enum TYPE1 car_state; /*SEE THE HWNET SPEC*/
-	enum TYPE2 mov_state; /*SEE THE HWNET SPEC*/
-	enum TYPE3 con_state; /*SEE THE HWNET SPEC*/
+	enum HWNET_Type1Enum car_state; /*SEE THE HWNET SPEC*/
+	enum HWNET_Type2Enum mov_state; /*SEE THE HWNET SPEC*/
+	enum HWNET_Type3Enum con_state; /*SEE THE HWNET SPEC*/
 
-} car;
+} H5_Vehicle;
 
 typedef struct {
-	car racers[RACENUM];
-	hwtrack track;
-} world;
+	H5_Vehicle racers[RACENUM];
+	HWT_Circuit track;
+} H5_World;
 
-extern int H5Init(char *trck, world *stage);
-extern int H5Sim(world *stage, unsigned int milli);
-extern int H5TransformServer(const world *stage, hwpack_server *serv,
-			     enum MODE mode);
-extern int H5TransformClient(world *stage, const hwpack_client *cli);
+extern int H5_Init(char *trck, H5_World *stage);
+extern int H5_Sim(H5_World *stage, unsigned int milli);
+extern int H5_TransformServer(const H5_World *stage, HWNET_ServerPacket *serv,
+			     enum HWNET_ModeEnum mode);
+extern int H5_TransformClient(H5_World *stage, const HWNET_ClientPacket *cli);

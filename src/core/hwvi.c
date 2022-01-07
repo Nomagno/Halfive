@@ -56,11 +56,10 @@ quit, bX, mx, and keyX are booleans 0 or 1, axisX are 8-bit ints 0-255
 */
 
 #include "hwvi.h"
-#include "hwreq.h"
 
-int hwvi_init(hwvi_ref *ref, size_t h, size_t w);
-int hwvi_destroy(hwvi_ref *ref);
-int hwvi_playsound(hwvi_ref *stream, const hwvi_sound *const insound);
+int HWVI_Init(HWVI_Reference *ref, size_t h, size_t w);
+int HWVI_Destroy(HWVI_Reference *ref);
+int HWVI_PlaySound(HWVI_Reference *stream, const HWVI_SoundData *const insound);
 
 #define HWVI_GSERV_IMPL_SDL2
 #define HWVI_AUDIOSERV_IMPL_SDL2
@@ -89,12 +88,12 @@ struct hwvi_sdl_track {
 	SDL_AudioSpec globsound;
 	int globstream;
 #endif
-	hwvi_input input;
+	HWVI_InputData input;
 };
 
 struct hwvi_sdl_track globalref;
 
-int hwvi_init(hwvi_ref *ref, size_t h, size_t w)
+int hwvi_init(HWVI_Reference *ref, size_t h, size_t w)
 {
 
 #if defined(HWVI_AUDIOSERV_IMPL_SDL2)
@@ -130,7 +129,7 @@ int hwvi_init(hwvi_ref *ref, size_t h, size_t w)
 	return 0;
 }
 
-int hwvi_destroy(hwvi_ref *ref)
+int HWVI_Destroy(HWVI_Reference *ref)
 {
 	SDL_DestroyWindow(((struct hwvi_sdl_track *)ref->data)->globwindow);
 #ifdef HWVI_AUDIOSERV_IMPL_SDL2
@@ -140,7 +139,7 @@ int hwvi_destroy(hwvi_ref *ref)
 	return 0;
 }
 
-int hwvi_setbuf(hwvi_ref *ref, const hwvi_pixbuf *const inbuf)
+int HWVI_SetBuffer(HWVI_Reference *ref, const HWVI_PixelData *const inbuf)
 {
 	SDL_Surface *surfptr = ((struct hwvi_sdl_track *)ref->data)->globsurf;
 	SDL_LockSurface(surfptr);
@@ -154,7 +153,7 @@ int hwvi_setbuf(hwvi_ref *ref, const hwvi_pixbuf *const inbuf)
 	return 0;
 }
 
-int hwvi_getbufsize(size_t *h, size_t *w, const char *spritename)
+int HWVI_GetBuffer_Size(size_t *h, size_t *w, const char *spritename)
 {
 	SDL_Surface *surfptr = SDL_LoadBMP(spritename);
 	*h = surfptr->h;
@@ -163,7 +162,7 @@ int hwvi_getbufsize(size_t *h, size_t *w, const char *spritename)
 	return 0;
 }
 
-int hwvi_getbufpix(const char *spritename, hwvi_pixbuf *inbuf)
+int HWVI_GetBuffer_Data(const char *spritename, HWVI_PixelData *inbuf)
 {
 	SDL_Surface *surfptr = SDL_LoadBMP(spritename);
 	SDL_ConvertPixels(inbuf->size.w, inbuf->size.h, surfptr->format->format,
@@ -180,7 +179,7 @@ int hwvi_getbufpix(const char *spritename, hwvi_pixbuf *inbuf)
 
 /*For sound media caching*/
 
-int hwvi_playsound(hwvi_ref *stream, const hwvi_sound *const insound)
+int hwvi_playsound(HWVI_Reference *stream, const HWVI_SoundData *const insound)
 {
 	uint8_t *buf;
 	uint32_t size;
@@ -200,7 +199,7 @@ int hwvi_playsound(hwvi_ref *stream, const hwvi_sound *const insound)
 
 #ifdef HWVI_STDINPUT_IMPL_PORTABLE
 #include <stdio.h>
-int hwvi_getinput(hwvi_ref *tty, hwvi_input *keys)
+int HWVI_GetInput(HWVI_Reference *tty, HWVI_InputData *keys)
 {
 	tty = tty;
 	int i = 0;
@@ -232,23 +231,23 @@ int hwvi_getinput(hwvi_ref *tty, hwvi_input *keys)
 #define WCONSTANT 700
 int main(void)
 {
-	hwvi_ref myref;
+	HWVI_Reference myref;
 	uint16_t array_one[WCONSTANT][WCONSTANT] = {0};
 	uint16_t array_two[WCONSTANT][WCONSTANT] = {0};
 	uint16_t array_three[WCONSTANT][WCONSTANT] = {0};
 
 	size_t bmpsize_1;
 	size_t bmpsize_2;
-	hwvi_getbufsize(&bmpsize_1, &bmpsize_2,
+	HWVI_GetBuffer_Size(&bmpsize_1, &bmpsize_2,
 			"../../assets/sprites/zoom.bmp");
 
-	hwvi_pixbuf mybuf_blue = {.size = {WCONSTANT, WCONSTANT},
+	HWVI_PixelData mybuf_blue = {.size = {WCONSTANT, WCONSTANT},
 				  .pix = &array_one[0][0]};
-	hwvi_pixbuf mybuf_green = {.size = {WCONSTANT, WCONSTANT},
+	HWVI_PixelData mybuf_green = {.size = {WCONSTANT, WCONSTANT},
 				   .pix = &array_two[0][0]};
-	hwvi_pixbuf mybuf_zoom = {.size = {bmpsize_1, bmpsize_2},
+	HWVI_PixelData mybuf_zoom = {.size = {bmpsize_1, bmpsize_2},
 				  .pix = &array_three[0][0]};
-	hwvi_getbufpix("../../assets/sprites/zoom.bmp", &mybuf_zoom);
+	HWVI_GetBuffer_Data("../../assets/sprites/zoom.bmp", &mybuf_zoom);
 
 	for (int i = 0; i < WCONSTANT * WCONSTANT; i++) {
 		mybuf_blue.pix[i] =
@@ -256,23 +255,23 @@ int main(void)
 		mybuf_green.pix[i] = (i % 5) ? 0x00F0 : 0xFFF0;
 	}
 
-	if (hwvi_init(&myref, WCONSTANT, WCONSTANT)) {
-		hwvi_destroy(&myref);
+	if (HWVI_Init(&myref, WCONSTANT, WCONSTANT)) {
+		HWVI_Destroy(&myref);
 		return 1;
 	}
 
-	hwvi_playsound(&myref, &(const hwvi_sound){
+	HWVI_PlaySound(&myref, &(const HWVI_SoundData){
 				   .name = "../../assets/sound/applause.wav"});
 	for (int i = 0; i < 3; i++) {
-		hwvi_setbuf(&myref, &mybuf_blue);
+		HWVI_SetBuffer(&myref, &mybuf_blue);
 		sleep(1);
-		hwvi_setbuf(&myref, &mybuf_green);
+		HWVI_SetBuffer(&myref, &mybuf_green);
 		sleep(1);
-		hwvi_setbuf(&myref, &mybuf_zoom);
+		HWVI_SetBuffer(&myref, &mybuf_zoom);
 		sleep(1);
 	}
 
-	hwvi_destroy(&myref);
+	HWVI_Destroy(&myref);
 	return 0;
 }
 */

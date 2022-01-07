@@ -32,48 +32,48 @@ WORK.*/
 */
 
 #include "../hwreq.h"
-enum TIME { day, night };
-enum SPEED { normal, boost, antiboost };
-enum RACING_LINE { no, finish_line, checkpoint };
-enum GUARDRAILS { empty, metal, electric };
-enum BIOME { forest, desert, snow };
-enum COLORS { white, red, blue, yellow, green, pink };
+enum HWT_TimeEnum { day, night };
+enum HWT_SpeedEnum { normal, boost, antiboost };
+enum HWT_FinishEnum { no, finish_line, checkpoint };
+enum HWT_RailEnum { empty, metal, electric };
+enum HWT_BiomeEnum { forest, desert, snow };
+enum HWT_ColorEnum { white, red, blue, yellow, green, pink };
 
-struct _biome {
-	enum COLORS main_color;
-	enum BIOME the_biome;
+struct HWT_Biome {
+	enum HWT_ColorEnum main_color;
+	enum HWT_BiomeEnum the_biome;
 };
 
-struct point {
-	int x;
-	int y;
+struct HWT_Point {
+	uint16_t x;
+	uint16_t y;
 };
 
-struct bezier {
-	struct point p1;
-	struct point p2;
-	struct point p3;
+struct HWT_Bezier {
+	struct HWT_Point p1;
+	struct HWT_Point p2;
+	struct HWT_Point p3;
 };
 
-struct segment {
-	struct bezier shape;
-	unsigned int width;
+struct HWT_Segment {
+	struct HWT_Bezier shape;
+	uint16_t width;
 
-	enum SPEED speed;
-	enum RACING_LINE racing_line;
-	enum GUARDRAILS guardrails;
+	enum HWT_SpeedEnum speed;
+	enum HWT_FinishEnum racing_line;
+	enum HWT_RailEnum guardrails;
 };
 
 typedef struct {
 	char name[20];
 
-	struct _biome biome;
-	enum TIME time;
-	unsigned int max_players;
+	struct HWT_Biome biome;
+	enum HWT_TimeEnum time;
+	uint8_t max_players;
 
-	unsigned int segment_number;
-	struct segment segments[40];
-} hwtrack;
+	uint16_t segment_number;
+	struct HWT_Segment segments[40];
+} HWT_Circuit;
 
-extern int hwt_cli_parse(char *, hwtrack *);
-extern int hwt_serv_parse(char *, hwtrack *);
+extern int HWT_Parse(char *instring, HWT_Circuit *outstruct);
+

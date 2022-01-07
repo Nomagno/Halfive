@@ -33,8 +33,8 @@ WORK.*/
 #define HWASSEMBLY
 #ifdef HWASSEMBLY
 
-hwuint asmparse(char *linestr, iset *inst, hwuint opnds[4]);
-iset _isinst(char *instr);
+hwuint asmparse(char *linestr, HWVM_InstructionSet *inst, hwuint opnds[4]);
+HWVM_InstructionSet _isinst(char *instr);
 hwuint _isxupdigit(hwuchar inchar);
 
 #include <stdio.h>
@@ -47,13 +47,13 @@ int main(int argc, char **argv)
 	FILE *codefile = fopen(argv[1], "r");
 	FILE *drivefile = fopen(argv[2], "r");
 
-	xmem code = {0};
+	HWVM_CodeMemory code = {0};
 	int i = 0;
 	while (fscanf(codefile, "%[^\n] ", arr) != EOF) {
 		asmparse(arr, &code.inst[i], code.opnd[i]);
 		i += 1;
 	}
-	mem prog = fxmem(code);
+	HWVM_GeneralMemory prog = HWVM_Init(code);
 	fread(prog.m2.dr, 1, sizeof(prog.m2.dr), drivefile);
 
 	int errno = 0;
@@ -64,7 +64,7 @@ int main(int argc, char **argv)
 			prog.m2.in = getchar();
 			putchar('\n');
 		}
-		errno = execnext(&prog);
+		errno = HWVM_Execute(&prog);
 	}
 	fclose(codefile);
 	fclose(drivefile);
@@ -73,10 +73,10 @@ int main(int argc, char **argv)
 #endif
 
 
-hwuint asmparse(char *linestr, iset *inst, hwuint opnds[4])
+hwuint HWASM_Parse(char *linestr, HWVM_InstructionSet *inst, hwuint opnds[4])
 {
 	char *token = hwstrtok(linestr, " ");
-	iset myinst;
+	HWVM_InstructionSet myinst;
 	int i = 0;
 	while ((token != (void *)0) && (i < 3)) {
 
@@ -122,7 +122,7 @@ hwuint _isxupdigit(hwuchar inchar)
 		return 0;
 }
 
-iset _isinst(char *instr)
+HWVM_InstructionSet _isinst(char *instr)
 {
 	if (hwstrcmp(instr, "halt") == 0)
 		return halt;

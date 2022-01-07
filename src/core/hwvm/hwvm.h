@@ -119,12 +119,12 @@ typedef enum {
 	call = 14, /* ID; JMP to the start of execution (post-SUBS) of
 		      subroutine ID*/
 	jcnz = 15  /* V1; if ZF != 0, jmp to instrucion V1*/
-} iset;
+} HWVM_InstructionSet;
 
 /*Execution memory*/
 typedef struct {
 	/*Every first byte*/
-	iset inst[MEMSIZE * 4];
+	HWVM_InstructionSet inst[MEMSIZE * 4];
 
 	/*Every second, third and fourth bytes*/
 	/*int because we need this to be at least 16 bits by default*/
@@ -133,7 +133,7 @@ typedef struct {
 	trough its least significant 3 bits.
 	E.G 000 ALL ADDRESSES -- 101 FIRST AND THIRD ARE LITERALS*/
 
-} xmem;
+} HWVM_CodeMemory;
 
 /*Data memory*/
 typedef struct {
@@ -158,11 +158,11 @@ typedef struct {
 	/*Program counter, read-only, 0xFFFB*/
 	hwuint co;
 
-} vmem;
+} HWVM_DataMemory;
 
 typedef struct {
-	xmem m1; /*Code memory*/
-	vmem m2; /*Data memory*/
+	HWVM_CodeMemory m1; /*Code memory*/
+	HWVM_DataMemory m2; /*Data memory*/
 
 	hwuchar hf; /*Halt flag, 1 if it has halted.*/
 
@@ -174,11 +174,10 @@ typedef struct {
 				executes CALLS, for each subroutine ID*/
 
 	hwuint skip_co[MEMSMALL]; /*Counter values subs has to skip to*/
-} mem;
+} HWVM_GeneralMemory;
 
 /*Half-World VM interface*/
 
-extern mem fxmem(xmem code); /*Generate mem struct from xmem struct*/
+extern HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory code); /*Generate mem struct from xmem struct*/
 
-extern hwuint
-execnext(mem *program); /*Execute one instruction from the program*/
+extern hwuint HWVM_Execute(HWVM_GeneralMemory *program); /*Execute one instruction from the program*/

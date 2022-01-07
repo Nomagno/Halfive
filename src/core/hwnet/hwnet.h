@@ -31,21 +31,21 @@ WORK.*/
 #define MAXCHAR_HWNET 9
 #define MAXPLAYERS_HWNET 32
 
-enum TYPE1 { o, u, x, s, z, e, c, y };
-enum TYPE2 { f, b, k, i };
-enum TYPE3 { a, m, t, h };
-enum MODE { r, l };
-struct player_data_server {
-	enum TYPE1 flags_1; /*If it is -1, SHOULD BE LEFT EMPTY*/
-	enum TYPE2 flags_2; /*If it is -1, SHOULD BE LEFT EMPTY*/
-	enum TYPE3 flags_3; /*If it is -1, SHOULD BE LEFT EMPTY*/
+enum HWNET_Type1Enum { o, u, x, s, z, e, c, y };
+enum HWNET_Type2Enum { f, b, k, i };
+enum HWNET_Type3Enum { a, m, t, h };
+enum HWNET_ModeEnum { r, l };
+struct HWNET_ServerData {
+	enum HWNET_Type1Enum flags_1; /*If it is -1, SHOULD BE LEFT EMPTY*/
+	enum HWNET_Type2Enum flags_2; /*If it is -1, SHOULD BE LEFT EMPTY*/
+	enum HWNET_Type3Enum flags_3; /*If it is -1, SHOULD BE LEFT EMPTY*/
 	int leaderboard;    /*If it is -1, SHOULD NOT BE SEND*/
 
 	int position1;
 	int position2;
 };
 
-struct player_data_client {
+struct HWNET_ClientData {
 	int thruster_1;
 	int thruster_2;
 	int steer;
@@ -56,14 +56,14 @@ typedef struct {
 	char gamemode[MAXCHAR_HWNET];
 	char extension[MAXCHAR_HWNET];
 
-	struct player_data_server player_data[MAXPLAYERS_HWNET];
-} hwpack_server;
+	struct HWNET_ServerData data[MAXPLAYERS_HWNET];
+} HWNET_ServerPacket;
 
 typedef struct {
 	char extension[MAXCHAR_HWNET];
-	enum MODE mode;
-	struct player_data_client player_data[MAXPLAYERS_HWNET];
-} hwpack_client;
+	enum HWNET_ModeEnum mode;
+	struct HWNET_ClientData data[MAXPLAYERS_HWNET];
+} HWNET_ClientPacket;
 
-extern int hwnet_cli_parse(const char *input, hwpack_client *output);
-extern int hwnet_serv_parse(const char *, hwpack_server *output);
+extern int HWNET_ClientParse(const char *input, HWNET_ClientPacket *output);
+extern int HWNET_ServerParse(const char *, HWNET_ServerPacket *output);

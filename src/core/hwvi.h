@@ -40,19 +40,19 @@ RED   GREEN BLUE  ALPHA
 typedef struct {
 	const size_t w;
 	const size_t h;
-} hwvi_point;
+} HWVI_Point;
 
 /*Pixel buffer*/
 typedef struct {
-	hwvi_point size;
+	HWVI_Point size;
 	uint16_t *pix;
-} hwvi_pixbuf;
+} HWVI_PixelData;
 
 /*Direction keys,
 9 general-purpose buttons,
 2 mouse buttons,
 quit button*/
-enum hwvi_key {
+enum HWVI_KeyEnum {
 	up = 0,
 	down = 1,
 	left = 2,
@@ -76,7 +76,7 @@ typedef struct {
 	uint8_t axis[4];   /*Max 4 axis*/
 	uint16_t cursor_x; /*Mouse X*/
 	uint16_t cursor_y; /*Mouse Y*/
-} hwvi_input;
+} HWVI_InputData;
 
 typedef struct {
 	int16_t length_milli;
@@ -85,7 +85,7 @@ typedef struct {
 	_Bool do_block;
 
 	char name[128];
-} hwvi_sound;
+} HWVI_SoundData;
 
 typedef struct {
 	/*
@@ -101,28 +101,28 @@ typedef struct {
 	and input devices. It SHOULD
 	NOT be touched by the frontend.
 	*/
-} hwvi_ref;
+} HWVI_Reference;
 
-extern int hwvi_init(hwvi_ref *buf, size_t h, size_t w);
+extern int HWVI_Init(HWVI_Reference *buf, size_t h, size_t w);
 /*Initialize display*/
 
-extern int hwvi_destroy(hwvi_ref *ref);
+extern int HWVI_Destroy(HWVI_Reference *ref);
 /*Exit gracefully*/
 
-extern int hwvi_getbufsize(size_t *h, size_t *w, const char *spritename);
+extern int HWVI_GetBuffer_Size(size_t *h, size_t *w, const char *spritename);
 /*Get size of sprite buffer*/
 
-extern int hwvi_getbufpix(const char *const spritename, hwvi_pixbuf *inbuf);
+extern int HWVI_GetBuffer_Data(const char *const spritename, HWVI_PixelData *inbuf);
 /*Ger sprite buffer copied*/
 
-extern int hwvi_setbuf(hwvi_ref *surf, const hwvi_pixbuf *const inbuf);
+extern int HWVI_SetBuffer(HWVI_Reference *surf, const HWVI_PixelData *const inbuf);
 /*Set display to buffer*/
 
-extern int hwvi_playsound(hwvi_ref *stream, const hwvi_sound *const sound);
+extern int HWVI_playsound(HWVI_Reference *stream, const HWVI_SoundData *const sound);
 /*Play in a nonblocking manner (within reason).
 The length of the sound will get adjusted if it
 is more than that of the sound itself.
 */
 
-extern int hwvi_getinput(hwvi_ref *tty, hwvi_input *keys);
+extern int HWVI_GetInput(HWVI_Reference *tty, HWVI_InputData *keys);
 /*Get current user input*/

@@ -33,13 +33,13 @@ WORK.*/
 #include <limits.h>
 #include <stddef.h>
 
-typedef enum { SEC = 0, KEY = 1, VAL = 2 } hwdoc_type;
+typedef enum { SEC = 0, KEY = 1, VAL = 2 } HWDOC_Type;
 
 typedef struct {
-	hwdoc_type type;
+	HWDOC_Type type;
 	int string_start;
 	int string_end;
 	int parent;
-} hwdoc_tok;
+} HWDOC_Token;
 
-extern int hwdoc_parse(const unsigned char *input, int size, hwdoc_tok *toks);
+extern int HWDOC_Parse(const unsigned char *input, int size, HWDOC_Token *toks);

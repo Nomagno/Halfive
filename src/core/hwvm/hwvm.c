@@ -34,27 +34,27 @@ PRINTING AND TESTING FUNCTIONALITY*/
 #define UADDR 0xFFF0
 /*Unknown address*/
 
-mem fxmem(xmem code);
-hwuint execnext(mem *program);
+HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory code);
+hwuint execnext(HWVM_GeneralMemory *program);
 
 
-hwuint hbin(hwuint op[4], vmem *space, hwuint flag, _Bool do_save);
-hwuint hset(hwuint op[4], vmem *space);
-hwuint hjump(hwuint op[4], vmem *space, hwuint *co);
-hwuint hrot(hwuint op[4], vmem *space);
-hwuint hcall(hwuint *co, hwuint id, mem *prog);
-hwuint hsubs(hwuint *co, hwuint id, mem *prog);
-hwuint hsube(hwuint *co, hwuint id, mem *prog);
+hwuint hbin(hwuint op[4], HWVM_DataMemory *space, hwuint flag, _Bool do_save);
+hwuint hset(hwuint op[4], HWVM_DataMemory *space);
+hwuint hjump(hwuint op[4], HWVM_DataMemory *space, hwuint *co);
+hwuint hrot(hwuint op[4], HWVM_DataMemory *space);
+hwuint hcall(hwuint *co, hwuint id, HWVM_GeneralMemory *prog);
+hwuint hsubs(hwuint *co, hwuint id, HWVM_GeneralMemory *prog);
+hwuint hsube(hwuint *co, hwuint id, HWVM_GeneralMemory *prog);
 
-mem fxmem(xmem code)
+HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory code)
 {
-	mem memory = {0};
+	HWVM_GeneralMemory memory = {0};
 	memory.m1 = code;
 	memory.m2.zf = 1;
 	return memory;
 }
 
-hwuint execnext(mem *program)
+hwuint execnext(HWVM_GeneralMemory *program)
 {
 	hwuint errno;
 	if (program->m2.co < (MEMSIZE * 4)) {
@@ -265,7 +265,7 @@ hwuint addrconvert(hwuint arg, hwuint addr)
 }
 
 /*INCREDIBLY COMMON BOILERPLATE MOVED TO OWN FUNCTION*/
-hwuint auxset(hwuint *val, vmem *space, hwuint ad, hwuint conv, _Bool do_write,
+hwuint auxset(hwuint *val, HWVM_DataMemory *space, hwuint ad, hwuint conv, _Bool do_write,
 	      _Bool isptr)
 {
 	if (!do_write) {
@@ -393,7 +393,7 @@ Note substract (SUB) may use the second configuration,
 in the form of the compare (CMP) instruction
 */
 
-hwuint hbin(hwuint op[4], vmem *space, hwuint flag, _Bool do_save)
+hwuint hbin(hwuint op[4], HWVM_DataMemory *space, hwuint flag, _Bool do_save)
 {
 	hwuint ad1;
 	hwuint ad2;
@@ -507,7 +507,7 @@ hwuint hbin(hwuint op[4], vmem *space, hwuint flag, _Bool do_save)
   bits. if first is equal to or greater than 16, no nothing Second argument is
   the operand to be bitshifted (Pointer, literal, or address)
   Third argument is destination address (Pointer, or address)*/
-hwuint hrot(hwuint op[4], vmem *space)
+hwuint hrot(hwuint op[4], HWVM_DataMemory *space)
 {
 	hwuint ad1;
 	hwuint ad2;
@@ -592,7 +592,7 @@ hwuint hrot(hwuint op[4], vmem *space)
 
 /*Takes one argument, move program counter to value (Pointer, literal, or
  * address)*/
-hwuint hjump(hwuint op[4], vmem *space, hwuint *co)
+hwuint hjump(hwuint op[4], HWVM_DataMemory *space, hwuint *co)
 {
 	hwuint adr;
 	hwuint conv;
@@ -631,7 +631,7 @@ hwuint hjump(hwuint op[4], vmem *space, hwuint *co)
 chip and jump to its corresponding code address.
 Note down current code address for returning from
 the subroutine*/
-hwuint hcall(hwuint *co, hwuint id, mem *prog)
+hwuint hcall(hwuint *co, hwuint id, HWVM_GeneralMemory *prog)
 {
 	prog->return_co[id] = *co;
 	*co = prog->sub_co[id];
@@ -641,7 +641,7 @@ hwuint hcall(hwuint *co, hwuint id, mem *prog)
 /*Takes one argument, write to ID slot on out-of-memory
 chip and look for end of declaration (closest sube). Note it
 down too. Jump to after the sube*/
-hwuint hsubs(hwuint *co, hwuint id, mem *prog)
+hwuint hsubs(hwuint *co, hwuint id, HWVM_GeneralMemory *prog)
 {
 	hwuint val = 0; /*It is impossible counter 0
 			is a safe place to return to,
@@ -664,7 +664,7 @@ hwuint hsubs(hwuint *co, hwuint id, mem *prog)
 
 /*Takes one argument, look up ID on out-of-memory chip
 and jump to the intruction right after the call*/
-hwuint hsube(hwuint *co, hwuint id, mem *prog)
+hwuint hsube(hwuint *co, hwuint id, HWVM_GeneralMemory *prog)
 {
 	*co = prog->return_co[id];
 	return 0;
@@ -672,7 +672,7 @@ hwuint hsube(hwuint *co, hwuint id, mem *prog)
 
 /*Takes two arguments, copy value of first
 (Pointer, literal, or address) to second (Pointer, or address)*/
-hwuint hset(hwuint op[4], vmem *space)
+hwuint hset(hwuint op[4], HWVM_DataMemory *space)
 {
 	hwuint ad1;
 	hwuint ad2;
