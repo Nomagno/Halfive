@@ -62,8 +62,12 @@ int HWVI_Destroy(HWVI_Reference *ref);
 int HWVI_PlaySound(HWVI_Reference *stream, const HWVI_SoundData *const insound);
 
 #define HWVI_GSERV_IMPL_SDL2
+
+/*Comment these two macros out to
+disable sound and/or input*/
 #define HWVI_AUDIOSERV_IMPL_SDL2
 #define HWVI_STDINPUT_IMPL_PORTABLE
+
 
 #if defined(HWVI_GSERV_IMPL_SDL2)
 #include <SDL2/SDL.h>
@@ -93,7 +97,7 @@ struct hwvi_sdl_track {
 
 struct hwvi_sdl_track globalref;
 
-int hwvi_init(HWVI_Reference *ref, size_t h, size_t w)
+int HWVI_Init(HWVI_Reference *ref, size_t h, size_t w)
 {
 
 #if defined(HWVI_AUDIOSERV_IMPL_SDL2)
@@ -172,6 +176,9 @@ int HWVI_GetBuffer_Data(const char *spritename, HWVI_PixelData *inbuf)
 	SDL_FreeSurface(surfptr);
 	return 0;
 }
+#else
+#error No defined graphics server implementation!
+#endif
 
 #ifdef HWVI_AUDIOSERV_IMPL_SDL2
 
@@ -179,7 +186,7 @@ int HWVI_GetBuffer_Data(const char *spritename, HWVI_PixelData *inbuf)
 
 /*For sound media caching*/
 
-int hwvi_playsound(HWVI_Reference *stream, const HWVI_SoundData *const insound)
+int HWVI_PlaySound(HWVI_Reference *stream, const HWVI_SoundData *const insound)
 {
 	uint8_t *buf;
 	uint32_t size;
@@ -191,10 +198,13 @@ int hwvi_playsound(HWVI_Reference *stream, const HWVI_SoundData *const insound)
 	SDL_FreeWAV(buf);
 	return 0;
 }
-#endif
-
 #else
-#error You need to define a graphics (and if you want sound) implementation macro!
+
+/*No sound support, stub*/
+int HWVI_PlaySound(HWVI_Reference *stream, const HWVI_SoundData *const insound){
+	return 0;
+}
+
 #endif
 
 #ifdef HWVI_STDINPUT_IMPL_PORTABLE
@@ -222,38 +232,28 @@ int HWVI_GetInput(HWVI_Reference *tty, HWVI_InputData *keys)
 	return 0;
 }
 #else
-#error You need to define an input implementation macro!
+/*No input support, stub*/
+int HWVI_GetInput(HWVI_Reference *tty, HWVI_InputData *keys){
+	return 0;
+}
 #endif
 
 /*EXAMPLE:*/
 /*
-#include <unistd.h>
-#define WCONSTANT 700
+#define WCONSTANT 1080
+#define FRAMERATE 60
 int main(void)
 {
 	HWVI_Reference myref;
 	uint16_t array_one[WCONSTANT][WCONSTANT] = {0};
-	uint16_t array_two[WCONSTANT][WCONSTANT] = {0};
-	uint16_t array_three[WCONSTANT][WCONSTANT] = {0};
 
 	size_t bmpsize_1;
 	size_t bmpsize_2;
 	HWVI_GetBuffer_Size(&bmpsize_1, &bmpsize_2,
 			"../../assets/sprites/zoom.bmp");
 
-	HWVI_PixelData mybuf_blue = {.size = {WCONSTANT, WCONSTANT},
-				  .pix = &array_one[0][0]};
 	HWVI_PixelData mybuf_green = {.size = {WCONSTANT, WCONSTANT},
-				   .pix = &array_two[0][0]};
-	HWVI_PixelData mybuf_zoom = {.size = {bmpsize_1, bmpsize_2},
-				  .pix = &array_three[0][0]};
-	HWVI_GetBuffer_Data("../../assets/sprites/zoom.bmp", &mybuf_zoom);
-
-	for (int i = 0; i < WCONSTANT * WCONSTANT; i++) {
-		mybuf_blue.pix[i] =
-		    ((i % 7) || (i / WCONSTANT % 6)) ? 0x0F00 : 0xFFF0;
-		mybuf_green.pix[i] = (i % 5) ? 0x00F0 : 0xFFF0;
-	}
+				  .pix = &array_one[0][0]};
 
 	if (HWVI_Init(&myref, WCONSTANT, WCONSTANT)) {
 		HWVI_Destroy(&myref);
@@ -261,14 +261,18 @@ int main(void)
 	}
 
 	HWVI_PlaySound(&myref, &(const HWVI_SoundData){
-				   .name = "../../assets/sound/applause.wav"});
-	for (int i = 0; i < 3; i++) {
-		HWVI_SetBuffer(&myref, &mybuf_blue);
-		sleep(1);
+		.name = "../../assets/sound/applause.wav"});
+
+	for (unsigned int i = 0; i < FRAMERATE*8; i++) {
+		for (unsigned int j = 0; j < (WCONSTANT * WCONSTANT); j++) {
+		mybuf_green.pix[j] =
+		((j + i - (j*2)) % 23)
+		? 0x0F00 : 0x00F0;
+		mybuf_green.pix[j] =
+		((j - (i*3)) % 3)
+		? (mybuf_green.pix[j] | 0xF260) : (mybuf_green.pix[j] + 0x0FF0 + i);
+		    }
 		HWVI_SetBuffer(&myref, &mybuf_green);
-		sleep(1);
-		HWVI_SetBuffer(&myref, &mybuf_zoom);
-		sleep(1);
 	}
 
 	HWVI_Destroy(&myref);
