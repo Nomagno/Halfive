@@ -118,7 +118,7 @@ extern int HWVI_GetBuffer_Data(const char *const spritename, HWVI_PixelData *inb
 extern int HWVI_SetBuffer(HWVI_Reference *surf, const HWVI_PixelData *const inbuf);
 /*Set display to buffer*/
 
-extern int HWVI_playsound(HWVI_Reference *stream, const HWVI_SoundData *const sound);
+extern int HWVI_PlaySound(HWVI_Reference *stream, const HWVI_SoundData *const sound);
 /*Play in a nonblocking manner (within reason).
 The length of the sound will get adjusted if it
 is more than that of the sound itself.
