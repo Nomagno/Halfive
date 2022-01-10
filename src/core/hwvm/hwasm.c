@@ -33,7 +33,7 @@ WORK.*/
 #define HWASSEMBLY
 #ifdef HWASSEMBLY
 
-hwuint asmparse(char *linestr, HWVM_InstructionSet *inst, hwuint opnds[4]);
+hwuint HWASM_Parse(char *linestr, HWVM_InstructionSet *inst, hwuint opnds[4]);
 HWVM_InstructionSet _isinst(char *instr);
 hwuint _isxupdigit(hwuchar inchar);
 
@@ -50,7 +50,7 @@ int main(int argc, char **argv)
 	HWVM_CodeMemory code = {0};
 	int i = 0;
 	while (fscanf(codefile, "%[^\n] ", arr) != EOF) {
-		asmparse(arr, &code.inst[i], code.opnd[i]);
+		HWASM_Parse(arr, &code.inst[i], code.opnd[i]);
 		i += 1;
 	}
 	HWVM_GeneralMemory prog = HWVM_Init(code);

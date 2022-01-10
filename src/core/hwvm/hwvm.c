@@ -35,7 +35,7 @@ PRINTING AND TESTING FUNCTIONALITY*/
 /*Unknown address*/
 
 HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory code);
-hwuint execnext(HWVM_GeneralMemory *program);
+hwuint HWVM_Execute(HWVM_GeneralMemory *program);
 
 
 hwuint hbin(hwuint op[4], HWVM_DataMemory *space, hwuint flag, _Bool do_save);
@@ -54,7 +54,7 @@ HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory code)
 	return memory;
 }
 
-hwuint execnext(HWVM_GeneralMemory *program)
+hwuint HWVM_Execute(HWVM_GeneralMemory *program)
 {
 	hwuint errno;
 	if (program->m2.co < (MEMSIZE * 4)) {
