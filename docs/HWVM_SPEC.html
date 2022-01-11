@@ -109,7 +109,7 @@ jcnz (15) V1 - jmp TO V1 *IF* 0xFFFF IS ONE (1). Can take 16-bit literals</code>
 3. jcz 7 # If the previous comparison was indeed correct and address 3 contains 0x4,
    jump to instruction 7
 4. add [FE] [8] FFFC # Write the addition of 0xFE (254, 11111110) and 0x8 (8, 00001000)
-   to the OUTPUT register. It should regult in OVERFLOW
+   to the OUTPUT register. It should result in OVERFLOW
 5. set FFFE FFFF # Copy the carry flag to the zero flag
 6. jcnz 8 # If the zero flag is not zero (it shouldn&#39;t be, there was overflow and
    the carry flag was cloned!), jump to instruction 8
