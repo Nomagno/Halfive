@@ -491,7 +491,7 @@ hwuint hbin(hwuint op[4], HWVM_DataMemory *space, hwuint flag, _Bool do_save)
 		conv3 = addrconvert(ad3, op[2]);
 		/*Implicit check for pointer vs address*/
 		if (auxset(&castresult, space, ad3, conv3, 1,
-			   ((op[3] >> 3) && (op[3] == (op[3] | 6))))) {
+			   ((op[3] >> 3) && (op[3] == (op[3] | 4))))) {
 #ifdef EOF
 			printf("ERROR\n");
 #endif
@@ -580,7 +580,7 @@ hwuint hrot(hwuint op[4], HWVM_DataMemory *space)
 	conv3 = addrconvert(ad3, op[2]);
 	/*Implicit check for pointer vs address*/
 	if (do_nothing && auxset(&result, space, ad3, conv3, 1,
-				 ((op[3] >> 3) && (op[3] == (op[3] | 2))))) {
+				 ((op[3] >> 3) && (op[3] == (op[3] | 4))))) {
 #ifdef EOF
 		printf("ERROR\n");
 #endif
