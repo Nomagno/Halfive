@@ -15,19 +15,19 @@
 #d (,WHILE
 #d ),BACK1 __ BACK2
 
-#d START,set [1] 103
+#d START,set =1 103
 
 #d INCR,add 101 103 101
 #d DECR,sub 101 103 101
 
-#d ADD,add {100} 103 {100}
-#d SUB,sub {100} 103 {100}
+#d ADD,add &100 103 &100
+#d SUB,sub &100 103 &100
 
-#d PRINT,set {100} FFFC
-#d GET,set FFFD {100}
+#d PRINT,set &100 FFFC
+#d GET,set FFFD &100
 
 #d WHILE,set FFFB 102
-#d BACK1,set {100} FFFF
+#d BACK1,set &100 FFFF
 #d BACK2,jcnz 102
 
 #d __,INSERT_NEWLINE
@@ -37,7 +37,7 @@
 START
 
 +
-+ ; Cell 0 is [2]
++ ; Cell 0 is =2
 ! ; Print to verify
 
 >
@@ -45,7 +45,7 @@ START
 +
 +
 +
-+ ; Cell 1 is [5]
++ ; Cell 1 is =5
 ! ; Print to verify
 
 ( ; Loop

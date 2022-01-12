@@ -17,7 +17,7 @@ HWVM binary drives are identified by the MIME type `application/hwdrive`
 The Half-World virtual machine, henceforth referred to HWVM, is a standardized, but not fully defined, execution engine for code. This code may be interpreted directly from the assembly format, executed directly from the binary format, or executed in any other equivalent way.
 
 #### The HWVM Instruction notation
-The instruction set for the virtual machine is composed of precisely 16 instructions, whose functioning is documented with the following notation: `inst ARG1 ARG2 ARG3`, where ARGx may be noted as either Vx, Rx, or ID. There are three types of arguments: literals, pointers, and addresses. Literals are enclosed in square brackets `[XXXX]`, pointers in keys `{XXXX}`, and addresses are not `XXXX`. All are always written down in hexadecimal base when not talking about the binary format. Arguments of type Vx take literals, pointers and addresses, those of type Rx take only addresses and pointers, and the ones denoted ID take only literals. POINTERS AND LITERALS SHALL NEVER BE COMBINED IN AN INSTRUCTION'S ARGUMENTS
+The instruction set for the virtual machine is composed of precisely 16 instructions, whose functioning is documented with the following notation: `inst ARG1 ARG2 ARG3`, where ARGx may be noted as either Vx, Rx, or ID. There are three types of arguments: literals, pointers, and addresses. Literals are prefixed by equal `=XXXX`, pointers by and `&XXXX`, and addresses are not `XXXX`. All are always written down in hexadecimal base when not talking about the binary format. Arguments of type Vx take literals, pointers and addresses, those of type Rx take only addresses and pointers, and the ones denoted ID take only literals. POINTERS AND LITERALS SHALL NEVER BE COMBINED IN AN INSTRUCTION'S ARGUMENTS
 
 ***
 ### HWVM Memory layout (Code memory and data memory)
@@ -79,7 +79,7 @@ There are currently SIXTEEN (16) instructions, each numbered with the decimal nu
 
 - In values Vx, if an address is specified, the instruction SHALL read the value of that address. If a literal is specified, the instruction SHALL perform no address reading and use that literal.
 
-- If a pointer is specified, the instruction shall read the value of the address pointed two by THAT ADDRESS AND THE NEXT ONE (e.g. {2} denotes the contents of memory address 0x02 and 0x03, TREATED AS A SINGLE 16-BIT INTEGER).
+- If a pointer is specified, the instruction shall read the value of the address pointed two by THAT ADDRESS AND THE NEXT ONE (e.g. &2 denotes the contents of memory address 0x02 and 0x03, TREATED AS A SINGLE 16-BIT INTEGER).
 
 - In addresses Rx, literals are an ERROR but pointers are ALLOWED.
 
@@ -113,7 +113,7 @@ jcnz (15) V1 - jmp TO V1 *IF* 0xFFFF is NOT ZERO. Can take 16-bit literals
 
 - Subroutines are RECOMMENDED to be defined at the top of program files, so at to avoid any call ever being made without subs having initialized the appropiate memory sections first. It is OPTIONAl, however
 
-- Subroutines are handled with the instructions 'call', 'sube', 'subs'. Each subroutine instruction has an `[ID]` argument, to identify the subroutines. DECLARING TWO SUBROUTINES WITH THE SAME IDENFITICATION IS AN ERROR.
+- Subroutines are handled with the instructions 'call', 'sube', 'subs'. Each subroutine instruction has an `=ID` argument, to identify the subroutines. DECLARING TWO SUBROUTINES WITH THE SAME IDENFITICATION IS AN ERROR.
 
 - A subs instruction (subroutine START) ALWAYS has to be matched with a sube instruction (subroutine END). They can have any number of instruction inbetween, as long as no `call`s to ITS OWN ID (RECURSION) are ever contained within, and NO NEW SUBROUTINES ARE STARTED/ENDED within it.
 - The subs instruction SHALL write to an OUT-OF-MEMORY (not mapped to the address space) location the program counter of the instruction RIGHT AFTER its corresponding sube (referre to as SKIPCOUNT), corresponding to the ID argument index, as to skip the rest of the subroutine when encountered normally. After that, it SHALL write to an OUT-OF-MEMORY location the program counter RIGHT AFTER itself (referred to as EXECOUNT), corresponding to the ID argument, so as to allow call instructions to enter execution.
@@ -126,13 +126,13 @@ jcnz (15) V1 - jmp TO V1 *IF* 0xFFFF is NOT ZERO. Can take 16-bit literals
 ### Assembly language
 #### The assembly language is the exact representation of instructions, literals, pointers and addresses that has been discussed so far (comments are not part of the language, but they are designated by everything after a `#` here, for clarity porpuses. The line numbering is not part of the language, either, it's just to make keeping track of the program counter easier):
 ```
-0. set [33] FFFC # Write literal 0x33 (51, 00110011) to the OUTPUT REGISTER
+0. set =33 FFFC # Write literal 0x33 (51, 00110011) to the OUTPUT REGISTER
 1. jmp 4 # Jump to instruction 4
-2. cmp [4] 3 # Do the subtraction [4] - 3. We don't know what address three contains,
+2. cmp =4 3 # Do the subtraction =4 - 3. We don't know what address three contains,
    but it will set the zero flag if it is 0x4
 3. jcz 7 # If the previous comparison was indeed correct and address 3 contains 0x4,
    jump to instruction 7
-4. add [FE] [8] FFFC # Write the addition of 0xFE (254, 11111110) and 0x8 (8, 00001000)
+4. add =FE =8 FFFC # Write the addition of 0xFE (254, 11111110) and 0x8 (8, 00001000)
    to the OUTPUT register. It should result in OVERFLOW
 5. set FFFE FFFF # Copy the carry flag to the zero flag
 6. jcnz 8 # If the zero flag is not zero (it shouldn't be, there was overflow and
@@ -158,7 +158,7 @@ EXAMPLE:
 
 BINARY:    0010 0101 0000000000000001 0000000000000011 0000000000000010 0000 0000000000000000
 DECIMAL:   2    5    1                3                2                0    0
-ASSEMBLY:       add  1               [3]               2               \n    halt
+ASSEMBLY:       add  1               =3               2               \n    halt
 ENGLISH:
 	The first instruction has the middle argument as a literal.
 	The first instruction is 'add'.

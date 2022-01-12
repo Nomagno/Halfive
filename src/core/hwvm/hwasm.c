@@ -85,14 +85,14 @@ hwuint HWASM_Parse(char *linestr, HWVM_InstructionSet *inst, hwuint opnds[4])
 		} else if (_isxupdigit(token[0])) {
 			opnds[i] = (hwuint)hwstrtoul(token, (void *)0, 16);
 			i += 1;
-		} else if (token[0] == '[') {
+		} else if (token[0] == '=') {
 			token += 1;
 			opnds[i] = (hwuint)hwstrtoul(token, (void *)0, 16);
 
 			opnds[3] = (opnds[3] | (1 << (2 - i)));
 
 			i += 1;
-		} else if (token[0] == '{') {
+		} else if (token[0] == '&') {
 			token += 1;
 			opnds[i] = (hwuint)hwstrtoul(token, (void *)0, 16);
 			opnds[3] = (opnds[3] | 8);

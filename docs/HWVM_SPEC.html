@@ -24,7 +24,7 @@ line-height:1.2
 <hr />
 <p>The Half-World virtual machine, henceforth referred to HWVM, is a standardized, but not fully defined, execution engine for code. This code may be interpreted directly from the assembly format, executed directly from the binary format, or executed in any other equivalent way.</p>
 <h4>The HWVM Instruction notation</h4>
-<p>The instruction set for the virtual machine is composed of precisely 16 instructions, whose functioning is documented with the following notation: <code>inst ARG1 ARG2 ARG3</code>, where ARGx may be noted as either Vx, Rx, or ID. There are three types of arguments: literals, pointers, and addresses. Literals are enclosed in square brackets <code>[XXXX]</code>, pointers in keys <code>{XXXX}</code>, and addresses are not <code>XXXX</code>. All are always written down in hexadecimal base when not talking about the binary format. Arguments of type Vx take literals, pointers and addresses, those of type Rx take only addresses and pointers, and the ones denoted ID take only literals. POINTERS AND LITERALS SHALL NEVER BE COMBINED IN AN INSTRUCTION&#x2019;S ARGUMENTS</p>
+<p>The instruction set for the virtual machine is composed of precisely 16 instructions, whose functioning is documented with the following notation: <code>inst ARG1 ARG2 ARG3</code>, where ARGx may be noted as either Vx, Rx, or ID. There are three types of arguments: literals, pointers, and addresses. Literals are prefixed by equal <code>=XXXX</code>, pointers by and <code>&XXXX</code>, and addresses are not <code>XXXX</code>. All are always written down in hexadecimal base when not talking about the binary format. Arguments of type Vx take literals, pointers and addresses, those of type Rx take only addresses and pointers, and the ones denoted ID take only literals. POINTERS AND LITERALS SHALL NEVER BE COMBINED IN AN INSTRUCTION&#x2019;S ARGUMENTS</p>
 <hr />
 <h3>HWVM Memory layout (Code memory and data memory)</h3>
 <h4>IMPORTANT NOTE: ALL MEMORY IN CODE AND DATA MEMBERS HAS TO BE INITIALIZED TO 0 (ZERO)!</h4>
@@ -66,7 +66,7 @@ line-height:1.2
 <ul>
 <li><p>Each instruction takes the number of register, value, or ID arguments specified, and only that number (it is an ERROR to specify MORE or LESS).</p></li>
 <li><p>In values Vx, if an address is specified, the instruction SHALL read the value of that address. If a literal is specified, the instruction SHALL perform no address reading and use that literal.</p></li>
-<li><p>If a pointer is specified, the instruction shall read the value of the address pointed two by THAT ADDRESS AND THE NEXT ONE (e.g.&#xA0;{2} denotes the contents of memory address 0x02 and 0x03, TREATED AS A SINGLE 16-BIT INTEGER).</p></li>
+<li><p>If a pointer is specified, the instruction shall read the value of the address pointed two by THAT ADDRESS AND THE NEXT ONE (e.g.&#xA0;&2 denotes the contents of memory address 0x02 and 0x03, TREATED AS A SINGLE 16-BIT INTEGER).</p></li>
 <li><p>In addresses Rx, literals are an ERROR but pointers are ALLOWED.</p></li>
 <li><p>In idenfitications ID, addresses or pointers are an ERROR.</p></li>
 <li><p>LITERALS AND POINTERS SHALL NEVER BE SPECIFIED TOGETHER IN THE SAME ARGUMENT LIST</p></li>
@@ -93,7 +93,7 @@ jcnz (15) V1 - jmp TO V1 *IF* 0xFFFF is NOT ZERO. Can take 16-bit literals</code
 <h3>Subroutines</h3>
 <ul>
 <li><p>Subroutines are RECOMMENDED to be defined at the top of program files, so at to avoid any call ever being made without subs having initialized the appropiate memory sections first. It is OPTIONAl, however</p></li>
-<li><p>Subroutines are handled with the instructions &#x2018;call&#x2019;, &#x2018;sube&#x2019;, &#x2018;subs&#x2019;. Each subroutine instruction has an <code>[ID]</code> argument, to identify the subroutines. DECLARING TWO SUBROUTINES WITH THE SAME IDENFITICATION IS AN ERROR.</p></li>
+<li><p>Subroutines are handled with the instructions &#x2018;call&#x2019;, &#x2018;sube&#x2019;, &#x2018;subs&#x2019;. Each subroutine instruction has an <code>=ID</code> argument, to identify the subroutines. DECLARING TWO SUBROUTINES WITH THE SAME IDENFITICATION IS AN ERROR.</p></li>
 <li><p>A subs instruction (subroutine START) ALWAYS has to be matched with a sube instruction (subroutine END). They can have any number of instruction inbetween, as long as no <code>call</code>s to ITS OWN ID (RECURSION) are ever contained within, and NO NEW SUBROUTINES ARE STARTED/ENDED within it.</p></li>
 <li><p>The subs instruction SHALL write to an OUT-OF-MEMORY (not mapped to the address space) location the program counter of the instruction RIGHT AFTER its corresponding sube (referre to as SKIPCOUNT), corresponding to the ID argument index, as to skip the rest of the subroutine when encountered normally. After that, it SHALL write to an OUT-OF-MEMORY location the program counter RIGHT AFTER itself (referred to as EXECOUNT), corresponding to the ID argument, so as to allow call instructions to enter execution.</p></li>
 <li><p>The call instruction SHALL write the program counter of the instruction RIGHT AFTER itself to an OUT-OF-MEMORY location, (RETURNCOUNT) corresponding to the ID argument index. After that, it SHALL set the program counter to EXECOUNT</p></li>
@@ -102,13 +102,13 @@ jcnz (15) V1 - jmp TO V1 *IF* 0xFFFF is NOT ZERO. Can take 16-bit literals</code
 <hr />
 <h3>Assembly language</h3>
 <h4>The assembly language is the exact representation of instructions, literals, pointers and addresses that has been discussed so far (comments are not part of the language, but they are designated by everything after a <code>#</code> here, for clarity porpuses. The line numbering is not part of the language, either, it&#x2019;s just to make keeping track of the program counter easier):</h4>
-<pre><code>0. set [33] FFFC # Write literal 0x33 (51, 00110011) to the OUTPUT REGISTER
+<pre><code>0. set =33 FFFC # Write literal 0x33 (51, 00110011) to the OUTPUT REGISTER
 1. jmp 4 # Jump to instruction 4
-2. cmp [4] 3 # Do the subtraction [4] - 3. We don&#39;t know what address three contains,
+2. cmp =4 3 # Do the subtraction =4 - 3. We don&#39;t know what address three contains,
    but it will set the zero flag if it is 0x4
 3. jcz 7 # If the previous comparison was indeed correct and address 3 contains 0x4,
    jump to instruction 7
-4. add [FE] [8] FFFC # Write the addition of 0xFE (254, 11111110) and 0x8 (8, 00001000)
+4. add =FE =8 FFFC # Write the addition of 0xFE (254, 11111110) and 0x8 (8, 00001000)
    to the OUTPUT register. It should result in OVERFLOW
 5. set FFFE FFFF # Copy the carry flag to the zero flag
 6. jcnz 8 # If the zero flag is not zero (it shouldn&#39;t be, there was overflow and
@@ -131,7 +131,7 @@ EXAMPLE:
 
 BINARY:    0010 0101 0000000000000001 0000000000000011 0000000000000010 0000 0000000000000000
 DECIMAL:   2    5    1                3                2                0    0
-ASSEMBLY:       add  1               [3]               2               \n    halt
+ASSEMBLY:       add  1               =3               2               \n    halt
 ENGLISH:
     The first instruction has the middle argument as a literal.
     The first instruction is &#39;add&#39;.
