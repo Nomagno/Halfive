@@ -96,11 +96,11 @@ hwuint HWVM_Execute(HWVM_GeneralMemory *program)
 			}
 			return 0;
 		case jcnz:
-			if (program->m2.zf == 1)
+			if (program->m2.zf)
 				errno =
 				    hjump(program->m1.opnd[program->m2.co],
 					  &program->m2,
-					  &program->m2.co); /*Jump if ZF is 1*/
+					  &program->m2.co); /*Jump if ZF is not zero*/
 			else {
 				program->m2.co += 1;
 				errno = 0;
