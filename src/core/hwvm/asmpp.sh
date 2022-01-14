@@ -28,13 +28,22 @@
 #OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 #WORK.
 
-rep=$(grep '^#d' "$1" | sed 's/^#d //; s/ /=/g')
-f=$(cat "$1" | sed 's|;.*$||; /^$/d; /#d/d')
+#REQUIREMENTS:
+#POSIX sh
+#POSIX printf
+#POSIX grep
+#POSIX cut
+#POSIX cat
+#POSIX sed
+#POSIX awk
+
+rep=$(grep '^#d' "$1" | sed 's/^#d //g; s/ /|/g')
+f=$(cat "$1" | sed 's|;.*$||g; /#d /d')
 
 for i in $rep; do
-p1="$(echo "$i" | cut -d',' -f1 | sed 's/=/ /g')"
-p2="$(echo "$i" | cut -d',' -f2 | sed 's/=/ /g')"
-f=$(printf "$f" | sed "s/${p1}/${p2}/")
+p1=$(printf '%s\n' "$i" | cut -d',' -f1 | sed 's/|/ /g; s/\&/\\&/g')
+p2=$(printf '%s\n' "$i" | cut -d',' -f2 | sed 's/|/ /g; s/\&/\\&/g')
+f=$(printf "$f" | sed "s/$p1/$p2/g")
 done
 
-printf "%s\n" "$f"
+printf '%s\n' "$f" | sed 's/INSERT_NEWLINE/\n/g' | awk 'NF'

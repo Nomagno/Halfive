@@ -2,7 +2,7 @@
 
 ; Run 'asmpp.sh 'file' > 'file_p' to
 ; preprocess this file into assembler-ready format
-; (Preprocess #d directives, remove comments, remove empty lines)
+; (Preprocess #d directives, remove comments, remove empty lines, replace INSERT_NEWLINE)
 
 
 ;LICENSE START START START START
