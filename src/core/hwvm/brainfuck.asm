@@ -4,7 +4,7 @@
 ; preprocess this file into assembler-ready format
 ; (Preprocess #d directives, remove comments, remove empty lines, replace INSERT_NEWLINE)
 
-#d START,set =1 103
+#d START,set =1 103__
 
 #d >,add 101 103 101__
 #d <,sub 101 103 101__
