@@ -155,7 +155,7 @@ typedef struct {
 	/*Output register, write-only, 0xFFFC*/
 	hwuchar ou;
 
-	/*Program counter, read-only, 0xFFFB*/
+	/*Program counter, read-only, 0xFFFB (low) and 0xFFFA (high)*/
 	hwuint co;
 
 } HWVM_DataMemory;

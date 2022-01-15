@@ -31,6 +31,10 @@ WORK.*/
 #include <stdio.h>
 /*<stdio.h> IS NOT NEEDED, IT ONLY ADDS
 PRINTING AND TESTING FUNCTIONALITY*/
+/*
+#define HWVM_RAW_PRINT
+Uncomment to do printing of memory addresses as raw characters, instead of hexadecimal numbers
+*/
 #define UADDR 0xFFF0
 /*Unknown address*/
 
@@ -363,7 +367,11 @@ hwuint auxset(hwuint *val, HWVM_DataMemory *space, hwuint ad, hwuint conv, _Bool
 		case 6:;
 			space->ou = *val;
 #ifdef EOF
-			printf("%i\n", space->ou);
+#ifdef HWVM_RAW_PRINT
+			printf("%c", space->ou);
+#else
+			printf("%X\n", space->ou);
+#endif
 #endif
 			break;
 		case 7:
