@@ -34,8 +34,12 @@ WORK.*/
 #include <halfworld/hwstring.h>
 #include <halfworld/hwvm/hwvm.h>
 
-#define RACENUM 32
+#define RACENUM 16
+#define VM_SIMULATION
 
+/*Approximate default storage with VM: 133KBs
+Without VM worst-case scenario: 128Bs
+*/
 typedef struct {
 
 	/*Intrinsic properties of the vehicle
@@ -63,17 +67,17 @@ typedef struct {
 	/*Simulated properties of the car (MODIFYING THESE CAN LEAD TO
     FUNKY RESULTS, HOWEVER THERE IS NOTHING INHERENTLY WRONG WITH IT)*/
 
-	unsigned int leaderboard1; /*RACE LEADERBOARD POSITION*/
-	unsigned int leaderboard2; /*GLOBAL LEADERBOARD POSITION*/
+#ifdef VM_SIMULATION
+	HWVM_GeneralMemory computer; /*132KBs of storage with default settings*/
+#endif
 
-	uint16_t pos1;
-	uint16_t pos2;
+	uint16_t leaderboard_local; /*RACE LEADERBOARD POSITION*/
+	uint16_t leaderboard_global; /*GLOBAL LEADERBOARD POSITION*/
+
+	uint16_t pos1, pos2;
 	uint16_t revolutions; /*ENGINE REVOLUTIONS PER MINUTE*/
 
-	uint16_t state1; /*FIRST INTERNAL STATE OF CAR, RESERVED FOR GRIP*/
-	uint16_t state2; /*SECOND INTERNAL STATE OF CAR, RESERVED FOR DAMAGE*/
-	uint16_t state3; /*THIRD INTERNAL STATE OF CAR*/
-	uint16_t state4; /*FOURTH INTERNAL STATE OF CAR*/
+	uint16_t states[4]; /*Internal states of the car, in total 64 bits of storage*/
 
 	enum HWNET_Type1Enum car_state; /*SEE THE HWNET SPEC*/
 	enum HWNET_Type2Enum mov_state; /*SEE THE HWNET SPEC*/
@@ -81,13 +85,16 @@ typedef struct {
 
 } H5_Vehicle;
 
+/*Size for RACENUM = 16, with average VM: 1.1MBs (1128KBs max)
+Size for RACENUM = 16 without VM: 128KBs*/
 typedef struct {
 	H5_Vehicle racers[RACENUM];
 	HWT_Circuit track;
 } H5_World;
 
 extern int H5_Init(char *trck, H5_World *stage);
-extern int H5_Sim(H5_World *stage, unsigned int milli);
+extern int H5_Sim(H5_World *stage, unsigned int milli, _Bool do_hwvm_sim);
 extern int H5_TransformServer(const H5_World *stage, HWNET_ServerPacket *serv,
 			     enum HWNET_ModeEnum mode);
 extern int H5_TransformClient(H5_World *stage, const HWNET_ClientPacket *cli);
+

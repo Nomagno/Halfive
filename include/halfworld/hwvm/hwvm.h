@@ -160,6 +160,8 @@ typedef struct {
 
 } HWVM_DataMemory;
 
+/*Approximate size on disk for MEMSIZE = 4096, MEMSMALL = MEMSIZE/4:
+132KBs*/
 typedef struct {
 	HWVM_CodeMemory m1; /*Code memory*/
 	HWVM_DataMemory m2; /*Data memory*/

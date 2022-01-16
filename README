@@ -2,16 +2,23 @@ HALF-WORLD, THE UNIVERSAL RACING GAME
 
 Half-World is a stateless protocol for racing games, and with a bit more work any 2D game that needs to be accessible, lightweight, and work under heavy/total packet loss.
 
-Half-Five (src folder) is a modular no-dependency implementation of a racing game that adheres to Half-World.
-It has a lot of C utility interfaces, such as:
-- HWDOC reader (src/core/hwdoc.h)
-- HWNET/HWT reader (WIP) (src/core/hwnet/hwnet.h) (src/core/hwt/hwt.h)
-- Portable VM and assembly language (src/core/hwvm/hwvm.h)
-- Portable abstraction over graphics, sound, and input backends (stc/core/hwvi.h)
-- Declarative physics engine (WIP) (src/core/halfive.h)
-- Arbitrary-viewport ASCII 2D renderer (WIP)
+It has no implementation requirements whatsoever.
 
-It has no implementation requirements
+There is a modular no-dependency implementation of a racing game that adheres to Half-World.
+'include' folder: Interfaces
+'src' folder: Implementations
+It has a lot of C utility interfaces, such as:
+- HWDOC (Packet/Circuit) generic tokenizer (include/halfworld/hwdoc/hwdoc.h)
+- Packet/Circuit data structures and tokenizer (WIP) (include/halfworld/hwdoc/hwnet.h) (include/halfworld/hwdoc/hwt.h)
+- Portable VM with custom instruciton set,  and assembly language (include/halfworld/hwvm/hwvm.h)
+- Portable abstraction over graphics, sound, and input backends (include/halfworld/hwvi.h)
+- Arbitrary-viewport ASCII 2D renderer (WIP)
+- Portable declarative physics engine (WIP) (include/halfworld/halfive.h)
+
+Back of the envelope calculations suggest that (depending on preprocessor statements used to hided away excessively heavy code),
+the memory footprint of the (backend part of the engine) will range from around 256KBs to around 2MBs. It is reasonable to expect
+a maximum memory footprint (sound and graphic backends aside, but taking into account the display and network buffers and code) of
+4-8MBs, when no memory-reducing preprocessor macros are defined.
 
 List of specifications and corresponding mime types:
 	Encoding formats:
@@ -35,8 +42,8 @@ If you read all specifications in the docs, you should be able to:
  - Use HWT as a basic format for circuits
  - Use HWVM as a basic runtime for user-generated content
 
-To make them extensions easily trackable, I recommand specifying inside them an 8-character alphanumerical name (underscore hyphen 0-9 A-Z a-z, e.g "_My-Ext2").
+To make them extensions easily trackable, I recommend specifying inside them an 8-character alphanumerical name (underscore hyphen 0-9 A-Z a-z, e.g "_My-Ext2").
 
 
 --- Licensing ---
-The whole project is released under the COIL license, as well as all original assets/code. Please see each file for individual licensing information, however.
+The whole project is released under the COIL license, as well as all *original* assets/code. Please see each file for individual licensing information, however.

@@ -37,9 +37,8 @@ typedef enum { SEC = 0, KEY = 1, VAL = 2 } HWDOC_Type;
 
 typedef struct {
 	HWDOC_Type type;
-	int string_start;
-	int string_end;
-	int parent;
+	int string_start, string_end, parent;
 } HWDOC_Token;
 
 extern int HWDOC_Parse(const unsigned char *input, int size, HWDOC_Token *toks);
+

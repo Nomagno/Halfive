@@ -29,7 +29,7 @@ WORK.*/
 
 #include <halfworld/hwreq.h>
 #define MAXCHAR_HWNET 9
-#define MAXPLAYERS_HWNET 32
+#define MAXPLAYERS_HWNET 16
 
 enum HWNET_Type1Enum { o, u, x, s, z, e, c, y };
 enum HWNET_Type2Enum { f, b, k, i };
@@ -39,26 +39,23 @@ struct HWNET_ServerData {
 	enum HWNET_Type1Enum flags_1; /*If it is -1, SHOULD BE LEFT EMPTY*/
 	enum HWNET_Type2Enum flags_2; /*If it is -1, SHOULD BE LEFT EMPTY*/
 	enum HWNET_Type3Enum flags_3; /*If it is -1, SHOULD BE LEFT EMPTY*/
-	int leaderboard;    /*If it is -1, SHOULD NOT BE SEND*/
-
-	int position1;
-	int position2;
+	uint16_t leaderboard, position1, position2;
 };
 
 struct HWNET_ClientData {
-	int thruster_1;
-	int thruster_2;
-	int steer;
+	uint8_t thruster_1, thruster_2, steer;
 };
 
+/*Memory footprint worst-case scenario: 256Bs*/
 typedef struct {
-	char trackname[MAXCHAR_HWNET];
-	char gamemode[MAXCHAR_HWNET];
-	char extension[MAXCHAR_HWNET];
+	char trackname[MAXCHAR_HWNET],
+	gamemode[MAXCHAR_HWNET],
+	extension[MAXCHAR_HWNET];
 
 	struct HWNET_ServerData data[MAXPLAYERS_HWNET];
 } HWNET_ServerPacket;
 
+/*Memory footprint worst-case scenario: 128Bs*/
 typedef struct {
 	char extension[MAXCHAR_HWNET];
 	enum HWNET_ModeEnum mode;

@@ -45,14 +45,11 @@ struct HWT_Biome {
 };
 
 struct HWT_Point {
-	uint16_t x;
-	uint16_t y;
+	uint16_t x, y;
 };
 
 struct HWT_Bezier {
-	struct HWT_Point p1;
-	struct HWT_Point p2;
-	struct HWT_Point p3;
+	struct HWT_Point p1, p2, p3;
 };
 
 struct HWT_Segment {
@@ -64,6 +61,8 @@ struct HWT_Segment {
 	enum HWT_RailEnum guardrails;
 };
 
+
+/*Memory footprint worst-case scenario: 256 bytes*/
 typedef struct {
 	char name[20];
 
@@ -76,4 +75,3 @@ typedef struct {
 } HWT_Circuit;
 
 extern int HWT_Parse(char *instring, HWT_Circuit *outstruct);
-
