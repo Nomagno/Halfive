@@ -27,43 +27,19 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
-#include "../hwreq.h"
-#define MAXCHAR_HWNET 9
-#define MAXPLAYERS_HWNET 32
+/*Half-World Document tokenizer interface*/
 
-enum HWNET_Type1Enum { o, u, x, s, z, e, c, y };
-enum HWNET_Type2Enum { f, b, k, i };
-enum HWNET_Type3Enum { a, m, t, h };
-enum HWNET_ModeEnum { r, l };
-struct HWNET_ServerData {
-	enum HWNET_Type1Enum flags_1; /*If it is -1, SHOULD BE LEFT EMPTY*/
-	enum HWNET_Type2Enum flags_2; /*If it is -1, SHOULD BE LEFT EMPTY*/
-	enum HWNET_Type3Enum flags_3; /*If it is -1, SHOULD BE LEFT EMPTY*/
-	int leaderboard;    /*If it is -1, SHOULD NOT BE SEND*/
+#include <halfworld/hwreq.h>
+#include <limits.h>
+#include <stddef.h>
 
-	int position1;
-	int position2;
-};
-
-struct HWNET_ClientData {
-	int thruster_1;
-	int thruster_2;
-	int steer;
-};
+typedef enum { SEC = 0, KEY = 1, VAL = 2 } HWDOC_Type;
 
 typedef struct {
-	char trackname[MAXCHAR_HWNET];
-	char gamemode[MAXCHAR_HWNET];
-	char extension[MAXCHAR_HWNET];
+	HWDOC_Type type;
+	int string_start;
+	int string_end;
+	int parent;
+} HWDOC_Token;
 
-	struct HWNET_ServerData data[MAXPLAYERS_HWNET];
-} HWNET_ServerPacket;
-
-typedef struct {
-	char extension[MAXCHAR_HWNET];
-	enum HWNET_ModeEnum mode;
-	struct HWNET_ClientData data[MAXPLAYERS_HWNET];
-} HWNET_ClientPacket;
-
-extern int HWNET_ClientParse(const char *input, HWNET_ClientPacket *output);
-extern int HWNET_ServerParse(const char *, HWNET_ServerPacket *output);
+extern int HWDOC_Parse(const unsigned char *input, int size, HWDOC_Token *toks);

@@ -27,12 +27,12 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
-#include "hwreq.h"
-#include "hwdoc.h"
-#include "hwnet/hwnet.h"
-#include "hwt/hwt.h"
-#include "hwvm/hwstring.h"
-#include "hwvm/hwvm.h"
+#include <halfworld/hwreq.h>
+#include <halfworld/hwdoc/hwdoc.h>
+#include <halfworld/hwdoc/hwnet.h>
+#include <halfworld/hwdoc/hwt.h>
+#include <halfworld/hwstring.h>
+#include <halfworld/hwvm/hwvm.h>
 
 #define RACENUM 32
 

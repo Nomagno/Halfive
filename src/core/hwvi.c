@@ -55,7 +55,8 @@ quit,b1,b2,b3,b4,b5,b6,b7,b8,b9,m1,m2,keyup,keydown,keyleft,keyright,axis1,axis2
 quit, bX, mx, and keyX are booleans 0 or 1, axisX are 8-bit ints 0-255
 */
 
-#include "hwvi.h"
+#include <halfworld/hwreq.h>
+#include <halfworld/hwvi.h>
 
 int HWVI_Init(HWVI_Reference *ref, size_t h, size_t w);
 int HWVI_Destroy(HWVI_Reference *ref);
@@ -182,7 +183,7 @@ int HWVI_GetBuffer_Data(const char *spritename, HWVI_PixelData *inbuf)
 
 #ifdef HWVI_AUDIOSERV_IMPL_SDL2
 
-#include "hwvm/hwstring.h"
+#include <halfworld/hwstring.h>
 
 /*For sound media caching*/
 

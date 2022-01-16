@@ -26,12 +26,44 @@ COPYRIGHT OR OTHER LEGAL PRIVILEGE BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
 LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
-#include "../hwreq.h"
-#define N (UCHAR_MAX + 1)
-typedef unsigned char suchar;
-typedef unsigned suint;
-typedef unsigned long sulong;
 
-extern sulong hwstrtoul(char *, char **, int);
-int hwstrcmp(char *, char *);
-char *hwstrtok(char *, char *);
+#include <halfworld/hwreq.h>
+#define MAXCHAR_HWNET 9
+#define MAXPLAYERS_HWNET 32
+
+enum HWNET_Type1Enum { o, u, x, s, z, e, c, y };
+enum HWNET_Type2Enum { f, b, k, i };
+enum HWNET_Type3Enum { a, m, t, h };
+enum HWNET_ModeEnum { r, l };
+struct HWNET_ServerData {
+	enum HWNET_Type1Enum flags_1; /*If it is -1, SHOULD BE LEFT EMPTY*/
+	enum HWNET_Type2Enum flags_2; /*If it is -1, SHOULD BE LEFT EMPTY*/
+	enum HWNET_Type3Enum flags_3; /*If it is -1, SHOULD BE LEFT EMPTY*/
+	int leaderboard;    /*If it is -1, SHOULD NOT BE SEND*/
+
+	int position1;
+	int position2;
+};
+
+struct HWNET_ClientData {
+	int thruster_1;
+	int thruster_2;
+	int steer;
+};
+
+typedef struct {
+	char trackname[MAXCHAR_HWNET];
+	char gamemode[MAXCHAR_HWNET];
+	char extension[MAXCHAR_HWNET];
+
+	struct HWNET_ServerData data[MAXPLAYERS_HWNET];
+} HWNET_ServerPacket;
+
+typedef struct {
+	char extension[MAXCHAR_HWNET];
+	enum HWNET_ModeEnum mode;
+	struct HWNET_ClientData data[MAXPLAYERS_HWNET];
+} HWNET_ClientPacket;
+
+extern int HWNET_ClientParse(const char *input, HWNET_ClientPacket *output);
+extern int HWNET_ServerParse(const char *, HWNET_ServerPacket *output);

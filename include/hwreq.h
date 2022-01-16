@@ -9,3 +9,7 @@
 #ifndef UINT16_MAX
 #error uint16_t is required, sorry!
 #endif
+
+#ifndef SIZE_MAX
+#error size_t is required, sorry!
+#endif

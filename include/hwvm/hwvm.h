@@ -28,7 +28,7 @@ OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
 /*READ THE HWVM SPEC*/
-#include "../hwreq.h"
+#include <halfworld/hwreq.h>
 #define MEMSIZE 4096
 #define MEMSMALL 1024
 #include <stdint.h>

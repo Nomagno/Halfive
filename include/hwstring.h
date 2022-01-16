@@ -26,20 +26,12 @@ COPYRIGHT OR OTHER LEGAL PRIVILEGE BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
 LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
+#include <halfworld/hwreq.h>
+#define N (UCHAR_MAX + 1)
+typedef unsigned char suchar;
+typedef unsigned suint;
+typedef unsigned long sulong;
 
-/*Half-World Document tokenizer interface*/
-
-#include "hwreq.h"
-#include <limits.h>
-#include <stddef.h>
-
-typedef enum { SEC = 0, KEY = 1, VAL = 2 } HWDOC_Type;
-
-typedef struct {
-	HWDOC_Type type;
-	int string_start;
-	int string_end;
-	int parent;
-} HWDOC_Token;
-
-extern int HWDOC_Parse(const unsigned char *input, int size, HWDOC_Token *toks);
+extern sulong hwstrtoul(char *, char **, int);
+int hwstrcmp(char *, char *);
+char *hwstrtok(char *, char *);

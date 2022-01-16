@@ -27,8 +27,9 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
-#include "hwdoc.h"
-#include "hwvm/hwstring.h"
+#include <halfworld/hwreq.h>
+#include <halfworld/hwdoc/hwdoc.h>
+#include <halfworld/hwstring.h>
 
 int HWDOC_Parse(const unsigned char *input, int tok_size, HWDOC_Token *toks);
 

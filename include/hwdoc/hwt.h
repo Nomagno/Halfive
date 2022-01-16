@@ -31,7 +31,7 @@ WORK.*/
  A*(1-t)^2 + B*2t(1-t) + C*t^2
 */
 
-#include "../hwreq.h"
+#include <halfworld/hwreq.h>
 enum HWT_TimeEnum { day, night };
 enum HWT_SpeedEnum { normal, boost, antiboost };
 enum HWT_FinishEnum { no, finish_line, checkpoint };
