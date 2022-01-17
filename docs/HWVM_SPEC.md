@@ -91,8 +91,10 @@ There are currently SIXTEEN (16) instructions, each numbered with the decimal nu
 halt (0) - TAKES NO ARGUMENTS, STOPS PROGRAM EXECUTION
 nop (1) - TAKES NO ARGUMENTS, DOES NOTHING FOR A FULL CYCLE
 set (2) V1 R2; SETS ADDRESS R2 *TO* VALUE V1
-jmp (3) V1 - JUMP (MOVE THE PROGRAM COUNTER, HAND EXECUTION) *TO* VALUE V1. Can take 16-bit literals
-jcz (4) V1 - jmp TO V1 *IF* 0xFFFF IS ZERO (0).  Can take 16-bit literals
+jmp (3) V1 - JUMP (MOVE THE PROGRAM COUNTER, HAND EXECUTION) *TO* VALUE V1. SPECIAL EXCEPTION: Take 16-bit literals,
+    addresses are treated as 16-bit literals, and pointers are treated as addresses with a 16-bit value
+jcz (4) V1 - jmp TO V1 *IF* 0xFFFF IS ZERO (0).  SPECIAL EXCEPTION: Take 16-bit literals,
+    addresses are treated as 16-bit literals, and pointers are treated as addresses with a 16-bit value
 add (5) V1 V2 R3 - ADD V1 AND V2, WRITE THE RESULT TO R3. SETS CARRY/ZERO FLAGS APPROPIATELY
 sub (6) V1 V2 R3 - SUBSTRACT V2 *FROM* V1, WRITE THE RESULT TO R3. SETS CARRY/ZERO FLAGS APPROPIATELY
 and (7) V1 V2 R3 - PERFORM A BINARY 'and' ON V1 AND V2, WRITE THE RESULT TO R3. SETS ZERO FLAG APPROPIATELY
@@ -105,7 +107,8 @@ cmp (11) V1, V2 - SUBSTACT V2 *FROM* V1, BUT *WITHOUT* SAVING THE RESULT. SETS C
 subs (12) ID - SEE SECTION BELOW
 sube (13) ID - SEE SECTION BELOW
 call (14) ID - SEE SECTION BELOW
-jcnz (15) V1 - jmp TO V1 *IF* 0xFFFF is NOT ZERO. Can take 16-bit literals
+jcnz (15) V1 - jmp TO V1 *IF* 0xFFFF is NOT ZERO. SPECIAL EXCEPTION: Take 16-bit literals,
+    addresses are treated as 16-bit literals, and pointers are treated as addresses with a 16-bit value
 ```
 
 ***

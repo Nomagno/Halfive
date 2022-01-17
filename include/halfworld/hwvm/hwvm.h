@@ -93,7 +93,7 @@ typedef enum {
 	halt = 0, /* ; halt*/
 	nop = 1,  /* ; do nothing*/
 	set = 2,  /* V1 R2; set address R2 to value V1*/
-	jmp = 3,  /* V1; hand execution to instruction numbered V1*/
+	jmp = 3,  /* V1; hand execution to instruction numbered V1. SPECIAL EXCEPTION: Take 16-bit literals, addresses are treated as 16-bit literals, and pointers are treated as addresses with a 16-bit value*/
 	jcz = 4,  /* V1; if ZF == 0, jmp to instrucion V1*/
 	/*ADD trough to NOT: put result of doing
 	stuff with Vn values into Rn address*/

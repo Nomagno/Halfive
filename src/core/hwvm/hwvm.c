@@ -271,7 +271,7 @@ hwuint addrconvert(hwuint arg, hwuint addr)
 
 /*INCREDIBLY COMMON BOILERPLATE MOVED TO OWN FUNCTION*/
 hwuint auxset(hwuint *val, HWVM_DataMemory *space, hwuint ad, hwuint conv, _Bool do_write,
-	      _Bool isptr)
+	      _Bool isptr, _Bool jmpmode)
 {
 	if (!do_write) {
 		switch (ad) {
@@ -285,9 +285,9 @@ hwuint auxset(hwuint *val, HWVM_DataMemory *space, hwuint ad, hwuint conv, _Bool
 				unsigned adptr = addrcheck(ptrval);
 				unsigned adptrconv = addrconvert(adptr, ptrval);
 				if (adptr == 1) {
-					*val = space->gp[adptrconv];
+					*val = (jmpmode) ? ptrval : space->gp[adptrconv];
 				} else if (adptr == 7) {
-					*val = space->dr[adptrconv];
+					*val = (jmpmode) ? ptrval : space->dr[adptrconv];
 				}
 			} else
 				*val = space->gp[conv];
@@ -320,9 +320,9 @@ hwuint auxset(hwuint *val, HWVM_DataMemory *space, hwuint ad, hwuint conv, _Bool
 				unsigned adptr = addrcheck(ptrval);
 				unsigned adptrconv = addrconvert(adptr, ptrval);
 				if (adptr == 1)
-					*val = space->gp[adptrconv];
+					*val = (jmpmode) ? adptrconv : space->gp[adptrconv];
 				else if (adptr == 7)
-					*val = space->dr[adptrconv];
+					*val = (jmpmode) ? adptrconv : space->dr[adptrconv];
 			} else
 				*val = space->gp[conv];
 			break;
@@ -423,7 +423,7 @@ hwuint hbin(hwuint op[4], HWVM_DataMemory *space, hwuint flag, _Bool do_save)
 	    (op[3] |
 	     4)) { /*We're dealing with an address, corresponding bit not set*/
 
-		if (auxset(&val1, space, ad1, conv1, 0, 0)) {
+		if (auxset(&val1, space, ad1, conv1, 0, 0, 0)) {
 #ifdef EOF
 			printf("ERROR\n");
 #endif
@@ -432,7 +432,7 @@ hwuint hbin(hwuint op[4], HWVM_DataMemory *space, hwuint flag, _Bool do_save)
 	} else { /*We're dealing with a literal pointer, corresponding bit set
 		    AND literal bit set*/
 		if (op[3] >> 3) {
-			if (auxset(&val1, space, ad1, conv1, 0, 1)) {
+			if (auxset(&val1, space, ad1, conv1, 0, 1, 0)) {
 #ifdef EOF
 				printf("ERROR\n");
 #endif
@@ -448,7 +448,7 @@ hwuint hbin(hwuint op[4], HWVM_DataMemory *space, hwuint flag, _Bool do_save)
 	conv2 = addrconvert(ad2, op[1]);
 	if (op[3] != (op[3] | 2)) {
 		if (auxset(&val2, space, ad2, conv2, 0,
-			   0)) { /*We're dealing with an address, corresponding
+			   0, 0)) { /*We're dealing with an address, corresponding
 				    bit not set*/
 #ifdef EOF
 			printf("ERROR\n");
@@ -458,7 +458,7 @@ hwuint hbin(hwuint op[4], HWVM_DataMemory *space, hwuint flag, _Bool do_save)
 	} else {
 		if (op[3] >> 3) { /*We're dealing with a literal pointer,
 				     corresponding bit set AND literal bit set*/
-			if (auxset(&val2, space, ad2, conv2, 0, 1)) {
+			if (auxset(&val2, space, ad2, conv2, 0, 1, 0)) {
 #ifdef EOF
 				printf("ERROR\n");
 #endif
@@ -500,7 +500,7 @@ hwuint hbin(hwuint op[4], HWVM_DataMemory *space, hwuint flag, _Bool do_save)
 		conv3 = addrconvert(ad3, op[2]);
 		/*Implicit check for pointer vs address*/
 		if (auxset(&castresult, space, ad3, conv3, 1,
-			   ((op[3] >> 3) && (op[3] == (op[3] | 4))))) {
+			   ((op[3] >> 3) && (op[3] == (op[3] | 4))), 0)) {
 #ifdef EOF
 			printf("ERROR\n");
 #endif
@@ -536,7 +536,7 @@ hwuint hrot(hwuint op[4], HWVM_DataMemory *space)
 	if (op[3] !=
 	    (op[3] |
 	     4)) { /*We're dealing with an address, corresponding bit not set*/
-		if (auxset(&val1, space, ad1, conv1, 0, 0)) {
+		if (auxset(&val1, space, ad1, conv1, 0, 0, 0)) {
 #ifdef EOF
 			printf("ERROR\n");
 #endif
@@ -545,7 +545,7 @@ hwuint hrot(hwuint op[4], HWVM_DataMemory *space)
 	} else {
 		if (op[3] >> 3) { /*We're dealing with a literal pointer,
 				     corresponding bit set AND literal bit set*/
-			if (auxset(&val1, space, ad1, conv1, 0, 1)) {
+			if (auxset(&val1, space, ad1, conv1, 0, 1, 0)) {
 #ifdef EOF
 				printf("ERROR\n");
 #endif
@@ -560,7 +560,7 @@ hwuint hrot(hwuint op[4], HWVM_DataMemory *space)
 	ad2 = addrcheck(op[1]);
 	conv2 = addrconvert(ad2, op[1]);
 	if (op[3] != (op[3] | 2)) {
-		if (auxset(&val2, space, ad2, conv2, 0, 0)) {
+		if (auxset(&val2, space, ad2, conv2, 0, 0, 0)) {
 #ifdef EOF
 			printf("ERROR\n");
 #endif
@@ -568,7 +568,7 @@ hwuint hrot(hwuint op[4], HWVM_DataMemory *space)
 		}
 	} else {
 		if (op[3] >> 3) {
-			if (auxset(&val2, space, ad2, conv2, 0, 1)) {
+			if (auxset(&val2, space, ad2, conv2, 0, 1, 0)) {
 #ifdef EOF
 				printf("ERROR\n");
 #endif
@@ -589,7 +589,7 @@ hwuint hrot(hwuint op[4], HWVM_DataMemory *space)
 	conv3 = addrconvert(ad3, op[2]);
 	/*Implicit check for pointer vs address*/
 	if (do_nothing && auxset(&result, space, ad3, conv3, 1,
-				 ((op[3] >> 3) && (op[3] == (op[3] | 4))))) {
+				 ((op[3] >> 3) && (op[3] == (op[3] | 4))), 0)) {
 #ifdef EOF
 		printf("ERROR\n");
 #endif
@@ -609,19 +609,12 @@ hwuint hjump(hwuint op[4], HWVM_DataMemory *space, hwuint *co)
 
 	adr = addrcheck(op[0]);
 	conv = addrconvert(adr, op[0]);
-	if (op[3] !=
-	    (op[3] |
-	     4)) { /*We're dealing with an address, corresponding bit not set*/
-		if (auxset(&val, space, adr, conv, 0, 0)) {
-#ifdef EOF
-			printf("ERROR\n");
-#endif
-			return 1;
-		}
+	if (op[3] != (op[3] | 4)){
+	     val = op[0]; /*Addresses are treated as literals*/
 	} else {
 		if (op[3] >> 3) { /*We're dealing with a literal pointer,
 				     corresponding bit set AND literal bit set*/
-			if (auxset(&val, space, adr, conv, 0, 1)) {
+			if (auxset(&val, space, adr, conv, 0, 1, 1)) {
 #ifdef EOF
 				printf("ERROR\n");
 #endif
@@ -696,7 +689,7 @@ hwuint hset(hwuint op[4], HWVM_DataMemory *space)
 	if (op[3] !=
 	    (op[3] |
 	     4)) { /*We're dealing with an address, corresponding bit not set*/
-		if (auxset(&val, space, ad1, conv1, 0, 0)) {
+		if (auxset(&val, space, ad1, conv1, 0, 0, 0)) {
 #ifdef EOF
 			printf("ERROR\n");
 #endif
@@ -705,7 +698,7 @@ hwuint hset(hwuint op[4], HWVM_DataMemory *space)
 	} else {
 		if (op[3] >> 3) { /*We're dealing with a literal pointer,
 				     corresponding bit set AND literal bit set*/
-			if (auxset(&val, space, ad1, conv1, 0, 1)) {
+			if (auxset(&val, space, ad1, conv1, 0, 1, 0)) {
 #ifdef EOF
 				printf("ERROR\n");
 #endif
@@ -721,7 +714,7 @@ hwuint hset(hwuint op[4], HWVM_DataMemory *space)
 	conv2 = addrconvert(ad2, op[1]);
 	/*Implicit check for pointer vs address*/
 	if (auxset(&val, space, ad2, conv2, 1,
-		   ((op[3] >> 3) && (op[3] == (op[3] | 2))))) {
+		   ((op[3] >> 3) && (op[3] == (op[3] | 2))), 0)) {
 #ifdef EOF
 		printf("ERROR\n");
 #endif
@@ -729,3 +722,4 @@ hwuint hset(hwuint op[4], HWVM_DataMemory *space)
 	}
 	return 0;
 }
+
