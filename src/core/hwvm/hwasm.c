@@ -31,12 +31,13 @@ WORK.*/
 #include <halfworld/hwstring.h>
 #include <halfworld/hwvm/hwvm.h>
 
-#define HWASSEMBLY
-#ifdef HWASSEMBLY
-
 hwuint HWASM_Parse(char *linestr, HWVM_InstructionSet *inst, hwuint opnds[4]);
 HWVM_InstructionSet _isinst(char *instr);
 hwuint _isxupdigit(hwuchar inchar);
+HWVM_InstructionSet _isinst(char *instr);
+
+/*Define HWASSEMBLY to enable assembling*/
+#ifdef HWASSEMBLY
 
 #include <stdio.h>
 int main(int argc, char **argv)

@@ -29,13 +29,19 @@ WORK.*/
 
 #include <halfworld/hwreq.h>
 #include <halfworld/hwvm/hwvm.h>
+
+/*What each of the three macros do*/
+/*HWVM_OU_HEX -> Setting FFFC prints memory address as hexadecimal number*/
+/*HWVM_OU_RAW -> Setting FFFC prints memory address as raw character*/
+/*HWVM_OU_DEBUG -> Print ERROR, HALT, and UNIMPLEMENTED messages*/
+/*If none of the three are set, output is handled externally and the output flag will be set*/
+#if defined(HWVM_OU_HEX) || defined(HWVM_OU_RAW) || defined(HWVM_OU_DEBUG)
 #include <stdio.h>
-/*<stdio.h> IS NOT NEEDED, IT ONLY ADDS
-PRINTING AND TESTING FUNCTIONALITY*/
-/*
-#define HWVM_RAW_PRINT
-Uncomment to do printing of memory addresses as raw characters, instead of hexadecimal numbers
-*/
+#endif
+
+/*Additional macro:*/
+/*HWVM_IN_EXTERN -> If input is handled externally. If NOT set, the input flag will be set, and so asking for input will always happen one cycle too late*/
+
 #define UADDR 0xFFF0
 /*Unknown address*/
 
@@ -62,12 +68,14 @@ HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory code)
 hwuint HWVM_Execute(HWVM_GeneralMemory *program)
 {
 	hwuint errno;
+	program->m2.fo = 0;
+	program->m2.fi = 0;
 	if (program->m2.co < (MEMSIZE * 4)) {
 		switch (program->m1.inst[program->m2.co]) {
 		case halt:
 			program->hf = 1; /*Stop the CPU*/
 			program->m2.co += 1;
-#ifdef EOF
+#ifdef HWVM_OU_DEBUG
 			printf("HALT\n");
 #endif
 			return 0;
@@ -202,7 +210,7 @@ hwuint HWVM_Execute(HWVM_GeneralMemory *program)
 		}
 	}
 
-#if defined(EOF)
+#ifdef HWVM_OU_DEBUG
 	printf("UNIMPLEMENTED\n");
 #endif
 	return 1; /*UNIMPLEMENTED*/
@@ -306,6 +314,9 @@ hwuint auxset(hwuint *val, HWVM_DataMemory *space, hwuint ad, hwuint conv, _Bool
 			break;
 		case 5:;
 			*val = space->in;
+#ifndef HWVM_IN_EXTERN
+			space->fi = 1;
+#endif
 			break;
 		case 6:;
 			return 1; /*Can't read output register!*/
@@ -367,13 +378,14 @@ hwuint auxset(hwuint *val, HWVM_DataMemory *space, hwuint ad, hwuint conv, _Bool
 			break;
 		case 6:;
 			space->ou = *val;
-#ifdef EOF
-#ifdef HWVM_RAW_PRINT
+#ifdef HWVM_OU_RAW
 			printf("%c", space->ou);
-#else
+#elif defined(HWVM_OU_HEX)
 			printf("%X\n", space->ou);
+#else
+			space->fo = 1;
 #endif
-#endif
+
 			break;
 		case 7:
 			return 1; /*You can't set the drive!*/
@@ -424,7 +436,7 @@ hwuint hbin(hwuint op[4], HWVM_DataMemory *space, hwuint flag, _Bool do_save)
 	     4)) { /*We're dealing with an address, corresponding bit not set*/
 
 		if (auxset(&val1, space, ad1, conv1, 0, 0, 0)) {
-#ifdef EOF
+#ifdef HWVM_OU_DEBUG
 			printf("ERROR\n");
 #endif
 			return 1;
@@ -433,7 +445,7 @@ hwuint hbin(hwuint op[4], HWVM_DataMemory *space, hwuint flag, _Bool do_save)
 		    AND literal bit set*/
 		if (op[3] >> 3) {
 			if (auxset(&val1, space, ad1, conv1, 0, 1, 0)) {
-#ifdef EOF
+#ifdef HWVM_OU_DEBUG
 				printf("ERROR\n");
 #endif
 				return 1;
@@ -450,7 +462,7 @@ hwuint hbin(hwuint op[4], HWVM_DataMemory *space, hwuint flag, _Bool do_save)
 		if (auxset(&val2, space, ad2, conv2, 0,
 			   0, 0)) { /*We're dealing with an address, corresponding
 				    bit not set*/
-#ifdef EOF
+#ifdef HWVM_OU_DEBUG
 			printf("ERROR\n");
 #endif
 			return 1;
@@ -459,7 +471,7 @@ hwuint hbin(hwuint op[4], HWVM_DataMemory *space, hwuint flag, _Bool do_save)
 		if (op[3] >> 3) { /*We're dealing with a literal pointer,
 				     corresponding bit set AND literal bit set*/
 			if (auxset(&val2, space, ad2, conv2, 0, 1, 0)) {
-#ifdef EOF
+#ifdef HWVM_OU_DEBUG
 				printf("ERROR\n");
 #endif
 				return 1;
@@ -501,7 +513,7 @@ hwuint hbin(hwuint op[4], HWVM_DataMemory *space, hwuint flag, _Bool do_save)
 		/*Implicit check for pointer vs address*/
 		if (auxset(&castresult, space, ad3, conv3, 1,
 			   ((op[3] >> 3) && (op[3] == (op[3] | 4))), 0)) {
-#ifdef EOF
+#ifdef HWVM_OU_DEBUG
 			printf("ERROR\n");
 #endif
 			return 1;
@@ -537,7 +549,7 @@ hwuint hrot(hwuint op[4], HWVM_DataMemory *space)
 	    (op[3] |
 	     4)) { /*We're dealing with an address, corresponding bit not set*/
 		if (auxset(&val1, space, ad1, conv1, 0, 0, 0)) {
-#ifdef EOF
+#ifdef HWVM_OU_DEBUG
 			printf("ERROR\n");
 #endif
 			return 1;
@@ -546,7 +558,7 @@ hwuint hrot(hwuint op[4], HWVM_DataMemory *space)
 		if (op[3] >> 3) { /*We're dealing with a literal pointer,
 				     corresponding bit set AND literal bit set*/
 			if (auxset(&val1, space, ad1, conv1, 0, 1, 0)) {
-#ifdef EOF
+#ifdef HWVM_OU_DEBUG
 				printf("ERROR\n");
 #endif
 				return 1;
@@ -561,7 +573,7 @@ hwuint hrot(hwuint op[4], HWVM_DataMemory *space)
 	conv2 = addrconvert(ad2, op[1]);
 	if (op[3] != (op[3] | 2)) {
 		if (auxset(&val2, space, ad2, conv2, 0, 0, 0)) {
-#ifdef EOF
+#ifdef HWVM_OU_DEBUG
 			printf("ERROR\n");
 #endif
 			return 1;
@@ -569,7 +581,7 @@ hwuint hrot(hwuint op[4], HWVM_DataMemory *space)
 	} else {
 		if (op[3] >> 3) {
 			if (auxset(&val2, space, ad2, conv2, 0, 1, 0)) {
-#ifdef EOF
+#ifdef HWVM_OU_DEBUG
 				printf("ERROR\n");
 #endif
 				return 1;
@@ -590,7 +602,7 @@ hwuint hrot(hwuint op[4], HWVM_DataMemory *space)
 	/*Implicit check for pointer vs address*/
 	if (do_nothing && auxset(&result, space, ad3, conv3, 1,
 				 ((op[3] >> 3) && (op[3] == (op[3] | 4))), 0)) {
-#ifdef EOF
+#ifdef HWVM_OU_DEBUG
 		printf("ERROR\n");
 #endif
 		return 1;
@@ -615,7 +627,7 @@ hwuint hjump(hwuint op[4], HWVM_DataMemory *space, hwuint *co)
 		if (op[3] >> 3) { /*We're dealing with a literal pointer,
 				     corresponding bit set AND literal bit set*/
 			if (auxset(&val, space, adr, conv, 0, 1, 1)) {
-#ifdef EOF
+#ifdef HWVM_OU_DEBUG
 				printf("ERROR\n");
 #endif
 				return 1;
@@ -690,7 +702,7 @@ hwuint hset(hwuint op[4], HWVM_DataMemory *space)
 	    (op[3] |
 	     4)) { /*We're dealing with an address, corresponding bit not set*/
 		if (auxset(&val, space, ad1, conv1, 0, 0, 0)) {
-#ifdef EOF
+#ifdef HWVM_OU_DEBUG
 			printf("ERROR\n");
 #endif
 			return 1;
@@ -699,7 +711,7 @@ hwuint hset(hwuint op[4], HWVM_DataMemory *space)
 		if (op[3] >> 3) { /*We're dealing with a literal pointer,
 				     corresponding bit set AND literal bit set*/
 			if (auxset(&val, space, ad1, conv1, 0, 1, 0)) {
-#ifdef EOF
+#ifdef HWVM_OU_DEBUG
 				printf("ERROR\n");
 #endif
 				return 1;
@@ -715,7 +727,7 @@ hwuint hset(hwuint op[4], HWVM_DataMemory *space)
 	/*Implicit check for pointer vs address*/
 	if (auxset(&val, space, ad2, conv2, 1,
 		   ((op[3] >> 3) && (op[3] == (op[3] | 2))), 0)) {
-#ifdef EOF
+#ifdef HWVM_OU_DEBUG
 		printf("ERROR\n");
 #endif
 		return 1;

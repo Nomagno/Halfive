@@ -151,12 +151,15 @@ typedef struct {
 
 	/*Input register, read-only, 0xFFFD*/
 	hwuchar in;
+	_Bool fi; /*Input flag, 1 if there's any input reading to do*/
 
 	/*Output register, write-only, 0xFFFC*/
 	hwuchar ou;
+	_Bool fo; /*Output flag, 1 if there's any output to handle*/
 
 	/*Program counter, read-only, 0xFFFB (low) and 0xFFFA (high)*/
 	hwuint co;
+
 
 } HWVM_DataMemory;
 
@@ -166,7 +169,7 @@ typedef struct {
 	HWVM_CodeMemory m1; /*Code memory*/
 	HWVM_DataMemory m2; /*Data memory*/
 
-	hwuchar hf; /*Halt flag, 1 if it has halted.*/
+	_Bool hf; /*Halt flag, 1 if it has halted.*/
 
 	hwuint sub_co[MEMSMALL]; /*For storing counter values corresponding to
 				the SUBS instruction of each subroutine ID*/

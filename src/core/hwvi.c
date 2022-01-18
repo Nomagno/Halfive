@@ -240,7 +240,7 @@ int HWVI_GetInput(HWVI_Reference *tty, HWVI_InputData *keys){
 #endif
 
 /*EXAMPLE:*/
-/*
+#ifdef HWVI_TEST
 #define WCONSTANT 1080
 #define FRAMERATE 60
 int main(void)
@@ -279,4 +279,4 @@ int main(void)
 	HWVI_Destroy(&myref);
 	return 0;
 }
-*/
+#endif
