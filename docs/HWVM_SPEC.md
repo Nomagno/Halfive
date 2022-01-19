@@ -17,7 +17,7 @@ HWVM binary drives are identified by the MIME type `application/hwdrive`
 The Half-World virtual machine, henceforth referred to HWVM, is a standardized, but not fully defined, execution engine for code. This code may be interpreted directly from the assembly format, executed directly from the binary format, or executed in any other equivalent way.
 
 #### The HWVM Instruction notation
-The instruction set for the virtual machine is composed of precisely 16 instructions, whose functioning is documented with the following notation: `inst ARG1 ARG2 ARG3`, where ARGx may be noted as either Vx, Rx, or ID. There are three types of arguments: literals, pointers, and addresses. Literals are prefixed by equal `=XXXX`, pointers by and `&XXXX`, and addresses are not `XXXX`. All are always written down in hexadecimal base when not talking about the binary format. Arguments of type Vx take literals, pointers and addresses, those of type Rx take only addresses and pointers, and the ones denoted ID take only literals. POINTERS AND LITERALS SHALL NEVER BE COMBINED IN AN INSTRUCTION'S ARGUMENTS
+The instruction set for the virtual machine is composed of precisely 16 instructions, whose functioning is documented with the following notation: `inst ARG1 ARG2`, where ARGx may be noted as either Vx, Rx, or ID. There are three types of arguments: literals, pointers, and addresses. Literals are prefixed by equal `=XXXX`, pointers by and `&XXXX`, and addresses are not `XXXX`. All are always written down in hexadecimal base when not talking about the binary format. Arguments of type Vx take literals, pointers and addresses, those of type Rx take only addresses and pointers, and the ones denoted ID take only literals. POINTERS AND LITERALS SHALL NEVER BE COMBINED IN AN INSTRUCTION'S ARGUMENTS
 
 ***
 ### HWVM Memory layout (Code memory and data memory)
@@ -33,13 +33,13 @@ Note: Altough bytes can only hold 8 bits of information, and so literals may onl
 #### There are two structures inside the code member:
 The instruction storage can hold 0x4000 bytes/ints, or four times the value of HWVM_MEMSIZE.
 
-- The operand storage can hold at least 0x4000 GROUPS OF FOUR INTEGERS, that is three arguments and a literal/pointer specifier.
+- The operand storage can hold at least 0x4000 GROUPS OF THREE INTEGERS, that is two operands and a literal/pointer specifier.
 
-- The literal/pointer specifier denotes which of the three first operands are literals, from left to right, in THE LEAST THREE SIGNIFICANT BINARY BITS, AND THEY ARE POINTERS IF THE FOURTH IS ONE: 1111 means all three are arguments are pointers, 0110 means only the first two are literals, 1101 means only the first and third are pointers, 1100 means only the first is a pointer, 0010 means only the second is literal, 1001 means only the third is a pointer.
+- The literal/pointer specifier denotes which of the two operands are literals, from left to right, in THE TWO LEAST SIGNIFICANT BINARY BITS, AND THEY ARE POINTERS IF THE FOURTH IS ONE: 1011 means both operands are pointers, 0010 means only the first is a literal, 1001 means only the second is a pointers, 1010 means only the first is a pointer, 0010 means only the first is literal, 1001 means only the second is a pointer. So, in NXNN, bit X goes unused
 
 - Those arguments that are not literals are implicitly addresses.
 
-- Each row (of 4 elements) of the two dimensional operand array corresponds to the same index of the onedimensional instruction array, and each instruction takes a fixed number of arguments. Hence, it is unambiguous which operands have to be read at each index of the operand array.
+- Each row (of 3 elements) of the two dimensional operand array corresponds to the same index of the onedimensional instruction array, and each instruction takes a fixed number of arguments. Hence, it is unambiguous which operands have to be read at each index of the operand array.
 - Both of these blocks of memory SHALL be filled prior to execution, be it reading from the later specified assembly, the later specified binary format, or some other format.
 
 #### There are three structures inside the data member:
@@ -68,7 +68,7 @@ The instruction storage can hold 0x4000 bytes/ints, or four times the value of H
 
 - the 0xFFFF register is the ZERO FLAG. It is SET TO ZERO (0) if the result of an ADDITION, SUBSTRACTION, COMPARISON, BINARY OR, BINARY XOR, or BINARY AND is ZERO. If the operation does NOT result in zero, it is SET TO ONE (1). It otherwise SHALL be just as modifiable as the GENERAL PURPOSE MEMORY. It SHALL be always set IF THE RESULT OF ONE OF THESE OPERATIONS IS ZERO, but ALWAYS BEFORE WRITING TO THE DESTINATION ADDRESS. IF the result of one of this operations is NOT ZERO, it SHALL be set to ONE (1), but ALWAYS BEFORE WRITING TO THE DESTINATION ADDRESS.
 
-Extra note: the program counter is incremented every time an instruction is executed, however the jmp/jcz/jcnz instructions can forcible modify it without increasing it, hence being the only instructions capable of taking 16-bit/integer literals. All instructions in a program SHALL be LINEARLY NUMBERED from ZERO (0) the first to the last, and the program counter SHALL indicate execution of each instruction at any given time.
+Extra note: the program counter is incremented every time an instruction is executed, however the jmp/jcz/jcnz instructions can forcible modify it without increasing it, hence being the only instructions capable of taking 16-bit literals. All instructions in a program SHALL be LINEARLY NUMBERED from ZERO (0) the first to the last, and the program counter SHALL indicate execution of each instruction at any given time.
 
 ***
 ### The instruction set
@@ -77,15 +77,15 @@ There are currently SIXTEEN (16) instructions, each numbered with the decimal nu
 
 - Each instruction takes the number of register, value, or ID arguments specified, and only that number (it is an ERROR to specify MORE or LESS).
 
-- In values Vx, if an address is specified, the instruction SHALL read the value of that address. If a literal is specified, the instruction SHALL perform no address reading and use that literal.
+- In operands marked value Vx, if an address is specified, the instruction SHALL read the value of that address. If a literal is specified, the instruction SHALL perform no address reading and use that literal.
 
 - If a pointer is specified, the instruction shall read the value of the address pointed two by THAT ADDRESS AND THE NEXT ONE (e.g. &2 denotes the contents of memory address 0x02 and 0x03, TREATED AS A SINGLE 16-BIT INTEGER).
 
-- In addresses Rx, literals are an ERROR but pointers are ALLOWED.
+- In operands marked register Rx, literals are an ERROR, addresses are ALLOWED, pointers are ALLOWED.
 
 - In idenfitications ID, addresses or pointers are an ERROR.
 
-- LITERALS AND POINTERS SHALL NEVER BE SPECIFIED TOGETHER IN THE SAME ARGUMENT LIST
+- LITERALS AND POINTERS SHALL NEVER BE SPECIFIED TOGETHER IN THE SAME OPERAND LIST
 
 ```
 halt (0) - TAKES NO ARGUMENTS, STOPS PROGRAM EXECUTION
@@ -95,19 +95,19 @@ jmp (3) V1 - JUMP (MOVE THE PROGRAM COUNTER, HAND EXECUTION) *TO* VALUE V1. SPEC
     addresses are treated as 16-bit literals, and pointers are treated as addresses with a 16-bit value
 jcz (4) V1 - jmp TO V1 *IF* 0xFFFF IS ZERO (0).  SPECIAL EXCEPTION: Take 16-bit literals,
     addresses are treated as 16-bit literals, and pointers are treated as addresses with a 16-bit value
-add (5) V1 V2 R3 - ADD V1 AND V2, WRITE THE RESULT TO R3. SETS CARRY/ZERO FLAGS APPROPIATELY
-sub (6) V1 V2 R3 - SUBSTRACT V2 *FROM* V1, WRITE THE RESULT TO R3. SETS CARRY/ZERO FLAGS APPROPIATELY
-and (7) V1 V2 R3 - PERFORM A BINARY 'and' ON V1 AND V2, WRITE THE RESULT TO R3. SETS ZERO FLAG APPROPIATELY
-or (8) V1 V2 R3 - PERFORM A BINARY 'or' ON V1 AND V2, WRITE THE RESULT TO R3. SETS ZERO FLAG APPROPIATELY
-xor (9) V1 V2 R3 - PERFORM A BINARY 'xor' ON V1 AND V2, WRITE THE RESULT TO R3. SETS ZERO FLAG APPROPIATELY
-rot (10) V1 V2 R3 - IF V1 IS 0 THROUGH 7, BITSHIFT V2 LEFT BY V1, WRITE THE RESULT TO R3.
-    ELSE IF V1 IS 8 THROUGH F, BITSHIFT V2 RIGHT BY (V1 - 8), WRITE THE RESULT TO R3. ELSE DO NOTHING
+add (5) R1 V2  - ADD R1 AND V2, WRITE THE RESULT TO R1. SETS CARRY/ZERO FLAGS APPROPIATELY
+sub (6) R1 V2  - SUBSTRACT V2 *FROM* R1, WRITE THE RESULT TO R1. SETS CARRY/ZERO FLAGS APPROPIATELY
+and (7) R1 V2  - PERFORM A BINARY 'and' ON R1 AND V2, WRITE THE RESULT TO R1. SETS ZERO FLAG APPROPIATELY
+or (8) R1 V2 - PERFORM A BINARY 'or' ON R1 AND V2, WRITE THE RESULT TO R1. SETS ZERO FLAG APPROPIATELY
+xor (9) R1 V2 - PERFORM A BINARY 'xor' ON R1 AND V2, WRITE THE RESULT TO R1. SETS ZERO FLAG APPROPIATELY
+rot (10) R1 V2 - IF V2 IS 0 THROUGH 7, BITSHIFT R1 LEFT BY V2, WRITE THE RESULT TO R1.
+    ELSE IF V2 IS 8 THROUGH F, BITSHIFT R1 RIGHT BY (V2 - 8), WRITE THE RESULT TO R1. ELSE DO NOTHING
 
 cmp (11) V1, V2 - SUBSTACT V2 *FROM* V1, BUT *WITHOUT* SAVING THE RESULT. SETS CARRY/ZERO FLAGS APPROPIATELY
 subs (12) ID - SEE SECTION BELOW
 sube (13) ID - SEE SECTION BELOW
 call (14) ID - SEE SECTION BELOW
-jcnz (15) V1 - jmp TO V1 *IF* 0xFFFF is NOT ZERO. SPECIAL EXCEPTION: Take 16-bit literals,
+jcnz (15) V1 - jmp TO V1 *IF* 0xFFFF is NOT ZERO. SPECIAL EXCEPTION: Takes 16-bit literals,
     addresses are treated as 16-bit literals, and pointers are treated as addresses with a 16-bit value
 ```
 
@@ -127,49 +127,26 @@ jcnz (15) V1 - jmp TO V1 *IF* 0xFFFF is NOT ZERO. SPECIAL EXCEPTION: Take 16-bit
 
 ***
 ### Assembly language
-#### The assembly language is the exact representation of instructions, literals, pointers and addresses that has been discussed so far (comments are not part of the language, but they are designated by everything after a `#` here, for clarity porpuses. The line numbering is not part of the language, either, it's just to make keeping track of the program counter easier):
-```
-0. set =33 FFFC # Write literal 0x33 (51, 00110011) to the OUTPUT REGISTER
-1. jmp 4 # Jump to instruction 4
-2. cmp =4 3 # Do the subtraction =4 - 3. We don't know what address three contains,
-   but it will set the zero flag if it is 0x4
-3. jcz 7 # If the previous comparison was indeed correct and address 3 contains 0x4,
-   jump to instruction 7
-4. add =FE =8 FFFC # Write the addition of 0xFE (254, 11111110) and 0x8 (8, 00001000)
-   to the OUTPUT register. It should result in OVERFLOW
-5. set FFFE FFFF # Copy the carry flag to the zero flag
-6. jcnz 8 # If the zero flag is not zero (it shouldn't be, there was overflow and
-   the carry flag was cloned!), jump to instruction 8
-7. halt
-8. jmp 2 # Jump to instruction 2
-9. halt
-```
+#### The assembly language is the exact representation of instructions, literals, pointers and addresses that has been discussed so far.
 
 ***
 ### Binary format
-A specification of the format follows, it still applies:
+A specification of the format follows:
 ```
 BINARY FORMAT:
-You code each instruction as 4 bits of which the least significant 3 indicate
-which arguments are literals and which addresses, and the fourth indicates if the
-literals are pointers or not (0101 - from right to left:  third is literal,
-second address, first literal, fourth indicates they are literals and NOT pointers),
-then 4 bits for the instructions themselves (0-15), then
-simply read the corresponding number of 16-bit 'arguments' (0-3), and repeat.
+You code each instruction as 4 bits of which the least significant 2 indicate
+which arguments are literals and which addresses, and the highest indicates if
+the literals are pointers or not (0001 - from left to right:  first is address,
+second literal, high bit indicates they are literals and NOT
+pointers), then 4 bits for the instructions themselves (check the listed values)
+then simply read the corresponding number of 16-bit 'arguments' (0-2),
+and repeat.
 
 EXAMPLE:
-
-BINARY:    0010 0101 0000000000000001 0000000000000011 0000000000000010 0000 0000000000000000
-DECIMAL:   2    5    1                3                2                0    0
-ASSEMBLY:       add  1               =3               2               \n    halt
-ENGLISH:
-	The first instruction has the middle argument as a literal.
-	The first instruction is 'add'.
-	ADD the contents of Address 1 to the number 3, put the result into Address 2.
-
-	The second instruction has no arguments as literals.
-	The second instruction is 'halt'.
-	HALT.
+BINARY: 0001 0001 000000000000001 000000000011111
+DECIMAL:   1    3               1              31
+ASSEMBLY:     add               1             =1F
+ENGLISH: add the contents of address ONE and the number 1F, put the result back into address ONE
 ```
 
 ***

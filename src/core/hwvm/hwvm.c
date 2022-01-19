@@ -399,13 +399,11 @@ hwuint auxset(hwuint *val, HWVM_DataMemory *space, hwuint ad, hwuint conv, _Bool
 }
 
 /*Meta-instruction that has two configurations:
-1. first and second arguments are (Pointer, literal, or address)
-    operate first and second and save result to third argument (Pointer, or
+1. first argument is (pointer, or address)
+    operate first and second and save result to first argument (Pointer, or
 address). set flags accordingly (zero and possibly carry)
 
-2. first and second arguments are (Pointer, literal, or address)
-    operate first and second, set flags accordingly (zero and possibly carry).
-    Don't save the result
+2. Same as 1, but don't save the result
 
 Available binary operations are:
 ADD, SUB, XOR, OR, AND
@@ -418,11 +416,11 @@ hwuint hbin(hwuint op[4], HWVM_DataMemory *space, hwuint flag, _Bool do_save)
 {
 	hwuint ad1;
 	hwuint ad2;
-	hwuint ad3;
+
+	hwuint isptr1 = 0;
 
 	hwuint conv1;
 	hwuint conv2;
-	hwuint conv3;
 
 	hwuint val1;
 	hwuint val2;
@@ -431,34 +429,33 @@ hwuint hbin(hwuint op[4], HWVM_DataMemory *space, hwuint flag, _Bool do_save)
 
 	ad1 = addrcheck(op[0]);
 	conv1 = addrconvert(ad1, op[0]);
-	if (op[3] !=
-	    (op[3] |
-	     4)) { /*We're dealing with an address, corresponding bit not set*/
-
+	if (op[2] !=
+	    (op[2] |
+	     2)) { /*We're dealing with an address, corresponding bit not set*/
 		if (auxset(&val1, space, ad1, conv1, 0, 0, 0)) {
 #ifdef HWVM_OU_DEBUG
 			printf("ERROR\n");
 #endif
 			return 1;
 		}
+
 	} else { /*We're dealing with a literal pointer, corresponding bit set
 		    AND literal bit set*/
-		if (op[3] >> 3) {
+		isptr1 = 1;
+		if (op[2] >> 3) {
+
 			if (auxset(&val1, space, ad1, conv1, 0, 1, 0)) {
 #ifdef HWVM_OU_DEBUG
 				printf("ERROR\n");
 #endif
 				return 1;
 			}
-		} else { /*We're dealing with a literal number, corresponding
-			    bit set AND literal bit not set*/
-			val1 = op[0];
 		}
 	}
 
 	ad2 = addrcheck(op[1]);
 	conv2 = addrconvert(ad2, op[1]);
-	if (op[3] != (op[3] | 2)) {
+	if (op[2] != (op[2] | 1)) {
 		if (auxset(&val2, space, ad2, conv2, 0,
 			   0, 0)) { /*We're dealing with an address, corresponding
 				    bit not set*/
@@ -468,7 +465,7 @@ hwuint hbin(hwuint op[4], HWVM_DataMemory *space, hwuint flag, _Bool do_save)
 			return 1;
 		}
 	} else {
-		if (op[3] >> 3) { /*We're dealing with a literal pointer,
+		if (op[2] >> 3) { /*We're dealing with a literal pointer,
 				     corresponding bit set AND literal bit set*/
 			if (auxset(&val2, space, ad2, conv2, 0, 1, 0)) {
 #ifdef HWVM_OU_DEBUG
@@ -508,11 +505,8 @@ hwuint hbin(hwuint op[4], HWVM_DataMemory *space, hwuint flag, _Bool do_save)
 
 	if (do_save) {
 		castresult = result;
-		ad3 = addrcheck(op[2]);
-		conv3 = addrconvert(ad3, op[2]);
-		/*Implicit check for pointer vs address*/
-		if (auxset(&castresult, space, ad3, conv3, 1,
-			   ((op[3] >> 3) && (op[3] == (op[3] | 4))), 0)) {
+		if (auxset(&castresult, space, ad1, conv1, 1,
+			   isptr1, 0)) {
 #ifdef HWVM_OU_DEBUG
 			printf("ERROR\n");
 #endif
@@ -523,20 +517,18 @@ hwuint hbin(hwuint op[4], HWVM_DataMemory *space, hwuint flag, _Bool do_save)
 	return 0;
 }
 
-/*Takes three arguments, if first is less than 8, bitshift left that many bits.
-	 if first is less than 16, substract 8 and bitshift right that many
-  bits. if first is equal to or greater than 16, no nothing Second argument is
-  the operand to be bitshifted (Pointer, literal, or address)
-  Third argument is destination address (Pointer, or address)*/
-hwuint hrot(hwuint op[4], HWVM_DataMemory *space)
+/*Takes two operands, if second is less than 8, bitshift left that many bits.
+	 if second is less than 16, substract 8 and bitshift right that many
+  bits. if second is equal to or greater than 16, do nothing. First argument
+  is destination address (Pointer, or address)*/
+hwuint hrot(hwuint op[3], HWVM_DataMemory *space)
 {
 	hwuint ad1;
 	hwuint ad2;
-	hwuint ad3;
+	hwuint isptr1 = 0;
 
 	hwuint conv1;
 	hwuint conv2;
-	hwuint conv3;
 
 	hwuint val1;
 	hwuint val2;
@@ -545,9 +537,9 @@ hwuint hrot(hwuint op[4], HWVM_DataMemory *space)
 
 	ad1 = addrcheck(op[0]);
 	conv1 = addrconvert(ad1, op[0]);
-	if (op[3] !=
-	    (op[3] |
-	     4)) { /*We're dealing with an address, corresponding bit not set*/
+	if (op[2] !=
+	    (op[2] |
+	     2)) { /*We're dealing with an address, corresponding bit not set*/
 		if (auxset(&val1, space, ad1, conv1, 0, 0, 0)) {
 #ifdef HWVM_OU_DEBUG
 			printf("ERROR\n");
@@ -555,8 +547,9 @@ hwuint hrot(hwuint op[4], HWVM_DataMemory *space)
 			return 1;
 		}
 	} else {
-		if (op[3] >> 3) { /*We're dealing with a literal pointer,
+		if (op[2] >> 3) { /*We're dealing with a literal pointer,
 				     corresponding bit set AND literal bit set*/
+		isptr1 = 1;
 			if (auxset(&val1, space, ad1, conv1, 0, 1, 0)) {
 #ifdef HWVM_OU_DEBUG
 				printf("ERROR\n");
@@ -571,7 +564,7 @@ hwuint hrot(hwuint op[4], HWVM_DataMemory *space)
 
 	ad2 = addrcheck(op[1]);
 	conv2 = addrconvert(ad2, op[1]);
-	if (op[3] != (op[3] | 2)) {
+	if (op[2] != (op[2] | 1)) {
 		if (auxset(&val2, space, ad2, conv2, 0, 0, 0)) {
 #ifdef HWVM_OU_DEBUG
 			printf("ERROR\n");
@@ -579,7 +572,7 @@ hwuint hrot(hwuint op[4], HWVM_DataMemory *space)
 			return 1;
 		}
 	} else {
-		if (op[3] >> 3) {
+		if (op[2] >> 3) {
 			if (auxset(&val2, space, ad2, conv2, 0, 1, 0)) {
 #ifdef HWVM_OU_DEBUG
 				printf("ERROR\n");
@@ -590,18 +583,16 @@ hwuint hrot(hwuint op[4], HWVM_DataMemory *space)
 			val2 = op[1];
 		}
 	}
-	if (val1 < 8)
-		result = val2 << val1;
-	else if (val1 < 16)
-		result = val2 >> (val1 - 8);
+	if (val2 < 8)
+		result = val1 << val2;
+	else if (val2 < 16)
+		result = val1 >> (val2 - 8);
 	else
 		do_nothing = 0;
 
-	ad3 = addrcheck(op[2]);
-	conv3 = addrconvert(ad3, op[2]);
-	/*Implicit check for pointer vs address*/
-	if (do_nothing && auxset(&result, space, ad3, conv3, 1,
-				 ((op[3] >> 3) && (op[3] == (op[3] | 4))), 0)) {
+
+	if (do_nothing && auxset(&result, space, ad1, conv1, 1,
+				 isptr1, 0)) {
 #ifdef HWVM_OU_DEBUG
 		printf("ERROR\n");
 #endif
@@ -621,10 +612,10 @@ hwuint hjump(hwuint op[4], HWVM_DataMemory *space, hwuint *co)
 
 	adr = addrcheck(op[0]);
 	conv = addrconvert(adr, op[0]);
-	if (op[3] != (op[3] | 4)){
+	if (op[2] != (op[2] | 2)){
 	     val = op[0]; /*Addresses are treated as literals*/
 	} else {
-		if (op[3] >> 3) { /*We're dealing with a literal pointer,
+		if (op[2] >> 3) { /*We're dealing with a literal pointer,
 				     corresponding bit set AND literal bit set*/
 			if (auxset(&val, space, adr, conv, 0, 1, 1)) {
 #ifdef HWVM_OU_DEBUG
@@ -684,12 +675,13 @@ hwuint hsube(hwuint *co, hwuint id, HWVM_GeneralMemory *prog)
 	return 0;
 }
 
-/*Takes two arguments, copy value of first
+/*Takes two arguments, copy value of second
 (Pointer, literal, or address) to second (Pointer, or address)*/
-hwuint hset(hwuint op[4], HWVM_DataMemory *space)
+hwuint hset(hwuint op[3], HWVM_DataMemory *space)
 {
 	hwuint ad1;
 	hwuint ad2;
+	hwuint isptr1 = 0;
 
 	hwuint conv1;
 	hwuint conv2;
@@ -698,9 +690,9 @@ hwuint hset(hwuint op[4], HWVM_DataMemory *space)
 
 	ad1 = addrcheck(op[0]);
 	conv1 = addrconvert(ad1, op[0]);
-	if (op[3] !=
-	    (op[3] |
-	     4)) { /*We're dealing with an address, corresponding bit not set*/
+	if (op[2] !=
+	    (op[2] |
+	     2)) { /*We're dealing with an address, corresponding bit not set*/
 		if (auxset(&val, space, ad1, conv1, 0, 0, 0)) {
 #ifdef HWVM_OU_DEBUG
 			printf("ERROR\n");
@@ -708,8 +700,9 @@ hwuint hset(hwuint op[4], HWVM_DataMemory *space)
 			return 1;
 		}
 	} else {
-		if (op[3] >> 3) { /*We're dealing with a literal pointer,
+		if (op[2] >> 3) { /*We're dealing with a literal pointer,
 				     corresponding bit set AND literal bit set*/
+			isptr1 = 0;
 			if (auxset(&val, space, ad1, conv1, 0, 1, 0)) {
 #ifdef HWVM_OU_DEBUG
 				printf("ERROR\n");
@@ -724,9 +717,9 @@ hwuint hset(hwuint op[4], HWVM_DataMemory *space)
 
 	ad2 = addrcheck(op[1]);
 	conv2 = addrconvert(ad2, op[1]);
-	/*Implicit check for pointer vs address*/
+
 	if (auxset(&val, space, ad2, conv2, 1,
-		   ((op[3] >> 3) && (op[3] == (op[3] | 2))), 0)) {
+		   isptr1, 0)) {
 #ifdef HWVM_OU_DEBUG
 		printf("ERROR\n");
 #endif

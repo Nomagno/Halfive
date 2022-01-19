@@ -42,43 +42,31 @@ typedef uint16_t hwuint;
 
 Instructions are terminated by newline, and the number of arguments shown in
 comments is REQUIRED
-Literals should be enclosed in square braces e.g. [6]
-Pointers should be enclosed in key braces e.g. {6}
+Literals should be prefixed by 'and' e.g. &6
+Pointers should be prefixed by 'equal' e.g. =6
 
 BINARY FORMAT:
-You code each instruction as 4 bits of which the least significant 3 indicate
-which arguments are literals and which addresses, and the fourth indicates if
-the literals are pointers or not (0101 - from right to left:  first is literal,
-second address, third literal, fourth indicates they are literals and NOT
-pointers), then 4 bits for the instructions themselves (check the enum values,
-max 12), then simply read the corresponding number of 16-bit 'arguments' (0-3),
+You code each instruction as 4 bits of which the least significant 2 indicate
+which arguments are literals and which addresses, and the highest indicates if
+the literals are pointers or not (0001 - from left to right:  first is address,
+second literal, high bit indicates they are literals and NOT
+pointers), then 4 bits for the instructions themselves (check the listed values)
+then simply read the corresponding number of 16-bit 'arguments' (0-2),
 and repeat.
 
 EXAMPLE:
+BINARY: 0001 0001 000000000000001 000000000011111
+DECIMAL:   1    3               1              31
+ASSEMBLY:     add               1             =1F
+ENGLISH: add the contents of address ONE and the number 1F, put the result back into address ONE
 
-      BINARY: 0010 0000000000000001 0000000000000011 0000000000000010 0000
-0000000000000000 DECIMAL: 2 1 3 2 0 0 ASSEMBLY:add 1 [3] 2\n halt ENGLISH: The
-first instruction has the middle argument as a literal. Add the CONTENTS of
-register 1 and the literal integer '3', then put the result into register '2'.
-Halt.
-
-  ASSEMBLY FORMAT:
+ASSEMBLY FORMAT:
     It codes almost directly to the binary format. The available instructions
-are: {halt, nop, jmp, jcz, set, add, sub, not, and, xor, or, not, subs, sube,
-call, jcnz} The syntax is the following: instruction ARGx ARGx ARGx\n Where ARGx
-is an address (Rx), a literal (ID), or either (Vx) Instructions are terminated
+are: {halt, nop, jmp, jcz, set, add, sub, not, and, xor, or, rot, subs, sube,
+call, jcnz} The syntax is the following: instruction ARGx ARGx \n Where ARGx
+is an address/pointer (Rx), a literal (ID), or any of these (Vx). Instructions are terminated
 by newline '\n'
 
-
-For arguments labeled 'Value' (NOT for arguments labeled 'Register'),
-addresses are allowed in the form ARGx,
-literals are allowed in the form [ARGx] (Number enclosed in brackets), and
-pointers are allowed in the form {ARGx}, BUT THEY SHALL NOT BE COMBINED LIKE IN
-{ARG1} [ARG2]
-
-For arguments labeled 'Register' (NOT for arguments labeled 'Value'),
-addresses are allowed in the form ARGx,
-pointers are allowed in the form {ARGx}, BUT LITERALS ARE NOT ALLOWED
 
 The enum below specifies in a comment the behaviour of each instruction and the
 type of its arguments
@@ -92,28 +80,27 @@ typedef enum {
 	   DOCUMENTED AS VALUES 'Vx', NOT IN REGISTERS 'Rx'*/
 	halt = 0, /* ; halt*/
 	nop = 1,  /* ; do nothing*/
-	set = 2,  /* V1 R2; set address R2 to value V1*/
+	set = 2,  /* R1 V2; set address R2 to value V1*/
 	jmp = 3,  /* V1; hand execution to instruction numbered V1. SPECIAL EXCEPTION: Take 16-bit literals, addresses are treated as 16-bit literals, and pointers are treated as addresses with a 16-bit value*/
 	jcz = 4,  /* V1; if ZF == 0, jmp to instrucion V1*/
 	/*ADD trough to NOT: put result of doing
 	stuff with Vn values into Rn address*/
-	add = 5, /* V1 V2 R3; addition, carry goes to carry flag*/
+	add = 5, /* R1 V2; addition, carry goes to carry flag*/
 	sub =
-	    6, /* V1 V2 R3; substraction, carry flag set if result is negative*/
-	    and = 7, /* V1 V2 R3; binary and*/
-	or = 8,      /* V1 V2 R3; binary or*/
-	xor = 9,     /* V1 V2 R3; binary exclusive or*/
-	rot = 10, /* V1 V2 R3; If V1 is 0-7, bitshift V2 LEFT by V1 bits. Else
-		     if V1 is 8-F, bitshift V2 RIGHT by (V1-8) bits. Else do
-		     nothing. Put the result into R3*/
+	    6, /* R1 V2; substraction, carry flag set if result is negative*/
+	    and = 7, /* R1 V2; binary and*/
+	or = 8,      /* R1 V2; binary or*/
+	xor = 9,     /* R1 V2; binary exclusive or*/
+	rot = 10, /* R1 V2; If V2 is 0-7, bitshift R1 LEFT by V2 bits. Else
+		     if V2 is 8-F, bitshift R1 RIGHT by (V2-8) bits. Else do
+		     nothing. Put the result into R1*/
 	cmp = 11, /* V1 V2; if V1 is bigger than V2, sets the carry flag to 0
 		  and    the zero flag to 1 if V1 is smaller than V2, sets the
 		  carry    flag to 1 and the zero flag to 0 if V1 is equal to
 		  V2, sets    the carry flag to 0 and the zero flag to 0*/
 	/*SUBS, SUBE, CALL: Stackless subroutines*/
 	subs = 12, /* ID; Marks the start of a subroutine with the literal
-		      ( '[]' brace enclosed ) identifier ID.
-		     Add*/
+                      identifier ID.*/
 	sube = 13, /*ID; Marks the end of subroutine ID. It JMPs to the
 		      instruction after the corresponding CALL instruction.*/
 	call = 14, /* ID; JMP to the start of execution (post-SUBS) of
@@ -128,10 +115,10 @@ typedef struct {
 
 	/*Every second, third and fourth bytes*/
 	/*int because we need this to be at least 16 bits by default*/
-	hwuint opnd[MEMSIZE * 4][4];
+	hwuint opnd[MEMSIZE * 4][3];
 	/*The fourth row of the array indicates which arguments are addresses,
-	trough its least significant 3 bits.
-	E.G 000 ALL ADDRESSES -- 101 FIRST AND THIRD ARE LITERALS*/
+	trough its least significant 2 bits.
+	E.G 00 ALL ARE ADDRESSES -- 11 BOTH ARE LITERALS*/
 
 } HWVM_CodeMemory;
 

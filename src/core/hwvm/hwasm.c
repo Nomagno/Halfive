@@ -75,13 +75,12 @@ int main(int argc, char **argv)
 #endif
 
 
-hwuint HWASM_Parse(char *linestr, HWVM_InstructionSet *inst, hwuint opnds[4])
+hwuint HWASM_Parse(char *linestr, HWVM_InstructionSet *inst, hwuint opnds[3])
 {
 	char *token = hwstrtok(linestr, " ");
 	HWVM_InstructionSet myinst;
 	int i = 0;
-	while ((token != (void *)0) && (i < 3)) {
-
+	while ((token != (void *)0) && (i < 2)) {
 		if ((myinst = _isinst(token)) != 16) {
 			*inst = myinst;
 		} else if (_isxupdigit(token[0])) {
@@ -91,14 +90,14 @@ hwuint HWASM_Parse(char *linestr, HWVM_InstructionSet *inst, hwuint opnds[4])
 			token += 1;
 			opnds[i] = (hwuint)hwstrtoul(token, (void *)0, 16);
 
-			opnds[3] = (opnds[3] | (1 << (2 - i)));
+			opnds[2] = (opnds[2] | (1 << (1 - i)));
 
 			i += 1;
 		} else if (token[0] == '&') {
 			token += 1;
 			opnds[i] = (hwuint)hwstrtoul(token, (void *)0, 16);
-			opnds[3] = (opnds[3] | 8);
-			opnds[3] = (opnds[3] | (1 << (2 - i)));
+			opnds[2] = (opnds[2] | 8);
+			opnds[2] = (opnds[2] | (1 << (1 - i)));
 
 			i += 1;
 		} else {

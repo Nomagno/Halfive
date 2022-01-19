@@ -10,41 +10,41 @@ h1,h2,h3{
 line-height:1.2
 }
 </style>
-	<title>Half-World Track</title>
+	<title>Half-World Virtual Machine</title>
 	<meta name="description" content="The Universal racing game protocol">
 </head>
 
 <h1>Half-World Virtual Machine Specification</h1>
 <h4>SPDX identifier: COIL-1.0</h4>
 <h4>Copyright Nomagno 2021</h4>
-<p>It is recommended to use the &#x201C;.hwvm&#x201D; extension for HWVM assembly documents (where applicable). HWVM assembly is identified by the MIME type <code>text/hwvm</code></p>
-<p>It is recommended to use the &#x201C;.hwbin&#x201D; extension for HWVM binary executables (where applicable). HWVM binary drives are identified by the MIME type <code>application/hwbin</code></p>
-<p>It is recommended to use the &#x201C;.hwdrive&#x201D; extension for HWVM read-only drives (where applicable). HWVM binary drives are identified by the MIME type <code>application/hwdrive</code></p>
+<p>It is recommended to use the “.hwvm” extension for HWVM assembly documents (where applicable). HWVM assembly is identified by the MIME type <code>text/hwvm</code></p>
+<p>It is recommended to use the “.hwbin” extension for HWVM binary executables (where applicable). HWVM binary drives are identified by the MIME type <code>application/hwbin</code></p>
+<p>It is recommended to use the “.hwdrive” extension for HWVM read-only drives (where applicable). HWVM binary drives are identified by the MIME type <code>application/hwdrive</code></p>
 <h3>The Half-World virtual machine</h3>
 <hr />
 <p>The Half-World virtual machine, henceforth referred to HWVM, is a standardized, but not fully defined, execution engine for code. This code may be interpreted directly from the assembly format, executed directly from the binary format, or executed in any other equivalent way.</p>
 <h4>The HWVM Instruction notation</h4>
-<p>The instruction set for the virtual machine is composed of precisely 16 instructions, whose functioning is documented with the following notation: <code>inst ARG1 ARG2 ARG3</code>, where ARGx may be noted as either Vx, Rx, or ID. There are three types of arguments: literals, pointers, and addresses. Literals are prefixed by equal <code>=XXXX</code>, pointers by and <code>&XXXX</code>, and addresses are not <code>XXXX</code>. All are always written down in hexadecimal base when not talking about the binary format. Arguments of type Vx take literals, pointers and addresses, those of type Rx take only addresses and pointers, and the ones denoted ID take only literals. POINTERS AND LITERALS SHALL NEVER BE COMBINED IN AN INSTRUCTION&#x2019;S ARGUMENTS</p>
+<p>The instruction set for the virtual machine is composed of precisely 16 instructions, whose functioning is documented with the following notation: <code>inst ARG1 ARG2</code>, where ARGx may be noted as either Vx, Rx, or ID. There are three types of arguments: literals, pointers, and addresses. Literals are prefixed by equal <code>=XXXX</code>, pointers by and <code>&amp;XXXX</code>, and addresses are not <code>XXXX</code>. All are always written down in hexadecimal base when not talking about the binary format. Arguments of type Vx take literals, pointers and addresses, those of type Rx take only addresses and pointers, and the ones denoted ID take only literals. POINTERS AND LITERALS SHALL NEVER BE COMBINED IN AN INSTRUCTION’S ARGUMENTS</p>
 <hr />
 <h3>HWVM Memory layout (Code memory and data memory)</h3>
 <h4>IMPORTANT NOTE: ALL MEMORY IN CODE AND DATA MEMBERS HAS TO BE INITIALIZED TO 0 (ZERO)!</h4>
-<p>Following the legacy Harvard architecture, HWVM loads code and data separately into different &#x2018;chips&#x2019;, memory sections, or however it may be implemented. The executable section will be henceforth referred to as &#x2018;code member&#x2019;, and the data section will be henceforth referred to as &#x2018;data member&#x2019;.</p>
+<p>Following the legacy Harvard architecture, HWVM loads code and data separately into different ‘chips’, memory sections, or however it may be implemented. The executable section will be henceforth referred to as ‘code member’, and the data section will be henceforth referred to as ‘data member’.</p>
 <p>HWVM has two major data structures: the byte and the integer. Both are raw memory, and bytes must be able to hold the values 0x00 to 0xFF, so on a typical computer they need to be unsigned integer cells of at least 8 bits in size. The machine is also required to handle the code member in cells that can have values from 0x0000 to 0xFFFF, or minimum 16-bits.</p>
 <p>It is encouraged to denote two basic memory units trough constants, variables, or identifiers: <code>HWVM_MEMSIZE</code>, and <code>HWVM_MEMSMALL</code>. <code>HWVM_MEMSIZE</code> denotes the basic amount of bytes/integers that may be allocated, and is 0x1000. <code>HWVM_MEMSMALL</code> denotes a fraction of <code>HWVM_MEMSIZE</code>, meant for more precise assignments, 0x400.</p>
 <p>Note: Altough bytes can only hold 8 bits of information, and so literals may only range from 0x00 to 0xFF, the address space of the VM is 16 bits, and the machine must hence be able to read addresses ranging from 0x0000 to 0xFFFF. <em>Pointers are memory addresses read as the value of two contiguous bytes from memory</em></p>
 <h4>There are two structures inside the code member:</h4>
 <p>The instruction storage can hold 0x4000 bytes/ints, or four times the value of HWVM_MEMSIZE.</p>
 <ul>
-<li><p>The operand storage can hold at least 0x4000 GROUPS OF FOUR INTEGERS, that is three arguments and a literal/pointer specifier.</p></li>
-<li><p>The literal/pointer specifier denotes which of the three first operands are literals, from left to right, in THE LEAST THREE SIGNIFICANT BINARY BITS, AND THEY ARE POINTERS IF THE FOURTH IS ONE: 1111 means all three are arguments are pointers, 0110 means only the first two are literals, 1101 means only the first and third are pointers, 1100 means only the first is a pointer, 0010 means only the second is literal, 1001 means only the third is a pointer.</p></li>
+<li><p>The operand storage can hold at least 0x4000 GROUPS OF THREE INTEGERS, that is two operands and a literal/pointer specifier.</p></li>
+<li><p>The literal/pointer specifier denotes which of the two operands are literals, from left to right, in THE TWO LEAST SIGNIFICANT BINARY BITS, AND THEY ARE POINTERS IF THE FOURTH IS ONE: 1011 means both operands are pointers, 0010 means only the first is a literal, 1001 means only the second is a pointers, 1010 means only the first is a pointer, 0010 means only the first is literal, 1001 means only the second is a pointer. So, in NXNN, bit X goes unused</p></li>
 <li><p>Those arguments that are not literals are implicitly addresses.</p></li>
-<li><p>Each row (of 4 elements) of the two dimensional operand array corresponds to the same index of the onedimensional instruction array, and each instruction takes a fixed number of arguments. Hence, it is unambiguous which operands have to be read at each index of the operand array.</p></li>
+<li><p>Each row (of 3 elements) of the two dimensional operand array corresponds to the same index of the onedimensional instruction array, and each instruction takes a fixed number of arguments. Hence, it is unambiguous which operands have to be read at each index of the operand array.</p></li>
 <li><p>Both of these blocks of memory SHALL be filled prior to execution, be it reading from the later specified assembly, the later specified binary format, or some other format.</p></li>
 </ul>
 <h4>There are three structures inside the data member:</h4>
 <ul>
 <li><p>The general purpose memory holds four times the HWVM_MEMSIZE number of bytes, or 0x4000 (16 KiBs), and SHALL be mapped continously from 0x0000 to 0x3FFF. It may be manipulated by code at will, with no restrictions.</p></li>
-<li><p>The DRIVE or ROM memory can hold double the general purpose memory&#x2019;s amount of bytes, 0x8000 (32KiBs), and SHALL be mapped continously from 0x4000 to 0xBFFF.</p></li>
+<li><p>The DRIVE or ROM memory can hold double the general purpose memory’s amount of bytes, 0x8000 (32KiBs), and SHALL be mapped continously from 0x4000 to 0xBFFF.</p></li>
 <li><p>THE DRIVE SHOULD BE LOADED AS A RAW BYTESTREAM FROM A FILE ON-DISK, AND IT IS READ-ONLY. WRITING RESULTS IN AN ERROR.</p></li>
 <li><p>The range of addresses from 0xC000 to 0xFFE9 is reserved for implementation-defined or future-standard-defined peripherals or other extensions to the VM.</p></li>
 </ul>
@@ -59,17 +59,17 @@ line-height:1.2
 <li><p>The 0xFFFE register is the CARRY FLAG. It is SET TO ONE (1) if there is UNDERFLOW (when performing SUBSTRACTION with the <code>sub</code> or <code>cmp</code> instructions), or OVERFLOW (when performing ADDITION with the <code>add</code> instruction). If the operation does NOt have any overflow or underflow, it is SET TO ZERO (0). It otherwise SHALL be just as modifiable as the GENERAL PURPOSE MEMORY.</p></li>
 <li><p>the 0xFFFF register is the ZERO FLAG. It is SET TO ZERO (0) if the result of an ADDITION, SUBSTRACTION, COMPARISON, BINARY OR, BINARY XOR, or BINARY AND is ZERO. If the operation does NOT result in zero, it is SET TO ONE (1). It otherwise SHALL be just as modifiable as the GENERAL PURPOSE MEMORY. It SHALL be always set IF THE RESULT OF ONE OF THESE OPERATIONS IS ZERO, but ALWAYS BEFORE WRITING TO THE DESTINATION ADDRESS. IF the result of one of this operations is NOT ZERO, it SHALL be set to ONE (1), but ALWAYS BEFORE WRITING TO THE DESTINATION ADDRESS.</p></li>
 </ul>
-<p>Extra note: the program counter is incremented every time an instruction is executed, however the jmp/jcz/jcnz instructions can forcible modify it without increasing it, hence being the only instructions capable of taking 16-bit/integer literals. All instructions in a program SHALL be LINEARLY NUMBERED from ZERO (0) the first to the last, and the program counter SHALL indicate execution of each instruction at any given time.</p>
+<p>Extra note: the program counter is incremented every time an instruction is executed, however the jmp/jcz/jcnz instructions can forcible modify it without increasing it, hence being the only instructions capable of taking 16-bit literals. All instructions in a program SHALL be LINEARLY NUMBERED from ZERO (0) the first to the last, and the program counter SHALL indicate execution of each instruction at any given time.</p>
 <hr />
 <h3>The instruction set</h3>
 <p>There are currently SIXTEEN (16) instructions, each numbered with the decimal number in PARENTHESIS <code>()</code> for later reference.</p>
 <ul>
 <li><p>Each instruction takes the number of register, value, or ID arguments specified, and only that number (it is an ERROR to specify MORE or LESS).</p></li>
-<li><p>In values Vx, if an address is specified, the instruction SHALL read the value of that address. If a literal is specified, the instruction SHALL perform no address reading and use that literal.</p></li>
-<li><p>If a pointer is specified, the instruction shall read the value of the address pointed two by THAT ADDRESS AND THE NEXT ONE (e.g.&#xA0;&2 denotes the contents of memory address 0x02 and 0x03, TREATED AS A SINGLE 16-BIT INTEGER).</p></li>
-<li><p>In addresses Rx, literals are an ERROR but pointers are ALLOWED.</p></li>
+<li><p>In operands marked value Vx, if an address is specified, the instruction SHALL read the value of that address. If a literal is specified, the instruction SHALL perform no address reading and use that literal.</p></li>
+<li><p>If a pointer is specified, the instruction shall read the value of the address pointed two by THAT ADDRESS AND THE NEXT ONE (e.g. &amp;2 denotes the contents of memory address 0x02 and 0x03, TREATED AS A SINGLE 16-BIT INTEGER).</p></li>
+<li><p>In operands marked register Rx, literals are an ERROR, addresses are ALLOWED, pointers are ALLOWED.</p></li>
 <li><p>In idenfitications ID, addresses or pointers are an ERROR.</p></li>
-<li><p>LITERALS AND POINTERS SHALL NEVER BE SPECIFIED TOGETHER IN THE SAME ARGUMENT LIST</p></li>
+<li><p>LITERALS AND POINTERS SHALL NEVER BE SPECIFIED TOGETHER IN THE SAME OPERAND LIST</p></li>
 </ul>
 <pre><code>halt (0) - TAKES NO ARGUMENTS, STOPS PROGRAM EXECUTION
 nop (1) - TAKES NO ARGUMENTS, DOES NOTHING FOR A FULL CYCLE
@@ -78,25 +78,25 @@ jmp (3) V1 - JUMP (MOVE THE PROGRAM COUNTER, HAND EXECUTION) *TO* VALUE V1. SPEC
     addresses are treated as 16-bit literals, and pointers are treated as addresses with a 16-bit value
 jcz (4) V1 - jmp TO V1 *IF* 0xFFFF IS ZERO (0).  SPECIAL EXCEPTION: Take 16-bit literals,
     addresses are treated as 16-bit literals, and pointers are treated as addresses with a 16-bit value
-add (5) V1 V2 R3 - ADD V1 AND V2, WRITE THE RESULT TO R3. SETS CARRY/ZERO FLAGS APPROPIATELY
-sub (6) V1 V2 R3 - SUBSTRACT V2 *FROM* V1, WRITE THE RESULT TO R3. SETS CARRY/ZERO FLAGS APPROPIATELY
-and (7) V1 V2 R3 - PERFORM A BINARY &#39;and&#39; ON V1 AND V2, WRITE THE RESULT TO R3. SETS ZERO FLAG APPROPIATELY
-or (8) V1 V2 R3 - PERFORM A BINARY &#39;or&#39; ON V1 AND V2, WRITE THE RESULT TO R3. SETS ZERO FLAG APPROPIATELY
-xor (9) V1 V2 R3 - PERFORM A BINARY &#39;xor&#39; ON V1 AND V2, WRITE THE RESULT TO R3. SETS ZERO FLAG APPROPIATELY
-rot (10) V1 V2 R3 - IF V1 IS 0 THROUGH 7, BITSHIFT V2 LEFT BY V1, WRITE THE RESULT TO R3.
-    ELSE IF V1 IS 8 THROUGH F, BITSHIFT V2 RIGHT BY (V1 - 8), WRITE THE RESULT TO R3. ELSE DO NOTHING
+add (5) R1 V2  - ADD R1 AND V2, WRITE THE RESULT TO R1. SETS CARRY/ZERO FLAGS APPROPIATELY
+sub (6) R1 V2  - SUBSTRACT V2 *FROM* R1, WRITE THE RESULT TO R1. SETS CARRY/ZERO FLAGS APPROPIATELY
+and (7) R1 V2  - PERFORM A BINARY &#39;and&#39; ON R1 AND V2, WRITE THE RESULT TO R1. SETS ZERO FLAG APPROPIATELY
+or (8) R1 V2 - PERFORM A BINARY &#39;or&#39; ON R1 AND V2, WRITE THE RESULT TO R1. SETS ZERO FLAG APPROPIATELY
+xor (9) R1 V2 - PERFORM A BINARY &#39;xor&#39; ON R1 AND V2, WRITE THE RESULT TO R1. SETS ZERO FLAG APPROPIATELY
+rot (10) R1 V2 - IF V2 IS 0 THROUGH 7, BITSHIFT R1 LEFT BY V2, WRITE THE RESULT TO R1.
+    ELSE IF V2 IS 8 THROUGH F, BITSHIFT R1 RIGHT BY (V2 - 8), WRITE THE RESULT TO R1. ELSE DO NOTHING
 
 cmp (11) V1, V2 - SUBSTACT V2 *FROM* V1, BUT *WITHOUT* SAVING THE RESULT. SETS CARRY/ZERO FLAGS APPROPIATELY
 subs (12) ID - SEE SECTION BELOW
 sube (13) ID - SEE SECTION BELOW
 call (14) ID - SEE SECTION BELOW
-jcnz (15) V1 - jmp TO V1 *IF* 0xFFFF is NOT ZERO. SPECIAL EXCEPTION: Take 16-bit literals,
+jcnz (15) V1 - jmp TO V1 *IF* 0xFFFF is NOT ZERO. SPECIAL EXCEPTION: Takes 16-bit literals,
     addresses are treated as 16-bit literals, and pointers are treated as addresses with a 16-bit value</code></pre>
 <hr />
 <h3>Subroutines</h3>
 <ul>
 <li><p>Subroutines are RECOMMENDED to be defined at the top of program files, so at to avoid any call ever being made without subs having initialized the appropiate memory sections first. It is OPTIONAl, however</p></li>
-<li><p>Subroutines are handled with the instructions &#x2018;call&#x2019;, &#x2018;sube&#x2019;, &#x2018;subs&#x2019;. Each subroutine instruction has an <code>=ID</code> argument, to identify the subroutines. DECLARING TWO SUBROUTINES WITH THE SAME IDENFITICATION IS AN ERROR.</p></li>
+<li><p>Subroutines are handled with the instructions ‘call’, ‘sube’, ‘subs’. Each subroutine instruction has an <code>=ID</code> argument, to identify the subroutines. DECLARING TWO SUBROUTINES WITH THE SAME IDENFITICATION IS AN ERROR.</p></li>
 <li><p>A subs instruction (subroutine START) ALWAYS has to be matched with a sube instruction (subroutine END). They can have any number of instruction inbetween, as long as no <code>call</code>s to ITS OWN ID (RECURSION) are ever contained within, and NO NEW SUBROUTINES ARE STARTED/ENDED within it.</p></li>
 <li><p>The subs instruction SHALL write to an OUT-OF-MEMORY (not mapped to the address space) location the program counter of the instruction RIGHT AFTER its corresponding sube (referre to as SKIPCOUNT), corresponding to the ID argument index, as to skip the rest of the subroutine when encountered normally. After that, it SHALL write to an OUT-OF-MEMORY location the program counter RIGHT AFTER itself (referred to as EXECOUNT), corresponding to the ID argument, so as to allow call instructions to enter execution.</p></li>
 <li><p>The call instruction SHALL write the program counter of the instruction RIGHT AFTER itself to an OUT-OF-MEMORY location, (RETURNCOUNT) corresponding to the ID argument index. After that, it SHALL set the program counter to EXECOUNT</p></li>
@@ -104,45 +104,24 @@ jcnz (15) V1 - jmp TO V1 *IF* 0xFFFF is NOT ZERO. SPECIAL EXCEPTION: Take 16-bit
 </ul>
 <hr />
 <h3>Assembly language</h3>
-<h4>The assembly language is the exact representation of instructions, literals, pointers and addresses that has been discussed so far (comments are not part of the language, but they are designated by everything after a <code>#</code> here, for clarity porpuses. The line numbering is not part of the language, either, it&#x2019;s just to make keeping track of the program counter easier):</h4>
-<pre><code>0. set =33 FFFC # Write literal 0x33 (51, 00110011) to the OUTPUT REGISTER
-1. jmp 4 # Jump to instruction 4
-2. cmp =4 3 # Do the subtraction =4 - 3. We don&#39;t know what address three contains,
-   but it will set the zero flag if it is 0x4
-3. jcz 7 # If the previous comparison was indeed correct and address 3 contains 0x4,
-   jump to instruction 7
-4. add =FE =8 FFFC # Write the addition of 0xFE (254, 11111110) and 0x8 (8, 00001000)
-   to the OUTPUT register. It should result in OVERFLOW
-5. set FFFE FFFF # Copy the carry flag to the zero flag
-6. jcnz 8 # If the zero flag is not zero (it shouldn&#39;t be, there was overflow and
-   the carry flag was cloned!), jump to instruction 8
-7. halt
-8. jmp 2 # Jump to instruction 2
-9. halt</code></pre>
+<h4>The assembly language is the exact representation of instructions, literals, pointers and addresses that has been discussed so far.</h4>
 <hr />
 <h3>Binary format</h3>
-<p>A specification of the format follows, it still applies:</p>
+<p>A specification of the format follows:</p>
 <pre><code>BINARY FORMAT:
-You code each instruction as 4 bits of which the least significant 3 indicate
-which arguments are literals and which addresses, and the fourth indicates if the
-literals are pointers or not (0101 - from right to left:  third is literal,
-second address, first literal, fourth indicates they are literals and NOT pointers),
-then 4 bits for the instructions themselves (0-15), then
-simply read the corresponding number of 16-bit &#39;arguments&#39; (0-3), and repeat.
+You code each instruction as 4 bits of which the least significant 2 indicate
+which arguments are literals and which addresses, and the highest indicates if
+the literals are pointers or not (0001 - from left to right:  first is address,
+second literal, high bit indicates they are literals and NOT
+pointers), then 4 bits for the instructions themselves (check the listed values)
+then simply read the corresponding number of 16-bit &#39;arguments&#39; (0-2),
+and repeat.
 
 EXAMPLE:
-
-BINARY:    0010 0101 0000000000000001 0000000000000011 0000000000000010 0000 0000000000000000
-DECIMAL:   2    5    1                3                2                0    0
-ASSEMBLY:       add  1               =3               2               \n    halt
-ENGLISH:
-    The first instruction has the middle argument as a literal.
-    The first instruction is &#39;add&#39;.
-    ADD the contents of Address 1 to the number 3, put the result into Address 2.
-
-    The second instruction has no arguments as literals.
-    The second instruction is &#39;halt&#39;.
-    HALT.</code></pre>
+BINARY: 0001 0001 000000000000001 000000000011111
+DECIMAL:   1    3               1              31
+ASSEMBLY:     add               1             =1F
+ENGLISH: add the contents of address ONE and the number 1F, put the result back into address ONE</code></pre>
 <hr />
 <h3>SUMMARY OF DATA STORAGE TYPES</h3>
 <p>You can store code as either .hwvm ASSEMBLY LANGUAGE files, or .hwbin BINARY FILES, and can store data as .hwdrive READ-ONLY MEMORY files.</p>
