@@ -35,7 +35,7 @@ WORK.*/
 #include <halfworld/hwvm/hwvm.h>
 
 #define RACENUM 16
-#define VM_SIMULATION
+
 
 /*Approximate default storage with VM: 133KBs
 Without VM worst-case scenario: 128Bs
@@ -67,7 +67,7 @@ typedef struct {
 	/*Simulated properties of the car (MODIFYING THESE CAN LEAD TO
     FUNKY RESULTS, HOWEVER THERE IS NOTHING INHERENTLY WRONG WITH IT)*/
 
-#ifdef VM_SIMULATION
+#ifdef HALFIVE_VM_SIMULATION
 	HWVM_GeneralMemory computer; /*132KBs of storage with default settings*/
 #endif
 
