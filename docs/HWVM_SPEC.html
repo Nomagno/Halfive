@@ -17,18 +17,18 @@ line-height:1.2
 <h1>Half-World Virtual Machine Specification</h1>
 <h4>SPDX identifier: COIL-1.0</h4>
 <h4>Copyright Nomagno 2021</h4>
-<p>It is recommended to use the “.hwvm” extension for HWVM assembly documents (where applicable). HWVM assembly is identified by the MIME type <code>text/hwvm</code></p>
-<p>It is recommended to use the “.hwbin” extension for HWVM binary executables (where applicable). HWVM binary drives are identified by the MIME type <code>application/hwbin</code></p>
-<p>It is recommended to use the “.hwdrive” extension for HWVM read-only drives (where applicable). HWVM binary drives are identified by the MIME type <code>application/hwdrive</code></p>
+<p>It is recommended to use the &#x201C;.hwvm&#x201D; extension for HWVM assembly documents (where applicable). HWVM assembly is identified by the MIME type <code>text/hwvm</code></p>
+<p>It is recommended to use the &#x201C;.hwbin&#x201D; extension for HWVM binary executables (where applicable). HWVM binary drives are identified by the MIME type <code>application/hwbin</code></p>
+<p>It is recommended to use the &#x201C;.hwdrive&#x201D; extension for HWVM read-only drives (where applicable). HWVM binary drives are identified by the MIME type <code>application/hwdrive</code></p>
 <h3>The Half-World virtual machine</h3>
 <hr />
 <p>The Half-World virtual machine, henceforth referred to HWVM, is a standardized, but not fully defined, execution engine for code. This code may be interpreted directly from the assembly format, executed directly from the binary format, or executed in any other equivalent way.</p>
 <h4>The HWVM Instruction notation</h4>
-<p>The instruction set for the virtual machine is composed of precisely 16 instructions, whose functioning is documented with the following notation: <code>inst ARG1 ARG2</code>, where ARGx may be noted as either Vx, Rx, or ID. There are three types of arguments: literals, pointers, and addresses. Literals are prefixed by equal <code>=XXXX</code>, pointers by and <code>&amp;XXXX</code>, and addresses are not <code>XXXX</code>. All are always written down in hexadecimal base when not talking about the binary format. Arguments of type Vx take literals, pointers and addresses, those of type Rx take only addresses and pointers, and the ones denoted ID take only literals. POINTERS AND LITERALS SHALL NEVER BE COMBINED IN AN INSTRUCTION’S ARGUMENTS</p>
+<p>The instruction set for the virtual machine is composed of precisely 16 instructions, whose functioning is documented with the following notation: <code>inst ARG1 ARG2</code>, where ARGx may be noted as either Vx, Rx, or ID. There are three types of arguments: literals, pointers, and addresses. Literals are prefixed by equal <code>=XXXX</code>, pointers by and <code>&amp;XXXX</code>, and addresses are not <code>XXXX</code>. All are always written down in hexadecimal base when not talking about the binary format. Arguments of type Vx take literals, pointers and addresses, those of type Rx take only addresses and pointers, and the ones denoted ID take only literals. POINTERS AND LITERALS SHALL NEVER BE COMBINED IN AN INSTRUCTION&#x2019;S ARGUMENTS</p>
 <hr />
 <h3>HWVM Memory layout (Code memory and data memory)</h3>
 <h4>IMPORTANT NOTE: ALL MEMORY IN CODE AND DATA MEMBERS HAS TO BE INITIALIZED TO 0 (ZERO)!</h4>
-<p>Following the legacy Harvard architecture, HWVM loads code and data separately into different ‘chips’, memory sections, or however it may be implemented. The executable section will be henceforth referred to as ‘code member’, and the data section will be henceforth referred to as ‘data member’.</p>
+<p>Following the legacy Harvard architecture, HWVM loads code and data separately into different &#x2018;chips&#x2019;, memory sections, or however it may be implemented. The executable section will be henceforth referred to as &#x2018;code member&#x2019;, and the data section will be henceforth referred to as &#x2018;data member&#x2019;.</p>
 <p>HWVM has two major data structures: the byte and the integer. Both are raw memory, and bytes must be able to hold the values 0x00 to 0xFF, so on a typical computer they need to be unsigned integer cells of at least 8 bits in size. The machine is also required to handle the code member in cells that can have values from 0x0000 to 0xFFFF, or minimum 16-bits.</p>
 <p>It is encouraged to denote two basic memory units trough constants, variables, or identifiers: <code>HWVM_MEMSIZE</code>, and <code>HWVM_MEMSMALL</code>. <code>HWVM_MEMSIZE</code> denotes the basic amount of bytes/integers that may be allocated, and is 0x1000. <code>HWVM_MEMSMALL</code> denotes a fraction of <code>HWVM_MEMSIZE</code>, meant for more precise assignments, 0x400.</p>
 <p>Note: Altough bytes can only hold 8 bits of information, and so literals may only range from 0x00 to 0xFF, the address space of the VM is 16 bits, and the machine must hence be able to read addresses ranging from 0x0000 to 0xFFFF. <em>Pointers are memory addresses read as the value of two contiguous bytes from memory</em></p>
@@ -44,7 +44,7 @@ line-height:1.2
 <h4>There are three structures inside the data member:</h4>
 <ul>
 <li><p>The general purpose memory holds four times the HWVM_MEMSIZE number of bytes, or 0x4000 (16 KiBs), and SHALL be mapped continously from 0x0000 to 0x3FFF. It may be manipulated by code at will, with no restrictions.</p></li>
-<li><p>The DRIVE or ROM memory can hold double the general purpose memory’s amount of bytes, 0x8000 (32KiBs), and SHALL be mapped continously from 0x4000 to 0xBFFF.</p></li>
+<li><p>The DRIVE or ROM memory can hold double the general purpose memory&#x2019;s amount of bytes, 0x8000 (32KiBs), and SHALL be mapped continously from 0x4000 to 0xBFFF.</p></li>
 <li><p>THE DRIVE SHOULD BE LOADED AS A RAW BYTESTREAM FROM A FILE ON-DISK, AND IT IS READ-ONLY. WRITING RESULTS IN AN ERROR.</p></li>
 <li><p>The range of addresses from 0xC000 to 0xFFE9 is reserved for implementation-defined or future-standard-defined peripherals or other extensions to the VM.</p></li>
 </ul>
@@ -66,7 +66,7 @@ line-height:1.2
 <ul>
 <li><p>Each instruction takes the number of register, value, or ID arguments specified, and only that number (it is an ERROR to specify MORE or LESS).</p></li>
 <li><p>In operands marked value Vx, if an address is specified, the instruction SHALL read the value of that address. If a literal is specified, the instruction SHALL perform no address reading and use that literal.</p></li>
-<li><p>If a pointer is specified, the instruction shall read the value of the address pointed two by THAT ADDRESS AND THE NEXT ONE (e.g. &amp;2 denotes the contents of memory address 0x02 and 0x03, TREATED AS A SINGLE 16-BIT INTEGER).</p></li>
+<li><p>If a pointer is specified, the instruction shall read the value of the address pointed two by THAT ADDRESS AND THE NEXT ONE (e.g.&#xA0;&amp;2 denotes the contents of memory address 0x02 and 0x03, TREATED AS A SINGLE 16-BIT INTEGER).</p></li>
 <li><p>In operands marked register Rx, literals are an ERROR, addresses are ALLOWED, pointers are ALLOWED.</p></li>
 <li><p>In idenfitications ID, addresses or pointers are an ERROR.</p></li>
 <li><p>LITERALS AND POINTERS SHALL NEVER BE SPECIFIED TOGETHER IN THE SAME OPERAND LIST</p></li>
@@ -96,7 +96,7 @@ jcnz (15) V1 - jmp TO V1 *IF* 0xFFFF is NOT ZERO. SPECIAL EXCEPTION: Takes 16-bi
 <h3>Subroutines</h3>
 <ul>
 <li><p>Subroutines are RECOMMENDED to be defined at the top of program files, so at to avoid any call ever being made without subs having initialized the appropiate memory sections first. It is OPTIONAl, however</p></li>
-<li><p>Subroutines are handled with the instructions ‘call’, ‘sube’, ‘subs’. Each subroutine instruction has an <code>=ID</code> argument, to identify the subroutines. DECLARING TWO SUBROUTINES WITH THE SAME IDENFITICATION IS AN ERROR.</p></li>
+<li><p>Subroutines are handled with the instructions &#x2018;call&#x2019;, &#x2018;sube&#x2019;, &#x2018;subs&#x2019;. Each subroutine instruction has an <code>=ID</code> argument, to identify the subroutines. DECLARING TWO SUBROUTINES WITH THE SAME IDENFITICATION IS AN ERROR.</p></li>
 <li><p>A subs instruction (subroutine START) ALWAYS has to be matched with a sube instruction (subroutine END). They can have any number of instruction inbetween, as long as no <code>call</code>s to ITS OWN ID (RECURSION) are ever contained within, and NO NEW SUBROUTINES ARE STARTED/ENDED within it.</p></li>
 <li><p>The subs instruction SHALL write to an OUT-OF-MEMORY (not mapped to the address space) location the program counter of the instruction RIGHT AFTER its corresponding sube (referre to as SKIPCOUNT), corresponding to the ID argument index, as to skip the rest of the subroutine when encountered normally. After that, it SHALL write to an OUT-OF-MEMORY location the program counter RIGHT AFTER itself (referred to as EXECOUNT), corresponding to the ID argument, so as to allow call instructions to enter execution.</p></li>
 <li><p>The call instruction SHALL write the program counter of the instruction RIGHT AFTER itself to an OUT-OF-MEMORY location, (RETURNCOUNT) corresponding to the ID argument index. After that, it SHALL set the program counter to EXECOUNT</p></li>
