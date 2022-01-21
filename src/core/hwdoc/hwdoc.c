@@ -29,7 +29,6 @@ WORK.*/
 
 #include <halfworld/hwreq.h>
 #include <halfworld/hwdoc/hwdoc.h>
-#include <halfworld/hwstring.h>
 
 int HWDOC_Parse(const unsigned char *input, int tok_size, HWDOC_Token *toks);
 

@@ -10,7 +10,9 @@
 
 INCLROOT = ../../include/half-world
 
-build: libhalfworld.a warn
+PARAMS="-DHWVM_OU_HEX -DHALFIVE_VM_SIMULATION -DHWVI_GSERV_IMPL_SDL2 -DHWVI_AUDIOSERV_IMPL_SDL2 -DHWVI_STDINPUT_IMPL_SDL2"
+
+build: warn libhalfworld.a
 rebuild: clean build
 clean:
 	rm *.o *.a

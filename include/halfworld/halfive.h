@@ -32,7 +32,10 @@ WORK.*/
 #include <halfworld/hwdoc/hwnet.h>
 #include <halfworld/hwdoc/hwt.h>
 #include <halfworld/hwstring.h>
+
+#ifdef HALFIVE_VM_SIMULATION
 #include <halfworld/hwvm/hwvm.h>
+#endif
 
 #define RACENUM 16
 
@@ -92,9 +95,8 @@ typedef struct {
 	HWT_Circuit track;
 } H5_World;
 
-extern int H5_Init(char *trck, H5_World *stage);
+extern int H5_Init(const char *trck, H5_World *stage);
 extern int H5_Sim(H5_World *stage, unsigned int milli, _Bool do_hwvm_sim);
 extern int H5_TransformServer(const H5_World *stage, HWNET_ServerPacket *serv,
 			     enum HWNET_ModeEnum mode);
 extern int H5_TransformClient(H5_World *stage, const HWNET_ClientPacket *cli);
-

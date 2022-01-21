@@ -74,4 +74,4 @@ typedef struct {
 	struct HWT_Segment segments[40];
 } HWT_Circuit;
 
-extern int HWT_Parse(char *instring, HWT_Circuit *outstruct);
+extern int HWT_Parse(const char *instring, HWT_Circuit *outstruct);

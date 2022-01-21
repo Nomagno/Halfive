@@ -171,5 +171,4 @@ typedef struct {
 /*Half-World VM interface*/
 
 extern HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory code); /*Generate mem struct from xmem struct*/
-
 extern hwuint HWVM_Execute(HWVM_GeneralMemory *program); /*Execute one instruction from the program*/

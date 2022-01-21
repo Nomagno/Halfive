@@ -41,4 +41,3 @@ typedef struct {
 } HWDOC_Token;
 
 extern int HWDOC_Parse(const unsigned char *input, int size, HWDOC_Token *toks);
-

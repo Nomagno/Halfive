@@ -26,12 +26,8 @@ COPYRIGHT OR OTHER LEGAL PRIVILEGE BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
 LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
-#include <halfworld/hwreq.h>
-#define N (UCHAR_MAX + 1)
-typedef unsigned char suchar;
-typedef unsigned suint;
-typedef unsigned long sulong;
 
-extern sulong hwstrtoul(char *, char **, int);
-extern int hwstrcmp(char *, char *);
-extern char *hwstrtok(char *, char *);
+#include <halfworld/hwreq.h>
+#include <halfworld/hwstring.h>
+#include <halfworld/hwvm/hwvm.h>
+hwuint HWASM_Parse(const char *linestr, HWVM_InstructionSet *inst, hwuint opnds[3]);

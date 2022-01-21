@@ -28,10 +28,9 @@ OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
 #include <halfworld/hwreq.h>
-#include <halfworld/hwstring.h>
-#include <halfworld/hwvm/hwvm.h>
+#include <halfworld/hwvm/hwasm.h>
 
-hwuint HWASM_Parse(char *linestr, HWVM_InstructionSet *inst, hwuint opnds[4]);
+hwuint HWASM_Parse(const char *linestr, HWVM_InstructionSet *inst, hwuint opnds[3]);
 HWVM_InstructionSet _isinst(char *instr);
 hwuint _isxupdigit(hwuchar inchar);
 HWVM_InstructionSet _isinst(char *instr);
@@ -75,9 +74,10 @@ int main(int argc, char **argv)
 #endif
 
 
-hwuint HWASM_Parse(char *linestr, HWVM_InstructionSet *inst, hwuint opnds[3])
+hwuint HWASM_Parse(const char *linestr, HWVM_InstructionSet *inst, hwuint opnds[3])
 {
-	char *token = hwstrtok(linestr, " ");
+	char *token = hwstrtok(linestr, " "); /*linestr should not be const strictly speaking,
+                                                but strtok behaves properly in this situation.*/
 	HWVM_InstructionSet myinst;
 	int i = 0;
 	while ((token != (void *)0) && (i < 2)) {
