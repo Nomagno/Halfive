@@ -15,22 +15,6 @@ It has a lot of C utility interfaces, such as:
 - Arbitrary-viewport ASCII 2D renderer (WIP)
 - Portable declarative physics engine (WIP) (include/halfworld/halfive.h)
 
-Back of the envelope calculations suggest that (depending on preprocessor statements used to hided away excessively heavy code),
-the memory footprint of the (backend part of the engine) will range from around 256KBs to around 2MBs. It is reasonable to expect
-a maximum memory footprint (sound and graphic backends aside, but taking into account the display and network buffers and code) of
-4-8MBs, when no memory-reducing preprocessor macros are defined.
-
-Available macros (not setting any of these makes for a headless/nolibc build):
-HWVI_GSERV_IMPL_FOO - Enable HWVI graphics server implementation foo
-HWVI_AUDIOSERV_IMPL_FOO - Enable HWVI audio server implementation foo
-HWVI_STDINPUT_IMPL_FOO - Enable HWVI input server implementation foo
-
-HWASSEMBLY - Enable entry point for assembler
-HWVM_OU_HEX - Enable HWVM output register as hexadecimal
-HWVM_OU_RAW - Enable printing HWVM output register as raw characters
-HWVM_OU_DEBUG - Enable HWVM debug printing
-HALFIVE_VM_SIMULATION - Most memory consuming option, enable doing per-player HWVM simulation.
-
 List of specifications and corresponding mime types:
 	Encoding formats:
 		Half-World Document (HWDOC)

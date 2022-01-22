@@ -1,0 +1,38 @@
+Implementation of interfaces in the '/include/halfworld' folder
+
+Implemented headers:
+hwdoc.h (Tokenizer of custom format)
+hwvm.h (Virtual machine)
+hwasm.h (Assembler)
+hwvi.h (Abstraction over graphics, input, and sound)
+hwstring.h (nolibc string.h)
+
+Pending implementation:
+hwt.h (Track reader, wrapper over hwdoc.h)
+hwnet.h (Packet reader, wrapper over hwdoc.h)
+halfive.h (Physics engine)
+
+The following headers should be used on the caller side:
+halfworld/halfive.h (For using all specified interfaces except those in hwvi.h)
+halfworld/hwvi.h
+
+Back of the envelope calculations suggest that (depending on preprocessor macros used to conditionally enable excessively heavy features),
+the memory footprint of the (backend part of the) engine will range from around 70KBs to around 2MBs. It is reasonable to expect
+a maximum memory footprint (sound and graphic backends aside, but taking into account the display and network buffers and code) of
+4-8MBs when VM simulation is enabled.
+
+Run the command `make` to compile to a static library/archive file
+
+You can use `make INCLROOT="/path/to/halfworld/"` to change the default path of the folder with the headers
+Available macros (use `make PARAMS="-DMACRO1 -DMACRO2"`)
+(not setting any of these makes for a headless/nodependency build):
+HWVI_GSERV_IMPL_FOO - Enable HWVI graphics server implementation foo
+HWVI_AUDIOSERV_IMPL_FOO - Enable HWVI audio server implementation foo
+HWVI_STDINPUT_IMPL_FOO - Enable HWVI input server implementation foo
+HWVI_TEST - Enable entry point for example HWVI program
+
+HALFIVE_VM_SIMULATION - Most memory consuming option, enable doing per-player HWVM simulation. If not set, hwvm.h is not available in halfive.h
+HWASSEMBLY - Enable entry point for assembler
+HWVM_OU_HEX - Enable HWVM output register as hexadecimal
+HWVM_OU_RAW - Enable printing HWVM output register as raw characters
+HWVM_OU_DEBUG - Enable HWVM debug printing
