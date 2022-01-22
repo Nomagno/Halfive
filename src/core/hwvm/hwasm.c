@@ -80,22 +80,22 @@ hwuint HWASM_Parse(const char *linestr, HWVM_InstructionSet *inst, hwuint opnds[
                                                 but strtok behaves properly in this situation.*/
 	HWVM_InstructionSet myinst;
 	int i = 0;
-	while ((token != (void *)0) && (i < 2)) {
+	while ((token != NULL) && (i < 2)) {
 		if ((myinst = _isinst(token)) != 16) {
 			*inst = myinst;
 		} else if (_isxupdigit(token[0])) {
-			opnds[i] = (hwuint)hwstrtoul(token, (void *)0, 16);
+			opnds[i] = (hwuint)hwstrtoul(token, NULL, 16);
 			i += 1;
 		} else if (token[0] == '=') {
 			token += 1;
-			opnds[i] = (hwuint)hwstrtoul(token, (void *)0, 16);
+			opnds[i] = (hwuint)hwstrtoul(token, NULL, 16);
 
 			opnds[2] = (opnds[2] | (1 << (1 - i)));
 
 			i += 1;
 		} else if (token[0] == '&') {
 			token += 1;
-			opnds[i] = (hwuint)hwstrtoul(token, (void *)0, 16);
+			opnds[i] = (hwuint)hwstrtoul(token, NULL, 16);
 			opnds[2] = (opnds[2] | 8);
 			opnds[2] = (opnds[2] | (1 << (1 - i)));
 
@@ -103,7 +103,7 @@ hwuint HWASM_Parse(const char *linestr, HWVM_InstructionSet *inst, hwuint opnds[
 		} else {
 			return 2; /*CATASTROPHIC ERROR*/
 		}
-		token = hwstrtok((void *)0, " ");
+		token = hwstrtok(NULL, " ");
 	}
 	return 0;
 }

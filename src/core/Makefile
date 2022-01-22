@@ -8,7 +8,7 @@
 #HWVM_OU_DEBUG - Enable HWVM debug printing
 #HALFIVE_VM_SIMULATION - Most memory consuming option, enable doing per-player HWVM simulation.
 
-INCLROOT = ../../include/half-world
+INCLROOT="../../include/"
 
 PARAMS="-DHWVERSION=0 -DHWVM_OU_HEX -DHALFIVE_VM_SIMULATION -DHWVI_GSERV_IMPL_SDL2 -DHWVI_AUDIOSERV_IMPL_SDL2 -DHWVI_STDINPUT_IMPL_PORTABLE"
 
