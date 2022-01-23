@@ -1,6 +1,6 @@
 # Half-World Document Specification (The encoding format of HWT)
 #### SPDX identifier: COIL-1.0
-#### Copyright Nomagno 2021
+#### Copyright Nomagno 2021, 2022
 
 It is recommended to use the ".hwdoc" extension for HWDOC documents (where applicable).
 HWDOC is identified by the MIME type `text/hwdoc`

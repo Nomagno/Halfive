@@ -1,6 +1,6 @@
 #!/bin/sh
 
-#Copyright Nomagno 2021
+#Copyright Nomagno 2021, 2022
 
 #Redistributions, modified or unmodified, in whole or in part, must retain
 #applicable notices of copyright or other legal privilege, these conditions, and
