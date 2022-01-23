@@ -149,10 +149,10 @@ HWVM_InstructionSet _isinst(char *instr)
 		return rot;
 	else if (hwstrcmp(instr, "cmp") == 0)
 		return cmp;
-	else if (hwstrcmp(instr, "subs") == 0)
-		return subs;
-	else if (hwstrcmp(instr, "sube") == 0)
-		return sube;
+	else if (hwstrcmp(instr, "func") == 0)
+		return func;
+	else if (hwstrcmp(instr, "ret") == 0)
+		return ret;
 	else if (hwstrcmp(instr, "call") == 0)
 		return call;
 	else if (hwstrcmp(instr, "jcnz") == 0)

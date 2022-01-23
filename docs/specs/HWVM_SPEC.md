@@ -104,8 +104,8 @@ rot (10) R1 V2 - IF V2 IS 0 THROUGH 7, BITSHIFT R1 LEFT BY V2, WRITE THE RESULT 
     ELSE IF V2 IS 8 THROUGH F, BITSHIFT R1 RIGHT BY (V2 - 8), WRITE THE RESULT TO R1. ELSE DO NOTHING
 
 cmp (11) V1, V2 - SUBSTACT V2 *FROM* V1, BUT *WITHOUT* SAVING THE RESULT. SETS CARRY/ZERO FLAGS APPROPIATELY
-subs (12) ID - SEE SECTION BELOW
-sube (13) ID - SEE SECTION BELOW
+func (12) ID - SEE SECTION BELOW
+ret (13) ID - SEE SECTION BELOW
 call (14) ID - SEE SECTION BELOW
 jcnz (15) V1 - jmp TO V1 *IF* 0xFFFF is NOT ZERO. SPECIAL EXCEPTION: Takes 16-bit literals,
     addresses are treated as 16-bit literals, and pointers are treated as addresses with a 16-bit value
@@ -114,16 +114,16 @@ jcnz (15) V1 - jmp TO V1 *IF* 0xFFFF is NOT ZERO. SPECIAL EXCEPTION: Takes 16-bi
 ***
 ### Subroutines
 
-- Subroutines are RECOMMENDED to be defined at the top of program files, so at to avoid any call ever being made without subs having initialized the appropiate memory sections first. It is OPTIONAl, however
+- Subroutines are RECOMMENDED to be defined at the top of program files, so at to avoid any call ever being made without FUNC having initialized the appropiate memory sections first. It is OPTIONAl, however.
 
-- Subroutines are handled with the instructions 'call', 'sube', 'subs'. Each subroutine instruction has an `=ID` argument, to identify the subroutines. DECLARING TWO SUBROUTINES WITH THE SAME IDENFITICATION IS AN ERROR.
+- Subroutines are handled with the instructions 'CALL', 'RET', 'FUNC'. Each subroutine instruction has an `=ID` argument, to identify the subroutines. DECLARING TWO SUBROUTINES WITH THE SAME IDENFITICATION IS AN ERROR.
 
-- A subs instruction (subroutine START) ALWAYS has to be matched with a sube instruction (subroutine END). They can have any number of instruction inbetween, as long as no `call`s to ITS OWN ID (RECURSION) are ever contained within, and NO NEW SUBROUTINES ARE STARTED/ENDED within it.
-- The subs instruction SHALL write to an OUT-OF-MEMORY (not mapped to the address space) location the program counter of the instruction RIGHT AFTER its corresponding sube (referre to as SKIPCOUNT), corresponding to the ID argument index, as to skip the rest of the subroutine when encountered normally. After that, it SHALL write to an OUT-OF-MEMORY location the program counter RIGHT AFTER itself (referred to as EXECOUNT), corresponding to the ID argument, so as to allow call instructions to enter execution.
+- A FUNC instruction (subroutine START) ALWAYS has to be matched with a `ret` instruction (subroutine END). They can have any number of instruction inbetween, as long as no `call`s to ITS OWN ID (RECURSION) are ever contained within, and NO NEW SUBROUTINES ARE STARTED/ENDED within it.
+- The FUNC instruction SHALL write to an OUT-OF-MEMORY (not mapped to the address space) location the program counter of the instruction RIGHT AFTER its corresponding `ret` (referre to as SKIPCOUNT), corresponding to the ID argument index, as to skip the rest of the subroutine when encountered normally. After that, it SHALL write to an OUT-OF-MEMORY location the program counter RIGHT AFTER itself (referred to as EXECOUNT), corresponding to the ID argument, so as to allow call instructions to enter execution.
 
-- The call instruction SHALL write the program counter of the instruction RIGHT AFTER itself to an OUT-OF-MEMORY location, (RETURNCOUNT) corresponding to the ID argument index. After that, it SHALL set the program counter to EXECOUNT
+- The CALL instruction SHALL write the program counter of the instruction RIGHT AFTER itself to an OUT-OF-MEMORY location, (RETURNCOUNT) corresponding to the ID argument index. After that, it SHALL set the program counter to EXECOUNT
 
-- The sube instruction SHALL set the program counter to the corresponding RETURNCOUNT of the ID argument.
+- The ret instruction SHALL set the program counter to the corresponding RETURNCOUNT of the ID argument.
 
 ***
 ### Assembly language

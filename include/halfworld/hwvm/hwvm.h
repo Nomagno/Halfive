@@ -62,7 +62,7 @@ ENGLISH: add the contents of address ONE and the number 1F, put the result back 
 
 ASSEMBLY FORMAT:
     It codes almost directly to the binary format. The available instructions
-are: {halt, nop, jmp, jcz, set, add, sub, not, and, xor, or, rot, subs, sube,
+are: {halt, nop, jmp, jcz, set, add, sub, not, and, xor, or, rot, func, ret,
 call, jcnz} The syntax is the following: instruction ARGx ARGx \n Where ARGx
 is an address/pointer (Rx), a literal (ID), or any of these (Vx). Instructions are terminated
 by newline '\n'
@@ -98,12 +98,12 @@ typedef enum {
 		  and    the zero flag to 1 if V1 is smaller than V2, sets the
 		  carry    flag to 1 and the zero flag to 0 if V1 is equal to
 		  V2, sets    the carry flag to 0 and the zero flag to 0*/
-	/*SUBS, SUBE, CALL: Stackless subroutines*/
-	subs = 12, /* ID; Marks the start of a subroutine with the literal
+	/* FUNC, RET, CALL: Stackless subroutines*/
+	func = 12, /* ID; Marks the start of a subroutine with the literal
                       identifier ID.*/
-	sube = 13, /*ID; Marks the end of subroutine ID. It JMPs to the
+	ret = 13, /*ID; Marks the end of subroutine ID. It JMPs to the
 		      instruction after the corresponding CALL instruction.*/
-	call = 14, /* ID; JMP to the start of execution (post-SUBS) of
+	call = 14, /* ID; JMP to the start of execution (post-FUNC) of
 		      subroutine ID*/
 	jcnz = 15  /* V1; if ZF != 0, jmp to instrucion V1*/
 } HWVM_InstructionSet;
@@ -159,13 +159,13 @@ typedef struct {
 	_Bool hf; /*Halt flag, 1 if it has halted.*/
 
 	hwuint sub_co[MEMSMALL]; /*For storing counter values corresponding to
-				the SUBS instruction of each subroutine ID*/
+				the FUNC instruction of each subroutine ID*/
 
 	hwuint return_co[MEMSMALL]; /*For storing counter values corresponding
 				to the execution environment of the branch that
 				executes CALLS, for each subroutine ID*/
 
-	hwuint skip_co[MEMSMALL]; /*Counter values subs has to skip to*/
+	hwuint skip_co[MEMSMALL]; /*Counter values FUNC has to skip to*/
 } HWVM_GeneralMemory;
 
 /*Half-World VM interface*/

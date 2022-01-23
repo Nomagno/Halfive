@@ -54,8 +54,8 @@ hwuint hset(hwuint op[4], HWVM_DataMemory *space);
 hwuint hjump(hwuint op[4], HWVM_DataMemory *space, hwuint *co);
 hwuint hrot(hwuint op[4], HWVM_DataMemory *space);
 hwuint hcall(hwuint *co, hwuint id, HWVM_GeneralMemory *prog);
-hwuint hsubs(hwuint *co, hwuint id, HWVM_GeneralMemory *prog);
-hwuint hsube(hwuint *co, hwuint id, HWVM_GeneralMemory *prog);
+hwuint hfunc(hwuint *co, hwuint id, HWVM_GeneralMemory *prog);
+hwuint hret(hwuint *co, hwuint id, HWVM_GeneralMemory *prog);
 
 HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory code)
 {
@@ -180,8 +180,8 @@ hwuint HWVM_Execute(HWVM_GeneralMemory *program)
 				return 2; /*EXECUTION ERROR*/
 			}
 			return 0;
-		case subs: /*UNIMPLEMENTED*/
-			errno = hsubs(&(program->m2.co),
+		case func:
+			errno = hfunc(&(program->m2.co),
 				      program->m1.opnd[program->m2.co][0],
 				      program); /*Mark start of subroutine*/
 			program->m2.co += 1;
@@ -189,8 +189,8 @@ hwuint HWVM_Execute(HWVM_GeneralMemory *program)
 				return 2; /*EXECUTION ERROR*/
 			}
 			return 0;
-		case sube: /*UNIMPLEMENTED*/
-			errno = hsube(&(program->m2.co),
+		case ret:
+			errno = hret(&(program->m2.co),
 				      program->m1.opnd[program->m2.co][0],
 				      program); /*Mark end of subroutine*/
 			program->m2.co += 1;
@@ -198,7 +198,7 @@ hwuint HWVM_Execute(HWVM_GeneralMemory *program)
 				return 2; /*EXECUTION ERROR*/
 			}
 			return 0;
-		case call: /*UNIMPLEMENTED*/
+		case call:
 			errno = hcall(&(program->m2.co),
 				      program->m1.opnd[program->m2.co][0],
 				      program); /*Call subroutine*/
@@ -644,9 +644,9 @@ hwuint hcall(hwuint *co, hwuint id, HWVM_GeneralMemory *prog)
 }
 
 /*Takes one argument, write to ID slot on out-of-memory
-chip and look for end of declaration (closest sube). Note it
-down too. Jump to after the sube*/
-hwuint hsubs(hwuint *co, hwuint id, HWVM_GeneralMemory *prog)
+chip and look for end of declaration (closest ret). Note it
+down too. Jump to after the ret*/
+hwuint hfunc(hwuint *co, hwuint id, HWVM_GeneralMemory *prog)
 {
 	hwuint val = 0; /*It is impossible counter 0
 			is a safe place to return to,
@@ -654,7 +654,7 @@ hwuint hsubs(hwuint *co, hwuint id, HWVM_GeneralMemory *prog)
 	prog->sub_co[id] = *co;
 	for (int i = 0;
 	     (long unsigned int)i < (sizeof(prog->m1.inst) - (*co + 1)); i++) {
-		if (prog->m1.inst[*co + 1 + i] == sube) {
+		if (prog->m1.inst[*co + 1 + i] == ret) {
 			val = *co + 1 + i;
 			break;
 		}
@@ -669,7 +669,7 @@ hwuint hsubs(hwuint *co, hwuint id, HWVM_GeneralMemory *prog)
 
 /*Takes one argument, look up ID on out-of-memory chip
 and jump to the intruction right after the call*/
-hwuint hsube(hwuint *co, hwuint id, HWVM_GeneralMemory *prog)
+hwuint hret(hwuint *co, hwuint id, HWVM_GeneralMemory *prog)
 {
 	*co = prog->return_co[id];
 	return 0;
