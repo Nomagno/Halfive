@@ -1,6 +1,6 @@
 FEED_FILE='rss.xml'
-TEMPLATE='<?xml version=\"1.0\" encoding=\"US-ASCII\" ?>
-<rss version=\"2.0\">
+TEMPLATE='<?xml version="1.0" encoding="US-ASCII" ?>
+<rss version="2.0">
 <channel>
 <title>Half-World Blog</title><description>Feed for news on the development of Half-World</description><link>_URL/index.html</link><copyright>2021,2022 Nomagno COIL License</copyright>'
 ITEM='<item><title>_TITLE</title><description>Half-World Blog Entry</description><link>_URL/_FILE</link></item>'
