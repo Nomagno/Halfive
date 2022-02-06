@@ -208,7 +208,7 @@ hwuint HWVM_Execute(HWVM_GeneralMemory *program)
 		GETVAR(tmpchar2, CURR_OP, 2);
 		setnum_dest = CURR_OP[0];
 		dest_type = GETTYPE(CURR_OP, 1);
-		getnum_orig = tmpchar1 | tmpchar2;
+		getnum_orig = (tmpchar2 < 8) ? (tmpchar1 << tmpchar2) : (tmpchar1 >> (tmpchar2 - 8));
 		set_zf = (getnum_orig == 0) ? 2 : 1;
 		goto _set;
 		break;
