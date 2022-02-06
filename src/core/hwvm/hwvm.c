@@ -40,6 +40,9 @@ enum optype { adr=0, lit=1, ptr=2 };
 	(((num | (1 << (2 - pos))) == num) && ((num | 8) == num))
 
 
+#define IS_LITTLE_ENDIAN (*(uint8_t *)&(uint16_t){1})
+
+
 #define CURR_OP program->code.opnd[program->co]
 #define MASK program->mask
 #define DATA program->data
@@ -80,6 +83,8 @@ hwuint HWVM_Execute(HWVM_GeneralMemory *program);
 HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory *code, HWVM_DefaultMemSetup *rawmem){
 	HWVM_GeneralMemory returnval = {0};
 	returnval.code = *code;
+	rawmem->co_high = (IS_LITTLE_ENDIAN) ? ((uint8_t *)&returnval.co + 1) : ((uint8_t *)&returnval.co);
+	rawmem->co_low = (IS_LITTLE_ENDIAN) ? ((uint8_t *)&returnval.co) : ((uint8_t *)&returnval.co + 1);
 
 	uint16_t ival = 0;
 	uint16_t i = 0;
