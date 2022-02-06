@@ -32,7 +32,7 @@ WORK.*/
 
 int HWDOC_Parse(const unsigned char *input, int tok_size, HWDOC_Token *toks);
 
-int hwdoc_parse(const unsigned char *input, int tok_size, HWDOC_Token *toks)
+int HWDOC_Parse(const unsigned char *input, int tok_size, HWDOC_Token *toks)
 {
 	int i = 0,           /*Character iterator var*/
 	    j = 0,           /*Token iterator var*/
