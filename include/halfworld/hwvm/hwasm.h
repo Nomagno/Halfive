@@ -30,4 +30,5 @@ WORK.*/
 #include <halfworld/hwreq.h>
 #include <halfworld/hwstring.h>
 #include <halfworld/hwvm/hwvm.h>
-hwuint HWASM_Parse(const char *linestr, HWVM_InstructionSet *inst, hwuint opnds[3]);
+hwuint HWASM_Parse(char *linestr, HWVM_InstructionSet *inst, hwuint opnds[3]);
+

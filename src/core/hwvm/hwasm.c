@@ -30,14 +30,14 @@ WORK.*/
 #include <halfworld/hwreq.h>
 #include <halfworld/hwvm/hwasm.h>
 
-hwuint HWASM_Parse(const char *linestr, HWVM_InstructionSet *inst, hwuint opnds[3]);
+hwuint HWASM_Parse(char *linestr, HWVM_InstructionSet *inst, hwuint opnds[3]);
 HWVM_InstructionSet _isinst(char *instr);
 hwuint _isxupdigit(hwuchar inchar);
 HWVM_InstructionSet _isinst(char *instr);
 
 /*Define HWASSEMBLY to enable assembling*/
+#define HWASSEMBLY
 #ifdef HWASSEMBLY
-
 #include <stdio.h>
 int main(int argc, char **argv)
 {
@@ -54,27 +54,50 @@ int main(int argc, char **argv)
 		HWASM_Parse(arr, &code.inst[i], code.opnd[i]);
 		i += 1;
 	}
-	HWVM_GeneralMemory prog = HWVM_Init(code);
-	fread(prog.m2.dr, 1, sizeof(prog.m2.dr), drivefile);
 
-	int errno = 0;
-	while ((!prog.hf) && (!errno)) {
-		if ((prog.m1.opnd[prog.m2.co][0] == 0xFFFD) ||
-		    (prog.m1.opnd[prog.m2.co][1] == 0xFFFD)) {
+	HWVM_DefaultMemSetup mem = {0};
+	HWVM_GeneralMemory prog = HWVM_Init(&code, &mem);
+	fread(mem.driv, 1, sizeof(mem.driv), drivefile);
+
+	int return_code = 0;
+
+	while ((!prog.hf) && (!return_code)) {
+		if ((prog.code.opnd[prog.co][0] == 0xFFFD) || /*Preemtive/non-polling-but-ontime input, cheats 
+		                                                a bit by essentially peeking at the operands*/
+		    (prog.code.opnd[prog.co][1] == 0xFFFD)) {
 			putchar('>');
-			prog.m2.in = getchar();
+			mem.in = getchar();
 			putchar('\n');
 		}
-		errno = HWVM_Execute(&prog);
+
+		return_code = HWVM_Execute(&prog);
+		printf("OU: %X\n", mem.ou);
 	}
 	fclose(codefile);
 	fclose(drivefile);
-	return errno;
+	if(prog.hf) printf("HALT\n"); 
+	else {
+		switch(return_code){
+		case 1:
+			printf("ERROR: READ/WRITE - UNMAPPED MEM\n");
+			break;
+		case 2:
+			printf("ERROR: WRITE TO READ-ONLY MEM\n");
+			break;
+		case 3:
+			printf("ERROR: WRONG OPERAND TYPE\n");
+			break;
+		default:
+			printf("ERROR: NO MORE INFO\n");
+			break;
+		}
+	}
+	return return_code;
 }
 #endif
 
 
-hwuint HWASM_Parse(const char *linestr, HWVM_InstructionSet *inst, hwuint opnds[3])
+hwuint HWASM_Parse(char *linestr, HWVM_InstructionSet *inst, hwuint opnds[3])
 {
 	char *token = hwstrtok(linestr, " "); /*linestr should not be const strictly speaking,
                                                 but strtok behaves properly in this situation.*/
@@ -160,3 +183,4 @@ HWVM_InstructionSet _isinst(char *instr)
 	else
 		return 16;
 }
+

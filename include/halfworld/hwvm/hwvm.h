@@ -29,9 +29,9 @@ WORK.*/
 
 /*READ THE HWVM SPEC*/
 #include <halfworld/hwreq.h>
-#define MEMSIZE 4096
-#define MEMSMALL 1024
 #include <stdint.h>
+
+#define MEMSIZE 4096
 
 typedef uint8_t hwuchar;
 typedef uint16_t hwuint;
@@ -86,9 +86,8 @@ typedef enum {
 	/*ADD trough to NOT: put result of doing
 	stuff with Vn values into Rn address*/
 	add = 5, /* R1 V2; addition, carry goes to carry flag*/
-	sub =
-	    6, /* R1 V2; substraction, carry flag set if result is negative*/
-	    and = 7, /* R1 V2; binary and*/
+	sub = 6, /* R1 V2; substraction, carry flag set if result is negative*/
+	and = 7, /* R1 V2; binary and*/
 	or = 8,      /* R1 V2; binary or*/
 	xor = 9,     /* R1 V2; binary exclusive or*/
 	rot = 10, /* R1 V2; If V2 is 0-7, bitshift R1 LEFT by V2 bits. Else
@@ -122,53 +121,51 @@ typedef struct {
 
 } HWVM_CodeMemory;
 
-/*Data memory*/
-typedef struct {
-	/*GEN mem, 0x0000 to 0x3FFF*/
-	hwuchar gp[MEMSIZE * 4];
-
-	/*DRIVE (persistent) mem, read-only 0x4000 to 0xBFFF*/
-	hwuchar dr[MEMSIZE * 8];
-
-	/*Zero flag, 0xFFFF*/
-	hwuchar zf;
-
-	/*Carry flag, 0xFFFE*/
-	hwuchar cf;
-
-	/*Input register, read-only, 0xFFFD*/
-	hwuchar in;
-	_Bool fi; /*Input flag, 1 if there's any input reading to do*/
-
-	/*Output register, write-only, 0xFFFC*/
-	hwuchar ou;
-	_Bool fo; /*Output flag, 1 if there's any output to handle*/
-
-	/*Program counter, read-only, 0xFFFB (low) and 0xFFFA (high)*/
-	hwuint co;
-
-
-} HWVM_DataMemory;
-
 /*Approximate size on disk for MEMSIZE = 4096, MEMSMALL = MEMSIZE/4:
 132KBs*/
 typedef struct {
-	HWVM_CodeMemory m1; /*Code memory*/
-	HWVM_DataMemory m2; /*Data memory*/
+	HWVM_CodeMemory code; /*Code memory*/
+	hwuchar *data[MEMSIZE * 16]; /*Data memory, default setup:*/
+	/*GEN mem (RW), 0x0000 to 0x3FFF, RECOMMENDED TO EXIST*/
+	/*DRIVE (persistent, R-only) mem, 0x4000 to 0xBFFF, RECOMMENDED TO EXIST*/
+	/*Zero flag (RW), 0xFFFF, OBLIGATORY*/
+	/*Carry flag (RW), 0xFFFE, OBLIGATORY*/
+	/*Input register (R-only), 0xFFFD, OBLIGATORY*/
+	/*Output register, 0xFFFC, OBLIGATORY*/
+	/*Program counter (R-only), 0xFFFB (low) and 0xFFFA (high), OBLIGATORY*/
+	hwuint co;
 
-	_Bool hf; /*Halt flag, 1 if it has halted.*/
+	/*If 0, data index is RW, if 1 it is read only*/
+	_Bool mask[MEMSIZE * 16];
 
-	hwuint sub_co[MEMSMALL]; /*For storing counter values corresponding to
+	/*Halt flag, 1 if it has halted.*/
+	_Bool hf;
+
+
+	hwuint func_co[64]; /*For storing counter values corresponding to
 				the FUNC instruction of each subroutine ID*/
-
-	hwuint return_co[MEMSMALL]; /*For storing counter values corresponding
+	hwuint return_co[64]; /*For storing counter values corresponding
 				to the execution environment of the branch that
 				executes CALLS, for each subroutine ID*/
-
-	hwuint skip_co[MEMSMALL]; /*Counter values FUNC has to skip to*/
+	hwuint skip_co[64]; /*Counter values FUNC has to skip to*/
 } HWVM_GeneralMemory;
+
+/*Default memory setup*/
+typedef struct {
+	hwuchar gmem[MEMSIZE * 4];
+	hwuchar driv[MEMSIZE * 8];
+	hwuchar zf;
+	hwuchar cf;
+	hwuchar in;
+	hwuchar ou;
+	hwuchar *co_high;
+	hwuchar *co_low;
+} HWVM_DefaultMemSetup;
 
 /*Half-World VM interface*/
 
-extern HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory code); /*Generate mem struct from xmem struct*/
-extern hwuint HWVM_Execute(HWVM_GeneralMemory *program); /*Execute one instruction from the program*/
+/*Generate the whole VM from code and the default memory setup*/
+extern HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory *code, HWVM_DefaultMemSetup *rawmem);
+
+/*Execute one instruction from the program*/
+extern hwuint HWVM_Execute(HWVM_GeneralMemory *program);

@@ -30,701 +30,262 @@ WORK.*/
 #include <halfworld/hwreq.h>
 #include <halfworld/hwvm/hwvm.h>
 
-/*What each of the three macros do*/
-/*HWVM_OU_HEX -> Setting FFFC prints memory address as hexadecimal number*/
-/*HWVM_OU_RAW -> Setting FFFC prints memory address as raw character*/
-/*HWVM_OU_DEBUG -> Print ERROR, HALT, and UNIMPLEMENTED messages*/
-/*If none of the three are set, output is handled externally and the output flag will be set*/
-#if defined(HWVM_OU_HEX) || defined(HWVM_OU_RAW) || defined(HWVM_OU_DEBUG)
-#include <stdio.h>
-#endif
+enum optype { adr=0, lit=1, ptr=2 };
 
-/*Additional macro:*/
-/*HWVM_IN_EXTERN -> If input is handled externally. If NOT set, the input flag will be set, and so asking for input will always happen one cycle too late*/
+#define ISADR(num, pos)                                                        \
+	(((num | (1 << (2 - pos))) != num))
+#define ISLIT(num, pos)                                                        \
+	(((num | (1 << (2 - pos))) == num) && ((num | 8) != num))
+#define ISPTR(num, pos)                                                        \
+	(((num | (1 << (2 - pos))) == num) && ((num | 8) == num))
 
-#define UADDR 0xFFF0
+
+#define CURR_OP program->code.opnd[program->co]
+#define MASK program->mask
+#define DATA program->data
+#define _BREAK return return_code
+
+#define GETPTR(arr, where) ((arr[where] << 8) | (arr[where + 1]))
+
+#define PTR_VALID(arr, where) ((arr[where] != NULL && arr[where + 1] != NULL) && (arr[GETPTR(*arr, where)] != NULL))
+
+
+#define GETVAR(dest, arr, pos) \
+if (ISLIT(arr[2], pos)){ dest = arr[pos - 1]; } \
+else if (ISADR(arr[2], pos) && DATA[arr[pos - 1]] != NULL) { dest = *DATA[arr[pos - 1]]; } \
+else if (ISPTR(arr[2], pos) && PTR_VALID(DATA, arr[pos - 1])) { dest = *DATA[GETPTR(*DATA, arr[pos - 1])]; }
+
+#define GETTYPE(arr, pos) ((ISPTR(arr[2], pos)) ? ptr : ((ISADR(arr[2], pos)) ? adr : lit))
+
+#define _ZF 0xFFFF
+#define _CF 0xFFFE
+#define _IN 0xFFFD
+#define _OU 0xFFFC
+#define _PC_HIGH 0xFFFB
+#define _PC_LOW 0xFFFA
+#define _ERROR_ADDR 0xFFF0
+
 /*Unknown address*/
 
-HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory code);
+
+HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory *code, HWVM_DefaultMemSetup *rawmem);
 hwuint HWVM_Execute(HWVM_GeneralMemory *program);
 
+/*Return value meaning:
+0 - successful
+1 - error - unmmapped memory
+2 - error - write to read-only address
+3 - error - wrong usage*/
 
-hwuint hbin(hwuint op[4], HWVM_DataMemory *space, hwuint flag, _Bool do_save);
-hwuint hset(hwuint op[4], HWVM_DataMemory *space);
-hwuint hjump(hwuint op[4], HWVM_DataMemory *space, hwuint *co);
-hwuint hrot(hwuint op[4], HWVM_DataMemory *space);
-hwuint hcall(hwuint *co, hwuint id, HWVM_GeneralMemory *prog);
-hwuint hfunc(hwuint *co, hwuint id, HWVM_GeneralMemory *prog);
-hwuint hret(hwuint *co, hwuint id, HWVM_GeneralMemory *prog);
+HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory *code, HWVM_DefaultMemSetup *rawmem){
+	HWVM_GeneralMemory returnval = {0};
+	returnval.code = *code;
 
-HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory code)
-{
-	HWVM_GeneralMemory memory = {0};
-	memory.m1 = code;
-	memory.m2.zf = 1;
-	return memory;
+	uint16_t ival = 0;
+	uint16_t i = 0;
+	while(1){
+		if((ival != !!i) && (ival != 0)) break;
+		ival = !!i;
+		if(i < 0x3FFF){
+			returnval.data[i] = &(rawmem->gmem[i]);
+		} else if(i < 0xBFFF){
+			returnval.data[i] = &(rawmem->driv[i - 0x3FFF]);
+			returnval.mask[i] = 1; /*Read-only*/
+		} else if(i == 0xFFFF){
+			returnval.data[i] = &(rawmem->zf);
+		} else if(i == 0xFFFE){
+			returnval.data[i] = &(rawmem->cf);
+		} else if(i == 0xFFFD){
+			returnval.data[i] = &(rawmem->in);
+			returnval.mask[i] = 1; /*Read-only*/
+		} else if(i == 0xFFFC){
+			returnval.data[i] = &(rawmem->ou);
+		} else if(i == 0xFFFA){
+			returnval.data[i] = rawmem->co_high;
+			returnval.mask[i] = 1; /*Read-only*/
+		} else if(i == 0xFFFB){
+			returnval.data[i] = rawmem->co_low;
+			returnval.mask[i] = 1; /*Read-only*/
+		}
+		i+=1;
+	}
+
+	return returnval;
 }
 
 hwuint HWVM_Execute(HWVM_GeneralMemory *program)
 {
-	hwuint errno;
-	program->m2.fo = 0;
-	program->m2.fi = 0;
-	if (program->m2.co < (MEMSIZE * 4)) {
-		switch (program->m1.inst[program->m2.co]) {
-		case halt:
-			program->hf = 1; /*Stop the CPU*/
-			program->m2.co += 1;
-#ifdef HWVM_OU_DEBUG
-			printf("HALT\n");
-#endif
-			return 0;
-		case nop:
-			program->m2.co += 1; /*Do nothing*/
-			return 0;
-		case set:
-			errno = hset(program->m1.opnd[program->m2.co],
-				     &program->m2); /*Set address to value*/
-			program->m2.co += 1;
-			return 0;
-		case jmp:
-			errno = hjump(program->m1.opnd[program->m2.co],
-				      &program->m2, &program->m2.co); /*Jump*/
-			if (errno != 0) {
-				return 2; /*EXECUTION ERROR*/
-			}
-			return 0;
-		case jcz:
-			if (program->m2.zf == 0)
-				errno =
-				    hjump(program->m1.opnd[program->m2.co],
-					  &program->m2,
-					  &program->m2.co); /*Jump if ZF is 0*/
-			else {
-				program->m2.co += 1;
-				errno = 0;
-			}
-			if (errno != 0) {
-				return 2; /*EXECUTION ERROR*/
-			}
-			return 0;
-		case jcnz:
-			if (program->m2.zf)
-				errno =
-				    hjump(program->m1.opnd[program->m2.co],
-					  &program->m2,
-					  &program->m2.co); /*Jump if ZF is not zero*/
-			else {
-				program->m2.co += 1;
-				errno = 0;
-			}
-			if (errno != 0) {
-				return 2; /*EXECUTION ERROR*/
-			}
-			return 0;
-		case add:
-			errno = hbin(program->m1.opnd[program->m2.co],
-				     &program->m2, 4, 1); /*Add and save*/
-			program->m2.co += 1;
-			if (errno != 0) {
-				return 2; /*EXECUTION ERROR*/
-			}
-			return 0;
-		case sub:
-			errno = hbin(program->m1.opnd[program->m2.co],
-				     &program->m2, 5, 1); /*Substract and save*/
-			program->m2.co += 1;
-			if (errno != 0) {
-				return 2; /*EXECUTION ERROR*/
-			}
-			return 0;
-		case and:
-			errno = hbin(program->m1.opnd[program->m2.co],
-				     &program->m2, 1, 1); /*Perform binary AND*/
-			program->m2.co += 1;
-			if (errno != 0) {
-				return 2; /*EXECUTION ERROR*/
-			}
-			return 0;
-		case or:
-			errno = hbin(program->m1.opnd[program->m2.co],
-				     &program->m2, 2, 1); /*Perform binary OR*/
-			program->m2.co += 1;
-			if (errno != 0) {
-				return 2; /*EXECUTION ERROR*/
-			}
-			return 0;
-		case xor:
-			errno =
-			    hbin(program->m1.opnd[program->m2.co], &program->m2,
-				 3, 1); /*Perform binary EXCLUSIVE OR*/
-			program->m2.co += 1;
-			if (errno != 0) {
-				return 2; /*EXECUTION ERROR*/
-			}
-			return 0;
-		case rot:
-			errno = hrot(program->m1.opnd[program->m2.co],
-				     &program->m2); /*Perform binary NOT*/
-			program->m2.co += 1;
-			if (errno != 0) {
-				return 2; /*EXECUTION ERROR*/
-			}
-			return 0;
-		case cmp:
-			errno =
-			    hbin(program->m1.opnd[program->m2.co], &program->m2,
-				 5, 0); /*Substract but don't save*/
-			program->m2.co += 1;
-			if (errno != 0) {
-				return 2; /*EXECUTION ERROR*/
-			}
-			return 0;
-		case func:
-			errno = hfunc(&(program->m2.co),
-				      program->m1.opnd[program->m2.co][0],
-				      program); /*Mark start of subroutine*/
-			program->m2.co += 1;
-			if (errno != 0) {
-				return 2; /*EXECUTION ERROR*/
-			}
-			return 0;
-		case ret:
-			errno = hret(&(program->m2.co),
-				      program->m1.opnd[program->m2.co][0],
-				      program); /*Mark end of subroutine*/
-			program->m2.co += 1;
-			if (errno != 0) {
-				return 2; /*EXECUTION ERROR*/
-			}
-			return 0;
-		case call:
-			errno = hcall(&(program->m2.co),
-				      program->m1.opnd[program->m2.co][0],
-				      program); /*Call subroutine*/
-			program->m2.co += 1;
-			if (errno != 0) {
-				return 2; /*EXECUTION ERROR*/
-			}
-			return 0;
-		}
-	}
+	unsigned return_code = 0;
 
-#ifdef HWVM_OU_DEBUG
-	printf("UNIMPLEMENTED\n");
-#endif
-	return 1; /*UNIMPLEMENTED*/
-}
+	hwuchar getnum_orig = 0;
+	hwuint setnum_dest = 0;
+	enum optype dest_type = 0;
 
-/*
-addrcheck() returns the actual address space of the argument address
+	_Bool donot_save = 0; /*0 - set main address; 1 - only set zf/cf*/
+	hwuchar set_cf = 0; /*0 - don't touch; 1 - set to 1; 2 - set to zero;*/
+	hwuchar set_zf = 0; /*0 - don't touch; 1 - set to 1; 2 - set to zero;*/
+	hwuint tmpchar1 = 0;
+	hwuint tmpchar2 = 0;
 
-0xFFF0: UNKNOWN ADDRESS SPACE
-1: GENERAL PURPOSE MEMORY
-2: CENTRAL PROCESSING UNIT MEMORY
-3: ZERO FLAG
-4: CARRY FLAG
-5: INPUT REGISTER (READ-ONLY)
-6: OUTPUT REGISTER (WRITE-ONLY)
-7: PERSISTENT STORAGE
-*/
-
-hwuint addrcheck(hwuint arg)
-{
-	if (arg <= 0x3FFF)
-		return 1;
-	else if (arg <= 0xBFFF)
-		return 7;
-	else if (arg == 0xFFFF)
-		return 3;
-	else if (arg == 0xFFFE)
-		return 4;
-	else if (arg == 0xFFFD)
-		return 5;
-	else if (arg == 0xFFFC)
-		return 6;
-	else if (arg == 0xFFFB)
-		return 2;
-	else if (arg == 0xFFFA)
-		return 8;
-	else
-		return 0;
-}
-
-hwuint addrconvert(hwuint arg, hwuint addr)
-{
-	switch (arg) {
-	case 0:
-		return UADDR;
-	case 1:
-		return addr;
-	case 2:
-		return 0;
-	case 3:
-		return 0;
-	case 4:
-		return 0;
-	case 5:
-		return 0;
-	case 6:
-		return 0;
-	case 7:
-		return (addr - 0x4000);
-	case 8:
-		return 0;
-	default:
-		return UADDR;
-	}
-}
-
-/*INCREDIBLY COMMON BOILERPLATE MOVED TO OWN FUNCTION*/
-hwuint auxset(hwuint *val, HWVM_DataMemory *space, hwuint ad, hwuint conv, _Bool do_write,
-	      _Bool isptr, _Bool jmpmode)
-{
-	if (!do_write) {
-		switch (ad) {
-		case 1:; /*If we're dealing with a pointer, treat the value of
-			two contiguous byes as the address and check if is
-			within bounds. Else just*/
-			if (isptr) {
-				unsigned ptrval =
-				    (((hwuint)space->gp[conv] << 8) |
-				     space->gp[conv + 1]);
-				unsigned adptr = addrcheck(ptrval);
-				unsigned adptrconv = addrconvert(adptr, ptrval);
-				if (adptr == 1) {
-					*val = (jmpmode) ? ptrval : space->gp[adptrconv];
-				} else if (adptr == 7) {
-					*val = (jmpmode) ? ptrval : space->dr[adptrconv];
-				}
-			} else
-				*val = space->gp[conv];
-			break;
-		case 2:;
-			*val = space->co & 0xFFFF;
-			break;
-		case 8:;
-			*val = space->co >> 8;
-			break;
-		case 3:;
-			*val = space->zf;
-			break;
-		case 4:;
-			*val = space->cf;
-			break;
-		case 5:;
-			*val = space->in;
-#ifndef HWVM_IN_EXTERN
-			space->fi = 1;
-#endif
-			break;
-		case 6:;
-			return 1; /*Can't read output register!*/
-			break;
-		case 7: /*If we're dealing with a pointer, treat the value of
-			two contiguous byes as the address and check if is
-			within bounds. Else just*/
-			if (isptr) {
-				unsigned ptrval =
-				    (((hwuint)space->dr[conv] << 8) +
-				     space->dr[conv + 1]);
-				unsigned adptr = addrcheck(ptrval);
-				unsigned adptrconv = addrconvert(adptr, ptrval);
-				if (adptr == 1)
-					*val = (jmpmode) ? adptrconv : space->gp[adptrconv];
-				else if (adptr == 7)
-					*val = (jmpmode) ? adptrconv : space->dr[adptrconv];
-			} else
-				*val = space->gp[conv];
-			break;
-		default:
-			return 1; /*ERROR, WE DON'T KNOW WHAT THAT ADDRESS
-				     MEANS*/
-		}
-	} else {
-		switch (ad) {
-		case 1:; /*If we're dealing with a pointer, treat the value of
-			two contiguous byes as the address and check if is
-			within bounds. Else just*/
-			if (isptr) {
-				unsigned ptrval =
-				    (((hwuint)space->gp[conv] << 8) +
-				     space->gp[conv + 1]);
-				unsigned adptr = addrcheck(ptrval);
-				unsigned adptrconv = addrconvert(adptr, ptrval);
-				if (adptr == 1)
-					space->gp[adptrconv] = *val;
-				else if (adptr == 7)
-					return 1; /*You can't set the drive!*/
-			} else
-				space->gp[conv] = *val;
-			break;
-		case 2:;
-			return 1; /*Can't set program counter! You can use JMP
-				     for that*/
-			break;
-		case 8:;
-			return 1; /*Can't set program counter! You can use JMP
-				     for that*/
-			break;
-		case 3:;
-			space->zf = *val;
-			break;
-		case 4:;
-			space->cf = *val;
-			break;
-		case 5:;
-			return 1; /*Can't set input register!*/
-			break;
-		case 6:;
-			space->ou = *val;
-#ifdef HWVM_OU_RAW
-			printf("%c", space->ou);
-#elif defined(HWVM_OU_HEX)
-			printf("%X\n", space->ou);
-#else
-			space->fo = 1;
-#endif
-
-			break;
-		case 7:
-			return 1; /*You can't set the drive!*/
-			break;
-		default:
-			return 1; /*ERROR, WE DON'T KNOW WHAT THAT ADDRESS
-				     MEANS*/
-		}
-	}
-	return 0;
-}
-
-/*Meta-instruction that has two configurations:
-1. first argument is (pointer, or address)
-    operate first and second and save result to first argument (Pointer, or
-address). set flags accordingly (zero and possibly carry)
-
-2. Same as 1, but don't save the result
-
-Available binary operations are:
-ADD, SUB, XOR, OR, AND
-
-Note substract (SUB) may use the second configuration,
-in the form of the compare (CMP) instruction
-*/
-
-hwuint hbin(hwuint op[4], HWVM_DataMemory *space, hwuint flag, _Bool do_save)
-{
-	hwuint ad1;
-	hwuint ad2;
-
-	hwuint isptr1 = 0;
-
-	hwuint conv1;
-	hwuint conv2;
-
-	hwuint val1;
-	hwuint val2;
-	hwuchar result;
-	hwuint castresult;
-
-	ad1 = addrcheck(op[0]);
-	conv1 = addrconvert(ad1, op[0]);
-	if (op[2] !=
-	    (op[2] |
-	     2)) { /*We're dealing with an address, corresponding bit not set*/
-		if (auxset(&val1, space, ad1, conv1, 0, 0, 0)) {
-#ifdef HWVM_OU_DEBUG
-			printf("ERROR\n");
-#endif
-			return 1;
-		}
-
-	} else { /*We're dealing with a literal pointer, corresponding bit set
-		    AND literal bit set*/
-		isptr1 = 1;
-		if (op[2] >> 3) {
-
-			if (auxset(&val1, space, ad1, conv1, 0, 1, 0)) {
-#ifdef HWVM_OU_DEBUG
-				printf("ERROR\n");
-#endif
-				return 1;
-			}
-		}
-	}
-
-	ad2 = addrcheck(op[1]);
-	conv2 = addrconvert(ad2, op[1]);
-	if (op[2] != (op[2] | 1)) {
-		if (auxset(&val2, space, ad2, conv2, 0,
-			   0, 0)) { /*We're dealing with an address, corresponding
-				    bit not set*/
-#ifdef HWVM_OU_DEBUG
-			printf("ERROR\n");
-#endif
-			return 1;
-		}
-	} else {
-		if (op[2] >> 3) { /*We're dealing with a literal pointer,
-				     corresponding bit set AND literal bit set*/
-			if (auxset(&val2, space, ad2, conv2, 0, 1, 0)) {
-#ifdef HWVM_OU_DEBUG
-				printf("ERROR\n");
-#endif
-				return 1;
-			}
-		} else { /*We're dealing with a literal number, corresponding
-			    bit set AND literal bit not set*/
-			val2 = op[1];
-		}
-	}
-
-	switch (flag) {
-	case 1:
-		result = (hwuchar)val1 & (hwuchar)val2;
+	switch (program->code.inst[program->co]) {
+	case halt:
+		program->hf = 1; break;
+	case nop:
+		program->co += 1; break;
+	case set:
+		GETVAR(getnum_orig, CURR_OP, 1);
+		setnum_dest = CURR_OP[1];
+		dest_type = GETTYPE(CURR_OP, 2);
+		goto _set;
 		break;
-	case 2:
-		result = (hwuchar)val1 | (hwuchar)val2;
+	case jmp: goto _jmp;
+	case jcz: /*Jump if the zero flag is zero*/
+		if (*(DATA[_ZF]) == 0) goto _jmp;
 		break;
-	case 3:
-		result = (hwuchar)val1 ^ (hwuchar)val2;
+	case jcnz: /*Jump if the zero flag is NOT zero*/
+		if (*(DATA[_ZF]) != 0) goto _jmp;
 		break;
-	case 4:
-		result = (hwuchar)val1 + (hwuchar)val2;
-		space->cf = (result < val1);
+
+	case add:
+		GETVAR(tmpchar1, CURR_OP, 1);
+		GETVAR(tmpchar2, CURR_OP, 2);
+		setnum_dest = CURR_OP[0];
+		dest_type = GETTYPE(CURR_OP, 1);
+		getnum_orig = tmpchar1 + tmpchar2;
+		set_cf = ((getnum_orig < tmpchar1) || (getnum_orig < tmpchar2)) ? 1 : 2;
+		set_zf = (getnum_orig == 0) ? 2 : 1;
+		goto _set;
 		break;
-	case 5:
-		result = (hwuchar)val1 - (hwuchar)val2;
-		space->cf = (result > val1);
+	case sub:
+		GETVAR(tmpchar1, CURR_OP, 1);
+		GETVAR(tmpchar2, CURR_OP, 2);
+		setnum_dest = CURR_OP[0];
+		dest_type = GETTYPE(CURR_OP, 1);
+		getnum_orig = tmpchar1 - tmpchar2;
+		set_cf = (getnum_orig < tmpchar2) ? 1 : 2;
+		set_zf = (getnum_orig == 0) ? 2 : 1;
+		goto _set;
+		break;
+	case cmp:
+		GETVAR(tmpchar1, CURR_OP, 1);
+		GETVAR(tmpchar2, CURR_OP, 2);
+		getnum_orig = tmpchar1 - tmpchar2;
+		set_cf = (getnum_orig < tmpchar2) ? 1 : 2;
+		set_zf = (getnum_orig == 0) ? 2 : 1;
+		donot_save = 1;
+		goto _set;
+		break;
+	case and:
+		GETVAR(tmpchar1, CURR_OP, 1);
+		GETVAR(tmpchar2, CURR_OP, 2);
+		setnum_dest = CURR_OP[0];
+		dest_type = GETTYPE(CURR_OP, 1);
+		getnum_orig = tmpchar1 & tmpchar2;
+		set_zf = (getnum_orig == 0) ? 2 : 1;
+		goto _set;
+		break;
+		break;
+	case xor:
+		GETVAR(tmpchar1, CURR_OP, 1);
+		GETVAR(tmpchar2, CURR_OP, 2);
+		setnum_dest = CURR_OP[0];
+		dest_type = GETTYPE(CURR_OP, 1);
+		getnum_orig = tmpchar1 ^ tmpchar2;
+		set_zf = (getnum_orig == 0) ? 2 : 1;
+		goto _set;
+		break;
+	case or:
+		GETVAR(tmpchar1, CURR_OP, 1);
+		GETVAR(tmpchar2, CURR_OP, 2);
+		setnum_dest = CURR_OP[0];
+		dest_type = GETTYPE(CURR_OP, 1);
+		getnum_orig = tmpchar1 | tmpchar2;
+		set_zf = (getnum_orig == 0) ? 2 : 1;
+		goto _set;
+		break;
+	case rot:
+		GETVAR(tmpchar1, CURR_OP, 1);
+		GETVAR(tmpchar2, CURR_OP, 2);
+		setnum_dest = CURR_OP[0];
+		dest_type = GETTYPE(CURR_OP, 1);
+		getnum_orig = tmpchar1 | tmpchar2;
+		set_zf = (getnum_orig == 0) ? 2 : 1;
+		goto _set;
+		break;
+
+	case func: ;
+		hwuint subval = 0; /*This can't be a safe 'ret' place, so it's an error code*/
+		program->func_co[CURR_OP[0]] = program->co; /*Write down this instruction's position*/
+		for (hwuint i = 0; i <
+		    (sizeof(program->code.inst) - (program->co + 1)); i++) { /*Look for closest 'ret' */
+			if (program->code.inst[program->co + 1 + i] == ret) {
+				subval = program->co + 1 + i;
+				break;
+			}
+		}
+		if (subval){ program->skip_co[CURR_OP[0]] = subval; program->co = subval + 1; _BREAK; } /*Write down ret position, skip subroutine*/
+		else { return_code = 3; _BREAK; }	/*No matching 'ret'!*/
+		break;
+	case ret:
+		program->co = program->return_co[CURR_OP[0]]; /*Return to caller*/
+		_BREAK;
+		break;
+	case call:
+		program->return_co[CURR_OP[0]] = program->co + 1; /*Note next instruction*/
+		program->co = program->func_co[CURR_OP[0]] + 1; /*Jump to subroutine*/
+		_BREAK;
 		break;
 	}
-	if (result == 0)
-		space->zf = 0;
-	else
-		space->zf = 1;
+	_BREAK;
 
-	if (do_save) {
-		castresult = result;
-		if (auxset(&castresult, space, ad1, conv1, 1,
-			   isptr1, 0)) {
-#ifdef HWVM_OU_DEBUG
-			printf("ERROR\n");
-#endif
-			return 1;
-		}
+_set:
+
+	if(set_cf == 1) *DATA[0xFFFE] = 1; 
+	else if(set_cf == 2) *DATA[0xFFFE] = 0;
+
+	if(set_zf == 1) *DATA[0xFFFF] = 1; 
+	else if(set_zf == 2) *DATA[0xFFFF] = 0;
+
+	if(!donot_save){ /*We don't care about any memory 
+	                   stuff unless we need to use the memory!*/
+	if(DATA[setnum_dest] == NULL) return 1; /*Unmapped memory*/
+	if(dest_type == lit) {
+		return_code = 3; /*Wrong usage*/
+		_BREAK;
+	} else if(dest_type == adr) {
+		if (DATA[setnum_dest] == NULL) {
+			return_code = 1; /*Unmapped memory*/
+			_BREAK;
+		} else if(MASK[setnum_dest] == 1){
+			return_code = 2; /*Write to read-only address*/
+			_BREAK;
+		};
+		*DATA[setnum_dest] = getnum_orig;
+	} else if(dest_type == ptr) {
+		if(PTR_VALID(DATA, setnum_dest)){
+			*DATA[GETPTR(*DATA, setnum_dest)] = getnum_orig;
+		} else{
+			return_code = 1;
+			_BREAK;
+		};
 	}
-
-	return 0;
-}
-
-/*Takes two operands, if second is less than 8, bitshift left that many bits.
-	 if second is less than 16, substract 8 and bitshift right that many
-  bits. if second is equal to or greater than 16, do nothing. First argument
-  is destination address (Pointer, or address)*/
-hwuint hrot(hwuint op[3], HWVM_DataMemory *space)
-{
-	hwuint ad1;
-	hwuint ad2;
-	hwuint isptr1 = 0;
-
-	hwuint conv1;
-	hwuint conv2;
-
-	hwuint val1;
-	hwuint val2;
-	hwuint result;
-	_Bool do_nothing = 1;
-
-	ad1 = addrcheck(op[0]);
-	conv1 = addrconvert(ad1, op[0]);
-	if (op[2] !=
-	    (op[2] |
-	     2)) { /*We're dealing with an address, corresponding bit not set*/
-		if (auxset(&val1, space, ad1, conv1, 0, 0, 0)) {
-#ifdef HWVM_OU_DEBUG
-			printf("ERROR\n");
-#endif
-			return 1;
-		}
-	} else {
-		if (op[2] >> 3) { /*We're dealing with a literal pointer,
-				     corresponding bit set AND literal bit set*/
-		isptr1 = 1;
-			if (auxset(&val1, space, ad1, conv1, 0, 1, 0)) {
-#ifdef HWVM_OU_DEBUG
-				printf("ERROR\n");
-#endif
-				return 1;
-			}
-		} else { /*We're dealing with a literal number, corresponding
-			    bit set AND literal bit not set*/
-			val1 = op[0];
-		}
 	}
-
-	ad2 = addrcheck(op[1]);
-	conv2 = addrconvert(ad2, op[1]);
-	if (op[2] != (op[2] | 1)) {
-		if (auxset(&val2, space, ad2, conv2, 0, 0, 0)) {
-#ifdef HWVM_OU_DEBUG
-			printf("ERROR\n");
-#endif
-			return 1;
-		}
-	} else {
-		if (op[2] >> 3) {
-			if (auxset(&val2, space, ad2, conv2, 0, 1, 0)) {
-#ifdef HWVM_OU_DEBUG
-				printf("ERROR\n");
-#endif
-				return 1;
-			}
+	program->co += 1;
+	_BREAK;
+_jmp:
+	if (ISADR(CURR_OP[2], 1) || ISLIT(CURR_OP[2], 1)) { 
+	    /*If dealing with an address OR a literal, just
+		     move the PC to the operand*/
+		program->co = CURR_OP[0];
+	} else if (ISPTR(CURR_OP[2], 1)) { 
+		/*If we are dealing with a pointer*/
+		if (PTR_VALID(DATA, CURR_OP[0])) { /*If the pointer addresses are mapped*/
+				/*Read the address presented and set the PC*/
+				program->co = GETPTR(*DATA,
+					CURR_OP[0]);  
 		} else {
-			val2 = op[1];
+			return_code = 1; /*Else report they are unmmapped*/
 		}
 	}
-	if (val2 < 8)
-		result = val1 << val2;
-	else if (val2 < 16)
-		result = val1 >> (val2 - 8);
-	else
-		do_nothing = 0;
-
-
-	if (do_nothing && auxset(&result, space, ad1, conv1, 1,
-				 isptr1, 0)) {
-#ifdef HWVM_OU_DEBUG
-		printf("ERROR\n");
-#endif
-		return 1;
-	}
-
-	return 0;
+	_BREAK;
 }
-
-/*Takes one argument, move program counter to value (Pointer, literal, or
- * address)*/
-hwuint hjump(hwuint op[4], HWVM_DataMemory *space, hwuint *co)
-{
-	hwuint adr;
-	hwuint conv;
-	hwuint val;
-
-	adr = addrcheck(op[0]);
-	conv = addrconvert(adr, op[0]);
-	if (op[2] != (op[2] | 2)){
-	     val = op[0]; /*Addresses are treated as literals*/
-	} else {
-		if (op[2] >> 3) { /*We're dealing with a literal pointer,
-				     corresponding bit set AND literal bit set*/
-			if (auxset(&val, space, adr, conv, 0, 1, 1)) {
-#ifdef HWVM_OU_DEBUG
-				printf("ERROR\n");
-#endif
-				return 1;
-			}
-		} else { /*We're dealing with a literal number, corresponding
-			    bit set AND literal bit not set*/
-			val = op[0];
-		}
-	}
-	*co = val;
-	return 0;
-}
-
-/*Takes one argument, look up ID on out-of-memory
-chip and jump to its corresponding code address.
-Note down current code address for returning from
-the subroutine*/
-hwuint hcall(hwuint *co, hwuint id, HWVM_GeneralMemory *prog)
-{
-	prog->return_co[id] = *co;
-	*co = prog->sub_co[id];
-	return 0;
-}
-
-/*Takes one argument, write to ID slot on out-of-memory
-chip and look for end of declaration (closest ret). Note it
-down too. Jump to after the ret*/
-hwuint hfunc(hwuint *co, hwuint id, HWVM_GeneralMemory *prog)
-{
-	hwuint val = 0; /*It is impossible counter 0
-			is a safe place to return to,
-			which is why it is an error value*/
-	prog->sub_co[id] = *co;
-	for (int i = 0;
-	     (long unsigned int)i < (sizeof(prog->m1.inst) - (*co + 1)); i++) {
-		if (prog->m1.inst[*co + 1 + i] == ret) {
-			val = *co + 1 + i;
-			break;
-		}
-	}
-	if (val)
-		*co = val;
-	else
-		return 1;
-
-	return 0;
-}
-
-/*Takes one argument, look up ID on out-of-memory chip
-and jump to the intruction right after the call*/
-hwuint hret(hwuint *co, hwuint id, HWVM_GeneralMemory *prog)
-{
-	*co = prog->return_co[id];
-	return 0;
-}
-
-/*Takes two arguments, copy value of second
-(Pointer, literal, or address) to second (Pointer, or address)*/
-hwuint hset(hwuint op[3], HWVM_DataMemory *space)
-{
-	hwuint ad1;
-	hwuint ad2;
-	hwuint isptr1 = 0;
-
-	hwuint conv1;
-	hwuint conv2;
-
-	hwuint val;
-
-	ad1 = addrcheck(op[0]);
-	conv1 = addrconvert(ad1, op[0]);
-	if (op[2] !=
-	    (op[2] |
-	     2)) { /*We're dealing with an address, corresponding bit not set*/
-		if (auxset(&val, space, ad1, conv1, 0, 0, 0)) {
-#ifdef HWVM_OU_DEBUG
-			printf("ERROR\n");
-#endif
-			return 1;
-		}
-	} else {
-		if (op[2] >> 3) { /*We're dealing with a literal pointer,
-				     corresponding bit set AND literal bit set*/
-			isptr1 = 0;
-			if (auxset(&val, space, ad1, conv1, 0, 1, 0)) {
-#ifdef HWVM_OU_DEBUG
-				printf("ERROR\n");
-#endif
-				return 1;
-			}
-		} else { /*We're dealing with a literal number, corresponding
-			    bit set AND literal bit not set*/
-			val = op[0];
-		}
-	}
-
-	ad2 = addrcheck(op[1]);
-	conv2 = addrconvert(ad2, op[1]);
-
-	if (auxset(&val, space, ad2, conv2, 1,
-		   isptr1, 0)) {
-#ifdef HWVM_OU_DEBUG
-		printf("ERROR\n");
-#endif
-		return 1;
-	}
-	return 0;
-}
-
