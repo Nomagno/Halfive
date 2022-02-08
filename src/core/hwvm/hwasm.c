@@ -56,6 +56,7 @@ int main(int argc, char **argv)
 	}
 
 	HWVM_DefaultMemSetup mem = {0};
+	HWVM_ReadWriteInfo rwinf = {0};
 	HWVM_GeneralMemory prog = HWVM_Init(&code, &mem);
 	fread(mem.driv, 1, sizeof(mem.driv), drivefile);
 
@@ -70,8 +71,9 @@ int main(int argc, char **argv)
 			putchar('\n');
 		}
 
-		return_code = HWVM_Execute(&prog);
-		printf("OU: %X\n", mem.ou);
+		return_code = HWVM_Execute(&prog, &rwinf);
+		if((rwinf.adrw == 0xFFFC) && (rwinf.wrote_adrw))
+			printf("OU: %X\n", mem.ou);
 	}
 	fclose(codefile);
 	fclose(drivefile);
