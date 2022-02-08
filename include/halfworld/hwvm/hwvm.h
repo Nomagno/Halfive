@@ -162,10 +162,25 @@ typedef struct {
 	hwuchar *co_low;
 } HWVM_DefaultMemSetup;
 
+typedef struct {
+	_Bool was_err; /*Was there an error?*/
+
+	hwuint adrw; /*Write address*/
+	_Bool wrote_adrw; /*Additionally, was the write address written THIS CYCLE?*/
+	_Bool read_adrw; /*Additionally, was the write address read THIS CYCLE?*/
+
+
+	hwuint adrr; /*Read address*/
+	_Bool read_adrr; /*Additionally, was the read address read THIS CYCLE?*/
+
+	_Bool write_zf; /*Additionally, wrote zero flag?*/
+	_Bool write_cf; /*Additionally, wrote carry flag?*/
+} HWVM_ReadWriteInfo;
+
 /*Half-World VM interface*/
 
 /*Generate the whole VM from code and the default memory setup*/
 extern HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory *code, HWVM_DefaultMemSetup *rawmem);
 
 /*Execute one instruction from the program*/
-extern hwuint HWVM_Execute(HWVM_GeneralMemory *program);
+extern hwuint HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf);

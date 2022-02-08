@@ -47,17 +47,21 @@ enum optype { adr=0, lit=1, ptr=2 };
 #define CURR_OP program->code.opnd[_PROG_CO]
 #define MASK program->mask
 #define DATA program->data
-#define _BREAK return return_code
+#define _BREAK rwinf->was_err = 1; return return_code
 
 #define GETPTR(arr, where) ((arr[where] << 8) | (arr[where + 1]))
 
 #define PTR_VALID(arr, where) ((arr[where] != NULL && arr[where + 1] != NULL) && (arr[GETPTR(*arr, where)] != NULL))
 
 
-#define GETVAR(dest, arr, pos) \
+#define GETVAR(dest, arr, pos, rvar) \
 if (ISLIT(arr[2], pos)){ dest = arr[pos - 1]; } \
-else if (ISADR(arr[2], pos) && DATA[arr[pos - 1]] != NULL) { dest = *DATA[arr[pos - 1]]; } \
-else if (ISPTR(arr[2], pos) && PTR_VALID(DATA, arr[pos - 1])) { dest = *DATA[GETPTR(*DATA, arr[pos - 1])]; }
+else if (ISADR(arr[2], pos) && DATA[arr[pos - 1]] != NULL) { dest = *DATA[arr[pos - 1]]; \
+if(rvar) { rwinf->adrr = arr[pos - 1]; rwinf->read_adrr = 1; } \
+else { rwinf->adrw = arr[pos - 1]; rwinf->read_adrw = 1; }} \
+else if (ISPTR(arr[2], pos) && PTR_VALID(DATA, arr[pos - 1])) { dest = *DATA[GETPTR(*DATA, arr[pos - 1])]; \
+if(rvar) { rwinf->adrr = GETPTR(*DATA, arr[pos - 1]); rwinf->read_adrr = 1; } \
+else { rwinf->adrw = GETPTR(*DATA, arr[pos - 1]); rwinf->read_adrw = 1; }}
 
 #define GETTYPE(arr, pos) ((ISPTR(arr[2], pos)) ? ptr : ((ISADR(arr[2], pos)) ? adr : lit))
 
@@ -77,7 +81,7 @@ else if (ISPTR(arr[2], pos) && PTR_VALID(DATA, arr[pos - 1])) { dest = *DATA[GET
 
 
 HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory *code, HWVM_DefaultMemSetup *rawmem);
-hwuint HWVM_Execute(HWVM_GeneralMemory *program);
+hwuint HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf);
 
 /*Return value meaning:
 0 - successful
@@ -88,8 +92,8 @@ hwuint HWVM_Execute(HWVM_GeneralMemory *program);
 HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory *code, HWVM_DefaultMemSetup *rawmem){
 	HWVM_GeneralMemory returnval = {0};
 	returnval.code = *code;
-	rawmem->co_high = (IS_LITTLE_ENDIAN) ? ((uint8_t *)&returnval.co + 1) : ((uint8_t *)&returnval.co);
-	rawmem->co_low = (IS_LITTLE_ENDIAN) ? ((uint8_t *)&returnval.co) : ((uint8_t *)&returnval.co + 1);
+	rawmem->co_high = (IS_LITTLE_ENDIAN) ? ((uint8_t *)&returnval.co) : ((uint8_t *)&returnval.co + 1);
+	rawmem->co_low = (IS_LITTLE_ENDIAN) ? ((uint8_t *)&returnval.co + 1) : ((uint8_t *)&returnval.co);
 
 	uint16_t ival = 0;
 	uint16_t i = 0;
@@ -123,8 +127,10 @@ HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory *code, HWVM_DefaultMemSetup *rawmem
 	return returnval;
 }
 
-hwuint HWVM_Execute(HWVM_GeneralMemory *program)
+hwuint HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf)
 {
+	*rwinf = (HWVM_ReadWriteInfo){0};
+
 	unsigned return_code = 0;
 
 	hwuchar getnum_orig = 0;
@@ -143,7 +149,7 @@ hwuint HWVM_Execute(HWVM_GeneralMemory *program)
 	case nop:
 		_PROG_CO += 1; break;
 	case set:
-		GETVAR(getnum_orig, CURR_OP, 1);
+		GETVAR(getnum_orig, CURR_OP, 1, 1);
 		setnum_dest = CURR_OP[1];
 		dest_type = GETTYPE(CURR_OP, 2);
 		goto _set;
@@ -157,8 +163,8 @@ hwuint HWVM_Execute(HWVM_GeneralMemory *program)
 		break;
 
 	case add:
-		GETVAR(tmpchar1, CURR_OP, 1);
-		GETVAR(tmpchar2, CURR_OP, 2);
+		GETVAR(tmpchar1, CURR_OP, 1, 0);
+		GETVAR(tmpchar2, CURR_OP, 2, 1);
 		setnum_dest = CURR_OP[0];
 		dest_type = GETTYPE(CURR_OP, 1);
 		getnum_orig = tmpchar1 + tmpchar2;
@@ -167,8 +173,8 @@ hwuint HWVM_Execute(HWVM_GeneralMemory *program)
 		goto _set;
 		break;
 	case sub:
-		GETVAR(tmpchar1, CURR_OP, 1);
-		GETVAR(tmpchar2, CURR_OP, 2);
+		GETVAR(tmpchar1, CURR_OP, 1, 0);
+		GETVAR(tmpchar2, CURR_OP, 2, 1);
 		setnum_dest = CURR_OP[0];
 		dest_type = GETTYPE(CURR_OP, 1);
 		getnum_orig = tmpchar1 - tmpchar2;
@@ -177,8 +183,8 @@ hwuint HWVM_Execute(HWVM_GeneralMemory *program)
 		goto _set;
 		break;
 	case cmp:
-		GETVAR(tmpchar1, CURR_OP, 1);
-		GETVAR(tmpchar2, CURR_OP, 2);
+		GETVAR(tmpchar1, CURR_OP, 1, 0);
+		GETVAR(tmpchar2, CURR_OP, 2, 1);
 		getnum_orig = tmpchar1 - tmpchar2;
 		set_cf = (getnum_orig < tmpchar2) ? 1 : 2;
 		set_zf = (getnum_orig == 0) ? 2 : 1;
@@ -186,8 +192,8 @@ hwuint HWVM_Execute(HWVM_GeneralMemory *program)
 		goto _set;
 		break;
 	case and:
-		GETVAR(tmpchar1, CURR_OP, 1);
-		GETVAR(tmpchar2, CURR_OP, 2);
+		GETVAR(tmpchar1, CURR_OP, 1, 0);
+		GETVAR(tmpchar2, CURR_OP, 2, 1);
 		setnum_dest = CURR_OP[0];
 		dest_type = GETTYPE(CURR_OP, 1);
 		getnum_orig = tmpchar1 & tmpchar2;
@@ -196,8 +202,8 @@ hwuint HWVM_Execute(HWVM_GeneralMemory *program)
 		break;
 		break;
 	case xor:
-		GETVAR(tmpchar1, CURR_OP, 1);
-		GETVAR(tmpchar2, CURR_OP, 2);
+		GETVAR(tmpchar1, CURR_OP, 1, 0);
+		GETVAR(tmpchar2, CURR_OP, 2, 1);
 		setnum_dest = CURR_OP[0];
 		dest_type = GETTYPE(CURR_OP, 1);
 		getnum_orig = tmpchar1 ^ tmpchar2;
@@ -205,8 +211,8 @@ hwuint HWVM_Execute(HWVM_GeneralMemory *program)
 		goto _set;
 		break;
 	case or:
-		GETVAR(tmpchar1, CURR_OP, 1);
-		GETVAR(tmpchar2, CURR_OP, 2);
+		GETVAR(tmpchar1, CURR_OP, 1, 0);
+		GETVAR(tmpchar2, CURR_OP, 2, 1);
 		setnum_dest = CURR_OP[0];
 		dest_type = GETTYPE(CURR_OP, 1);
 		getnum_orig = tmpchar1 | tmpchar2;
@@ -214,8 +220,8 @@ hwuint HWVM_Execute(HWVM_GeneralMemory *program)
 		goto _set;
 		break;
 	case rot:
-		GETVAR(tmpchar1, CURR_OP, 1);
-		GETVAR(tmpchar2, CURR_OP, 2);
+		GETVAR(tmpchar1, CURR_OP, 1, 0);
+		GETVAR(tmpchar2, CURR_OP, 2, 1);
 		setnum_dest = CURR_OP[0];
 		dest_type = GETTYPE(CURR_OP, 1);
 		getnum_orig = (tmpchar2 < 8) ? (tmpchar1 << tmpchar2) : (tmpchar1 >> (tmpchar2 - 8));
@@ -271,9 +277,13 @@ _set:
 			_BREAK;
 		};
 		*DATA[setnum_dest] = getnum_orig;
+		rwinf->adrw = setnum_dest; 
+		rwinf->wrote_adrw = 1; 
 	} else if(dest_type == ptr) {
 		if(PTR_VALID(DATA, setnum_dest)){
 			*DATA[GETPTR(*DATA, setnum_dest)] = getnum_orig;
+			rwinf->adrw = GETPTR(*DATA, setnum_dest); 
+			rwinf->wrote_adrw = 1; 
 		} else{
 			return_code = 1;
 			_BREAK;
