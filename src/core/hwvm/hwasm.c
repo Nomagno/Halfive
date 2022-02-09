@@ -77,7 +77,7 @@ int main(int argc, char **argv)
 	}
 	fclose(codefile);
 	fclose(drivefile);
-	if(prog.hf) printf("HALT\n"); 
+	if(prog.hf) printf("HALT\n");
 	else {
 		switch(return_code){
 		case 1:

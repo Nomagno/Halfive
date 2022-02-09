@@ -156,10 +156,10 @@ hwuint HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf)
 		break;
 	case jmp: goto _jmp;
 	case jcz: /*Jump if the zero flag is zero*/
-		if (*(DATA[_ZF]) == 0) goto _jmp;
+		if (*(DATA[_ZF]) == 0) goto _jmp; else _PROG_CO += 1, _BREAK;
 		break;
 	case jcnz: /*Jump if the zero flag is NOT zero*/
-		if (*(DATA[_ZF]) != 0) goto _jmp;
+		if (*(DATA[_ZF]) != 0) goto _jmp; else _PROG_CO += 1, _BREAK;
 		break;
 
 	case add:
