@@ -200,7 +200,6 @@ hwuint HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf)
 		set_zf = (getnum_orig == 0) ? 2 : 1;
 		goto _set;
 		break;
-		break;
 	case xor:
 		GETVAR(tmpchar1, CURR_OP, 1, 0);
 		GETVAR(tmpchar2, CURR_OP, 2, 1);
