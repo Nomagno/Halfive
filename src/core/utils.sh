@@ -28,26 +28,26 @@
 #OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 #WORK.
 
-#REQUIREMENTS:
-#POSIX sh
-#POSIX printf
-#POSIX grep
-#POSIX cut
-#POSIX cat
-#POSIX sed
-#POSIX awk
+# POSIX shell utils
+# requires:
+# POSIX sh
+# POSIX cat
+# POSIX tr
+# POSIX cut
+# POSIX expr
+# POSIX printf
 
-. ../utils.sh
-
-rep=$(grep '^#d' "$1" | sed 's/^#d //g; s/ /|/g')
-f=$(cat "$1" | sed 's|;.*$||g; /#d /d')
-
-rep=$(echo $rep | stac)
-
-for i in $rep; do
-p1=$(printf '%s\n' "$i" | cut -d',' -f1 | sed 's/|/ /g; s/\&/\\&/g')
-p2=$(printf '%s\n' "$i" | cut -d',' -f2 | sed 's/|/ /g; s/\&/\\&/g')
-f=$(printf "$f" | sed "s/$p1/$p2/g")
-done
-
-printf '%s\n' "$f" | sed 's/__/\n/g;' | awk 'NF' | sed 's/^[[:blank:]]*//g'
+stac(){
+	words=$(cat | tr ' ' '\n')
+	size='-1'
+	count='-1'
+	for i in $words; do
+		size=$(expr -- $size + 1)
+	done
+	for i in $words; do
+		count=$(expr -- $count + 1)
+		opposite_count=$(expr -- $size - $count + 1)
+		printf "%s " "$(echo $words | cut -d' ' -f"$opposite_count")"
+	done
+	printf '\n'
+}
