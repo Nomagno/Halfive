@@ -81,7 +81,7 @@ else { rwinf->adrw = GETPTR(*DATA, arr[pos - 1]); rwinf->read_adrw = 1; }}
 
 
 HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory *code, HWVM_DefaultMemSetup *rawmem);
-hwuint HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf);
+unsigned HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf);
 
 /*Return value meaning:
 0 - successful
