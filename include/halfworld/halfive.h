@@ -35,6 +35,7 @@ WORK.*/
 
 #ifdef HALFIVE_VM_SIMULATION
 #include <halfworld/hwvm/hwvm.h>
+#include <halfworld/hwvm/hwasm.h>
 #endif
 
 #define RACENUM 16
