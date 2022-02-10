@@ -31,6 +31,9 @@ WORK.*/
  A*(1-t)^2 + B*2t(1-t) + C*t^2
 */
 
+#ifndef HWT_H
+#define HWT_H
+
 #include <halfworld/hwreq.h>
 enum HWT_TimeEnum { day, night };
 enum HWT_SpeedEnum { normal, boost, antiboost };
@@ -45,7 +48,8 @@ struct HWT_Biome {
 };
 
 struct HWT_Point {
-	uint16_t x, y;
+	uint8_t HighX, HighY;
+	uint16_t LowX, LowY;
 };
 
 struct HWT_Bezier {
@@ -74,4 +78,5 @@ typedef struct {
 	struct HWT_Segment segments[40];
 } HWT_Circuit;
 
-extern int HWT_Parse(const char *instring, HWT_Circuit *outstruct);
+extern unsigned HWT_Parse(const char *instring, HWT_Circuit *outstruct);
+#endif

@@ -28,13 +28,13 @@ OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
 /*READ THE HWVM SPEC*/
+
+#ifndef HWVM_H
+#define HWVM_H
 #include <halfworld/hwreq.h>
 #include <stdint.h>
 
 #define MEMSIZE 4096
-
-typedef uint8_t hwuchar;
-typedef uint16_t hwuint;
 
 /*Half-World Virtual Machine
 
@@ -121,8 +121,8 @@ typedef struct {
 
 } HWVM_CodeMemory;
 
-/*Approximate size on disk for MEMSIZE = 4096, MEMSMALL = MEMSIZE/4:
-132KBs*/
+/*Approximate size on disk for MEMSIZE = 4096:
+200KBs*/
 typedef struct {
 	HWVM_CodeMemory code; /*Code memory*/
 	hwuchar *data[MEMSIZE * 16]; /*Data memory, default setup:*/
@@ -183,4 +183,5 @@ typedef struct {
 extern HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory *code, HWVM_DefaultMemSetup *rawmem);
 
 /*Execute one instruction from the program*/
-extern hwuint HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf);
+extern unsigned HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf);
+#endif

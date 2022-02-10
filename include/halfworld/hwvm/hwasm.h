@@ -27,8 +27,10 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
+#ifndef HWASM_H
+#define HWASM_H
 #include <halfworld/hwreq.h>
 #include <halfworld/hwstring.h>
 #include <halfworld/hwvm/hwvm.h>
 hwuint HWASM_Parse(char *linestr, HWVM_InstructionSet *inst, hwuint opnds[3]);
-
+#endif

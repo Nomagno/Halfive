@@ -58,9 +58,9 @@ quit, bX, mx, and keyX are booleans 0 or 1, axisX are 8-bit ints 0-255
 #include <halfworld/hwreq.h>
 #include <halfworld/hwvi.h>
 
-int HWVI_Init(HWVI_Reference *ref, size_t h, size_t w);
-int HWVI_Destroy(HWVI_Reference *ref);
-int HWVI_PlaySound(HWVI_Reference *stream, const HWVI_SoundData *const insound);
+unsigned HWVI_Init(HWVI_Reference *ref, size_t h, size_t w);
+unsigned HWVI_Destroy(HWVI_Reference *ref);
+unsigned HWVI_PlaySound(HWVI_Reference *stream, const HWVI_SoundData *const insound);
 
 #define HWVI_GSERV_IMPL_SDL2
 
@@ -98,7 +98,7 @@ struct hwvi_sdl_track {
 
 struct hwvi_sdl_track globalref;
 
-int HWVI_Init(HWVI_Reference *ref, size_t h, size_t w)
+unsigned HWVI_Init(HWVI_Reference *ref, size_t h, size_t w)
 {
 
 #if defined(HWVI_AUDIOSERV_IMPL_SDL2)
@@ -134,7 +134,7 @@ int HWVI_Init(HWVI_Reference *ref, size_t h, size_t w)
 	return 0;
 }
 
-int HWVI_Destroy(HWVI_Reference *ref)
+unsigned HWVI_Destroy(HWVI_Reference *ref)
 {
 	SDL_DestroyWindow(((struct hwvi_sdl_track *)ref->data)->globwindow);
 #ifdef HWVI_AUDIOSERV_IMPL_SDL2
@@ -144,7 +144,7 @@ int HWVI_Destroy(HWVI_Reference *ref)
 	return 0;
 }
 
-int HWVI_SetBuffer(HWVI_Reference *ref, const HWVI_PixelData *const inbuf)
+unsigned HWVI_SetBuffer(HWVI_Reference *ref, const HWVI_PixelData *const inbuf)
 {
 	SDL_Surface *surfptr = ((struct hwvi_sdl_track *)ref->data)->globsurf;
 	SDL_LockSurface(surfptr);
@@ -158,7 +158,7 @@ int HWVI_SetBuffer(HWVI_Reference *ref, const HWVI_PixelData *const inbuf)
 	return 0;
 }
 
-int HWVI_GetBuffer_Size(size_t *h, size_t *w, const char *spritename)
+unsigned HWVI_GetBuffer_Size(size_t *h, size_t *w, const char *spritename)
 {
 	SDL_Surface *surfptr = SDL_LoadBMP(spritename);
 	*h = surfptr->h;
@@ -167,7 +167,7 @@ int HWVI_GetBuffer_Size(size_t *h, size_t *w, const char *spritename)
 	return 0;
 }
 
-int HWVI_GetBuffer_Data(const char *spritename, HWVI_PixelData *inbuf)
+unsigned HWVI_GetBuffer_Data(const char *spritename, HWVI_PixelData *inbuf)
 {
 	SDL_Surface *surfptr = SDL_LoadBMP(spritename);
 	SDL_ConvertPixels(inbuf->size.w, inbuf->size.h, surfptr->format->format,
@@ -187,9 +187,9 @@ int HWVI_GetBuffer_Data(const char *spritename, HWVI_PixelData *inbuf)
 
 /*For sound media caching*/
 
-int HWVI_PlaySound(HWVI_Reference *stream, const HWVI_SoundData *const insound)
+unsigned HWVI_PlaySound(HWVI_Reference *stream, const HWVI_SoundData *const insound)
 {
-	uint8_t *buf;
+	hwuchar *buf;
 	uint32_t size;
 	SDL_AudioSpec auspec;
 
@@ -202,7 +202,7 @@ int HWVI_PlaySound(HWVI_Reference *stream, const HWVI_SoundData *const insound)
 #else
 
 /*No sound support, stub*/
-int HWVI_PlaySound(HWVI_Reference *stream, const HWVI_SoundData *const insound){
+unsigned HWVI_PlaySound(HWVI_Reference *stream, const HWVI_SoundData *const insound){
 	return 0;
 }
 
@@ -210,9 +210,8 @@ int HWVI_PlaySound(HWVI_Reference *stream, const HWVI_SoundData *const insound){
 
 #ifdef HWVI_STDINPUT_IMPL_PORTABLE
 #include <stdio.h>
-int HWVI_GetInput(HWVI_Reference *tty, HWVI_InputData *keys)
+unsigned HWVI_GetInput(HWVI_Reference *tty, HWVI_InputData *keys)
 {
-	tty = tty;
 	int i = 0;
 	char str[60];
 	char *token;
@@ -223,7 +222,7 @@ int HWVI_GetInput(HWVI_Reference *tty, HWVI_InputData *keys)
 		if(i < 16) {
 		keys->keys[i] = !!hwstrtoul(token, NULL, 10);
 		} else if(i < 20){
-			keys->axis[i - 16] = (uint8_t)hwstrtoul(token, NULL, 10);
+			keys->axis[i - 16] = (hwuchar)hwstrtoul(token, NULL, 10);
 		}
 		token = hwstrtok(NULL, ",");
 		i+=1;
@@ -234,7 +233,7 @@ int HWVI_GetInput(HWVI_Reference *tty, HWVI_InputData *keys)
 }
 #else
 /*No input support, stub*/
-int HWVI_GetInput(HWVI_Reference *tty, HWVI_InputData *keys){
+unsigned HWVI_GetInput(HWVI_Reference *tty, HWVI_InputData *keys){
 	return 0;
 }
 #endif
@@ -246,7 +245,7 @@ int HWVI_GetInput(HWVI_Reference *tty, HWVI_InputData *keys){
 int main(void)
 {
 	HWVI_Reference myref;
-	uint16_t array_one[WCONSTANT][WCONSTANT] = {0};
+	hwuint array_one[WCONSTANT][WCONSTANT] = {0};
 
 	size_t bmpsize_1;
 	size_t bmpsize_2;
@@ -264,8 +263,8 @@ int main(void)
 	HWVI_PlaySound(&myref, &(const HWVI_SoundData){
 		.name = "../../assets/sound/applause.wav"});
 
-	for (unsigned int i = 0; i < FRAMERATE*8; i++) {
-		for (unsigned int j = 0; j < (WCONSTANT * WCONSTANT); j++) {
+	for (unsigned i = 0; i < FRAMERATE*8; i++) {
+		for (unsigned j = 0; j < (WCONSTANT * WCONSTANT); j++) {
 		mybuf_green.pix[j] =
 		((j + i - (j*2)) % 23)
 		? 0x0F00 : 0x00F0;

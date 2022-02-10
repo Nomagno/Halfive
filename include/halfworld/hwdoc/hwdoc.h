@@ -29,6 +29,9 @@ WORK.*/
 
 /*Half-World Document tokenizer interface*/
 
+#ifndef HWDOC_H
+#define HWDOC_H
+
 #include <halfworld/hwreq.h>
 #include <limits.h>
 #include <stddef.h>
@@ -40,4 +43,6 @@ typedef struct {
 	int string_start, string_end, parent;
 } HWDOC_Token;
 
-extern int HWDOC_Parse(const unsigned char *input, int size, HWDOC_Token *toks);
+extern unsigned HWDOC_Parse(const unsigned char *input, int size, HWDOC_Token *toks);
+
+#endif

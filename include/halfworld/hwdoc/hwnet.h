@@ -27,6 +27,9 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
+#ifndef HWNET_H
+#define HWNET_H
+
 #include <halfworld/hwreq.h>
 #define MAXCHAR_HWNET 9
 #define MAXPLAYERS_HWNET 16
@@ -62,5 +65,6 @@ typedef struct {
 	struct HWNET_ClientData data[MAXPLAYERS_HWNET];
 } HWNET_ClientPacket;
 
-extern int HWNET_ClientParse(const char *input, HWNET_ClientPacket *output);
-extern int HWNET_ServerParse(const char *, HWNET_ServerPacket *output);
+extern unsigned HWNET_ClientParse(const char *input, HWNET_ClientPacket *output);
+extern unsigned HWNET_ServerParse(const char *, HWNET_ServerPacket *output);
+#endif

@@ -40,7 +40,7 @@ enum optype { adr=0, lit=1, ptr=2 };
 	(((num | (1 << (2 - pos))) == num) && ((num | 8) == num))
 
 
-#define IS_LITTLE_ENDIAN (*(uint8_t *)&(uint16_t){1})
+#define IS_LITTLE_ENDIAN (*(hwuchar *)&(hwuint){1})
 
 #define _PROG_CO program->co
 
@@ -92,11 +92,11 @@ hwuint HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf);
 HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory *code, HWVM_DefaultMemSetup *rawmem){
 	HWVM_GeneralMemory returnval = {0};
 	returnval.code = *code;
-	rawmem->co_high = (IS_LITTLE_ENDIAN) ? ((uint8_t *)&returnval.co) : ((uint8_t *)&returnval.co + 1);
-	rawmem->co_low = (IS_LITTLE_ENDIAN) ? ((uint8_t *)&returnval.co + 1) : ((uint8_t *)&returnval.co);
+	rawmem->co_high = (IS_LITTLE_ENDIAN) ? ((hwuchar *)&returnval.co) : ((hwuchar *)&returnval.co + 1);
+	rawmem->co_low = (IS_LITTLE_ENDIAN) ? ((hwuchar *)&returnval.co + 1) : ((hwuchar *)&returnval.co);
 
-	uint16_t ival = 0;
-	uint16_t i = 0;
+	hwuint ival = 0;
+	hwuint i = 0;
 	while(1){
 		if((ival != !!i) && (ival != 0)) break;
 		ival = !!i;
@@ -127,7 +127,7 @@ HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory *code, HWVM_DefaultMemSetup *rawmem
 	return returnval;
 }
 
-hwuint HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf)
+unsigned HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf)
 {
 	*rwinf = (HWVM_ReadWriteInfo){0};
 

@@ -1,3 +1,6 @@
+#ifndef HWREQ_H
+#define HWREQ_H
+
 #include <stdint.h>
 #include <stddef.h>
 #include <limits.h>
@@ -10,6 +13,6 @@
 #error uint16_t is required, sorry!
 #endif
 
-#ifndef SIZE_MAX
-#error size_t is required, sorry!
+typedef uint8_t hwuchar;
+typedef uint16_t hwuint;
 #endif

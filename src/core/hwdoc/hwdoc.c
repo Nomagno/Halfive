@@ -30,14 +30,14 @@ WORK.*/
 #include <halfworld/hwreq.h>
 #include <halfworld/hwdoc/hwdoc.h>
 
-int HWDOC_Parse(const unsigned char *input, int tok_size, HWDOC_Token *toks);
+unsigned HWDOC_Parse(const unsigned char *input, int tok_size, HWDOC_Token *toks);
 
-int HWDOC_Parse(const unsigned char *input, int tok_size, HWDOC_Token *toks)
+unsigned  HWDOC_Parse(const unsigned char *input, int tok_size, HWDOC_Token *toks)
 {
 	int i = 0,           /*Character iterator var*/
 	    j = 0,           /*Token iterator var*/
 	    t = 0,           /*Temporary storate for iterator vars*/
-	    errno = 0,       /*Store error number*/
+	    returnval = 0,       /*Store error number*/
 	    c = 1,           /*Continue boolean*/
 	    itr = 0,         /*Indentation track boolean;*/
 	    curr_indent = 0, /*Store current indentation level*/
@@ -91,7 +91,7 @@ int HWDOC_Parse(const unsigned char *input, int tok_size, HWDOC_Token *toks)
 			break;
 		case 0x00:
 			toks[j].string_end = i - 1; /*Terminate previous token*/
-			errno = j; /*Return number of tokens read*/
+			returnval = j; /*Return number of tokens read*/
 			c = 0;     /*Stop execution*/
 			break;
 		default:
@@ -99,11 +99,11 @@ int HWDOC_Parse(const unsigned char *input, int tok_size, HWDOC_Token *toks)
 		}
 		i += 1;
 		if (j >= tok_size) {
-			errno = -1; /*Insufficient tokens error*/
+			returnval = -1; /*Insufficient tokens error*/
 			c = 0;      /*Stop execution*/
 		}
 	}
-	return errno;
+	return returnval;
 }
 
 /*

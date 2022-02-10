@@ -26,6 +26,9 @@ COPYRIGHT OR OTHER LEGAL PRIVILEGE BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
 LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
+#ifndef HWVI_H
+#define HWVI_H
+
 #include <halfworld/hwreq.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -103,26 +106,27 @@ typedef struct {
 	*/
 } HWVI_Reference;
 
-extern int HWVI_Init(HWVI_Reference *buf, size_t h, size_t w);
+extern unsigned HWVI_Init(HWVI_Reference *buf, size_t h, size_t w);
 /*Initialize display*/
 
-extern int HWVI_Destroy(HWVI_Reference *ref);
+extern unsigned HWVI_Destroy(HWVI_Reference *ref);
 /*Exit gracefully*/
 
-extern int HWVI_GetBuffer_Size(size_t *h, size_t *w, const char *spritename);
+extern unsigned HWVI_GetBuffer_Size(size_t *h, size_t *w, const char *spritename);
 /*Get size of sprite buffer*/
 
-extern int HWVI_GetBuffer_Data(const char *const spritename, HWVI_PixelData *inbuf);
+extern unsigned HWVI_GetBuffer_Data(const char *const spritename, HWVI_PixelData *inbuf);
 /*Ger sprite buffer copied*/
 
-extern int HWVI_SetBuffer(HWVI_Reference *surf, const HWVI_PixelData *const inbuf);
+extern unsigned HWVI_SetBuffer(HWVI_Reference *surf, const HWVI_PixelData *const inbuf);
 /*Set display to buffer*/
 
-extern int HWVI_PlaySound(HWVI_Reference *stream, const HWVI_SoundData *const sound);
+extern unsigned HWVI_PlaySound(HWVI_Reference *stream, const HWVI_SoundData *const sound);
 /*Play in a nonblocking manner (within reason).
 The length of the sound will get adjusted if it
 is more than that of the sound itself.
 */
 
-extern int HWVI_GetInput(HWVI_Reference *tty, HWVI_InputData *keys);
+extern unsigned HWVI_GetInput(HWVI_Reference *tty, HWVI_InputData *keys);
 /*Get current user input*/
+#endif
