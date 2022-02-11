@@ -149,7 +149,7 @@ add ?W =1
 add !W _CF ; Move destination pointer pointer forwards one address
 add !C =1 ; Add one to pop count
 cmp !C !X ; Check if have already popped enough addresses
-NWHILE ; If comparison was true, loop
+NWHILE ; If comparison was false, loop
 ret POP ; Else return
 
 ; Memory range operation subroutines:
@@ -158,11 +158,53 @@ ret POP ; Else return
 ; &!X - Range start
 ; &!Y - Range end
 #d MEMSET,=0
+func MEMSET
+LOOP
+set !W &!X ; Copy value to address
+cmp ?X ?Y ; Compare start and end address LSB
+set _ZF !B ; Store result of comparison
+cmp !X !Y ; Compare start and end address MSB
+set _ZF ?B ; Store result of comparison
+or !B ?B ; OR the two together (join comparisons)
+
+add ?X =1 ; Increment mem pointer LSB
+add !X _CF ; Increment mem pointer MSB
+
+set !B _ZF ; Restore joined comparison
+NWHILE ; If comparison was false, loop
+ret MEMSET ; Else return
 
 ; Copy memory range  - INTERFACE:
-; (ranges must nor overlap)
+; (ranges must nor overlap!)
 ; &!W - Orig range start
-; &!X - Orig range end
 ; &!Y - Dest range start
 ; &!Z - Dest range end
 #d MEMCPY,=1
+func MEMCPY
+LOOP
+set &!W &!Y ; Copy orin range value to dest range value
+
+cmp ?Y ?Z ; Compare current and end destiny range LSB
+set _ZF !B ; Store result of comparison
+cmp !Y !Z ; Compare current and end destiny range MSB
+set _ZF ?B ; Store result of comparison
+
+or !B ?B ; Join two comparisons together
+
+add ?W =1
+add !W _CF ; Increment origin range position
+add ?Y =1
+add !Y _CF ; Increment destiny range position
+
+set !B _ZF ; Restore joined comparison
+NWHILE ; If comparison was false, loop
+ret MEMCPY ; Else return
+
+set =BC 14
+set =BD 15
+set =BA 16
+
+set =14 ?W
+set =18 ?Y
+set =1A ?Z
+call MEMCPY
