@@ -28,8 +28,9 @@
 #OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 #WORK.
 
-# POSIX shell utils
-# requires:
+# POSIX shell util collection
+
+# Requirements:
 # POSIX sh
 # POSIX cat
 # POSIX tr
@@ -47,7 +48,7 @@ stac(){
 	for i in $words; do
 		count=$(expr -- $count + 1)
 		opposite_count=$(expr -- $size - $count + 1)
-		printf "%s " "$(echo $words | cut -d' ' -f"$opposite_count")"
+		printf "%s " "$(printf '%s\n' "$words" | cut -d' ' -f"$opposite_count")"
 	done
 	printf '\n'
 }
