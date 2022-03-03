@@ -27,9 +27,7 @@
 ;WORK.
 
 
-
-
-; Base assembly file. To use the definitions here, simply 
+; Base assembly file. To use the definitions here, simply
 ; copy it to your own. To preprocess your code 
 ; so it can be accepted by the assembler, run ./asmpp.sh myfile.hwasm
 ; Note: subroutine IDs 0x0 through 0xF are RESERVED by this document
@@ -166,10 +164,8 @@ set _ZF !B ; Store result of comparison
 cmp !X !Y ; Compare start and end address MSB
 set _ZF ?B ; Store result of comparison
 or !B ?B ; OR the two together (join comparisons)
-
 add ?X =1 ; Increment mem pointer LSB
 add !X _CF ; Increment mem pointer MSB
-
 set !B _ZF ; Restore joined comparison
 NWHILE ; If comparison was false, loop
 ret MEMSET ; Else return
@@ -183,28 +179,15 @@ ret MEMSET ; Else return
 func MEMCPY
 LOOP
 set &!W &!Y ; Copy orin range value to dest range value
-
 cmp ?Y ?Z ; Compare current and end destiny range LSB
 set _ZF !B ; Store result of comparison
 cmp !Y !Z ; Compare current and end destiny range MSB
 set _ZF ?B ; Store result of comparison
-
 or !B ?B ; Join two comparisons together
-
 add ?W =1
 add !W _CF ; Increment origin range position
 add ?Y =1
 add !Y _CF ; Increment destiny range position
-
 set !B _ZF ; Restore joined comparison
 NWHILE ; If comparison was false, loop
 ret MEMCPY ; Else return
-
-set =BC 14
-set =BD 15
-set =BA 16
-
-set =14 ?W
-set =18 ?Y
-set =1A ?Z
-call MEMCPY
