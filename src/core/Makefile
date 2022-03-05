@@ -33,14 +33,11 @@
 #HWVI_AUDIOSERV_IMPL_FOO - Enable HWVI audio server implementation foo
 #HWVI_STDINPUT_IMPL_FOO - Enable HWVI input server implementation foo
 #HWASSEMBLY - Enable entry point for assembler
-#HWVM_OU_HEX - Enable HWVM output register as hexadecimal
-#HWVM_OU_RAW - Enable printing HWVM output register as raw characters
-#HWVM_OU_DEBUG - Enable HWVM debug printing
 #HALFIVE_VM_SIMULATION - Most memory consuming option, enable doing per-player HWVM simulation.
 
 INCLROOT="../../include/"
 
-PARAMS="-DHWVERSION=0 -DHWVM_OU_HEX -DHALFIVE_VM_SIMULATION -DHWVI_GSERV_IMPL_SDL2 -DHWVI_AUDIOSERV_IMPL_SDL2 -DHWVI_STDINPUT_IMPL_PORTABLE"
+PARAMS="-DHWVERSION=0 -DHALFIVE_VM_SIMULATION -DHWVI_GSERV_IMPL_SDL2 -DHWVI_AUDIOSERV_IMPL_SDL2 -DHWVI_STDINPUT_IMPL_PORTABLE"
 
 build: warn libhalfworld.a
 rebuild: clean build
