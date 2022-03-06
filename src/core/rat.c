@@ -114,7 +114,9 @@ Rat Rat_Product(Rat a, Rat b){
 	});
 }
 
+#ifdef FLOATS_SUPPORTED
 float Rat_toFloat(Rat a){
 	a = Rat_Simplify(a);
 	return (a.sign) ? (a.num/a.denom) : (-a.num/a.denom);
 }
+#endif

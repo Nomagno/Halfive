@@ -58,4 +58,6 @@ _Bool Rat_Compare(Rat a, Rat b);
 Rat Rat_Add(Rat a, Rat b);
 Rat Rat_Product(Rat a, Rat b);
 
+#ifdef FLOATS_SUPPORTED
 float Rat_toFloat(Rat a);
+#endif
