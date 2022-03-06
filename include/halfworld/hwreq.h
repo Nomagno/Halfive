@@ -1,9 +1,9 @@
 #ifndef HWREQ_H
 #define HWREQ_H
 
-#include <stdint.h>
-#include <stddef.h>
 #include <limits.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #ifndef UINT8_MAX
 #error uint8_t is required, sorry!

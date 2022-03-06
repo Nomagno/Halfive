@@ -51,9 +51,8 @@ struct HWNET_ClientData {
 
 /*Memory footprint worst-case scenario: 256Bs*/
 typedef struct {
-	char trackname[MAXCHAR_HWNET],
-	gamemode[MAXCHAR_HWNET],
-	extension[MAXCHAR_HWNET];
+	char trackname[MAXCHAR_HWNET], gamemode[MAXCHAR_HWNET],
+	    extension[MAXCHAR_HWNET];
 
 	struct HWNET_ServerData data[MAXPLAYERS_HWNET];
 } HWNET_ServerPacket;
@@ -65,6 +64,7 @@ typedef struct {
 	struct HWNET_ClientData data[MAXPLAYERS_HWNET];
 } HWNET_ClientPacket;
 
-extern unsigned HWNET_ClientParse(const char *input, HWNET_ClientPacket *output);
+extern unsigned HWNET_ClientParse(const char *input,
+				  HWNET_ClientPacket *output);
 extern unsigned HWNET_ServerParse(const char *, HWNET_ServerPacket *output);
 #endif

@@ -27,17 +27,19 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
-#include <halfworld/hwreq.h>
 #include <halfworld/hwdoc/hwdoc.h>
+#include <halfworld/hwreq.h>
 
-unsigned HWDOC_Parse(const unsigned char *input, int tok_size, HWDOC_Token *toks);
+unsigned HWDOC_Parse(const unsigned char *input, int tok_size,
+		     HWDOC_Token *toks);
 
-unsigned  HWDOC_Parse(const unsigned char *input, int tok_size, HWDOC_Token *toks)
+unsigned HWDOC_Parse(const unsigned char *input, int tok_size,
+		     HWDOC_Token *toks)
 {
 	int i = 0,           /*Character iterator var*/
 	    j = 0,           /*Token iterator var*/
 	    t = 0,           /*Temporary storate for iterator vars*/
-	    returnval = 0,       /*Store error number*/
+	    returnval = 0,   /*Store error number*/
 	    c = 1,           /*Continue boolean*/
 	    itr = 0,         /*Indentation track boolean;*/
 	    curr_indent = 0, /*Store current indentation level*/
@@ -92,7 +94,7 @@ unsigned  HWDOC_Parse(const unsigned char *input, int tok_size, HWDOC_Token *tok
 		case 0x00:
 			toks[j].string_end = i - 1; /*Terminate previous token*/
 			returnval = j; /*Return number of tokens read*/
-			c = 0;     /*Stop execution*/
+			c = 0;         /*Stop execution*/
 			break;
 		default:
 			break;
@@ -100,7 +102,7 @@ unsigned  HWDOC_Parse(const unsigned char *input, int tok_size, HWDOC_Token *tok
 		i += 1;
 		if (j >= tok_size) {
 			returnval = -1; /*Insufficient tokens error*/
-			c = 0;      /*Stop execution*/
+			c = 0;          /*Stop execution*/
 		}
 	}
 	return returnval;

@@ -37,7 +37,6 @@ typedef struct {
 	uRatInt denom;
 } Rat;
 
-
 #define GCD Rat_GCD
 #define LCM Rat_LCM
 #define RSwap Rat_XorSwap

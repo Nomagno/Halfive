@@ -58,14 +58,15 @@ EXAMPLE:
 BINARY: 0001 0001 000000000000001 000000000011111
 DECIMAL:   1    3               1              31
 ASSEMBLY:     add               1             =1F
-ENGLISH: add the contents of address ONE and the number 1F, put the result back into address ONE
+ENGLISH: add the contents of address ONE and the number 1F, put the result back
+into address ONE
 
 ASSEMBLY FORMAT:
     It codes almost directly to the binary format. The available instructions
 are: {halt, nop, jmp, jcz, set, add, sub, not, and, xor, or, rot, func, ret,
 call, jcnz} The syntax is the following: instruction ARGx ARGx \n Where ARGx
-is an address/pointer (Rx), a literal (ID), or any of these (Vx). Instructions are terminated
-by newline '\n'
+is an address/pointer (Rx), a literal (ID), or any of these (Vx). Instructions
+are terminated by newline '\n'
 
 
 The enum below specifies in a comment the behaviour of each instruction and the
@@ -81,27 +82,30 @@ typedef enum {
 	halt = 0, /* ; halt*/
 	nop = 1,  /* ; do nothing*/
 	set = 2,  /* R1 V2; set address R2 to value V1*/
-	jmp = 3,  /* V1; hand execution to instruction numbered V1. SPECIAL EXCEPTION: Take 16-bit literals, addresses are treated as 16-bit literals, and pointers are treated as addresses with a 16-bit value*/
+	jmp = 3,  /* V1; hand execution to instruction numbered V1. SPECIAL
+		     EXCEPTION: Take 16-bit literals, addresses are treated as
+		     16-bit literals, and pointers are treated as addresses with
+		     a 16-bit value*/
 	jcz = 4,  /* V1; if ZF == 0, jmp to instrucion V1*/
 	/*ADD trough to NOT: put result of doing
 	stuff with Vn values into Rn address*/
 	add = 5, /* R1 V2; addition, carry goes to carry flag*/
 	sub = 6, /* R1 V2; substraction, carry flag set if result is negative*/
-	and = 7, /* R1 V2; binary and*/
+	    and = 7, /* R1 V2; binary and*/
 	or = 8,      /* R1 V2; binary or*/
 	xor = 9,     /* R1 V2; binary exclusive or*/
-	rot = 10, /* R1 V2; If V2 is 0-7, bitshift R1 LEFT by V2 bits. Else
-		     if V2 is 8-F, bitshift R1 RIGHT by (V2-8) bits. Else do
-		     nothing. Put the result into R1*/
-	cmp = 11, /* V1 V2; if V1 is bigger than V2, sets the carry flag to 0
-		  and    the zero flag to 1 if V1 is smaller than V2, sets the
-		  carry    flag to 1 and the zero flag to 0 if V1 is equal to
-		  V2, sets    the carry flag to 0 and the zero flag to 0*/
+	rot = 10,    /* R1 V2; If V2 is 0-7, bitshift R1 LEFT by V2 bits. Else
+			if V2 is 8-F, bitshift R1 RIGHT by (V2-8) bits. Else do
+			nothing. Put the result into R1*/
+	cmp = 11,    /* V1 V2; if V1 is bigger than V2, sets the carry flag to 0
+		     and    the zero flag to 1 if V1 is smaller than V2, sets the
+		     carry    flag to 1 and the zero flag to 0 if V1 is equal to
+		     V2, sets    the carry flag to 0 and the zero flag to 0*/
 	/* FUNC, RET, CALL: Stackless subroutines*/
 	func = 12, /* ID; Marks the start of a subroutine with the literal
-                      identifier ID.*/
-	ret = 13, /*ID; Marks the end of subroutine ID. It JMPs to the
-		      instruction after the corresponding CALL instruction.*/
+		      identifier ID.*/
+	ret = 13,  /*ID; Marks the end of subroutine ID. It JMPs to the
+		       instruction after the corresponding CALL instruction.*/
 	call = 14, /* ID; JMP to the start of execution (post-FUNC) of
 		      subroutine ID*/
 	jcnz = 15  /* V1; if ZF != 0, jmp to instrucion V1*/
@@ -124,10 +128,11 @@ typedef struct {
 /*Approximate size on disk for MEMSIZE = 4096:
 200KBs*/
 typedef struct {
-	HWVM_CodeMemory code; /*Code memory*/
+	HWVM_CodeMemory code;        /*Code memory*/
 	hwuchar *data[MEMSIZE * 16]; /*Data memory, default setup:*/
 	/*GEN mem (RW), 0x0000 to 0x3FFF, RECOMMENDED TO EXIST*/
-	/*DRIVE (persistent, R-only) mem, 0x4000 to 0xBFFF, RECOMMENDED TO EXIST*/
+	/*DRIVE (persistent, R-only) mem, 0x4000 to 0xBFFF, RECOMMENDED TO
+	 * EXIST*/
 	/*Zero flag (RW), 0xFFFF, OBLIGATORY*/
 	/*Carry flag (RW), 0xFFFE, OBLIGATORY*/
 	/*Input register (R-only), 0xFFFD, OBLIGATORY*/
@@ -141,13 +146,12 @@ typedef struct {
 	/*Halt flag, 1 if it has halted.*/
 	_Bool hf;
 
-
-	hwuint func_co[64]; /*For storing counter values corresponding to
-				the FUNC instruction of each subroutine ID*/
+	hwuint func_co[64];   /*For storing counter values corresponding to
+				  the FUNC instruction of each subroutine ID*/
 	hwuint return_co[64]; /*For storing counter values corresponding
 				to the execution environment of the branch that
 				executes CALLS, for each subroutine ID*/
-	hwuint skip_co[64]; /*Counter values FUNC has to skip to*/
+	hwuint skip_co[64];   /*Counter values FUNC has to skip to*/
 } HWVM_GeneralMemory;
 
 /*Default memory setup*/
@@ -165,12 +169,13 @@ typedef struct {
 typedef struct {
 	_Bool was_err; /*Was there an error?*/
 
-	hwuint adrw; /*Write address*/
-	_Bool wrote_adrw; /*Additionally, was the write address written THIS CYCLE?*/
-	_Bool read_adrw; /*Additionally, was the write address read THIS CYCLE?*/
+	hwuint adrw;      /*Write address*/
+	_Bool wrote_adrw; /*Additionally, was the write address written THIS
+			     CYCLE?*/
+	_Bool
+	    read_adrw; /*Additionally, was the write address read THIS CYCLE?*/
 
-
-	hwuint adrr; /*Read address*/
+	hwuint adrr;     /*Read address*/
 	_Bool read_adrr; /*Additionally, was the read address read THIS CYCLE?*/
 
 	_Bool write_zf; /*Additionally, wrote zero flag?*/
@@ -180,8 +185,10 @@ typedef struct {
 /*Half-World VM interface*/
 
 /*Generate the whole VM from code and the default memory setup*/
-extern HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory *code, HWVM_DefaultMemSetup *rawmem);
+extern HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory *code,
+				    HWVM_DefaultMemSetup *rawmem);
 
 /*Execute one instruction from the program*/
-extern unsigned HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf);
+extern unsigned HWVM_Execute(HWVM_GeneralMemory *program,
+			     HWVM_ReadWriteInfo *rwinf);
 #endif

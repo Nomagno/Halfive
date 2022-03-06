@@ -75,7 +75,7 @@ enum HWVI_KeyEnum {
 };
 
 typedef struct {
-	_Bool keys[16]; /*See enum for what each pos means*/
+	_Bool keys[16];    /*See enum for what each pos means*/
 	uint8_t axis[4];   /*Max 4 axis*/
 	uint16_t cursor_x; /*Mouse X*/
 	uint16_t cursor_y; /*Mouse Y*/
@@ -112,16 +112,20 @@ extern unsigned HWVI_Init(HWVI_Reference *buf, size_t h, size_t w);
 extern unsigned HWVI_Destroy(HWVI_Reference *ref);
 /*Exit gracefully*/
 
-extern unsigned HWVI_GetBuffer_Size(size_t *h, size_t *w, const char *spritename);
+extern unsigned HWVI_GetBuffer_Size(size_t *h, size_t *w,
+				    const char *spritename);
 /*Get size of sprite buffer*/
 
-extern unsigned HWVI_GetBuffer_Data(const char *const spritename, HWVI_PixelData *inbuf);
+extern unsigned HWVI_GetBuffer_Data(const char *const spritename,
+				    HWVI_PixelData *inbuf);
 /*Ger sprite buffer copied*/
 
-extern unsigned HWVI_SetBuffer(HWVI_Reference *surf, const HWVI_PixelData *const inbuf);
+extern unsigned HWVI_SetBuffer(HWVI_Reference *surf,
+			       const HWVI_PixelData *const inbuf);
 /*Set display to buffer*/
 
-extern unsigned HWVI_PlaySound(HWVI_Reference *stream, const HWVI_SoundData *const sound);
+extern unsigned HWVI_PlaySound(HWVI_Reference *stream,
+			       const HWVI_SoundData *const sound);
 /*Play in a nonblocking manner (within reason).
 The length of the sound will get adjusted if it
 is more than that of the sound itself.

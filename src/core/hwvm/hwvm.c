@@ -30,15 +30,13 @@ WORK.*/
 #include <halfworld/hwreq.h>
 #include <halfworld/hwvm/hwvm.h>
 
-enum optype { adr=0, lit=1, ptr=2 };
+enum optype { adr = 0, lit = 1, ptr = 2 };
 
-#define ISADR(num, pos)                                                        \
-	(((num | (1 << (2 - pos))) != num))
+#define ISADR(num, pos) (((num | (1 << (2 - pos))) != num))
 #define ISLIT(num, pos)                                                        \
 	(((num | (1 << (2 - pos))) == num) && ((num | 8) != num))
 #define ISPTR(num, pos)                                                        \
 	(((num | (1 << (2 - pos))) == num) && ((num | 8) == num))
-
 
 #define IS_LITTLE_ENDIAN (*(hwuchar *)&(hwuint){1})
 
@@ -47,23 +45,41 @@ enum optype { adr=0, lit=1, ptr=2 };
 #define CURR_OP program->code.opnd[_PROG_CO]
 #define MASK program->mask
 #define DATA program->data
-#define _BREAK rwinf->was_err = 1; return return_code
+#define _BREAK                                                                 \
+	rwinf->was_err = 1;                                                    \
+	return return_code
 
 #define GETPTR(arr, where) ((arr[where] << 8) | (arr[where + 1]))
 
-#define PTR_VALID(arr, where) ((arr[where] != NULL && arr[where + 1] != NULL) && (arr[GETPTR(*arr, where)] != NULL))
+#define PTR_VALID(arr, where)                                                  \
+	((arr[where] != NULL && arr[where + 1] != NULL) &&                     \
+	 (arr[GETPTR(*arr, where)] != NULL))
 
+#define GETVAR(dest, arr, pos, rvar)                                           \
+	if (ISLIT(arr[2], pos)) {                                              \
+		dest = arr[pos - 1];                                           \
+	} else if (ISADR(arr[2], pos) && DATA[arr[pos - 1]] != NULL) {         \
+		dest = *DATA[arr[pos - 1]];                                    \
+		if (rvar) {                                                    \
+			rwinf->adrr = arr[pos - 1];                            \
+			rwinf->read_adrr = 1;                                  \
+		} else {                                                       \
+			rwinf->adrw = arr[pos - 1];                            \
+			rwinf->read_adrw = 1;                                  \
+		}                                                              \
+	} else if (ISPTR(arr[2], pos) && PTR_VALID(DATA, arr[pos - 1])) {      \
+		dest = *DATA[GETPTR(*DATA, arr[pos - 1])];                     \
+		if (rvar) {                                                    \
+			rwinf->adrr = GETPTR(*DATA, arr[pos - 1]);             \
+			rwinf->read_adrr = 1;                                  \
+		} else {                                                       \
+			rwinf->adrw = GETPTR(*DATA, arr[pos - 1]);             \
+			rwinf->read_adrw = 1;                                  \
+		}                                                              \
+	}
 
-#define GETVAR(dest, arr, pos, rvar) \
-if (ISLIT(arr[2], pos)){ dest = arr[pos - 1]; } \
-else if (ISADR(arr[2], pos) && DATA[arr[pos - 1]] != NULL) { dest = *DATA[arr[pos - 1]]; \
-if(rvar) { rwinf->adrr = arr[pos - 1]; rwinf->read_adrr = 1; } \
-else { rwinf->adrw = arr[pos - 1]; rwinf->read_adrw = 1; }} \
-else if (ISPTR(arr[2], pos) && PTR_VALID(DATA, arr[pos - 1])) { dest = *DATA[GETPTR(*DATA, arr[pos - 1])]; \
-if(rvar) { rwinf->adrr = GETPTR(*DATA, arr[pos - 1]); rwinf->read_adrr = 1; } \
-else { rwinf->adrw = GETPTR(*DATA, arr[pos - 1]); rwinf->read_adrw = 1; }}
-
-#define GETTYPE(arr, pos) ((ISPTR(arr[2], pos)) ? ptr : ((ISADR(arr[2], pos)) ? adr : lit))
+#define GETTYPE(arr, pos)                                                      \
+	((ISPTR(arr[2], pos)) ? ptr : ((ISADR(arr[2], pos)) ? adr : lit))
 
 #define _ZF 0xFFFF
 #define _CF 0xFFFE
@@ -76,11 +92,10 @@ else { rwinf->adrw = GETPTR(*DATA, arr[pos - 1]); rwinf->read_adrw = 1; }}
 #define _MEMMAX 0x4000
 #define _DRIVMAX 0xC000
 
-
 /*Unknown address*/
 
-
-HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory *code, HWVM_DefaultMemSetup *rawmem);
+HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory *code,
+			     HWVM_DefaultMemSetup *rawmem);
 unsigned HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf);
 
 /*Return value meaning:
@@ -89,39 +104,44 @@ unsigned HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf);
 2 - error - write to read-only address
 3 - error - wrong usage*/
 
-HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory *code, HWVM_DefaultMemSetup *rawmem){
+HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory *code,
+			     HWVM_DefaultMemSetup *rawmem)
+{
 	HWVM_GeneralMemory returnval = {0};
 	returnval.code = *code;
-	rawmem->co_high = (IS_LITTLE_ENDIAN) ? ((hwuchar *)&returnval.co) : ((hwuchar *)&returnval.co + 1);
-	rawmem->co_low = (IS_LITTLE_ENDIAN) ? ((hwuchar *)&returnval.co + 1) : ((hwuchar *)&returnval.co);
+	rawmem->co_high = (IS_LITTLE_ENDIAN) ? ((hwuchar *)&returnval.co)
+					     : ((hwuchar *)&returnval.co + 1);
+	rawmem->co_low = (IS_LITTLE_ENDIAN) ? ((hwuchar *)&returnval.co + 1)
+					    : ((hwuchar *)&returnval.co);
 
 	hwuint ival = 0;
 	hwuint i = 0;
-	while(1){
-		if((ival != !!i) && (ival != 0)) break;
+	while (1) {
+		if ((ival != !!i) && (ival != 0))
+			break;
 		ival = !!i;
-		if(i < _MEMMAX){
+		if (i < _MEMMAX) {
 			returnval.data[i] = &(rawmem->gmem[i]);
-		} else if(i < _DRIVMAX){
+		} else if (i < _DRIVMAX) {
 			returnval.data[i] = &(rawmem->driv[i - 0x3FFF]);
 			returnval.mask[i] = 1; /*Read-only*/
-		} else if(i == _ZF){
+		} else if (i == _ZF) {
 			returnval.data[i] = &(rawmem->zf);
-		} else if(i == _CF){
+		} else if (i == _CF) {
 			returnval.data[i] = &(rawmem->cf);
-		} else if(i == _IN){
+		} else if (i == _IN) {
 			returnval.data[i] = &(rawmem->in);
 			returnval.mask[i] = 1; /*Read-only*/
-		} else if(i == _OU){
+		} else if (i == _OU) {
 			returnval.data[i] = &(rawmem->ou);
-		} else if(i == _PC_HIGH){
+		} else if (i == _PC_HIGH) {
 			returnval.data[i] = rawmem->co_high;
 			returnval.mask[i] = 1; /*Read-only*/
-		} else if(i == _PC_LOW){
+		} else if (i == _PC_LOW) {
 			returnval.data[i] = rawmem->co_low;
 			returnval.mask[i] = 1; /*Read-only*/
 		}
-		i+=1;
+		i += 1;
 	}
 
 	return returnval;
@@ -145,21 +165,30 @@ unsigned HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf)
 
 	switch (program->code.inst[_PROG_CO]) {
 	case halt:
-		program->hf = 1; break;
+		program->hf = 1;
+		break;
 	case nop:
-		_PROG_CO += 1; break;
+		_PROG_CO += 1;
+		break;
 	case set:
 		GETVAR(getnum_orig, CURR_OP, 1, 1);
 		setnum_dest = CURR_OP[1];
 		dest_type = GETTYPE(CURR_OP, 2);
 		goto _set;
 		break;
-	case jmp: goto _jmp;
+	case jmp:
+		goto _jmp;
 	case jcz: /*Jump if the zero flag is zero*/
-		if (*(DATA[_ZF]) == 0) goto _jmp; else _PROG_CO += 1, _BREAK;
+		if (*(DATA[_ZF]) == 0)
+			goto _jmp;
+		else
+			_PROG_CO += 1, _BREAK;
 		break;
 	case jcnz: /*Jump if the zero flag is NOT zero*/
-		if (*(DATA[_ZF]) != 0) goto _jmp; else _PROG_CO += 1, _BREAK;
+		if (*(DATA[_ZF]) != 0)
+			goto _jmp;
+		else
+			_PROG_CO += 1, _BREAK;
 		break;
 
 	case add:
@@ -168,7 +197,9 @@ unsigned HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf)
 		setnum_dest = CURR_OP[0];
 		dest_type = GETTYPE(CURR_OP, 1);
 		getnum_orig = tmpchar1 + tmpchar2;
-		set_cf = ((getnum_orig < tmpchar1) || (getnum_orig < tmpchar2)) ? 1 : 2;
+		set_cf = ((getnum_orig < tmpchar1) || (getnum_orig < tmpchar2))
+			     ? 1
+			     : 2;
 		set_zf = (getnum_orig == 0) ? 2 : 1;
 		goto _set;
 		break;
@@ -223,31 +254,44 @@ unsigned HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf)
 		GETVAR(tmpchar2, CURR_OP, 2, 1);
 		setnum_dest = CURR_OP[0];
 		dest_type = GETTYPE(CURR_OP, 1);
-		getnum_orig = (tmpchar2 < 8) ? (tmpchar1 << tmpchar2) : (tmpchar1 >> (tmpchar2 - 8));
+		getnum_orig = (tmpchar2 < 8) ? (tmpchar1 << tmpchar2)
+					     : (tmpchar1 >> (tmpchar2 - 8));
 		set_zf = (getnum_orig == 0) ? 2 : 1;
 		goto _set;
 		break;
 
-	case func: ;
-		hwuint subval = 0; /*This can't be a safe 'ret' place, so it's an error code*/
-		program->func_co[CURR_OP[0]] = _PROG_CO; /*Write down this instruction's position*/
-		for (hwuint i = 0; i <
-		    (sizeof(program->code.inst) - (_PROG_CO + 1)); i++) { /*Look for closest 'ret' */
+	case func:;
+		hwuint subval = 0; /*This can't be a safe 'ret' place, so it's
+				      an error code*/
+		program->func_co[CURR_OP[0]] =
+		    _PROG_CO; /*Write down this instruction's position*/
+		for (hwuint i = 0;
+		     i < (sizeof(program->code.inst) - (_PROG_CO + 1));
+		     i++) { /*Look for closest 'ret' */
 			if (program->code.inst[_PROG_CO + 1 + i] == ret) {
 				subval = _PROG_CO + 1 + i;
 				break;
 			}
 		}
-		if (subval){ program->skip_co[CURR_OP[0]] = subval; _PROG_CO = subval + 1; _BREAK; } /*Write down ret position, skip subroutine*/
-		else { return_code = 3; _BREAK; }	/*No matching 'ret'!*/
+		if (subval) {
+			program->skip_co[CURR_OP[0]] = subval;
+			_PROG_CO = subval + 1;
+			_BREAK;
+		} /*Write down ret position, skip subroutine*/
+		else {
+			return_code = 3;
+			_BREAK;
+		} /*No matching 'ret'!*/
 		break;
 	case ret:
 		_PROG_CO = program->return_co[CURR_OP[0]]; /*Return to caller*/
 		_BREAK;
 		break;
 	case call:
-		program->return_co[CURR_OP[0]] = _PROG_CO + 1; /*Note next instruction*/
-		_PROG_CO = program->func_co[CURR_OP[0]] + 1; /*Jump to subroutine*/
+		program->return_co[CURR_OP[0]] =
+		    _PROG_CO + 1; /*Note next instruction*/
+		_PROG_CO =
+		    program->func_co[CURR_OP[0]] + 1; /*Jump to subroutine*/
 		_BREAK;
 		break;
 	}
@@ -255,53 +299,59 @@ unsigned HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf)
 
 _set:
 
-	if(set_cf == 1) *DATA[_CF] = 1; 
-	else if(set_cf == 2) *DATA[_CF] = 0;
+	if (set_cf == 1)
+		*DATA[_CF] = 1;
+	else if (set_cf == 2)
+		*DATA[_CF] = 0;
 
-	if(set_zf == 1) *DATA[_ZF] = 1; 
-	else if(set_zf == 2) *DATA[_ZF] = 0;
+	if (set_zf == 1)
+		*DATA[_ZF] = 1;
+	else if (set_zf == 2)
+		*DATA[_ZF] = 0;
 
-	if(!donot_save){ /*We don't care about any memory 
-	                   stuff unless we need to use the memory!*/
-	if(DATA[setnum_dest] == NULL) return 1; /*Unmapped memory*/
-	if(dest_type == lit) {
-		return_code = 3; /*Wrong usage*/
-		_BREAK;
-	} else if(dest_type == adr) {
-		if (DATA[setnum_dest] == NULL) {
-			return_code = 1; /*Unmapped memory*/
+	if (!donot_save) { /*We don't care about any memory
+			     stuff unless we need to use the memory!*/
+		if (DATA[setnum_dest] == NULL)
+			return 1; /*Unmapped memory*/
+		if (dest_type == lit) {
+			return_code = 3; /*Wrong usage*/
 			_BREAK;
-		} else if(MASK[setnum_dest] == 1){
-			return_code = 2; /*Write to read-only address*/
-			_BREAK;
-		};
-		*DATA[setnum_dest] = getnum_orig;
-		rwinf->adrw = setnum_dest; 
-		rwinf->wrote_adrw = 1; 
-	} else if(dest_type == ptr) {
-		if(PTR_VALID(DATA, setnum_dest)){
-			*DATA[GETPTR(*DATA, setnum_dest)] = getnum_orig;
-			rwinf->adrw = GETPTR(*DATA, setnum_dest); 
-			rwinf->wrote_adrw = 1; 
-		} else{
-			return_code = 1;
-			_BREAK;
-		};
-	}
+		} else if (dest_type == adr) {
+			if (DATA[setnum_dest] == NULL) {
+				return_code = 1; /*Unmapped memory*/
+				_BREAK;
+			} else if (MASK[setnum_dest] == 1) {
+				return_code = 2; /*Write to read-only address*/
+				_BREAK;
+			};
+			*DATA[setnum_dest] = getnum_orig;
+			rwinf->adrw = setnum_dest;
+			rwinf->wrote_adrw = 1;
+		} else if (dest_type == ptr) {
+			if (PTR_VALID(DATA, setnum_dest)) {
+				*DATA[GETPTR(*DATA, setnum_dest)] = getnum_orig;
+				rwinf->adrw = GETPTR(*DATA, setnum_dest);
+				rwinf->wrote_adrw = 1;
+			} else {
+				return_code = 1;
+				_BREAK;
+			};
+		}
 	}
 	_PROG_CO += 1;
 	_BREAK;
 _jmp:
-	if (ISADR(CURR_OP[2], 1) || ISLIT(CURR_OP[2], 1)) { 
-	    /*If dealing with an address OR a literal, just
-		     move the PC to the operand*/
+	if (ISADR(CURR_OP[2], 1) || ISLIT(CURR_OP[2], 1)) {
+		/*If dealing with an address OR a literal, just
+			 move the PC to the operand*/
 		_PROG_CO = CURR_OP[0];
-	} else if (ISPTR(CURR_OP[2], 1)) { 
+	} else if (ISPTR(CURR_OP[2], 1)) {
 		/*If we are dealing with a pointer*/
-		if (PTR_VALID(DATA, CURR_OP[0])) { /*If the pointer addresses are mapped*/
-				/*Read the address presented and set the PC*/
-				_PROG_CO = GETPTR(*DATA,
-					CURR_OP[0]);  
+		if (PTR_VALID(
+			DATA,
+			CURR_OP[0])) { /*If the pointer addresses are mapped*/
+			/*Read the address presented and set the PC*/
+			_PROG_CO = GETPTR(*DATA, CURR_OP[0]);
 		} else {
 			return_code = 1; /*Else report they are unmmapped*/
 		}

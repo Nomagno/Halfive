@@ -33,6 +33,3 @@ HWVI_TEST - Enable entry point for example HWVI program
 
 HALFIVE_VM_SIMULATION - Most memory consuming option, enable doing per-player HWVM simulation. If not set, hwvm.h is not available in halfive.h
 HWASSEMBLY - Enable entry point for assembler
-HWVM_OU_HEX - Enable HWVM output register as hexadecimal
-HWVM_OU_RAW - Enable printing HWVM output register as raw characters
-HWVM_OU_DEBUG - Enable HWVM debug printing

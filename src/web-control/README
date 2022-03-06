@@ -4,6 +4,3 @@ USAGE:
   - Serve the HTML file
   - The server now receives POST URL-encoded at the URL '/post'
   - The format of the sent data is "pos1=INT&pos2=INT", where INT is a number from 0 to 100.
-
-halfive-term will read input data from the last line of a specified ASCII plain text file (can be a FIFO) in the format INT,INT,INT,INT,BOOL,BOOL,BOOL,BOOL where each one of the four INTs is an axis, from 0 to 65535, and each one of the four BOOLs is a digital button, 0/1
-It is designed to work with just the two first axis being being active, and no buttons

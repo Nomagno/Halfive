@@ -43,6 +43,7 @@ typedef struct {
 	int string_start, string_end, parent;
 } HWDOC_Token;
 
-extern unsigned HWDOC_Parse(const unsigned char *input, int size, HWDOC_Token *toks);
+extern unsigned HWDOC_Parse(const unsigned char *input, int size,
+			    HWDOC_Token *toks);
 
 #endif

@@ -63,8 +63,9 @@ int main(int argc, char **argv)
 	int return_code = 0;
 
 	while ((!prog.hf) && (!return_code)) {
-		if ((prog.code.opnd[prog.co][0] == 0xFFFD) || /*Preemtive/non-polling-but-ontime input, cheats 
-		                                                a bit by essentially peeking at the operands*/
+		if ((prog.code.opnd[prog.co][0] ==
+		     0xFFFD) || /*Preemtive/non-polling-but-ontime input, cheats
+				  a bit by essentially peeking at the operands*/
 		    (prog.code.opnd[prog.co][1] == 0xFFFD)) {
 			putchar('>');
 			mem.in = getchar();
@@ -72,14 +73,15 @@ int main(int argc, char **argv)
 		}
 
 		return_code = HWVM_Execute(&prog, &rwinf);
-		if((rwinf.adrw == 0xFFFC) && (rwinf.wrote_adrw))
+		if ((rwinf.adrw == 0xFFFC) && (rwinf.wrote_adrw))
 			printf("OU: %X\n", mem.ou);
 	}
 	fclose(codefile);
 	fclose(drivefile);
-	if(prog.hf) printf("HALT\n");
+	if (prog.hf)
+		printf("HALT\n");
 	else {
-		switch(return_code){
+		switch (return_code) {
 		case 1:
 			printf("ERROR: READ/WRITE - UNMAPPED MEM\n");
 			break;
@@ -98,11 +100,11 @@ int main(int argc, char **argv)
 }
 #endif
 
-
 hwuint HWASM_Parse(char *linestr, HWVM_InstructionSet *inst, hwuint opnds[3])
 {
-	char *token = hwstrtok(linestr, " "); /*linestr should not be const strictly speaking,
-                                                but strtok behaves properly in this situation.*/
+	char *token = hwstrtok(
+	    linestr, " "); /*linestr should not be const strictly speaking,
+			     but strtok behaves properly in this situation.*/
 	HWVM_InstructionSet myinst;
 	int i = 0;
 	while ((token != NULL) && (i < 2)) {
@@ -185,4 +187,3 @@ HWVM_InstructionSet _isinst(char *instr)
 	else
 		return 16;
 }
-

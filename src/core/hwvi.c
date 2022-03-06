@@ -40,9 +40,9 @@ PS4... (Probably more)
 */
 
 /*X11 (Graphics server unimplemented) is available for the following targets:
-Linux (Xorg, XWayland), FreeBSD (Xorg, XWayland), NetBSD (Xorg), Solaris/Illumos (Xorg),
-OpenBSD (Xenocara), Android (Termux-Xorg), MacOS (XFree86 fork), Windows (Cygwin X), Haiku,
-AmigaOS, RISC OS... (And a lot more)
+Linux (Xorg, XWayland), FreeBSD (Xorg, XWayland), NetBSD (Xorg), Solaris/Illumos
+(Xorg), OpenBSD (Xenocara), Android (Termux-Xorg), MacOS (XFree86 fork), Windows
+(Cygwin X), Haiku, AmigaOS, RISC OS... (And a lot more)
 */
 
 /*STDIN reading is available for the following platforms:
@@ -60,7 +60,8 @@ quit, bX, mx, and keyX are booleans 0 or 1, axisX are 8-bit ints 0-255
 
 unsigned HWVI_Init(HWVI_Reference *ref, size_t h, size_t w);
 unsigned HWVI_Destroy(HWVI_Reference *ref);
-unsigned HWVI_PlaySound(HWVI_Reference *stream, const HWVI_SoundData *const insound);
+unsigned HWVI_PlaySound(HWVI_Reference *stream,
+			const HWVI_SoundData *const insound);
 
 #define HWVI_GSERV_IMPL_SDL2
 
@@ -68,7 +69,6 @@ unsigned HWVI_PlaySound(HWVI_Reference *stream, const HWVI_SoundData *const inso
 disable sound and/or input*/
 #define HWVI_AUDIOSERV_IMPL_SDL2
 #define HWVI_STDINPUT_IMPL_PORTABLE
-
 
 #if defined(HWVI_GSERV_IMPL_SDL2)
 #include <SDL2/SDL.h>
@@ -187,7 +187,8 @@ unsigned HWVI_GetBuffer_Data(const char *spritename, HWVI_PixelData *inbuf)
 
 /*For sound media caching*/
 
-unsigned HWVI_PlaySound(HWVI_Reference *stream, const HWVI_SoundData *const insound)
+unsigned HWVI_PlaySound(HWVI_Reference *stream,
+			const HWVI_SoundData *const insound)
 {
 	hwuchar *buf;
 	uint32_t size;
@@ -202,7 +203,9 @@ unsigned HWVI_PlaySound(HWVI_Reference *stream, const HWVI_SoundData *const inso
 #else
 
 /*No sound support, stub*/
-unsigned HWVI_PlaySound(HWVI_Reference *stream, const HWVI_SoundData *const insound){
+unsigned HWVI_PlaySound(HWVI_Reference *stream,
+			const HWVI_SoundData *const insound)
+{
 	return 0;
 }
 
@@ -219,23 +222,21 @@ unsigned HWVI_GetInput(HWVI_Reference *tty, HWVI_InputData *keys)
 		;
 	token = strtok(str, ",");
 	while (token != NULL) {
-		if(i < 16) {
-		keys->keys[i] = !!hwstrtoul(token, NULL, 10);
-		} else if(i < 20){
-			keys->axis[i - 16] = (hwuchar)hwstrtoul(token, NULL, 10);
+		if (i < 16) {
+			keys->keys[i] = !!hwstrtoul(token, NULL, 10);
+		} else if (i < 20) {
+			keys->axis[i - 16] =
+			    (hwuchar)hwstrtoul(token, NULL, 10);
 		}
 		token = hwstrtok(NULL, ",");
-		i+=1;
-
+		i += 1;
 	}
 
 	return 0;
 }
 #else
 /*No input support, stub*/
-unsigned HWVI_GetInput(HWVI_Reference *tty, HWVI_InputData *keys){
-	return 0;
-}
+unsigned HWVI_GetInput(HWVI_Reference *tty, HWVI_InputData *keys) { return 0; }
 #endif
 
 /*EXAMPLE:*/
@@ -250,10 +251,10 @@ int main(void)
 	size_t bmpsize_1;
 	size_t bmpsize_2;
 	HWVI_GetBuffer_Size(&bmpsize_1, &bmpsize_2,
-			"../../assets/sprites/zoom.bmp");
+			    "../../assets/sprites/zoom.bmp");
 
 	HWVI_PixelData mybuf_green = {.size = {WCONSTANT, WCONSTANT},
-				  .pix = &array_one[0][0]};
+				      .pix = &array_one[0][0]};
 
 	if (HWVI_Init(&myref, WCONSTANT, WCONSTANT)) {
 		HWVI_Destroy(&myref);
@@ -261,17 +262,17 @@ int main(void)
 	}
 
 	HWVI_PlaySound(&myref, &(const HWVI_SoundData){
-		.name = "../../assets/sound/applause.wav"});
+				   .name = "../../assets/sound/applause.wav"});
 
-	for (unsigned i = 0; i < FRAMERATE*8; i++) {
+	for (unsigned i = 0; i < FRAMERATE * 8; i++) {
 		for (unsigned j = 0; j < (WCONSTANT * WCONSTANT); j++) {
-		mybuf_green.pix[j] =
-		((j + i - (j*2)) % 23)
-		? 0x0F00 : 0x00F0;
-		mybuf_green.pix[j] =
-		((j - (i*3)) % 3)
-		? (mybuf_green.pix[j] | 0xF260) : (mybuf_green.pix[j] + 0x0FF0 + i);
-		    }
+			mybuf_green.pix[j] =
+			    ((j + i - (j * 2)) % 23) ? 0x0F00 : 0x00F0;
+			mybuf_green.pix[j] =
+			    ((j - (i * 3)) % 3)
+				? (mybuf_green.pix[j] | 0xF260)
+				: (mybuf_green.pix[j] + 0x0FF0 + i);
+		}
 		HWVI_SetBuffer(&myref, &mybuf_green);
 	}
 

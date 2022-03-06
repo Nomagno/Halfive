@@ -65,7 +65,6 @@ struct HWT_Segment {
 	enum HWT_RailEnum guardrails;
 };
 
-
 /*Memory footprint worst-case scenario: 256 bytes*/
 typedef struct {
 	char name[20];

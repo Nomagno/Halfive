@@ -29,16 +29,15 @@ WORK.*/
 
 #ifndef HALFIVE_H
 #define HALFIVE_H
-#include <halfworld/hwreq.h>
 #include <halfworld/hwdoc/hwdoc.h>
 #include <halfworld/hwdoc/hwnet.h>
 #include <halfworld/hwdoc/hwt.h>
+#include <halfworld/hwreq.h>
 #include <halfworld/hwstring.h>
 
-
 #ifdef HALFIVE_VM_SIMULATION
-#include <halfworld/hwvm/hwvm.h>
 #include <halfworld/hwvm/hwasm.h>
+#include <halfworld/hwvm/hwvm.h>
 #endif
 
 #define RACENUM 16
@@ -61,15 +60,15 @@ typedef struct {
 	/*Input properties of the car
 	 (BACKEND WILL NOT MODIFY THESE, FRONTEND CAN MODIFY THEM)*/
 
-	_Bool active;       /*0 OR 1*/
+	_Bool active; /*0 OR 1*/
 	hwuint axis1; /*0 TO 65535*/
 	hwuint axis2; /*0 TO 65535*/
 	hwuint axis3; /*0 TO 65535*/
 	hwuint axis4; /*0 TO 65535*/
-	_Bool btn1;         /*0 OR 1*/
-	_Bool btn2;         /*0 OR 1*/
-	_Bool btn3;         /*0 OR 1*/
-	_Bool btn4;         /*0 OR 1*/
+	_Bool btn1;   /*0 OR 1*/
+	_Bool btn2;   /*0 OR 1*/
+	_Bool btn3;   /*0 OR 1*/
+	_Bool btn4;   /*0 OR 1*/
 
 	/*Simulated properties of the car (MODIFYING THESE CAN LEAD TO
     FUNKY RESULTS, HOWEVER THERE IS NOTHING INHERENTLY WRONG WITH IT)*/
@@ -77,20 +76,26 @@ typedef struct {
 #ifdef HALFIVE_VM_SIMULATION
 	HWVM_DefaultMemSetup vmmem;
 	HWVM_GeneralMemory computer; /*200KBs of storage with default settings*/
-	hwuchar status_screen[16]; /*8x8 4-color screen for VM, each two contiguous bits are a pixel. Mapped 0xC000 to 0xC00F*/
-	hwuchar status_lights; /*Each two contiguous bits is a single light, 
-	                       which can be off, color one, two, or three. Mapped 0xC011 to 0xC014*/
+	hwuchar
+	    status_screen[16]; /*8x8 4-color screen for VM, each two contiguous
+				  bits are a pixel. Mapped 0xC000 to 0xC00F*/
+	hwuchar status_lights; /*Each two contiguous bits is a single light,
+			       which can be off, color one, two, or three.
+			       Mapped 0xC011 to 0xC014*/
 #endif
 
-	hwuint leaderboard_local; /*RACE LEADERBOARD POSITION*/
+	hwuint leaderboard_local;  /*RACE LEADERBOARD POSITION*/
 	hwuint leaderboard_global; /*GLOBAL LEADERBOARD POSITION*/
 
-	hwuchar cuadrantX, cuadrantY; /*Most significant byte of position starting (0,0), in millimeters*/
-	hwuint posX, posY; /*Least significant two bytes of position starting (0,0), in millimeters*/
+	hwuchar cuadrantX, cuadrantY; /*Most significant byte of position
+					 starting (0,0), in millimeters*/
+	hwuint posX, posY; /*Least significant two bytes of position starting
+			      (0,0), in millimeters*/
 
 	hwuint revolutions; /*ENGINE REVOLUTIONS PER MINUTE*/
 
-	hwuint states[4]; /*Internal states of the car, in total 64 bits of storage*/
+	hwuint states[4]; /*Internal states of the car, in total 64 bits of
+			     storage*/
 
 	enum HWNET_Type1Enum car_state; /*SEE THE HWNET SPEC*/
 	enum HWNET_Type2Enum mov_state; /*SEE THE HWNET SPEC*/
@@ -107,7 +112,9 @@ typedef struct {
 
 extern unsigned H5_Init(const char *trck, H5_World *stage);
 extern unsigned H5_Sim(H5_World *stage, uint16_t delta, _Bool do_hwvm_sim);
-extern unsigned H5_TransformServer(const H5_World *stage, HWNET_ServerPacket *serv,
-			     enum HWNET_ModeEnum mode);
-extern unsigned H5_TransformClient(H5_World *stage, const HWNET_ClientPacket *cli);
+extern unsigned H5_TransformServer(const H5_World *stage,
+				   HWNET_ServerPacket *serv,
+				   enum HWNET_ModeEnum mode);
+extern unsigned H5_TransformClient(H5_World *stage,
+				   const HWNET_ClientPacket *cli);
 #endif

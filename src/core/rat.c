@@ -29,40 +29,40 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
-
-void Rat_XorSwap(uRatInt *a, uRatInt *b){
+void Rat_XorSwap(uRatInt *a, uRatInt *b)
+{
 	*a = *a ^ *b;
 	*b = *a ^ *b;
 	*a = *a ^ *b;
 	return;
 }
 
-uRatInt Rat_GCD(uRatInt a, uRatInt b){
-	if( b > a) Rat_XorSwap(&a, &b);
+uRatInt Rat_GCD(uRatInt a, uRatInt b)
+{
+	if (b > a)
+		Rat_XorSwap(&a, &b);
 	if (b == 0)
 		return a;
 	else
 		return Rat_GCD(b, a % b);
 }
 
-uRatInt Rat_LCM(uRatInt a, uRatInt b){
-	return ((a * b) / Rat_GCD(a, b));
-}
+uRatInt Rat_LCM(uRatInt a, uRatInt b) { return ((a * b) / Rat_GCD(a, b)); }
 
-
-
-Rat Rat_Simplify(Rat a){
+Rat Rat_Simplify(Rat a)
+{
 	uRatInt gcd = Rat_GCD(a.num, a.denom);
-	return (Rat){ a.sign, a.num/gcd, a.denom/gcd};
+	return (Rat){a.sign, a.num / gcd, a.denom / gcd};
 }
 
-void Rat_Equate(Rat *a, Rat *b){
+void Rat_Equate(Rat *a, Rat *b)
+{
 	*a = Rat_Simplify(*a);
 	*b = Rat_Simplify(*b);
 
 	uRatInt lcm = Rat_LCM(a->denom, b->denom);
-	uRatInt amult = lcm/a->denom;
-	uRatInt bmult = lcm/b->denom;
+	uRatInt amult = lcm / a->denom;
+	uRatInt bmult = lcm / b->denom;
 
 	a->num *= amult;
 	a->denom *= amult;
@@ -70,23 +70,22 @@ void Rat_Equate(Rat *a, Rat *b){
 	b->denom *= bmult;
 }
 
-_Bool Rat_Compare(Rat a, Rat b){
-	return(a.num * b.denom == a.denom * b.num);
-}
+_Bool Rat_Compare(Rat a, Rat b) { return (a.num * b.denom == a.denom * b.num); }
 
-Rat Rat_Add(Rat a, Rat b){
+Rat Rat_Add(Rat a, Rat b)
+{
 	Rat_Equate(&a, &b);
 	Rat result;
-	if(a.sign && b.sign) {
+	if (a.sign && b.sign) {
 		result.sign = 1;
 		result.num = a.num + b.num;
 		result.denom = a.denom;
-	} else if(!a.sign && !b.sign){
+	} else if (!a.sign && !b.sign) {
 		result.sign = 0;
 		result.num = a.num + b.num;
-		result.denom = a.denom;		
-	} else{
-		if(a.sign) {
+		result.denom = a.denom;
+	} else {
+		if (a.sign) {
 			a.sign = 0;
 			b.sign = 1;
 			Rat_XorSwap(&a.num, &b.num);
@@ -94,7 +93,7 @@ Rat Rat_Add(Rat a, Rat b){
 		result.num = a.num - b.num;
 		result.denom = a.denom;
 		result.sign = 0;
-		if(result.num > a.num){
+		if (result.num > a.num) {
 			result.num = ~result.num;
 			result.num += 1;
 			result.sign = 1;
@@ -103,20 +102,19 @@ Rat Rat_Add(Rat a, Rat b){
 	return result;
 }
 
-Rat Rat_Product(Rat a, Rat b){
+Rat Rat_Product(Rat a, Rat b)
+{
 	a = Rat_Simplify(a);
 	b = Rat_Simplify(b);
 
-	return Rat_Simplify((Rat){
-		(a.sign != b.sign),
-		a.num * b.num,
-		a.denom * b.denom
-	});
+	return Rat_Simplify(
+	    (Rat){(a.sign != b.sign), a.num * b.num, a.denom * b.denom});
 }
 
 #ifdef FLOATS_SUPPORTED
-float Rat_toFloat(Rat a){
+float Rat_toFloat(Rat a)
+{
 	a = Rat_Simplify(a);
-	return (a.sign) ? (a.num/a.denom) : (-a.num/a.denom);
+	return (a.sign) ? (a.num / a.denom) : (-a.num / a.denom);
 }
 #endif
