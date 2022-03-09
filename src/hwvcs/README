@@ -1,0 +1,39 @@
+Half-World Version Control System
+... because why not
+
+
+Layout of a repo:
+
+PROJECT_ROOT
+"-- .hwvcs
+|   |-- commits
+|   |   |-- 0.patch
+|   |   |-- 0.info
+|   |   |-- 1.patch
+|   |   |-- 1.info
+|   |   "-- .......
+|   "-- info
+"-- tree
+    "-- PROJECT_FILES
+
+Where commits are named linearly counting up from zero
+Where 'N.info' indicates the description of commit N
+
+
+Where the format for the '.hwvcs/info' file is the following:
+NAME
+LASTCOMMIT
+SHORTINFO
+LONGINFO
+
+NAME - One line, name of the project
+LASTCOMMIT - One line, index of last commit or 'NONE'
+SHORTINFO - One line, information about the project
+LONGINFO - Until end of file, information about the project
+
+Usage:
+hwvcs.sh [OPTION] [ARG]
+-n   New project, ARG - path of info file to copy
+-c   Create new commit, ARG - path of info file to copy
+-r   Rollback to commit, ARG - index
+-i   Info about commit, ARG - either "REPO" or the index
