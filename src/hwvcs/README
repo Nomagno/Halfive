@@ -6,7 +6,7 @@ and will simply empty the contents of files deleted
 from one commit to the other. I recommend using the
 following POSIX sh function to delete empty files after 
 running the commmand:
-hwvcs(){ hwvcs.sh $@; find tree -empty -exec rm {} + }
+hwvcs(){ hwvcs.sh $@; find tree -empty -exec rm {} +; }
 
 
 Usage:
