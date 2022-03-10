@@ -70,7 +70,6 @@ elif [ "$1" = '-c' ]; then
 		rm -r tree.base
 		mv tree tree.base
 		mv treebackup tree
-		ls tree tree.base
 		NEWCOMMIT=$((LASTCOMMIT + 1))
 	else
 		mkdir tree.base
