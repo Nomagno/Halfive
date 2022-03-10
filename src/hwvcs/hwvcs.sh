@@ -37,6 +37,31 @@ else
 	NOBACKUP_ARGS='-V none'
 fi
 
+bin_to_hwvcsbin(){
+	LIST=$(find . -not -type d)
+	for i in $LIST; do
+		if file "$i" | grep -v -q ASCII; then
+			od -An -tx1 -v "$i" | \
+			awk '{$1=$1};1' | \
+			tr ' ' '\n' > "${i}.hwvcs_bin"
+			rm "$i"
+		fi
+	done
+}
+
+hwvcsbin_to_bin(){
+	LIST=$(find . -not -type d)
+	for i in $LIST; do
+		if file "$i" | grep -q 'hwvcs_bin'; then
+			while read -r line; do
+				printf "\\$(printf %o 0x$line)"
+			done < "$i" > "$(echo "$i" | sed 's/.hwvcs_bin//g')"
+			rm "$i"
+		fi
+	done
+}
+
+
 applycommit() {
 	mkdir "$1"
 	CURR="$PWD"
@@ -47,6 +72,7 @@ applycommit() {
 		COUNT=$((COUNT + 1))
 		COMPARE=$(($2 - COUNT))
 	done
+	hwvcsbin_to_bin
 	cd "$CURR"
 
 }
@@ -79,7 +105,9 @@ elif [ "$1" = '-c' ]; then
 		NEWCOMMIT=0
 	fi
 	cd tree
+	bin_to_hwvcsbin
 	diff -Nru ../tree.base . > "../.hwvcs/commits/${NEWCOMMIT}.patch"
+	hwvcsbin_to_bin
 	cd ..
 	rm -rf tree.base
 	cp "$2" ".hwvcs/commits/${NEWCOMMIT}.info"
