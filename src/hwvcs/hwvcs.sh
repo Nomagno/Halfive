@@ -31,8 +31,11 @@
 # Requirements:
 # POSIX compliant shell
 
-
-NOBACKUP_ARGS='-V none'
+if patch --help >/dev/null 2>&1; then
+	NOBACKUP_ARGS='--no-backup-if-mismatch'
+else
+	NOBACKUP_ARGS='-V none'
+fi
 
 applycommit() {
 	mkdir "$1"
@@ -40,9 +43,9 @@ applycommit() {
 	COUNT=0
 	cd "$1"
 	while [ "$(echo "$COMPARE" | head -c 1)" != '-' ]; do
-		patch $NOBACKUP_ARGS -us -p0 < "$CURR/.hwvcs/commits/${COUNT}.patch"
+		patch $NOBACKUP_ARGS -us -p0 -i "$CURR/.hwvcs/commits/${COUNT}.patch"
 		COUNT=$((COUNT + 1))
-		COMPARE=$(("$2" - COUNT))
+		COMPARE=$(($2 - COUNT))
 	done
 	cd "$CURR"
 
