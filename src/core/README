@@ -6,6 +6,7 @@ hwvm.h (Virtual machine)
 hwasm.h (Assembler)
 hwvi.h (Abstraction over graphics, input, and sound)
 hwstring.h (nolibc string.h)
+rat.h (Rational number handling)
 
 Pending implementation:
 hwt.h (Track reader, wrapper over hwdoc.h)
@@ -26,10 +27,11 @@ Run the command `make` to compile to a static library/archive file
 You can use `make INCLROOT="/path/to/halfworld/"` to change the default path of the folder with the headers
 Available macros (use `make PARAMS="-DMACRO1 -DMACRO2"`)
 (not setting any of these makes for a headless/nodependency build):
+
 HWVI_GSERV_IMPL_FOO - Enable HWVI graphics server implementation foo
 HWVI_AUDIOSERV_IMPL_FOO - Enable HWVI audio server implementation foo
 HWVI_STDINPUT_IMPL_FOO - Enable HWVI input server implementation foo
 HWVI_TEST - Enable entry point for example HWVI program
-
 HALFIVE_VM_SIMULATION - Most memory consuming option, enable doing per-player HWVM simulation. If not set, hwvm.h is not available in halfive.h
 HWASSEMBLY - Enable entry point for assembler
+FLOATS_SUPPORTED - Set if the use of floats is permissible on the target

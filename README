@@ -12,7 +12,7 @@ It has a lot of C utility interfaces, such as:
 - Packet/Circuit data structures and tokenizer (WIP) (include/halfworld/hwdoc/hwnet.h) (include/halfworld/hwdoc/hwt.h)
 - Portable VM with custom instruciton set,  and assembly language (include/halfworld/hwvm/hwvm.h)
 - Portable abstraction over graphics, sound, and input backends (include/halfworld/hwvi.h)
-- Arbitrary-viewport ASCII 2D renderer (WIP)
+- Portable utilities for working with rational numbers (include/halfworld/rat.h)
 - Portable declarative physics engine (WIP) (include/halfworld/halfive.h)
 
 List of specifications and corresponding mime types:
@@ -28,7 +28,7 @@ List of specifications and corresponding mime types:
 
 	General-purpose tools:
 		Half-World Virtual Machine (HWVM)
-			- text/hwvm
+			- text/hwasm
 			- application/hwbin
 			- application/hwdrive
 

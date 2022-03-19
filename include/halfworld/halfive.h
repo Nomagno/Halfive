@@ -34,6 +34,7 @@ WORK.*/
 #include <halfworld/hwdoc/hwt.h>
 #include <halfworld/hwreq.h>
 #include <halfworld/hwstring.h>
+#include <halfworld/rat.h>
 
 #ifdef HALFIVE_VM_SIMULATION
 #include <halfworld/hwvm/hwasm.h>

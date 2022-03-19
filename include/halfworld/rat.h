@@ -1,4 +1,7 @@
-#include <stdint.h>
+#ifndef HWRAT_H
+#define HWRAT_H
+
+#include <halfworld/hwreq.h>
 
 /*
 Copyright Nomagno 2021, 2022
@@ -59,4 +62,6 @@ Rat Rat_Product(Rat a, Rat b);
 
 #ifdef FLOATS_SUPPORTED
 float Rat_toFloat(Rat a);
+#endif
+
 #endif

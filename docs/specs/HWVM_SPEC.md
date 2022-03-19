@@ -4,7 +4,7 @@
 #### Copyright Nomagno 2021, 2022
 
 It is recommended to use the ".hwvm" extension for HWVM assembly documents (where applicable).
-HWVM assembly is identified by the MIME type `text/hwvm`
+HWVM assembly is identified by the MIME type `text/hwasm`
 
 It is recommended to use the ".hwbin" extension for HWVM binary executables (where applicable).
 HWVM binary drives are identified by the MIME type `application/hwbin`

@@ -34,6 +34,7 @@
 #HWVI_STDINPUT_IMPL_FOO - Enable HWVI input server implementation foo
 #HWASSEMBLY - Enable entry point for assembler
 #HALFIVE_VM_SIMULATION - Most memory consuming option, enable doing per-player HWVM simulation.
+#FLOATS_SUPPORTED - Are floats permissible on the target platform?
 
 INCLROOT="../../include/"
 

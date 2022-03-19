@@ -36,7 +36,6 @@ hwuint _isxupdigit(hwuchar inchar);
 HWVM_InstructionSet _isinst(char *instr);
 
 /*Define HWASSEMBLY to enable assembling*/
-#define HWASSEMBLY
 #ifdef HWASSEMBLY
 #include <stdio.h>
 int main(int argc, char **argv)
