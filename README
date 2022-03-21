@@ -13,6 +13,7 @@ It has a lot of C utility interfaces, such as:
 - Portable VM with custom instruciton set,  and assembly language (include/halfworld/hwvm/hwvm.h)
 - Portable abstraction over graphics, sound, and input backends (include/halfworld/hwvi.h)
 - Portable utilities for working with rational numbers (include/halfworld/rat.h)
+- Portable RPG battle simulator and prototypes (WIP) (include/halfworld/hwrpg.h) (include/halfworld/hwrpg_proto.h)
 - Portable declarative physics engine (WIP) (include/halfworld/halfive.h)
 
 List of specifications and corresponding mime types:
