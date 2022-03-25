@@ -43,20 +43,55 @@ WORK.*/
 
 #define RACENUM 16
 
-/*Approximate default storage with VM: 133KBs
-Without VM worst-case scenario: 128Bs
+/*Approximate default storage with VM: 140KBs
+Without VM worst-case scenario: 256Bs
 */
+
+typedef enum {
+	single_seat_wheel,
+	single_seat_floating,
+	double_seat_wheel,
+	double_seat_floating,
+	transport_wheel,
+	transport_floating
+} Car_Type;
+
+typedef enum {
+	V12_Forced,
+	V12_Natural,
+	V8_Forced,
+	V8_Natural,
+	V6_Forced,
+	V6_Natural,
+	Electrical
+} Engine_Type;
+
+typedef enum {
+	Front_Drive,
+	Rear_Drive,
+	All_Drive,
+	Horizontal_Magnets,
+	Vertical_Magnets
+} Traction_Type;
 
 typedef struct {
 
 	/*Intrinsic properties of the vehicle
 	  (BACKEND WILL NOT MODIFY THESE, FRONTEND CAN MODIFY THEM)*/
 
-	hwuint width;          /*MILLIMETERS*/
-	hwuint length;         /*MILLIMETERS*/
-	hwuint baseline_speed; /*METERS PER SECOND*/
-	hwuint baseline_accel; /*METERS PER SECOND SQUARED*/
-	hwuint engineweight;   /*GRAMS*/
+	Car_Type car_type;
+	Engine_Type engine_type;
+	Traction_Type traction_type;
+	hwuint width;           /*MILLIMETERS*/
+	hwuint length;          /*MILLIMETERS*/
+	hwuchar agility;        /*FORCIBLY BOOST TURNING DEGREES OF CAR*/
+	hwuint baseline_speed;  /*METERS PER SECOND*/
+	hwuint baseline_accel;  /*METERS PER SECOND SQUARED*/
+	hwuint weight;          /*HECTOGRAMS*/
+	hwuint grip_level;      /*VERY COMPLEX, IF UNSURE KEEP AT 16k-32k*/
+	hwuint downforce_level; /*0 TO 65535
+	                        0 - NO DOWNFORCE
+	                        65535 - CAR GLUED TO FLOOR*/
 
 	/*Input properties of the car
 	 (BACKEND WILL NOT MODIFY THESE, FRONTEND CAN MODIFY THEM)*/
