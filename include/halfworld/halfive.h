@@ -48,21 +48,13 @@ Without VM worst-case scenario: 256Bs
 */
 
 typedef enum {
-	single_seat_wheel,
-	single_seat_floating,
-	double_seat_wheel,
-	double_seat_floating,
-	transport_wheel,
-	transport_floating
+	Four_Wheeled,
+	Magnetic_Rails
 } Car_Type;
 
 typedef enum {
-	V12_Forced,
-	V12_Natural,
-	V8_Forced,
-	V8_Natural,
-	V6_Forced,
-	V6_Natural,
+	Forced,
+	Natural,
 	Electrical
 } Engine_Type;
 
