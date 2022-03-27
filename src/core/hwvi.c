@@ -63,13 +63,6 @@ unsigned HWVI_Destroy(HWVI_Reference *ref);
 unsigned HWVI_PlaySound(HWVI_Reference *stream,
 			const HWVI_SoundData *const insound);
 
-#define HWVI_GSERV_IMPL_SDL2
-
-/*Comment these two macros out to
-disable sound and/or input*/
-#define HWVI_AUDIOSERV_IMPL_SDL2
-#define HWVI_STDINPUT_IMPL_PORTABLE
-
 #if defined(HWVI_GSERV_IMPL_SDL2)
 #include <SDL2/SDL.h>
 #endif

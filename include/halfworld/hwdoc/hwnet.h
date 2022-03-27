@@ -42,11 +42,11 @@ struct HWNET_ServerData {
 	enum HWNET_Type1Enum flags_1; /*If it is -1, SHOULD BE LEFT EMPTY*/
 	enum HWNET_Type2Enum flags_2; /*If it is -1, SHOULD BE LEFT EMPTY*/
 	enum HWNET_Type3Enum flags_3; /*If it is -1, SHOULD BE LEFT EMPTY*/
-	uint16_t leaderboard, position1, position2;
+	hwuint leaderboard, position1, position2;
 };
 
 struct HWNET_ClientData {
-	uint8_t thruster_1, thruster_2, steer;
+	hwuchar thruster_1, thruster_2, steer;
 };
 
 /*Memory footprint worst-case scenario: 256Bs*/

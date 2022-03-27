@@ -48,7 +48,7 @@ typedef struct {
 /*Pixel buffer*/
 typedef struct {
 	HWVI_Point size;
-	uint16_t *pix;
+	hwuint *pix;
 } HWVI_PixelData;
 
 /*Direction keys,
@@ -76,9 +76,9 @@ enum HWVI_KeyEnum {
 
 typedef struct {
 	_Bool keys[16];    /*See enum for what each pos means*/
-	uint8_t axis[4];   /*Max 4 axis*/
-	uint16_t cursor_x; /*Mouse X*/
-	uint16_t cursor_y; /*Mouse Y*/
+	hwuchar axis[4];   /*Max 4 axis*/
+	hwuint cursor_x; /*Mouse X*/
+	hwuint cursor_y; /*Mouse Y*/
 } HWVI_InputData;
 
 typedef struct {

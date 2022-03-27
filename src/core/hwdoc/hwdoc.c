@@ -30,10 +30,11 @@ WORK.*/
 #include <halfworld/hwdoc/hwdoc.h>
 #include <halfworld/hwreq.h>
 
-unsigned HWDOC_Parse(const unsigned char *input, int tok_size,
+#define TOP_LAYER UINT_MAX
+unsigned HWDOC_Parse(const unsigned char *input, unsigned tok_size,
 		     HWDOC_Token *toks);
 
-unsigned HWDOC_Parse(const unsigned char *input, int tok_size,
+unsigned HWDOC_Parse(const unsigned char *input, unsigned tok_size,
 		     HWDOC_Token *toks)
 {
 	int i = 0,           /*Character iterator var*/
@@ -83,7 +84,7 @@ unsigned HWDOC_Parse(const unsigned char *input, int tok_size,
 				  level*/
 			toks[j].parent =
 			    last_parent[(curr_indent == 0)
-					    ? 0
+					    ? TOP_LAYER
 					    : curr_indent -
 						  1] /*Get parent token*/;
 			toks[j - 1].string_end =

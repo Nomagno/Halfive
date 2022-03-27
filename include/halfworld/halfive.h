@@ -139,7 +139,7 @@ typedef struct {
 } H5_World;
 
 extern unsigned H5_Init(const char *trck, H5_World *stage);
-extern unsigned H5_Sim(H5_World *stage, uint16_t delta, _Bool do_hwvm_sim);
+extern unsigned H5_Sim(H5_World *stage, hwuint delta, _Bool do_hwvm_sim);
 extern unsigned H5_TransformServer(const H5_World *stage,
 				   HWNET_ServerPacket *serv,
 				   enum HWNET_ModeEnum mode);

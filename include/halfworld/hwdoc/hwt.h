@@ -48,8 +48,8 @@ struct HWT_Biome {
 };
 
 struct HWT_Point {
-	uint8_t HighX, HighY;
-	uint16_t LowX, LowY;
+	hwuchar HighX, HighY;
+	hwuint LowX, LowY;
 };
 
 struct HWT_Bezier {
@@ -58,7 +58,7 @@ struct HWT_Bezier {
 
 struct HWT_Segment {
 	struct HWT_Bezier shape;
-	uint16_t width;
+	hwuint width;
 
 	enum HWT_SpeedEnum speed;
 	enum HWT_FinishEnum racing_line;
@@ -71,9 +71,9 @@ typedef struct {
 
 	struct HWT_Biome biome;
 	enum HWT_TimeEnum time;
-	uint8_t max_players;
+	hwuchar max_players;
 
-	uint16_t segment_number;
+	hwuint segment_number;
 	struct HWT_Segment segments[40];
 } HWT_Circuit;
 
