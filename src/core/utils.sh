@@ -34,21 +34,34 @@
 # POSIX sh
 # POSIX cat
 # POSIX tr
+# POSIX dd
 # POSIX cut
 # POSIX expr
 # POSIX printf
+# POSIX echo
+
 
 stac(){
 	words=$(cat | tr ' ' '\n')
 	size='-1'
 	count='-1'
 	for i in $words; do
-		size=$(expr -- $size + 1)
+		size=$((size + 1))
 	done
 	for i in $words; do
-		count=$(expr -- $count + 1)
-		opposite_count=$(expr -- $size - $count + 1)
+		count=$((count + 1))
+		opposite_count=$((size - count + 1))
 		printf "%s " "$(printf '%s\n' "$words" | cut -d' ' -f"$opposite_count")"
 	done
-	printf '\n'
+	echo
 }
+
+# $1 - random byte stream (e.g. /dev/urandom)
+# $2 - character count of the key (e.g. 10)
+genkey(){
+	LC_CTYPE=C
+	cat "$1" | tr -dc 'A-Z' | dd bs=1 count="$2" 2>/dev/null
+	echo	
+}
+
+cat | stac

@@ -136,17 +136,17 @@ A specification of the format follows:
 BINARY FORMAT:
 You code each instruction as 4 bits of which the least significant 2 indicate
 which arguments are literals and which addresses, and the highest indicates if
-the literals are pointers or not (0001 - from left to right:  first is address,
-second literal, high bit indicates they are literals and NOT
+the literals are pointers or not (0001 - from right to left:  first is literal,
+second address, third bit is padding, high bit indicates they are literals and NOT
 pointers), then 4 bits for the instructions themselves (check the listed values)
-then simply read the corresponding number of 16-bit 'arguments' (0-2),
+then two 16-bit 'arguments' (0-2),
 and repeat.
 
 EXAMPLE:
-BINARY: 0001 0001 000000000000001 000000000011111
-DECIMAL:   1    3               1              31
-ASSEMBLY:     add               1             =1F
-ENGLISH: add the contents of address ONE and the number 1F, put the result back into address ONE
+BINARY: 0001 0101 000000000000001 000000000011111 0000 0000 0000000000000000 0000000000000000
+DECIMAL:   1    5               1              31 0       0                0                0
+ASSEMBLY:     add               1             =1F      halt
+ENGLISH: add the contents of address ONE and the number 1F, put the result back into address ONE, halt
 ```
 
 ***
