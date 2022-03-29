@@ -39,17 +39,160 @@
 #POSIX sed
 #POSIX awk
 
+helpmsg='USAGE: asmpp.sh OPTION
+   -m   Read macro+assembly from stdin, output hwassembly
+   -b   Read ascii-machinecode from stdin, output hwassembly
+   -h   Print this message
+
+macro format:
+   #d MACRO,MEANING
+
+ascii-machinecode format:
+   Where each X is a hexadecimal digit, and 
+   each block is separated by a single space:
+
+      X        X   XXXX   XXXX
+   mask   opcode   arg1   arg2
+'
+
+macro_to_asm(){
 . ../utils.sh
 
 rep=$(grep '^#d' "$1" | sed 's/^#d //g; s/ /|/g')
-f=$(cat "$1" | sed 's|;.*$||g; /#d /d')
+f=$(cat | sed 's|;.*$||g; /#d /d')
 
 rep=$(echo $rep | stac)
 
 for i in $rep; do
 p1=$(printf '%s\n' "$i" | cut -d',' -f1 | sed 's/|/ /g; s/\&/\\&/g')
 p2=$(printf '%s\n' "$i" | cut -d',' -f2 | sed 's/|/ /g; s/\&/\\&/g')
-f=$(printf "$f" | sed "s/$p1/$p2/g")
+f=$(printf '%s '"$f" | sed "s/$p1/$p2/g")
 done
 
 printf '%s\n' "$f" | sed 's/__/\n/g;' | awk 'NF' | sed 's/^[[:blank:]]*//g'
+}
+
+
+# Turn HWVM machine code in ASCII form into instructions. The machine code has
+# to follow this format format:
+#    F        F   FFFF   FFFF
+# mask   opcode   arg1   arg2
+# Which is the same format as the binary machine code 
+
+mask(){
+	IN=$(cat)
+
+	if [ "$IN" = B  ]; then
+		echo 1
+		echo 1
+		echo 1
+	elif [ "$IN" = A  ]; then
+		echo 1
+		echo 1
+		echo 0
+	elif [ "$IN" = 9  ]; then
+		echo 1
+		echo 0
+		echo 1
+	elif [ "$IN" = 3  ]; then
+		echo 0
+		echo 1
+		echo 1
+	elif [ "$IN" = 2  ]; then
+		echo 0
+		echo 1
+		echo 0
+	elif [ "$IN" = 1  ]; then
+		echo 0
+		echo 0
+		echo 1
+	fi
+}
+
+instruction() {
+	IN=$(cat)
+	if [ "$IN" = '0' ]; then
+		printf halt
+	elif [ "$IN" = '1' ]; then
+		printf nop
+	elif [ "$IN" = '2' ]; then
+		printf set
+	elif [ "$IN" = '3' ]; then
+		printf jmp
+	elif [ "$IN" = '4' ]; then
+		printf jcz
+	elif [ "$IN" = '5' ]; then
+		printf add
+	elif [ "$IN" = '6' ]; then
+		printf sub
+	elif [ "$IN" = '7' ]; then
+		printf and
+	elif [ "$IN" = '8' ]; then
+		printf or
+	elif [ "$IN" = '9' ]; then
+		printf xor
+	elif [ "$IN" = 'A' ]; then
+		printf rot
+	elif [ "$IN" = 'B' ]; then
+		printf cmp
+	elif [ "$IN" = 'C' ]; then
+		printf func
+	elif [ "$IN" = 'D' ]; then
+		printf ret
+	elif [ "$IN" = 'E' ]; then
+		printf call
+	elif [ "$IN" = 'F' ]; then
+		printf jcnz
+	fi
+}
+
+mach_to_asm() {
+COUNT=0
+
+ISPTR=0
+IS2_LIT=0
+IS1_LIT=0
+IFS=' 
+'
+
+for word in $(cat); do
+	if [ "$COUNT" = 0  ]; then
+		MASK=$(printf "%s" "$word" | mask)
+		ISPTR=$(printf "%s\n" "$MASK" | head -n 1)
+		IS2_LIT=$(printf "%s\n" "$MASK" | head -n 2 | tail -n 1)
+		IS1_LIT=$(printf "%s\n" "$MASK" | tail -n 1)
+		COUNT=1
+	elif [ "$COUNT" = 1  ]; then
+		printf "%s" "$word" | instruction
+		COUNT=2
+	elif [ "$COUNT" = 2  ]; then
+		printf ' '
+		if [ "$IS2_LIT" = 1 ] && [ "$ISPTR" != 1 ]; then
+			printf '='
+		elif [ "$IS2_LIT" = 1 ] && [ "$ISPTR" = 1 ]; then
+			printf '&'
+		fi
+		printf '%s' "$word"
+		COUNT=3
+	elif [ "$COUNT" = 3  ]; then
+		printf ' '
+		if [ "$IS1_LIT" = 1 ] && [ "$ISPTR" != 1 ]; then
+			printf '='
+		elif [ "$IS1_LIT" = 1 ] && [ "$ISPTR" = 1 ]; then
+			printf '&'
+		fi
+		printf '%s\n' "$word"
+		COUNT=0
+	fi	
+
+done
+}
+
+
+if [ "$1" = '-m' ]; then
+macro_to_asm "$2"
+elif [ "$1" = '-b' ]; then
+mach_to_asm "$2"
+else
+printf '%s' "$helpmsg"
+fi

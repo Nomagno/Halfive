@@ -77,13 +77,12 @@ applycommit() {
 
 }
 
-HELPMESSAGE='Usage:
-hwvcs.sh [OPTION] [ARG]
--n   New project, ARG - path of info file to copy
--c   Create new commit, ARG - path of info file to copy
--r   Rollback to commit, ARG - index
--i   Show info about commit, ARG - either "REPO" or the index
--h   Print this message
+HELPMESSAGE='USAGE: hwvcs.sh [OPTION] [ARG]
+  -n   New project, ARG - path of info file to copy
+  -c   Create new commit, ARG - path of info file to copy
+  -r   Rollback to commit, ARG - index
+  -i   Show info about commit, ARG - either "REPO" or the index
+  -h   Print this message
 '
 
 if [ "$1" = '-n' ]; then
