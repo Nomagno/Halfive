@@ -176,7 +176,7 @@ unsigned HWVI_GetBuffer_Data(const char *spritename, HWVI_PixelData *inbuf)
 
 #ifdef HWVI_AUDIOSERV_IMPL_SDL2
 
-#include <halfworld/hwstring.h>
+#include <halfworld/hwstdlib.h>
 
 /*For sound media caching*/
 

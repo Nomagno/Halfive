@@ -33,7 +33,7 @@ WORK.*/
 #include <halfworld/hwdoc/hwnet.h>
 #include <halfworld/hwdoc/hwt.h>
 #include <halfworld/hwreq.h>
-#include <halfworld/hwstring.h>
+#include <halfworld/hwstdlib.h>
 #include <halfworld/rat.h>
 
 #ifdef HALFIVE_VM_SIMULATION

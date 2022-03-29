@@ -30,7 +30,7 @@ WORK.*/
 #ifndef HWASM_H
 #define HWASM_H
 #include <halfworld/hwreq.h>
-#include <halfworld/hwstring.h>
+#include <halfworld/hwstdlib.h>
 #include <halfworld/hwvm/hwvm.h>
 hwuint HWASM_Parse(char *linestr, HWVM_InstructionSet *inst, hwuint opnds[3]);
 #endif

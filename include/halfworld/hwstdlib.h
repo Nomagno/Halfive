@@ -37,4 +37,5 @@ typedef unsigned long sulong;
 extern sulong hwstrtoul(char *, char **, int);
 extern int hwstrcmp(char *, char *);
 extern char *hwstrtok(char *, char *);
+void *memcpy(void *dest, const void *src, size_t n);
 #endif

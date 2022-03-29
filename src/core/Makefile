@@ -47,13 +47,15 @@ clean:
 
 warn:
 	echo "This program makes extensive used of C preprocessor macros. You may use the variable PARAMS=\"-DMYVAR1 -DMYVAR2\" like so to set them"
-libhalfworld.a : hwstring.o hwasm.o hwvm.o hwdoc.o
-	ar rcs libhalfworld.a hwstring.o hwasm.o hwvm.o hwdoc.o
+libhalfworld.a : hwstdlib.o hwasm.o hwvm.o hwdoc.o
+	ar rcs libhalfworld.a hwstdlib.o hwasm.o hwvm.o hwdoc.o rat.o
 hwasm.o : hwvm.o
 	cc $(PARAMS) -I$(INCLROOT) -c -o hwasm.o hwvm/hwasm.c
-hwvm.o : hwstring.o
+hwvm.o : hwstdlib.o
 	cc $(PARAMS) -I$(INCLROOT) -c -o hwvm.o hwvm/hwvm.c
-hwdoc.o : hwstring.o
+hwdoc.o : hwstdlib.o
 	cc $(PARAMS) -I$(INCLROOT) -c -o hwdoc.o hwdoc/hwdoc.c
-hwstring.o :
-	cc $(PARAMS) -I$(INCLROOT) -c -o hwstring.o hwstring.c
+hwstdlib.o :
+	cc $(PARAMS) -I$(INCLROOT) -c -o hwstdlib.o hwstdlib.c
+rat.o :
+	cc $(PARAMS) -I$(INCLROOT) -c -o rat.o rat.c

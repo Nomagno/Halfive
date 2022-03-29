@@ -5,7 +5,7 @@ hwdoc.h (Tokenizer of custom format)
 hwvm.h (Virtual machine)
 hwasm.h (Assembler)
 hwvi.h (Abstraction over graphics, input, and sound)
-hwstring.h (nolibc string.h)
+hwstdlib.h (freestanding stdlib)
 rat.h (Rational number handling)
 
 Pending implementation:
