@@ -63,5 +63,3 @@ genkey(){
 	cat "$1" | tr -dc 'A-Z' | dd bs=1 count="$2" 2>/dev/null
 	echo	
 }
-
-cat | stac
