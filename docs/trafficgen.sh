@@ -68,7 +68,7 @@ line-height:1.2
 }
 </style>
         <title>Half-World Traffic</title>
-        <meta name="description" content="The Universal racing game protocol">
+        <meta name="description" content="The Universal Racing Game">
 </head>
 <body>
 <h2>Recent requests to pages on this site:</h2>'
