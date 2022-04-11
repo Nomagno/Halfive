@@ -42,12 +42,14 @@
 
 
 stac(){
-	words=$(cat | tr ' ' '\n')
+	words=$(cat)
 	size='-1'
 	count='-1'
+
+	IFS=' '
 	for i in $words; do
 		size=$((size + 1))
-	done
+	done	
 	for i in $words; do
 		count=$((count + 1))
 		opposite_count=$((size - count + 1))
