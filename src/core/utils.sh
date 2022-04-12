@@ -61,7 +61,7 @@ stac(){
 # $1 - random byte stream (e.g. /dev/urandom)
 # $2 - character count of the key (e.g. 10)
 genkey(){
-	LC_CTYPE=C
-	cat "$1" | tr -dc 'A-Z' | dd bs=1 count="$2" 2>/dev/null
+	(LC_CTYPE=C tr -dc 'A-Z' |\
+	 LC_CTYPE=C dd bs=1 count="$2" 2>/dev/null) < "$1"
 	echo	
 }

@@ -39,33 +39,36 @@
 #POSIX sed
 #POSIX awk
 
-helpmsg='USAGE: asmpp.sh OPTION
-   -m   Read macro+assembly from stdin, output hwassembly
-   -b   Read ascii-machinecode from stdin, output hwassembly
-   -h   Print this message
-
-macro format:
-   #d MACRO,MEANING
-
-ascii-machinecode format:
-   Where each X is a hexadecimal digit, and 
-   each block is separated by a single space:
-
-      X        X   XXXX   XXXX
-   mask   opcode   arg1   arg2
-'
-
+asmpp(){
 . ../utils.sh
 
 rep=$(grep '^#d' "$1" | sed 's/^#d //g; s/ /|/g')
-f=$(cat "$1" | sed 's|;.*$||g; /#d /d')
+f=$(sed 's|;.*$||g; /#d /d' < "$1")
 
 rep=$(echo $rep | stac)
+
 
 for i in $rep; do
 p1=$(printf '%s\n' "$i" | cut -d',' -f1 | sed 's/|/ /g; s/\&/\\&/g')
 p2=$(printf '%s\n' "$i" | cut -d',' -f2 | sed 's/|/ /g; s/\&/\\&/g')
-f=$(printf '%s '"$f" | sed "s/$p1/$p2/g")
+f=$(printf '%s ' "$f" | sed "s/$p1/$p2/g")
 done
 
-printf '%s\n' "$f" | sed 's/__/\n/g;' | awk 'NF' | sed 's/^[[:blank:]]*//g'
+f2=
+IFS='
+'
+for line in $(printf '%s\n' "$f"); do
+if echo "$line" | grep -q '^#i'; then
+	f2="$f2
+	$(asmpp "$(printf "%s" "$line" | sed 's|^#i ||g')")"
+else
+	f2="$f2
+	$line"
+fi
+done
+
+f2=$(printf '%s\n' "$f2" | sed 's/__/\n/g; /^[[:space:]]*$/d;' | sed 's/^[ \t]*//g')
+printf '%s\n' "$f2"
+}
+
+asmpp "$1"

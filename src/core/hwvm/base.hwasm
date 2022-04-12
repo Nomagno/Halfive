@@ -27,9 +27,11 @@
 ;WORK.
 
 
-; Base assembly file. To use the definitions here, simply
-; copy it to your own. To preprocess your code 
-; so it can be accepted by the assembler, run ./asmpp.sh myfile.hwasm
+; Base assembly file. 
+; To use the definitions here, add the following to the top of your code:
+; #i /path/to/base.hwasm
+
+; To make your code accepted by the assembler, run ./asmpp.sh /path/to/myfile.hwasm
 ; Note: subroutine IDs 0x0 through 0xF are RESERVED by this document
 ; Note: the subroutines in this base document may use any of the shorthand addresses
 ; Note: the pseudo-instructions may use any of the first eight shorthand addresses (!A ?A !B ?B !C ?C !D ?D)
@@ -111,20 +113,20 @@
 ; &!Y - Stack start address
 #d PUSH,=2
 func PUSH
-set =0 !C
-set &!Y !B ; Copy stack pointer MSB
-add ?Y =1
-add !Y _CF ; Increment start address
-set &!Y ?B ; Copy stack pointer LSB
-LOOP
-set &!W &!B ; Copy origin to stack pointer
-add ?B =1 
-add !B _CF ; Move stack pointer forwards one address
-add ?W =1
-add !W _CF ; Move destination pointer pointer forwards one address
-add !C =1 ; Add one to push count
-cmp !C !X ; Check if have already pushed enough addresses
-NWHILE ; If comparison was true, loop
+	set =0 !C
+	set &!Y !B ; Copy stack pointer MSB
+	add ?Y =1
+	add !Y _CF ; Increment start address
+	set &!Y ?B ; Copy stack pointer LSB
+	LOOP
+	set &!W &!B ; Copy origin to stack pointer
+	add ?B =1 
+	add !B _CF ; Move stack pointer forwards one address
+	add ?W =1
+	add !W _CF ; Move destination pointer pointer forwards one address
+	add !C =1 ; Add one to push count
+	cmp !C !X ; Check if have already pushed enough addresses
+	NWHILE ; If comparison was true, loop
 ret PUSH ; Else return
 
 
@@ -134,20 +136,20 @@ ret PUSH ; Else return
 ; &!Y - Stack start address
 #d POP,=3
 func POP
-set =0 !C
-set &!Y !B ; Copy stack pointer MSB
-add ?Y =1
-add !Y _CF ; Increment start address
-set &!Y ?B ; Copy stack pointer LSB
-LOOP
-set &!B &!W ; Copy stack pointer value to destination
-sub ?B =1 
-sub !B _CF ; Move stack pointer back one address
-add ?W =1
-add !W _CF ; Move destination pointer pointer forwards one address
-add !C =1 ; Add one to pop count
-cmp !C !X ; Check if have already popped enough addresses
-NWHILE ; If comparison was false, loop
+	set =0 !C
+	set &!Y !B ; Copy stack pointer MSB
+	add ?Y =1
+	add !Y _CF ; Increment start address
+	set &!Y ?B ; Copy stack pointer LSB
+	LOOP
+	set &!B &!W ; Copy stack pointer value to destination
+	sub ?B =1 
+	sub !B _CF ; Move stack pointer back one address
+	add ?W =1
+	add !W _CF ; Move destination pointer pointer forwards one address
+	add !C =1 ; Add one to pop count
+	cmp !C !X ; Check if have already popped enough addresses
+	NWHILE ; If comparison was false, loop
 ret POP ; Else return
 
 ; Memory range operation subroutines:
@@ -157,17 +159,17 @@ ret POP ; Else return
 ; &!Y - Range end
 #d MEMSET,=0
 func MEMSET
-LOOP
-set !W &!X ; Copy value to address
-cmp ?X ?Y ; Compare start and end address LSB
-set _ZF !B ; Store result of comparison
-cmp !X !Y ; Compare start and end address MSB
-set _ZF ?B ; Store result of comparison
-or !B ?B ; OR the two together (join comparisons)
-add ?X =1 ; Increment mem pointer LSB
-add !X _CF ; Increment mem pointer MSB
-set !B _ZF ; Restore joined comparison
-NWHILE ; If comparison was false, loop
+	LOOP
+	set !W &!X ; Copy value to address
+	cmp ?X ?Y ; Compare start and end address LSB
+	set _ZF !B ; Store result of comparison
+	cmp !X !Y ; Compare start and end address MSB
+	set _ZF ?B ; Store result of comparison
+	or !B ?B ; OR the two together (join comparisons)
+	add ?X =1 ; Increment mem pointer LSB
+	add !X _CF ; Increment mem pointer MSB
+	set !B _ZF ; Restore joined comparison
+	NWHILE ; If comparison was false, loop
 ret MEMSET ; Else return
 
 ; Copy memory range  - INTERFACE:
@@ -177,17 +179,17 @@ ret MEMSET ; Else return
 ; &!Z - Dest range end
 #d MEMCPY,=1
 func MEMCPY
-LOOP
-set &!W &!Y ; Copy orin range value to dest range value
-cmp ?Y ?Z ; Compare current and end destiny range LSB
-set _ZF !B ; Store result of comparison
-cmp !Y !Z ; Compare current and end destiny range MSB
-set _ZF ?B ; Store result of comparison
-or !B ?B ; Join two comparisons together
-add ?W =1
-add !W _CF ; Increment origin range position
-add ?Y =1
-add !Y _CF ; Increment destiny range position
-set !B _ZF ; Restore joined comparison
-NWHILE ; If comparison was false, loop
+	LOOP
+	set &!W &!Y ; Copy orin range value to dest range value
+	cmp ?Y ?Z ; Compare current and end destiny range LSB
+	set _ZF !B ; Store result of comparison
+	cmp !Y !Z ; Compare current and end destiny range MSB
+	set _ZF ?B ; Store result of comparison
+	or !B ?B ; Join two comparisons together
+	add ?W =1
+	add !W _CF ; Increment origin range position
+	add ?Y =1
+	add !Y _CF ; Increment destiny range position
+	set !B _ZF ; Restore joined comparison
+	NWHILE ; If comparison was false, loop
 ret MEMCPY ; Else return
