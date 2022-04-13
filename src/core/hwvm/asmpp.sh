@@ -39,36 +39,40 @@
 #POSIX sed
 #POSIX awk
 
-asmpp(){
-. ../utils.sh
-
-rep=$(grep '^#d' "$1" | sed 's/^#d //g; s/ /|/g')
-f=$(sed 's|;.*$||g; /#d /d' < "$1")
-
-rep=$(echo $rep | stac)
-
-
-for i in $rep; do
-p1=$(printf '%s\n' "$i" | cut -d',' -f1 | sed 's/|/ /g; s/\&/\\&/g')
-p2=$(printf '%s\n' "$i" | cut -d',' -f2 | sed 's/|/ /g; s/\&/\\&/g')
-f=$(printf '%s ' "$f" | sed "s/$p1/$p2/g")
-done
-
-f2=
-IFS='
+includepp(){
+	file=$(cat "$1")
+	file2=
+	IFS='
 '
-for line in $(printf '%s\n' "$f"); do
-if echo "$line" | grep -q '^#i'; then
-	f2="$f2
-	$(asmpp "$(printf "%s" "$line" | sed 's|^#i ||g')")"
-else
-	f2="$f2
-	$line"
-fi
-done
-
-f2=$(printf '%s\n' "$f2" | sed 's/__/\n/g; /^[[:space:]]*$/d;' | sed 's/^[ \t]*//g')
-printf '%s\n' "$f2"
+	tmp=$(mktemp)
+	
+	for line in $(printf '%s\n' "$file"); do
+		if echo "$line" | grep -q '^#i'; then
+			file2="$file2
+$(cat "$(printf "%s" "$line" | sed 's|^#i ||g')")"
+		else
+			file2="$file2
+$line"
+		fi
+	done
+	printf '%s\n' "$file2" > "$tmp"
+	printf '%s\n' "$tmp"
 }
 
-asmpp "$1"
+asmpp(){
+	. ../utils.sh
+	f=$(sed 's|;.*$||g; /#d /d' < "$1")
+	rep=$(grep '^#d' "$1" | sed 's/^#d //g; s/ /|/g')
+	rep=$(echo $rep | stac)
+	for i in $rep; do
+		p1=$(printf '%s\n' "$i" | cut -d',' -f1 | sed 's/|/ /g; s/\&/\\&/g')
+		p2=$(printf '%s\n' "$i" | cut -d',' -f2 | sed 's/|/ /g; s/\&/\\&/g')
+		f=$(printf '%s ' "$f" | sed "s/$p1/$p2/g")
+	done
+	f=$(printf '%s\n' "$f" | sed 's/__/\n/g; /^[[:space:]]*$/d;' | sed 's/^[ \t]*//g')
+	printf '%s\n' "$f"
+}
+
+tmp2=$(includepp "$1")
+asmpp "$tmp2"
+rm "$tmp2"
