@@ -39,6 +39,8 @@
 #POSIX sed
 #POSIX awk
 
+
+# Takes file, inserts other files in place of '#i /path/to/file' lines, saves to temp file
 includepp(){
 	file=$(cat "$1")
 	file2=
@@ -59,20 +61,21 @@ $line"
 	printf '%s\n' "$tmp"
 }
 
+# Preprocesses macros defined as '#d macro,meaning', '__' means newline
 asmpp(){
-	. ../utils.sh
-	f=$(sed 's|;.*$||g; /#d /d' < "$1")
-	rep=$(grep '^#d' "$1" | sed 's/^#d //g; s/ /|/g')
-	rep=$(echo $rep | stac)
+	. ../utils.sh # Import script with the stac 'line-by-line reversal' function
+	f=$(sed 's|;.*$||g; /#d /d' < "$1") # File without comments and without the macro definions
+	rep=$(grep '^#d' "$1" | sed 's/^#d //g; s/ /|/g') # Keep only macros, without the '#d ', and with spaces escaped
+	rep=$(echo $rep | stac) # Reverse $rep line-by-line
 	for i in $rep; do
-		p1=$(printf '%s\n' "$i" | cut -d',' -f1 | sed 's/|/ /g; s/\&/\\&/g')
-		p2=$(printf '%s\n' "$i" | cut -d',' -f2 | sed 's/|/ /g; s/\&/\\&/g')
-		f=$(printf '%s ' "$f" | sed "s/$p1/$p2/g")
+		p1=$(printf '%s\n' "$i" | cut -d',' -f1 | sed 's/|/ /g; s/\&/\\&/g') # For each line in $rep, get the macro name
+		p2=$(printf '%s\n' "$i" | cut -d',' -f2 | sed 's/|/ /g; s/\&/\\&/g') # For each line in $rep, get the macro meaning
+		f=$(printf '%s ' "$f" | sed "s/$p1/$p2/g") # For each line in $rep, scan the entire file and replace the macro name for its macro meaning
 	done
-	f=$(printf '%s\n' "$f" | sed 's/__/\n/g; /^[[:space:]]*$/d;' | sed 's/^[ \t]*//g')
-	printf '%s\n' "$f"
+	f=$(printf '%s\n' "$f" | sed 's/__/\n/g; /^[[:space:]]*$/d;' | sed 's/^[ \t]*//g') # Replace __ with newline, eliminate indentation and whitespace padding
+	printf '%s\n' "$f" # Print final file
 }
 
-tmp2=$(includepp "$1")
-asmpp "$tmp2"
-rm "$tmp2"
+tmp2=$(includepp "$1") # Preprocess for includes
+asmpp "$tmp2" # Preprocess for macros
+rm "$tmp2" # Remove tmpfile
