@@ -30,7 +30,7 @@ WORK.*/
 #include <halfworld/hwdoc/hwdoc.h>
 #include <halfworld/hwreq.h>
 
-#define TOP_LAYER UINT_MAX
+#define TOP_LAYER UINT16_MAX
 unsigned HWDOC_Parse(const unsigned char *input, unsigned tok_size,
 		     HWDOC_Token *toks);
 
@@ -38,14 +38,15 @@ unsigned HWDOC_Parse(const unsigned char *input, unsigned tok_size,
 		     HWDOC_Token *toks)
 {
 	int i = 0,           /*Character iterator var*/
-	    j = 0,           /*Token iterator var*/
 	    t = 0,           /*Temporary storate for iterator vars*/
 	    returnval = 0,   /*Store error number*/
 	    c = 1,           /*Continue boolean*/
 	    itr = 0,         /*Indentation track boolean;*/
-	    curr_indent = 0, /*Store current indentation level*/
-	    last_parent[10] = {
-		0} /*Index of tokens and their indentation levels*/;
+	    curr_indent = 0; /*Store current indentation level*/
+
+	unsigned last_parent[10] = {0}; /*Index of tokens and their 
+	                                  indentation levels*/
+	unsigned j = 0; /*Token iterator var*/
 
 	toks[0].type = SEC;       /*First token always section*/
 	toks[0].string_start = 0; /*Set start of first token*/
@@ -85,8 +86,7 @@ unsigned HWDOC_Parse(const unsigned char *input, unsigned tok_size,
 			toks[j].parent =
 			    last_parent[(curr_indent == 0)
 					    ? TOP_LAYER
-					    : curr_indent -
-						  1] /*Get parent token*/;
+					    : curr_indent - 1] /*Get parent token*/;
 			toks[j - 1].string_end =
 			    t; /*Set end of previous token*/
 			toks[j].string_start = i + 1;

@@ -34,8 +34,20 @@ typedef unsigned char suchar;
 typedef unsigned suint;
 typedef unsigned long sulong;
 
-extern sulong hwstrtoul(char *, char **, int);
-extern int hwstrcmp(char *, char *);
-extern char *hwstrtok(char *, char *);
-void *memcpy(void *dest, const void *src, size_t n);
+#if !defined(HWLIBC_HOSTED)
+	#define hwstrtoul _hwlibcstrtoul
+	#define hwstrcmp _hwlibcstrcmp
+	#define hwstrtok _hwlibcstrtok
+	#define hwmemcpy _hwlibcmemcpy
+#else
+	#define hwstrtoul strtoul
+	#define hwstrcmp strcmp
+	#define hwstrtok strtok
+	#define hwmemcpy memcpy
+#endif
+
+extern sulong _hwlibcstrtoul(char *, char **, int);
+extern int _hwlibcstrcmp(char *, char *);
+extern char *_hwlibcstrtok(char *, char *);
+void *_hwlibcmemcpy(void *dest, const void *src, size_t n);
 #endif

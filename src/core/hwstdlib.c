@@ -23,7 +23,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <halfworld/hwreq.h>
 #include <halfworld/hwstdlib.h>
 
-sulong hwstrtoul(char *nptr, char **endptr, int base)
+sulong _hwlibcstrtoul(char *nptr, char **endptr, int base)
 {
 	char *p;
 	sulong n, nn, m;
@@ -115,7 +115,7 @@ Return:
 	return n;
 }
 
-int hwstrcmp(char *s1, char *s2)
+int _hwlibcstrcmp(char *s1, char *s2)
 {
 	unsigned c1, c2;
 
@@ -132,7 +132,7 @@ int hwstrcmp(char *s1, char *s2)
 	}
 }
 
-char *hwstrtok(char *s, char *b)
+char *_hwlibcstrtok(char *s, char *b)
 {
 	static char *under_rock;
 	char map[N] = {0}, *os;
@@ -187,7 +187,7 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
-void *memcpy(void *dest, const void *src, size_t n) {
+void *_hwlibcmemcpy(void *dest, const void *src, size_t n) {
 	unsigned char *d = dest;
 	const unsigned char *s = src;
 	for (size_t i = 0; i < n; i++) 
