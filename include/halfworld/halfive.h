@@ -48,20 +48,12 @@ Without VM worst-case scenario: 256Bs
 */
 
 typedef enum {
-	Four_Wheeled,
-	Magnetic_Rails
-} Car_Type;
-
-typedef enum {
-	Forced,
-	Natural,
-	Electrical
+	H5_Tag_Forced,
+	H5_Tag_Natural,
+	H5_Tag_Quantum
 } Engine_Type;
 
 typedef enum {
-	Front_Drive,
-	Rear_Drive,
-	All_Drive,
 	Horizontal_Magnets,
 	Vertical_Magnets
 } Traction_Type;
@@ -71,7 +63,16 @@ typedef struct {
 	/*Intrinsic properties of the vehicle
 	  (BACKEND WILL NOT MODIFY THESE, FRONTEND CAN MODIFY THEM)*/
 
-	Car_Type car_type;
+	char name[16]; /*String, ASCII printable characters*/
+	char info[16]; /*String, ASCII printable characters, following format:
+	                 Characters 1 - 3: String to identify personal team
+	                 Characters 4 - 6: String to identify racing team
+	                 Characters 7 - 9: String to identify racing category
+	                 Characters 10-13: Decimal number string, position in category
+	                 Characters 14-16: Decimal number string, driver number*/
+	
+	hwuchar additional_network_data[16]; /*String*/
+
 	Engine_Type engine_type;
 	Traction_Type traction_type;
 	hwuint width;           /*MILLIMETERS*/
@@ -103,7 +104,7 @@ typedef struct {
 
 #ifdef HALFIVE_VM_SIMULATION
 	HWVM_DefaultMemSetup vmmem;
-	HWVM_GeneralMemory computer; /*200KBs of storage with default settings*/
+	HWVM_GeneralMemory computer; /*More or less 140KBs of storage with default settings*/
 	hwuchar
 	    status_screen[16]; /*8x8 4-color screen for VM, each two contiguous
 				  bits are a pixel. Mapped 0xC000 to 0xC00F*/
@@ -121,18 +122,16 @@ typedef struct {
 			      (0,0), in millimeters*/
 
 	hwuint revolutions; /*ENGINE REVOLUTIONS PER MINUTE*/
-
 	hwuint states[4]; /*Internal states of the car, in total 64 bits of
 			     storage*/
-
 	enum HWNET_Type1Enum car_state; /*SEE THE HWNET SPEC*/
 	enum HWNET_Type2Enum mov_state; /*SEE THE HWNET SPEC*/
 	enum HWNET_Type3Enum con_state; /*SEE THE HWNET SPEC*/
 
 } H5_Vehicle;
 
-/*Size for RACENUM = 16, with average VM: 1.1MBs (1128KBs max)
-Size for RACENUM = 16 without VM: 128KBs*/
+/*Size for RACENUM = 4, with average VM: 600KBs max
+Size for RACENUM = 4 without VM: 1KB max*/
 typedef struct {
 	H5_Vehicle racers[RACENUM];
 	HWT_Circuit track;
@@ -146,3 +145,4 @@ extern unsigned H5_TransformServer(const H5_World *stage,
 extern unsigned H5_TransformClient(H5_World *stage,
 				   const HWNET_ClientPacket *cli);
 #endif
+
