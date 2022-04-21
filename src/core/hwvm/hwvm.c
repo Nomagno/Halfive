@@ -30,6 +30,8 @@ WORK.*/
 #include <halfworld/hwreq.h>
 #include <halfworld/hwvm/hwvm.h>
 
+static const hwuint one = 1;
+
 enum optype { adr = 0, lit = 1, ptr = 2 };
 
 #define ISADR(num, pos) (((num | (1 << (2 - pos))) != num))
@@ -38,7 +40,7 @@ enum optype { adr = 0, lit = 1, ptr = 2 };
 #define ISPTR(num, pos)                                                        \
 	(((num | (1 << (2 - pos))) == num) && ((num | 8) == num))
 
-#define IS_LITTLE_ENDIAN (*(hwuchar *)&(hwuint){1})
+#define IS_LITTLE_ENDIAN (*(hwuchar *)&one)
 
 #define _PROG_CO program->co
 
@@ -107,7 +109,7 @@ unsigned HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf);
 HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory *code,
 			     HWVM_DefaultMemSetup *rawmem)
 {
-	HWVM_GeneralMemory returnval = {0};
+	HWVM_GeneralMemory returnval = {(HWVM_InstructionSet)0};
 	returnval.code = *code;
 	rawmem->co_high = (IS_LITTLE_ENDIAN) ? ((hwuchar *)&returnval.co)
 					     : ((hwuchar *)&returnval.co + 1);
@@ -155,7 +157,7 @@ unsigned HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf)
 
 	hwuchar getnum_orig = 0;
 	hwuint setnum_dest = 0;
-	enum optype dest_type = 0;
+	enum optype dest_type = (enum optype)0;
 
 	_Bool donot_save = 0; /*0 - set main address; 1 - only set zf/cf*/
 	hwuchar set_cf = 0; /*0 - don't touch; 1 - set to 1; 2 - set to zero;*/
@@ -163,35 +165,37 @@ unsigned HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf)
 	hwuint tmpchar1 = 0;
 	hwuint tmpchar2 = 0;
 
+	hwuint subval = 0; /*For 'func' instruction. This can't be a safe 'ret' place, so it's an error code*/
+
 	switch (program->code.inst[_PROG_CO]) {
-	case halt:
+	case Inst_halt:
 		program->hf = 1;
 		break;
-	case nop:
+	case Inst_nop:
 		_PROG_CO += 1;
 		break;
-	case set:
+	case Inst_set:
 		GETVAR(getnum_orig, CURR_OP, 1, 1);
 		setnum_dest = CURR_OP[1];
 		dest_type = GETTYPE(CURR_OP, 2);
 		goto _set;
 		break;
-	case jmp:
+	case Inst_jmp:
 		goto _jmp;
-	case jcz: /*Jump if the zero flag is zero*/
+	case Inst_jcz: /*Jump if the zero flag is zero*/
 		if (*(DATA[_ZF]) == 0)
 			goto _jmp;
 		else
 			_PROG_CO += 1, _BREAK;
 		break;
-	case jcnz: /*Jump if the zero flag is NOT zero*/
+	case Inst_jcnz: /*Jump if the zero flag is NOT zero*/
 		if (*(DATA[_ZF]) != 0)
 			goto _jmp;
 		else
 			_PROG_CO += 1, _BREAK;
 		break;
 
-	case add:
+	case Inst_add:
 		GETVAR(tmpchar1, CURR_OP, 1, 0);
 		GETVAR(tmpchar2, CURR_OP, 2, 1);
 		setnum_dest = CURR_OP[0];
@@ -203,7 +207,7 @@ unsigned HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf)
 		set_zf = (getnum_orig == 0) ? 2 : 1;
 		goto _set;
 		break;
-	case sub:
+	case Inst_sub:
 		GETVAR(tmpchar1, CURR_OP, 1, 0);
 		GETVAR(tmpchar2, CURR_OP, 2, 1);
 		setnum_dest = CURR_OP[0];
@@ -213,7 +217,7 @@ unsigned HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf)
 		set_zf = (getnum_orig == 0) ? 2 : 1;
 		goto _set;
 		break;
-	case cmp:
+	case Inst_cmp:
 		GETVAR(tmpchar1, CURR_OP, 1, 0);
 		GETVAR(tmpchar2, CURR_OP, 2, 1);
 		getnum_orig = tmpchar1 - tmpchar2;
@@ -222,7 +226,7 @@ unsigned HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf)
 		donot_save = 1;
 		goto _set;
 		break;
-	case and:
+	case Inst_and:
 		GETVAR(tmpchar1, CURR_OP, 1, 0);
 		GETVAR(tmpchar2, CURR_OP, 2, 1);
 		setnum_dest = CURR_OP[0];
@@ -231,7 +235,7 @@ unsigned HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf)
 		set_zf = (getnum_orig == 0) ? 2 : 1;
 		goto _set;
 		break;
-	case xor:
+	case Inst_xor:
 		GETVAR(tmpchar1, CURR_OP, 1, 0);
 		GETVAR(tmpchar2, CURR_OP, 2, 1);
 		setnum_dest = CURR_OP[0];
@@ -240,7 +244,7 @@ unsigned HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf)
 		set_zf = (getnum_orig == 0) ? 2 : 1;
 		goto _set;
 		break;
-	case or:
+	case Inst_or:
 		GETVAR(tmpchar1, CURR_OP, 1, 0);
 		GETVAR(tmpchar2, CURR_OP, 2, 1);
 		setnum_dest = CURR_OP[0];
@@ -249,7 +253,7 @@ unsigned HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf)
 		set_zf = (getnum_orig == 0) ? 2 : 1;
 		goto _set;
 		break;
-	case rot:
+	case Inst_rot:
 		GETVAR(tmpchar1, CURR_OP, 1, 0);
 		GETVAR(tmpchar2, CURR_OP, 2, 1);
 		setnum_dest = CURR_OP[0];
@@ -260,15 +264,13 @@ unsigned HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf)
 		goto _set;
 		break;
 
-	case func:;
-		hwuint subval = 0; /*This can't be a safe 'ret' place, so it's
-				      an error code*/
+	case Inst_func:;
 		program->func_co[CURR_OP[0]] =
 		    _PROG_CO; /*Write down this instruction's position*/
 		for (hwuint i = 0;
 		     i < (sizeof(program->code.inst) - (_PROG_CO + 1));
 		     i++) { /*Look for closest 'ret' */
-			if (program->code.inst[_PROG_CO + 1 + i] == ret) {
+			if (program->code.inst[_PROG_CO + 1 + i] == Inst_ret) {
 				subval = _PROG_CO + 1 + i;
 				break;
 			}
@@ -283,11 +285,11 @@ unsigned HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf)
 			_BREAK;
 		} /*No matching 'ret'!*/
 		break;
-	case ret:
+	case Inst_ret:
 		_PROG_CO = program->return_co[CURR_OP[0]]; /*Return to caller*/
 		_BREAK;
 		break;
-	case call:
+	case Inst_call:
 		program->return_co[CURR_OP[0]] =
 		    _PROG_CO + 1; /*Note next instruction*/
 		_PROG_CO =

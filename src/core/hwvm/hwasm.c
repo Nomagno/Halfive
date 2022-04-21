@@ -47,7 +47,7 @@ int main(int argc, char **argv)
 	FILE *codefile = fopen(argv[1], "r");
 	FILE *drivefile = fopen(argv[2], "r");
 
-	HWVM_CodeMemory code = {0};
+	HWVM_CodeMemory code = {(HWVM_InstructionSet)0};
 	int i = 0;
 	while (fscanf(codefile, "%[^\n] ", arr) != EOF) {
 		HWASM_Parse(arr, &code.inst[i], code.opnd[i]);
@@ -152,37 +152,37 @@ hwuint _isxupdigit(hwuchar inchar)
 HWVM_InstructionSet _isinst(char *instr)
 {
 	if (hwstrcmp(instr, "halt") == 0)
-		return halt;
+		return Inst_halt;
 	else if (hwstrcmp(instr, "nop") == 0)
-		return nop;
+		return Inst_nop;
 	else if (hwstrcmp(instr, "set") == 0)
-		return set;
+		return Inst_set;
 	else if (hwstrcmp(instr, "jmp") == 0)
-		return jmp;
+		return Inst_jmp;
 	else if (hwstrcmp(instr, "jcz") == 0)
-		return jcz;
+		return Inst_jcz;
 	else if (hwstrcmp(instr, "add") == 0)
-		return add;
+		return Inst_add;
 	else if (hwstrcmp(instr, "sub") == 0)
-		return sub;
+		return Inst_sub;
 	else if (hwstrcmp(instr, "and") == 0)
-		return and;
+		return Inst_and;
 	else if (hwstrcmp(instr, "or") == 0)
-		return or ;
+		return Inst_or ;
 	else if (hwstrcmp(instr, "xor") == 0)
-		return xor;
+		return Inst_xor;
 	else if (hwstrcmp(instr, "rot") == 0)
-		return rot;
+		return Inst_rot;
 	else if (hwstrcmp(instr, "cmp") == 0)
-		return cmp;
+		return Inst_cmp;
 	else if (hwstrcmp(instr, "func") == 0)
-		return func;
+		return Inst_func;
 	else if (hwstrcmp(instr, "ret") == 0)
-		return ret;
+		return Inst_ret;
 	else if (hwstrcmp(instr, "call") == 0)
-		return call;
+		return Inst_call;
 	else if (hwstrcmp(instr, "jcnz") == 0)
-		return jcnz;
+		return Inst_jcnz;
 	else
-		return 16;
+		return (HWVM_InstructionSet)16;
 }
