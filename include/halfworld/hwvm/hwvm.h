@@ -77,36 +77,36 @@ typedef enum {
 	/*THE INSTRUCTION COUNTING SHALL START AT 0, NOT 1*/
 	/*IMPORTANT NOTE: LITERALS ARE ONLY ALLOWED IN REGISTER ARGUMENTS
 	   DOCUMENTED AS VALUES 'Vx', NOT IN REGISTERS 'Rx'*/
-	halt = 0, /* ; halt*/
-	nop = 1,  /* ; do nothing*/
-	set = 2,  /* R1 V2; set address R2 to value V1*/
-	jmp = 3,  /* V1; hand execution to instruction numbered V1. SPECIAL
+	Inst_halt = 0, /* ; halt*/
+	Inst_nop = 1,  /* ; do nothing*/
+	Inst_set = 2,  /* R1 V2; set address R2 to value V1*/
+	Inst_jmp = 3,  /* V1; hand execution to instruction numbered V1. SPECIAL
 		     EXCEPTION: Take 16-bit literals, addresses are treated as
 		     16-bit literals, and pointers are treated as addresses with
 		     a 16-bit value*/
-	jcz = 4,  /* V1; if ZF == 0, jmp to instrucion V1*/
+	Inst_jcz = 4,  /* V1; if ZF == 0, jmp to instrucion V1*/
 	/*ADD trough to NOT: put result of doing
 	stuff with Vn values into Rn address*/
-	add = 5, /* R1 V2; addition, carry goes to carry flag*/
-	sub = 6, /* R1 V2; substraction, carry flag set if result is negative*/
-	    and = 7, /* R1 V2; binary and*/
-	or = 8,      /* R1 V2; binary or*/
-	xor = 9,     /* R1 V2; binary exclusive or*/
-	rot = 10,    /* R1 V2; If V2 is 0-7, bitshift R1 LEFT by V2 bits. Else
+	Inst_add = 5, /* R1 V2; addition, carry goes to carry flag*/
+	Inst_sub = 6, /* R1 V2; substraction, carry flag set if result is negative*/
+	Inst_and = 7, /* R1 V2; binary and*/
+	Inst_or = 8,      /* R1 V2; binary or*/
+	Inst_xor = 9,     /* R1 V2; binary exclusive or*/
+	Inst_rot = 10,    /* R1 V2; If V2 is 0-7, bitshift R1 LEFT by V2 bits. Else
 			if V2 is 8-F, bitshift R1 RIGHT by (V2-8) bits. Else do
 			nothing. Put the result into R1*/
-	cmp = 11,    /* V1 V2; if V1 is bigger than V2, sets the carry flag to 0
+	Inst_cmp = 11,    /* V1 V2; if V1 is bigger than V2, sets the carry flag to 0
 		     and    the zero flag to 1 if V1 is smaller than V2, sets the
 		     carry    flag to 1 and the zero flag to 0 if V1 is equal to
 		     V2, sets    the carry flag to 0 and the zero flag to 0*/
 	/* FUNC, RET, CALL: Stackless subroutines*/
-	func = 12, /* ID; Marks the start of a subroutine with the literal
+	Inst_func = 12, /* ID; Marks the start of a subroutine with the literal
 		      identifier ID.*/
-	ret = 13,  /*ID; Marks the end of subroutine ID. It JMPs to the
+	Inst_ret = 13,  /*ID; Marks the end of subroutine ID. It JMPs to the
 		       instruction after the corresponding CALL instruction.*/
-	call = 14, /* ID; JMP to the start of execution (post-FUNC) of
+	Inst_call = 14, /* ID; JMP to the start of execution (post-FUNC) of
 		      subroutine ID*/
-	jcnz = 15  /* V1; if ZF != 0, jmp to instrucion V1*/
+	Inst_jcnz = 15  /* V1; if ZF != 0, jmp to instrucion V1*/
 } HWVM_InstructionSet;
 
 /*Execution memory*/

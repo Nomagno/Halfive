@@ -1,6 +1,10 @@
 #ifndef HWREQ_H
 #define HWREQ_H
 
+#ifdef __cplusplus
+	#define _Bool bool
+#endif
+
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
