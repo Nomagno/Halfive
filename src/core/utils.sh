@@ -65,3 +65,7 @@ genkey(){
 	 LC_CTYPE=C dd bs=1 count="$2" 2>/dev/null) < "$1"
 	echo	
 }
+
+rot13(){
+	tr 'A-Z' 'N-ZA-M'
+}
