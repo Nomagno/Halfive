@@ -52,7 +52,7 @@ includepp(){
 	
 	while read -r line; do
 		case "$line" in
-		'^#i')
+		'#i'*)
 			file2="$file2
 $(cat "$(printf "%s" "$line" | sed 's|^#i ||g')")"
 		;;
