@@ -17,11 +17,11 @@ line-height:1.2
 <h1>Half-World Bitmap Specification</h1>
 <h4>SPDX identifier: COIL-1.0</h4>
 <h4>Copyright Nomagno 2021, 2022</h4>
-<p>It is recommended to use the “.hwbmp” extension for HWBMP bitmaps (where applicable). HWBMP is identified by the MIME type <code>application/hwbmp</code></p>
+<p>It is recommended to use the &#x201C;.hwbmp&#x201D; extension for HWBMP bitmaps (where applicable). HWBMP is identified by the MIME type <code>application/hwbmp</code></p>
 <h3>HWBMP is a simple storage format for bitmaps</h3>
 <hr />
 <h4>The HWBMP format:</h4>
-<p>It is identified by the null-terminated ASCII string ‘HWBMP\0’. These six bytes shall appear at the start of every bitmap. After the identifier string, two bytes shall follow and mark the bitmap width, and right after two bytes shall indicate the bitmap width. Following the width and height, (width times height) two-byte pixels follow, where each string of (width) pixels represents a row, starting from the top left of the image.</p>
+<p>It is identified by the null-terminated ASCII string &#x2018;HWBMP\0&#x2019;. These six bytes shall appear at the start of every bitmap. After the identifier string, two bytes shall follow and mark the bitmap width, and right after two bytes shall indicate the bitmap width. Following the width and height, (width times height) two-byte pixels follow, where each string of (width) pixels represents a row, starting from the top left of the image.</p>
 <h4>The pixel format (RGBA 5551) in binary:</h4>
 <pre><code>RRRRR GGGGG BBBBB A</code></pre>
 <ul>
