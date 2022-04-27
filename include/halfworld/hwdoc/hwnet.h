@@ -32,7 +32,6 @@ WORK.*/
 
 #include <halfworld/hwreq.h>
 #define MAXCHAR_HWNET 9
-#define MAXPLAYERS_HWNET 8
 
 enum HWNET_Type1Enum { o, u, x, s, z, e, c, y };
 enum HWNET_Type2Enum { f, b, k, i };
@@ -54,14 +53,14 @@ typedef struct {
 	char trackname[MAXCHAR_HWNET], gamemode[MAXCHAR_HWNET],
 	    extension[MAXCHAR_HWNET];
 
-	struct HWNET_ServerData data[MAXPLAYERS_HWNET];
+	struct HWNET_ServerData data[RACENUM];
 } HWNET_ServerPacket;
 
 /*Memory footprint worst-case scenario: 128Bs*/
 typedef struct {
 	char extension[MAXCHAR_HWNET];
 	enum HWNET_ModeEnum mode;
-	struct HWNET_ClientData data[MAXPLAYERS_HWNET];
+	struct HWNET_ClientData data[RACENUM];
 } HWNET_ClientPacket;
 
 extern unsigned HWNET_ClientParse(const char *input,

@@ -34,14 +34,13 @@ WORK.*/
 #include <halfworld/hwdoc/hwt.h>
 #include <halfworld/hwreq.h>
 #include <halfworld/hwstdlib.h>
+#include <halfworld/hwcr.h>
 #include <halfworld/rat.h>
 
 #ifdef HALFIVE_VM_SIMULATION
 #include <halfworld/hwvm/hwasm.h>
 #include <halfworld/hwvm/hwvm.h>
 #endif
-
-#define RACENUM 16
 
 /*Approximate default storage with VM: 140KBs
 Without VM worst-case scenario: 256Bs

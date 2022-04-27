@@ -9,6 +9,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+/*CHANGE RACENUM*/
+#define RACENUM 4
+
 #ifndef UINT8_MAX
 #error uint8_t is required, sorry!
 #endif
