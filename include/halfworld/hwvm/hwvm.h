@@ -135,21 +135,16 @@ typedef struct {
 	/*Carry flag (RW), 0xFFFE, OBLIGATORY*/
 	/*Input register (R-only), 0xFFFD, OBLIGATORY*/
 	/*Output register, 0xFFFC, OBLIGATORY*/
-	/*Program counter (R-only), 0xFFFB (low) and 0xFFFA (high), OBLIGATORY*/
-	hwuint co;
 
 	/*If 0, data index is RW, if 1 it is read only*/
 	_Bool mask[MEMSIZE * 16];
-
+	hwuint func_co[64]; /*For storing counter values corresponding to the FUNC instruction of each subroutine ID*/
+	hwuint return_co[64]; /*For storing counter values corresponding to the execution environment of the branch that executes CALLS, for each subroutine ID*/
+	hwuint skip_co[64]; /*Counter values FUNC has to skip to*/
 	/*Halt flag, 1 if it has halted.*/
 	_Bool hf;
-
-	hwuint func_co[64];   /*For storing counter values corresponding to
-				  the FUNC instruction of each subroutine ID*/
-	hwuint return_co[64]; /*For storing counter values corresponding
-				to the execution environment of the branch that
-				executes CALLS, for each subroutine ID*/
-	hwuint skip_co[64];   /*Counter values FUNC has to skip to*/
+	/*Program counter (R-only), 0xFFFB (low) and 0xFFFA (high), OBLIGATORY*/
+	hwuint co;
 } HWVM_GeneralMemory;
 
 /*Default memory setup*/
@@ -166,18 +161,13 @@ typedef struct {
 
 typedef struct {
 	_Bool was_err; /*Was there an error?*/
-
-	hwuint adrw;      /*Write address*/
-	_Bool wrote_adrw; /*Additionally, was the write address written THIS
-			     CYCLE?*/
-	_Bool
-	    read_adrw; /*Additionally, was the write address read THIS CYCLE?*/
-
-	hwuint adrr;     /*Read address*/
-	_Bool read_adrr; /*Additionally, was the read address read THIS CYCLE?*/
-
+	_Bool wrote_adrw; /*Wrote write address THIS CYCLE?*/
+	_Bool read_adrw; /*Write address read THIS CYCLE?*/
+	_Bool read_adrr; /*Read address read THIS CYCLE?*/
 	_Bool write_zf; /*Additionally, wrote zero flag?*/
 	_Bool write_cf; /*Additionally, wrote carry flag?*/
+	hwuint adrw; /*Write address*/
+	hwuint adrr; /*Read address*/
 } HWVM_ReadWriteInfo;
 
 /*Half-World VM interface*/
