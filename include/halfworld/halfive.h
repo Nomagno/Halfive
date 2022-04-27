@@ -115,9 +115,9 @@ typedef struct {
 	hwuint leaderboard_local;  /*RACE LEADERBOARD POSITION*/
 	hwuint leaderboard_global; /*GLOBAL LEADERBOARD POSITION*/
 
-	hwuchar cuadrantX, cuadrantY; /*Most significant byte of position
+	hwuchar hX, hY; /*Most significant byte of position
 					 starting (0,0), in millimeters*/
-	hwuint posX, posY; /*Least significant two bytes of position starting
+	hwuint lX, lY; /*Least significant two bytes of position starting
 			      (0,0), in millimeters*/
 
 	hwuint revolutions; /*ENGINE REVOLUTIONS PER MINUTE*/

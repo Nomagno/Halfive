@@ -33,7 +33,7 @@ Always start the file with the track section, followed by flags/settings, of cou
 After the track table comes the segments table. Here you define the segments, from one to a maximum of 40.
 
 Where all numbers are unsigned integers, p1 and p2 are bezier curve anchors, p3 is a bezier curve control point, and w is the track width from 1 to 5.
-pNx and pNy are unsigned 16-bit integers
+pNx and pNy are unsigned 24-bit integers
 
 Aditionally, you can add special properties for that segment with local_param.
 

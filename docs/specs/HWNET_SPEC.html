@@ -54,7 +54,7 @@ _QUERY
     8 (pos1) (pos2) (t1) (t2) (t3)</code></pre>
 <hr />
 <p>Where (trackname) is an eight character alphanumerical string that represents the track being used. Where (gamemode) is an eight character alphanumerical string that represents the gamemode being used. To indicate a normal race mode, it should be &#x201C;_DEFAULT&#x201D;</p>
-<p>Where (pos1) and (pos2) are a the x and y of the player&#x2019;s position (unsigned, 16-bit, origin (0,0)), and t1-3 are the flags described below.</p>
+<p>Where (pos1) and (pos2) are a the x and y of the player&#x2019;s position (unsigned, 24-bit, origin (0,0)), and t1-3 are the flags described below.</p>
 <p>Note these flags are abstract and meant to give the client context, as opposed to any kind of computationally-specific indications. If the flag &#x2018;r&#x2019; is received as the client packet mode, race type 1, race type 2, and race type 3 flags shall be supplied. If the flag &#x2018;l&#x2019; is received, the leaderboard information should be supplied at (t1) flag, and the other two types should not be included.</p>
 <h4>MASTER NODE FLAGS:</h4>
 <hr />
