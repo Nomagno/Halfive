@@ -9,5 +9,5 @@ _SEGMENTS
 		width 5
 		local_param finish_line
 	_SEGMENTS_2
-		shape 50 30 28 36 40 -80
+		shape 50 30 28 36 40 280
 		width 4

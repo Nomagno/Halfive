@@ -48,8 +48,7 @@ struct HWT_Biome {
 };
 
 struct HWT_Point {
-	hwuchar HighX, HighY;
-	hwuint LowX, LowY;
+	hwuint x, y;
 };
 
 struct HWT_Bezier {

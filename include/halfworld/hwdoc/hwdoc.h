@@ -40,7 +40,7 @@ typedef enum { SEC = 0, KEY = 1, VAL = 2 } HWDOC_Type;
 
 typedef struct {
 	HWDOC_Type type;
-	unsigned string_start, string_end, parent;
+	size_t string_start, string_end, parent;
 } HWDOC_Token;
 
 extern unsigned HWDOC_Parse(const unsigned char *input, unsigned size,

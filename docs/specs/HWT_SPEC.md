@@ -32,7 +32,8 @@ _SEGMENTS
 Always start the file with the track section, followed by flags/settings, of course replacing param and value for the parameter and the value.
 After the track table comes the segments table. Here you define the segments, from one to a maximum of 40.
 
-Where all numbers are integers, p1 and p2 are bezier curve anchors, p3 is a bezier curve control point, and w is the track width from 1 to 5.
+Where all numbers are unsigned integers, p1 and p2 are bezier curve anchors, p3 is a bezier curve control point, and w is the track width from 1 to 5.
+pNx and pNy are unsigned 16-bit integers
 
 Aditionally, you can add special properties for that segment with local_param.
 
@@ -55,7 +56,7 @@ Aditionally, you can add special properties for that segment with local_param.
 
 ***
 
-#### AVAILABLE SEGMENT PARAMETERS (Include ONE of these in the local_param value):
+#### AVAILABLE SEGMENT PARAMETERS (Include ONE of each pair max in the local_param value):
 
 
 boost/antiboost
@@ -66,7 +67,7 @@ guardrails/electric_guardrails
 
 ***
 
-#### EXAMPLE DRAWN FROM THE triangular_parade.hwt TRACK
+#### EXAMPLE TRACK
 ***
 
 ```
@@ -81,11 +82,11 @@ _SEGMENTS
 		width 5
 		local_param finish_line
 	_SEGMENTS_2
-		shape 50 30 37 -50 60 -80
+		shape 50 30 37 80 10 80
 		width 3
 		local_param checkpoint
 	_SEGMENTS_3
-		shape 37 -50 28 36 -50 -80
+		shape 37 50 28 36 50 80
 		width 5
 		local_param boost
 ```

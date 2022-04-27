@@ -9,10 +9,10 @@ _SEGMENTS
 		width 5
 		local_param finish_line
 	_SEGMENTS_2
-		shape 50 30 37 -50 60 -80
+		shape 50 30 37 60 60 10
 		width 3
 		local_param checkpoint
 	_SEGMENTS_3
-		shape 37 -50 28 36 -50 -80
+		shape 37 80 28 36 50 1
 		width 5
 		local_param boost

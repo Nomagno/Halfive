@@ -38,7 +38,7 @@ _SEGMENTS
 <hr />
 <h3>EXPLANATION:</h3>
 <p>Always start the file with the track section, followed by flags/settings, of course replacing param and value for the parameter and the value. After the track table comes the segments table. Here you define the segments, from one to a maximum of 40.</p>
-<p>Where all numbers are integers, p1 and p2 are bezier curve anchors, p3 is a bezier curve control point, and w is the track width from 1 to 5.</p>
+<p>Where all numbers are unsigned integers, p1 and p2 are bezier curve anchors, p3 is a bezier curve control point, and w is the track width from 1 to 5. pNx and pNy are unsigned 16-bit integers</p>
 <p>Aditionally, you can add special properties for that segment with local_param.</p>
 <hr />
 <h4>AVAILABLE GLOBAL PARAMETERS:</h4>
@@ -48,12 +48,12 @@ _SEGMENTS
 <p><code>biome = desert/snow/forest</code> #AN ADDITIONAL &#x201C;color - white/red/blue/yellow/green/pink&#x201D; PARAMETER WILl BE GENERATED FROM THE BIOME. IF YOU ONLY CARE ABOUT THE COLOR OF THE STAGE/TRACK BACKGROUND, PLEASE STILL SPECIFY A BIOME</p>
 <p><code>max_players (NUMBER)</code></p>
 <hr />
-<h4>AVAILABLE SEGMENT PARAMETERS (Include ONE of these in the local_param value):</h4>
+<h4>AVAILABLE SEGMENT PARAMETERS (Include ONE of each pair max in the local_param value):</h4>
 <p>boost/antiboost</p>
 <p>finish_line/checkpoint</p>
 <p>guardrails/electric_guardrails</p>
 <hr />
-<h4>EXAMPLE DRAWN FROM THE triangular_parade.hwt TRACK</h4>
+<h4>EXAMPLE TRACK</h4>
 <hr />
 <pre><code>_TRACK
     time night
@@ -66,10 +66,10 @@ _SEGMENTS
         width 5
         local_param finish_line
     _SEGMENTS_2
-        shape 50 30 37 -50 60 -80
+        shape 50 30 37 80 10 80
         width 3
         local_param checkpoint
     _SEGMENTS_3
-        shape 37 -50 28 36 -50 -80
+        shape 37 50 28 36 50 80
         width 5
         local_param boost</code></pre>
