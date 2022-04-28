@@ -28,7 +28,7 @@ OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
 /* To calculate point [t] of the Bezier curve:
- A*(1-t)^2 + B*2t(1-t) + C*t^2
+ A(1-t)(1-t) + B(1-t)(2t) + C(t)(t)
 */
 
 #ifndef HWT_H
