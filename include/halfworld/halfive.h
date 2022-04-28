@@ -89,10 +89,10 @@ typedef struct {
 	 (BACKEND WILL NOT MODIFY THESE, FRONTEND CAN MODIFY THEM)*/
 
 	_Bool active; /*0 OR 1*/
-	hwuint axis1; /*0 TO 65535*/
-	hwuint axis2; /*0 TO 65535*/
-	hwuint axis3; /*0 TO 65535*/
-	hwuint axis4; /*0 TO 65535*/
+	hwuchar axis1; /*0 TO 255*/
+	hwuchar axis2; /*0 TO 255*/
+	hwuchar axis3; /*0 TO 255*/
+	hwuchar axis4; /*0 TO 255*/
 	_Bool btn1;   /*0 OR 1*/
 	_Bool btn2;   /*0 OR 1*/
 	_Bool btn3;   /*0 OR 1*/
@@ -137,11 +137,10 @@ typedef struct {
 } H5_World;
 
 extern unsigned H5_Init(const char *trck, H5_World *stage);
-extern unsigned H5_Sim(H5_World *stage, hwuint delta, _Bool do_hwvm_sim);
+extern unsigned H5_Sim(H5_World *stage, hwuint delta /*Time since last frame, in milliseconds*/);
 extern unsigned H5_TransformServer(const H5_World *stage,
 				   HWNET_ServerPacket *serv,
-				   enum HWNET_ModeEnum mode);
+				   enum HWNET_ModeEnum mode); /*Convert H5_World to a packet ready to send to clients*/
 extern unsigned H5_TransformClient(H5_World *stage,
-				   const HWNET_ClientPacket *cli);
+				   const HWNET_ClientPacket *cli); /*Mix client packet information with current H5_World*/
 #endif
-
