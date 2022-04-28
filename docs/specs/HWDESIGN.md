@@ -1,0 +1,47 @@
+# Half-World Design notes
+
+#### SPDX identifier: COIL-1.0
+#### Copyright Nomagno 2022
+
+***
+### Missing suitable (re)implementations
+The hwrpg.h header, for simulating turn-based combat, is awaiting an implementation. It is meant to be an easter egg (SIMPLE)
+
+The hwdoc.h header, for processing the HWDOC format, is awaiting a reimplementation to make its internal data structures child-linked rather than parent-linked (SIMPLE)
+
+The Half-World Track format needs a minor redesign to allow a track to be defined by two bezier curve loops, rather than a single loop and a width parameter. The rationale is it is needed to achieve complex and rich racing tracks (SIMPLE)
+
+The hwt.h and hwnet.h headers, to tokenize Half-World Track and Half-World Network .hwdoc files, respectively, are awaiting an implementation (TEDIOUS).
+
+The halfive.h header, for simulating physics, is awaiting an implementation that uses fixed-timestep semi-explicit Euler integration to remain framerate-independent, as well as a redesign that includes the possibility of custom objects that aren't just cars, and of well-defined actions that may be mapped to real code or to a HWVM instance (HARD)
+
+### Missing suitable interfaces and implementations
+The rat.h header needs expansion with a more comprehensive math library that has auxiliary functions
+and data structures such as trigonometry stuff, quadratic bezier curve calculations, composite-type
+(e.g. 8-bit and 16-bit composite integers for x and y) vector operations, etcetera: hwmath.h (TEDIOUS)
+
+The hwvi.h header needs a big library with auxiliary software rendering functions such as blitting,
+bitmap text rendering, arbirary shapes, line rendering, quadratic bezier curve rendering, etcetera:  hwrender.h (TEDIOUS)
+
+The Half-World Pixel format needs a library utilities for converting to/from at least BMP, JPG and SVG images: hwpix.h (HARD)
+
+A new comprehensive, higher-level implementation for user interface, track rendering, network code
+handling, balancing, content, etcetera, that exists on top of all other low-level modules, is needed: halfworld_engine.h (HARD)
+
+***
+### General design notes about the game
+#### Half-World is meant to be a racing game engine as well as a game that isn't inherently constrained to any type of gameplay, however not making a flagship physics engine implementation and base game to go with it would be simply disingenous.
+#### A few overarching notes about code architecturing, game design, atmosphere and car handling are clear:
+
+- **The game takes place in a modern human society**. It does not, by default, feature death machines, a complete in-universe disregard for safety, or any other messed up stuff like that.
+- **The cars are not magical**. Cars are propulsed by two long electromagnets on their bottom, and the handling reflects it. They levitate, run dangerously close to the floor on ocassion, and without electronic assistance handling is extremely unstable at low speeds.
+- **Tracks are distinct**. Tracks are made out of superconductors for the highest-tier elite racing series, and simple metals for the 'karting' equivalent everyday ones.
+- **Computers are vital to the game**. The entire point of HWVM (Half-World Virtual machine) is to provide a reasonably human-friendly, easily-abstractable but purposefully inefficient microcontroller framework. Car sensors, displays, and everything else is memory mapped. Most of the cars (specially the elite-tier ones) are incredibly inconvenient to handle without a properly configured computer to assist you, to change the handling, to stabilize them, to show information about the rivals etcetera.
+- **There is no escaping strategy**. The cars are electrical, have a battery level that needs to
+be managed, the magnets wear down due to accidental or purposeful introduction of thermal elements
+and dust to the tracks. Just as in real car racing, you might have car types where the time spent in
+pits is negligible, and others where the strategic importance of a well-timed undercut is of note.
+- **Competition is important**. While some series and rulesets and specific moments in specific
+races might have luck elements, the reality is that you mostly will not get automatically boosted to keep up with your rivals
+- **This project is useless if it can't be forked**. The entire point of this game is to have an engine where you know where to change things, where it's clear how to do something, no matter how complex. The Half-World project, the Universal Racing Game, has failed if it needs to be wholly redesigned to adapt to a forker's needs.
+- **However, reimplementation is vital**. It is humbly acknowledged that this game is not well optimized, that it relies on staying small to run fast, and that its architecturing philosophy is not pragmatic but rather in search of reaching distilled perfection. All symbols, all functions, all features, all interfaces, everything, should be easy to rewrite to run faster, to redesign to suit a specific system, to scale up, down, right, or left.
