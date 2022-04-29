@@ -71,10 +71,12 @@ line-height:1.2
         <meta name="description" content="The Universal Racing Game">
 </head>
 <body>
-<h2>Recent requests to pages on this site:</h2>'
+<h2>Recent visits:</h2>
+<h3>>Rotated every monday</h3>'
 
 printf "%s" "$OUTFILE" > "$OUTPATH"/traffic.html
-IFS='\n'
+IFS='
+'
 printf '%s\n' "$OUTLIST" | while read -r tok; do
 	var1=$(printf '%s\n' "$tok" | cut -d';' -f1)
 	var2=$(printf '%s\n' "$tok" | cut -d';' -f2)
