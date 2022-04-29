@@ -9,11 +9,13 @@ The hwrpg.h header, for simulating turn-based combat, is awaiting an implementat
 
 The hwdoc.h header, for processing the HWDOC format, is awaiting a reimplementation to make its internal data structures child-linked rather than parent-linked (SIMPLE)
 
-The Half-World Track format needs a minor redesign to allow a track to be defined by two bezier curve loops, rather than a single loop and a width parameter. The rationale is it is needed to achieve complex and rich racing tracks (SIMPLE)
+The Half-World Track format needs a minor redesign to allow a track to be defined by two bezier curve loops, rather than a single loop and a width parameter. 
+The rationale is it is needed to achieve complex and rich racing tracks (SIMPLE)
 
 The hwt.h and hwnet.h headers, to tokenize Half-World Track and Half-World Network .hwdoc files, respectively, are awaiting an implementation (TEDIOUS).
 
-The halfive.h header, for simulating physics, is awaiting an implementation that uses fixed-timestep semi-explicit Euler integration to remain framerate-independent, as well as a redesign that includes the possibility of custom objects that aren't just cars, and of well-defined actions that may be mapped to real code or to a HWVM instance (HARD)
+The halfive.h header, for simulating physics, is awaiting an implementation that uses fixed-timestep semi-explicit Euler integration to remain framerate-independent, 
+as well as a redesign that includes the possibility of custom objects that aren't just cars, and of well-defined actions that may be mapped to real code or to a HWVM instance. (HARD)
 
 ### Missing suitable interfaces and implementations
 The rat.h header needs expansion with a more comprehensive math library that has auxiliary functions
@@ -45,3 +47,4 @@ pits is negligible, and others where the strategic importance of a well-timed un
 races might have luck elements, the reality is that you mostly will not get automatically boosted to keep up with your rivals
 - **This project is useless if it can't be forked**. The entire point of this game is to have an engine where you know where to change things, where it's clear how to do something, no matter how complex. The Half-World project, the Universal Racing Game, has failed if it needs to be wholly redesigned to adapt to a forker's needs.
 - **However, reimplementation is vital**. It is humbly acknowledged that this game is not well optimized, that it relies on staying small to run fast, and that its architecturing philosophy is not pragmatic but rather in search of reaching distilled perfection. All symbols, all functions, all features, all interfaces, everything, should be easy to rewrite to run faster, to redesign to suit a specific system, to scale up, down, right, or left.
+- **Double buffer things**. While this obviously introduces a tiny bit of overhead and increases the memory footprint, at least adding a compile-time option to make the game state double buffered on systems where multithreading might be supported in the future would be nice.

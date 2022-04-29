@@ -1,3 +1,19 @@
+<head>
+<style type="text/css">
+body{
+line-height:1.6;
+font-size:18px;
+color:#444;
+padding:0
+10px}
+h1,h2,h3{
+line-height:1.2
+}
+</style>
+	<title>Half-World Design N otes</title>
+	<meta name="description" content="The Universal Racing Game">
+</head>
+
 <h1>Half-World Design notes</h1>
 <h4>SPDX identifier: COIL-1.0</h4>
 <h4>Copyright Nomagno 2022</h4>
@@ -7,7 +23,7 @@
 <p>The hwdoc.h header, for processing the HWDOC format, is awaiting a reimplementation to make its internal data structures child-linked rather than parent-linked (SIMPLE)</p>
 <p>The Half-World Track format needs a minor redesign to allow a track to be defined by two bezier curve loops, rather than a single loop and a width parameter. The rationale is it is needed to achieve complex and rich racing tracks (SIMPLE)</p>
 <p>The hwt.h and hwnet.h headers, to tokenize Half-World Track and Half-World Network .hwdoc files, respectively, are awaiting an implementation (TEDIOUS).</p>
-<p>The halfive.h header, for simulating physics, is awaiting an implementation that uses fixed-timestep semi-explicit Euler integration to remain framerate-independent, as well as a redesign that includes the possibility of custom objects that aren&#x2019;t just cars, and of well-defined actions that may be mapped to real code or to a HWVM instance (HARD)</p>
+<p>The halfive.h header, for simulating physics, is awaiting an implementation that uses fixed-timestep semi-explicit Euler integration to remain framerate-independent, as well as a redesign that includes the possibility of custom objects that aren&#x2019;t just cars, and of well-defined actions that may be mapped to real code or to a HWVM instance. (HARD)</p>
 <h3>Missing suitable interfaces and implementations</h3>
 <p>The rat.h header needs expansion with a more comprehensive math library that has auxiliary functions and data structures such as trigonometry stuff, quadratic bezier curve calculations, composite-type (e.g.&#xA0;8-bit and 16-bit composite integers for x and y) vector operations, etcetera: hwmath.h (TEDIOUS)</p>
 <p>The hwvi.h header needs a big library with auxiliary software rendering functions such as blitting, bitmap text rendering, arbirary shapes, line rendering, quadratic bezier curve rendering, etcetera: hwrender.h (TEDIOUS)</p>
@@ -26,4 +42,5 @@
 <li><strong>Competition is important</strong>. While some series and rulesets and specific moments in specific races might have luck elements, the reality is that you mostly will not get automatically boosted to keep up with your rivals</li>
 <li><strong>This project is useless if it can&#x2019;t be forked</strong>. The entire point of this game is to have an engine where you know where to change things, where it&#x2019;s clear how to do something, no matter how complex. The Half-World project, the Universal Racing Game, has failed if it needs to be wholly redesigned to adapt to a forker&#x2019;s needs.</li>
 <li><strong>However, reimplementation is vital</strong>. It is humbly acknowledged that this game is not well optimized, that it relies on staying small to run fast, and that its architecturing philosophy is not pragmatic but rather in search of reaching distilled perfection. All symbols, all functions, all features, all interfaces, everything, should be easy to rewrite to run faster, to redesign to suit a specific system, to scale up, down, right, or left.</li>
+<li><strong>Double buffer things</strong>. While this obviously introduces a tiny bit of overhead and increases the memory footprint, at least adding a compile-time option to make the game state double buffered on systems where multithreading might be supported in the future would be nice.</li>
 </ul>
