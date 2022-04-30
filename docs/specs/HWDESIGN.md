@@ -9,18 +9,15 @@ The hwrpg.h header, for simulating turn-based combat, is awaiting an implementat
 
 The hwdoc.h header, for processing the HWDOC format, is awaiting a reimplementation to make its internal data structures child-linked rather than parent-linked (SIMPLE)
 
-The Half-World Track format needs a minor redesign to allow a track to be defined by two bezier curve loops, rather than a single loop and a width parameter. 
-The rationale is it is needed to achieve complex and rich racing tracks (SIMPLE)
-
 The hwt.h and hwnet.h headers, to tokenize Half-World Track and Half-World Network .hwdoc files, respectively, are awaiting an implementation (TEDIOUS).
+
+The hwmath.h header is awaiting an implementation (ROADBLOCK!!) (EASY-ish, but a bit involved).
 
 The halfive.h header, for simulating physics, is awaiting an implementation that uses fixed-timestep semi-explicit Euler integration to remain framerate-independent, 
 as well as a redesign that includes the possibility of custom objects that aren't just cars, and of well-defined actions that may be mapped to real code or to a HWVM instance. (HARD)
 
+
 ### Missing suitable interfaces and implementations
-The rat.h header needs expansion with a more comprehensive math library that has auxiliary functions
-and data structures such as trigonometry stuff, quadratic bezier curve calculations, composite-type
-(e.g. 8-bit and 16-bit composite integers for x and y) vector operations, etcetera: hwmath.h (TEDIOUS)
 
 The hwvi.h header needs a big library with auxiliary software rendering functions such as blitting,
 bitmap text rendering, arbirary shapes, line rendering, quadratic bezier curve rendering, etcetera:  hwrender.h (TEDIOUS)
