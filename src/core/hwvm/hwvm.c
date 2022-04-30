@@ -30,8 +30,6 @@ WORK.*/
 #include <halfworld/hwreq.h>
 #include <halfworld/hwvm/hwvm.h>
 
-static const hwuint one = 1;
-
 enum optype { adr = 0, lit = 1, ptr = 2 };
 
 #define ISADR(num, pos) (((num | (1 << (2 - pos))) != num))
@@ -40,7 +38,6 @@ enum optype { adr = 0, lit = 1, ptr = 2 };
 #define ISPTR(num, pos)                                                        \
 	(((num | (1 << (2 - pos))) == num) && ((num | 8) == num))
 
-#define IS_LITTLE_ENDIAN (*(hwuchar *)&one)
 
 #define _PROG_CO program->co
 

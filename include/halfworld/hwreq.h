@@ -5,6 +5,8 @@
 	#define _Bool bool
 #endif
 
+
+
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -22,4 +24,12 @@
 
 typedef uint8_t hwuchar;
 typedef uint16_t hwuint;
+
+#ifdef __cplusplus
+	static const int HWReq_const_one = 1;
+	#define IS_LITTLE_ENDIAN (*(hwuchar *)&one)
+#else
+	#define IS_LITTLE_ENDIAN (*(hwuchar *)&(hwuint){1})
+#endif
+
 #endif
