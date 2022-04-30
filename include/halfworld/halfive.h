@@ -113,6 +113,8 @@ typedef struct {
 	hwuint leaderboard_local;  /*RACE LEADERBOARD POSITION*/
 	hwuint leaderboard_global; /*GLOBAL LEADERBOARD POSITION*/
 
+	hwuint speed; /*Meters per second*/
+	hwuint accel; /*Meters per second square*/	
 	hwcomppoint pos; /*position, x and y, unsigned 24-bit (in millimiters)*/
 	hwuchar rideheight; /*ride height, in mm, lower means more stable and faster, but also more succeptible to yaw/pitch changes*/
 	hwuchar roll; /*roll relative to floor, in degrees. Depending on ride height, car width, length and height, might collide*/
