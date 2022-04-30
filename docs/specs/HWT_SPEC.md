@@ -17,12 +17,13 @@ _TRACK
 
 _SEGMENTS
 	_SEGMENTS_1
-		shape (p1x) (p1y) (p2x) (p2y) (p3x) (p3y)
-		width (w)
+		shape_outer (p1x) (p1y) (p2x) (p2y) (p3x) (p3y)
+		shape_inner (p1x) (p1y) (p2x) (p2y) (p3x) (p3y)
 		local_param (local_param)
 	_SEGMENTS_2
-		shape (p1x) (p1y) (p2x) (p2y) (p3x) (p3y)
-		width (w)
+		shape_outer (p1x) (p1y) (p2x) (p2y) (p3x) (p3y)
+		shape_inner (p1x) (p1y) (p2x) (p2y) (p3x) (p3y)
+
 	...
 ```
 ***
@@ -32,8 +33,10 @@ _SEGMENTS
 Always start the file with the track section, followed by flags/settings, of course replacing param and value for the parameter and the value.
 After the track table comes the segments table. Here you define the segments, from one to a maximum of 40.
 
-Where all numbers are unsigned integers, p1 and p2 are bezier curve anchors, p3 is a bezier curve control point, and w is the track width from 1 to 5.
+Where all numbers are unsigned integers, p1 and p3 are bezier curve anchors, p2 is a bezier curve control point.
 pNx and pNy are unsigned 24-bit integers
+'shape_outer' describes the outer outline of the track segment
+'shape_inner' describes the inner outline of the track segment
 
 Aditionally, you can add special properties for that segment with local_param.
 
@@ -64,29 +67,3 @@ boost/antiboost
 finish_line/checkpoint
 
 guardrails/electric_guardrails
-
-***
-
-#### EXAMPLE TRACK
-***
-
-```
-_TRACK
-	time night
-	biome forest
-	max_players 6
-
-_SEGMENTS
-	_SEGMENTS_1
-		shape 28 36 50 30 40 40
-		width 5
-		local_param finish_line
-	_SEGMENTS_2
-		shape 50 30 37 80 10 80
-		width 3
-		local_param checkpoint
-	_SEGMENTS_3
-		shape 37 50 28 36 50 80
-		width 5
-		local_param boost
-```

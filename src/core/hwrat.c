@@ -1,4 +1,4 @@
-#include <halfworld/rat.h>
+#include <halfworld/hwrat.h>
 
 /*
 Copyright Nomagno 2021, 2022
@@ -29,7 +29,7 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
-void Rat_XorSwap(uRatInt *a, uRatInt *b)
+void HWRat_XorSwap(hwumax *a, hwumax *b)
 {
 	*a = *a ^ *b;
 	*b = *a ^ *b;
@@ -37,32 +37,32 @@ void Rat_XorSwap(uRatInt *a, uRatInt *b)
 	return;
 }
 
-uRatInt Rat_GCD(uRatInt a, uRatInt b)
+hwumax HWRat_GCD(hwumax a, hwumax b)
 {
 	if (b > a)
-		Rat_XorSwap(&a, &b);
+		HWRat_XorSwap(&a, &b);
 	if (b == 0)
 		return a;
 	else
-		return Rat_GCD(b, a % b);
+		return HWRat_GCD(b, a % b);
 }
 
-uRatInt Rat_LCM(uRatInt a, uRatInt b) { return ((a * b) / Rat_GCD(a, b)); }
+hwumax HWRat_LCM(hwumax a, hwumax b) { return ((a * b) / HWRat_GCD(a, b)); }
 
-Rat Rat_Simplify(Rat a)
+HWRat HWRat_Simplify(HWRat a)
 {
-	uRatInt gcd = Rat_GCD(a.num, a.denom);
-	return (Rat){a.sign, a.num / gcd, a.denom / gcd};
+	hwumax gcd = HWRat_GCD(a.num, a.denom);
+	return (HWRat){a.sign, a.num / gcd, a.denom / gcd};
 }
 
-void Rat_Equate(Rat *a, Rat *b)
+void HWRat_Equate(HWRat *a, HWRat *b)
 {
-	*a = Rat_Simplify(*a);
-	*b = Rat_Simplify(*b);
+	*a = HWRat_Simplify(*a);
+	*b = HWRat_Simplify(*b);
 
-	uRatInt lcm = Rat_LCM(a->denom, b->denom);
-	uRatInt amult = lcm / a->denom;
-	uRatInt bmult = lcm / b->denom;
+	hwumax lcm = HWRat_LCM(a->denom, b->denom);
+	hwumax amult = lcm / a->denom;
+	hwumax bmult = lcm / b->denom;
 
 	a->num *= amult;
 	a->denom *= amult;
@@ -70,12 +70,12 @@ void Rat_Equate(Rat *a, Rat *b)
 	b->denom *= bmult;
 }
 
-_Bool Rat_Compare(Rat a, Rat b) { return (a.num * b.denom == a.denom * b.num); }
+_Bool HWRat_Compare(HWRat a, HWRat b) { return (a.num * b.denom == a.denom * b.num); }
 
-Rat Rat_Add(Rat a, Rat b)
+HWRat HWRat_Add(HWRat a, HWRat b)
 {
-	Rat_Equate(&a, &b);
-	Rat result;
+	HWRat_Equate(&a, &b);
+	HWRat result;
 	if (a.sign && b.sign) {
 		result.sign = 1;
 		result.num = a.num + b.num;
@@ -88,7 +88,7 @@ Rat Rat_Add(Rat a, Rat b)
 		if (a.sign) {
 			a.sign = 0;
 			b.sign = 1;
-			Rat_XorSwap(&a.num, &b.num);
+			HWRat_XorSwap(&a.num, &b.num);
 		}
 		result.num = a.num - b.num;
 		result.denom = a.denom;
@@ -102,19 +102,19 @@ Rat Rat_Add(Rat a, Rat b)
 	return result;
 }
 
-Rat Rat_Product(Rat a, Rat b)
+HWRat HWRat_Product(HWRat a, HWRat b)
 {
-	a = Rat_Simplify(a);
-	b = Rat_Simplify(b);
+	a = HWRat_Simplify(a);
+	b = HWRat_Simplify(b);
 
-	return Rat_Simplify(
-	    (Rat){(a.sign != b.sign), a.num * b.num, a.denom * b.denom});
+	return HWRat_Simplify(
+	    (HWRat){(a.sign != b.sign), a.num * b.num, a.denom * b.denom});
 }
 
 #ifdef FLOATS_SUPPORTED
-float Rat_toFloat(Rat a)
+float HWRat_toFloat(HWRat a)
 {
-	a = Rat_Simplify(a);
+	a = HWRat_Simplify(a);
 	return (a.sign) ? (a.num / a.denom) : (-a.num / a.denom);
 }
 #endif

@@ -35,7 +35,8 @@ WORK.*/
 #include <halfworld/hwreq.h>
 #include <halfworld/hwstdlib.h>
 #include <halfworld/hwcr.h>
-#include <halfworld/rat.h>
+#include <halfworld/hwrat.h>
+#include <halfworld/hwmath.h>
 
 #ifdef HALFIVE_VM_SIMULATION
 #include <halfworld/hwvm/hwasm.h>
@@ -47,15 +48,9 @@ Without VM worst-case scenario: 256Bs
 */
 
 typedef enum {
-	H5_Tag_Forced,
-	H5_Tag_Natural,
-	H5_Tag_Quantum
-} Engine_Type;
-
-typedef enum {
 	Horizontal_Magnets,
 	Vertical_Magnets
-} Traction_Type;
+} Magnet_Type;
 
 typedef struct {
 
@@ -72,10 +67,10 @@ typedef struct {
 	
 	hwuchar additional_network_data[16]; /*String*/
 
-	Engine_Type engine_type;
-	Traction_Type traction_type;
+	Magnet_Type magnet_type;
 	hwuint width;           /*MILLIMETERS*/
 	hwuint length;          /*MILLIMETERS*/
+	hwuint height;          /*MILLIMETERS*/
 	hwuchar agility;        /*FORCIBLY BOOST TURNING DEGREES OF CAR*/
 	hwuint baseline_speed;  /*METERS PER SECOND*/
 	hwuint baseline_accel;  /*METERS PER SECOND SQUARED*/
@@ -84,6 +79,9 @@ typedef struct {
 	hwuint downforce_level; /*0 TO 65535
 	                        0 - NO DOWNFORCE
 	                        65535 - CAR GLUED TO FLOOR*/
+	hwuint battery_capacity; /*0 TO 65535, in mAH. Amperage determined 
+	                           automatically by the rest of car stats*/
+
 
 	/*Input properties of the car
 	 (BACKEND WILL NOT MODIFY THESE, FRONTEND CAN MODIFY THEM)*/
@@ -115,14 +113,22 @@ typedef struct {
 	hwuint leaderboard_local;  /*RACE LEADERBOARD POSITION*/
 	hwuint leaderboard_global; /*GLOBAL LEADERBOARD POSITION*/
 
-	hwuchar hX, hY; /*Most significant byte of position
-					 starting (0,0), in millimeters*/
-	hwuint lX, lY; /*Least significant two bytes of position starting
-			      (0,0), in millimeters*/
+	hwcomppoint pos; /*position, x and y, unsigned 24-bit (in millimiters)*/
+	hwuchar rideheight; /*ride height, in mm, lower means more stable and faster, but also more succeptible to yaw/pitch changes*/
+	hwuchar roll; /*roll relative to floor, in degrees. Depending on ride height, car width, length and height, might collide*/
+	hwuchar pitch; /*pitch relative to floor, in degrees. Depending on ride height, car width, length and height, might collide*/
+	hwuchar yaw; /*absolute yaw, biggest determinant of car direction, depending on grip a fast change in yaw
+	               might contribute to loosing the rear of the car*/
 
+	hwuint avg_curr_load; /*Average current load, in milliamperes*/
+	hwuint battery_level; /*Percentage of battery level, where 0xFFFF is 100%*/
 	hwuint revolutions; /*ENGINE REVOLUTIONS PER MINUTE*/
 	hwuint states[4]; /*Internal states of the car, in total 64 bits of
 			     storage*/
+	hwuchar engine1[4]; /*Store how ramped up it is, its current power, degradation info, and flags*/
+	hwuchar engine2[4]; /*Store how ramped up it is, its current power, degradation info, and flags*/
+
+
 	enum HWNET_Type1Enum car_state; /*SEE THE HWNET SPEC*/
 	enum HWNET_Type2Enum mov_state; /*SEE THE HWNET SPEC*/
 	enum HWNET_Type3Enum con_state; /*SEE THE HWNET SPEC*/

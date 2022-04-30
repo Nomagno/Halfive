@@ -31,6 +31,7 @@ WORK.*/
 #define HWNET_H
 
 #include <halfworld/hwreq.h>
+#include <halfworld/hwmath.h>
 #define MAXCHAR_HWNET 9
 
 enum HWNET_Type1Enum { o, u, x, s, z, e, c, y };
@@ -41,8 +42,8 @@ struct HWNET_ServerData {
 	enum HWNET_Type1Enum flags_1; /*If it is -1, SHOULD BE LEFT EMPTY*/
 	enum HWNET_Type2Enum flags_2; /*If it is -1, SHOULD BE LEFT EMPTY*/
 	enum HWNET_Type3Enum flags_3; /*If it is -1, SHOULD BE LEFT EMPTY*/
-	hwuchar hx, hy;
-	hwuint leaderboard, lx, ly;
+	hwcomppoint position;
+	hwuint leaderboard;
 };
 
 struct HWNET_ClientData {

@@ -32,36 +32,37 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
-typedef uintmax_t uRatInt;
+typedef uintmax_t hwumax;
 
 typedef struct {
 	_Bool sign;
-	uRatInt num;
-	uRatInt denom;
-} Rat;
+	hwumax num;
+	hwumax denom;
+} HWRat;
 
-#define GCD Rat_GCD
-#define LCM Rat_LCM
-#define RSwap Rat_XorSwap
-#define RSimp Rat_Simplify
-#define REq Rat_Equate
-#define RCmp Rat_Compare
-#define RAdd Rat_Add
-#define RProd Rat_Product
-#define RFloat Rat_toFloat
+hwumax HWRat_GCD(hwumax a, hwumax b);
+hwumax HWRat_LCM(hwumax a, hwumax b);
+void HWRat_XorSwap(hwumax *a, hwumax *b);
 
-uRatInt Rat_GCD(uRatInt a, uRatInt b);
-uRatInt Rat_LCM(uRatInt a, uRatInt b);
-void Rat_XorSwap(uRatInt *a, uRatInt *b);
-
-Rat Rat_Simplify(Rat a);
-void Rat_Equate(Rat *a, Rat *b);
-_Bool Rat_Compare(Rat a, Rat b);
-Rat Rat_Add(Rat a, Rat b);
-Rat Rat_Product(Rat a, Rat b);
+HWRat HWRat_Simplify(HWRat a);
+void HWRat_Equate(HWRat *a, HWRat *b);
+_Bool HWRat_Compare(HWRat a, HWRat b);
+HWRat HWRat_Add(HWRat a, HWRat b);
+HWRat HWRat_Product(HWRat a, HWRat b);
 
 #ifdef FLOATS_SUPPORTED
-float Rat_toFloat(Rat a);
+	float HWRat_toFloat(HWRat a);
 #endif
 
+#ifdef HWRAT_SHORTHAND
+	#define GCD HWRat_GCD
+	#define LCM HWRat_LCM
+	#define RSwap HWRat_XorSwap
+	#define RSimp HWRat_Simplify
+	#define REq HWRat_Equate
+	#define RCmp HWRat_Compare
+	#define RAdd HWRat_Add
+	#define RProd HWRat_Product
+	#define RFloat HWRat_toFloat
+#endif
 #endif

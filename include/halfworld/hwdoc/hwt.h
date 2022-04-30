@@ -35,6 +35,8 @@ WORK.*/
 #define HWT_H
 
 #include <halfworld/hwreq.h>
+#include <halfworld/hwmath.h>
+
 enum HWT_TimeEnum { day, night };
 enum HWT_SpeedEnum { normal, boost, antiboost };
 enum HWT_FinishEnum { no, finish_line, checkpoint };
@@ -47,18 +49,9 @@ struct HWT_Biome {
 	enum HWT_BiomeEnum the_biome;
 };
 
-struct HWT_Point {
-	hwuchar hx, hy;
-	hwuint lx, ly;
-};
-
-struct HWT_Bezier {
-	struct HWT_Point p1, p2, p3;
-};
-
 struct HWT_Segment {
-	struct HWT_Bezier shape;
-	hwuint width;
+	hwcompbezier inner_shape;
+	hwcompbezier outer_shape;
 
 	enum HWT_SpeedEnum speed;
 	enum HWT_FinishEnum racing_line;

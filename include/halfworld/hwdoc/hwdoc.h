@@ -33,8 +33,6 @@ WORK.*/
 #define HWDOC_H
 
 #include <halfworld/hwreq.h>
-#include <limits.h>
-#include <stddef.h>
 
 typedef enum { SEC = 0, KEY = 1, VAL = 2 } HWDOC_Type;
 
