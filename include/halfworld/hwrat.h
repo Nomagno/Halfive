@@ -32,8 +32,6 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
-typedef uintmax_t hwumax;
-
 typedef struct {
 	_Bool sign;
 	hwumax num;
@@ -50,6 +48,8 @@ _Bool HWRat_Compare(HWRat a, HWRat b);
 HWRat HWRat_Add(HWRat a, HWRat b);
 HWRat HWRat_Product(HWRat a, HWRat b);
 
+
+hwulong HWRat_toUlong(HWRat a);
 #ifdef FLOATS_SUPPORTED
 	float HWRat_toFloat(HWRat a);
 #endif
@@ -63,6 +63,7 @@ HWRat HWRat_Product(HWRat a, HWRat b);
 	#define RCmp HWRat_Compare
 	#define RAdd HWRat_Add
 	#define RProd HWRat_Product
+	#define RUlong HWRat_toUlong
 	#define RFloat HWRat_toFloat
 #endif
 #endif

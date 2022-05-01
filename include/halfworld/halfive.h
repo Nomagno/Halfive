@@ -110,12 +110,12 @@ typedef struct {
 			       Mapped 0xC011 to 0xC014*/
 #endif
 
-	hwuint leaderboard_local;  /*RACE LEADERBOARD POSITION*/
-	hwuint leaderboard_global; /*GLOBAL LEADERBOARD POSITION*/
+	hwulong leaderboard_local;  /*RACE LEADERBOARD POSITION*/
+	hwulong leaderboard_global; /*GLOBAL LEADERBOARD POSITION*/
 
-	hwuint speed; /*Meters per second*/
-	hwuint accel; /*Meters per second square*/	
-	hwcomppoint pos; /*position, x and y, unsigned 24-bit (in millimiters)*/
+	hwulong speed; /*Meters per second*/
+	hwulong accel; /*Meters per second square*/	
+	hwpoint pos; /*position, x and y, unsigned 32-bit (in millimiters)*/
 	hwuchar rideheight; /*ride height, in mm, lower means more stable and faster, but also more succeptible to yaw/pitch changes*/
 	hwuchar roll; /*roll relative to floor, in degrees. Depending on ride height, car width, length and height, might collide*/
 	hwuchar pitch; /*pitch relative to floor, in degrees. Depending on ride height, car width, length and height, might collide*/
@@ -125,8 +125,7 @@ typedef struct {
 	hwuint avg_curr_load; /*Average current load, in milliamperes*/
 	hwuint battery_level; /*Percentage of battery level, where 0xFFFF is 100%*/
 	hwuint revolutions; /*ENGINE REVOLUTIONS PER MINUTE*/
-	hwuint states[4]; /*Internal states of the car, in total 64 bits of
-			     storage*/
+	hwulong states[2];
 	hwuchar engine1[4]; /*Store how ramped up it is, its current power, degradation info, and flags*/
 	hwuchar engine2[4]; /*Store how ramped up it is, its current power, degradation info, and flags*/
 
@@ -137,8 +136,8 @@ typedef struct {
 
 } H5_Vehicle;
 
-/*Size for RACENUM = 4, with average VM: 600KBs max
-Size for RACENUM = 4 without VM: 1KB max*/
+/*Size for RACENUM = 4, with average VM: 3MiBs max
+Size for RACENUM = 4 without VM: 3KiBs max*/
 typedef struct {
 	H5_Vehicle racers[RACENUM];
 	HWT_Circuit track;

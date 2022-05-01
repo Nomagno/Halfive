@@ -34,7 +34,7 @@ Always start the file with the track section, followed by flags/settings, of cou
 After the track table comes the segments table. Here you define the segments, from one to a maximum of 40.
 
 Where all numbers are unsigned integers, p1 and p3 are bezier curve anchors, p2 is a bezier curve control point.
-pNx and pNy are unsigned 24-bit integers
+pNx and pNy are unsigned 32-bit integers, and their unit is millimetres
 'shape_outer' describes the outer outline of the track segment
 'shape_inner' describes the inner outline of the track segment
 

@@ -50,8 +50,8 @@ struct HWT_Biome {
 };
 
 struct HWT_Segment {
-	hwcompbezier inner_shape;
-	hwcompbezier outer_shape;
+	hwbezier inner_shape;
+	hwbezier outer_shape;
 
 	enum HWT_SpeedEnum speed;
 	enum HWT_FinishEnum racing_line;

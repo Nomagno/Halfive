@@ -33,13 +33,6 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
-
-/*Composite unsigned*/
-typedef struct {
-	hwuchar high;
-	hwuint low;
-} hwcompuint;
-
 typedef struct {
 	_Bool sign;
 	hwuint num;
@@ -47,57 +40,26 @@ typedef struct {
 
 /*Composite 2D vector*/
 typedef struct {
-	hwcompuint x;
-	hwcompuint y;
-} hwcomppoint;
+	hwulong x;
+	hwulong y;
+} hwpoint;
 
 /*Composite bezier curve*/
 typedef struct {
-	hwcomppoint p1;
-	hwcomppoint control;
-	hwcomppoint p3;
-} hwcompbezier;
+	hwpoint p1;
+	hwpoint control;
+	hwpoint p3;
+} hwbezier;
 
-hwcompuint HWMath_CompAdd(hwcompuint a, hwcompuint b); /*Composite addition*/
-hwcompuint HWMath_CompSub(hwcompuint a, hwcompuint b); /*Composite substraction*/
-hwcompuint HWMath_CompMult(hwcompuint a, hwcompuint b); /*Composite multiplication*/
+hwpoint HWMath_PointAdd(hwpoint a, hwpoint b); /*Composite point addition*/
+hwpoint HWMath_PointSub(hwpoint a, hwpoint b); /*Composite point substraction*/
+hwpoint HWMath_PointMultScalar(hwpoint a, HWRat k); /*Multiply hwpoint by scalar [k]*/
 
-hwcomppoint HWMath_CompPointAdd(hwcomppoint a, hwcomppoint b); /*Composite point addition*/
-hwcomppoint HWMath_CompPointSub(hwcomppoint a, hwcomppoint b); /*Composite point substraction*/
-hwcomppoint HWMath_CompPointMultScalar(hwcomppoint a, hwuint k); /*Multiply hwcomppoint by scalar [k]*/
+HWRat HWMath_umax_sqrt(hwumax a); /*Square root of hwumax*/ /*To be implemented*/ 
+HWRat HWMath_ulong_sqrt(hwulong a); /*Square root of hwulong*/ /*To be implemented*/ 
 
-/*To be implemented*/
-hwumax HWMath_rat_umax(HWRat a, hwsint k); /*HWRat to hwumax, with scaling factor k compared to actual
-                                             value, negative means division, positive multiplication*/
-/*To be implemented*/
-HWRat HWMath_umax_rat(hwumax a, hwsint k); /*HWRat to hwumax, with scaling factor k compared to actual 
-                                             value, negative means division, positive multiplication*/
-
-HWRat HWMath_umax_sqrt(hwumax a); /*Square root of hwumax*/ /*To be implemented*/
-HWRat HWMath_uint_sqrt(hwuint a); /*Square root of hwuint*/ /*To be implemented*/ 
-HWRat HWMath_uchar_sqrt(hwuint a); /*Square root of hwuchar*/ /*To be implemented*/
-
-hwcomppoint HWMath_getBezierPoint(hwcompbezier curve, hwuint t); /*Calculate point [t] of bezier curve, where 
-                                                                   [t] is a number between zero and one, in this
-                                                                   case zero is zero and 0xFF is one*/
-/*To be implemented*/
-hwsint HWMath_uintSine(hwuint a); /*Calculate sine of [a], where [a] is expressed 
-                                    in sexagesimal degrees in such a way that 360 
-                                    degrees equate to 3600 hwuint units,
-                                    and return value is a hwsint where +-0 is zero,
-                                    and +-0xFF is one*/
-/*To be implemented*/
-hwsint HWMath_uintCosine(hwuint a); /*Calculate cosine of [a], where [a] is expressed 
-                                    in sexagesimal degrees in such a way that 360 
-                                    degrees equate to 3600 hwuint units,
-                                    and return value is a hwsint where +-0 is zero,
-                                    and +-0xFF is one*/
-/*To be implemented*/
-hwsint HWMath_uintTangent(hwuint a); /*Calculate tangent of [a], where [a] is expressed 
-                                    in sexagesimal degrees in such a way that 360 
-                                    degrees equate to 3600 hwuint units,
-                                    and return value is a hwsint where +-0 is zero,
-                                    and +-0xFF is one*/
+hwpoint HWMath_getBezierPoint(hwbezier curve, HWRat t); /*Calculate point [t] of bezier curve, where 
+                                                                   [t] is a number between zero and one*/
 /*To be implemented*/
 void HWMath_eventSimulation(hwuchar event_num, hwuchar *dist, hwuchar *vals, 
                        hwuchar run_num, hwuchar *run_results); /*Simulate events.

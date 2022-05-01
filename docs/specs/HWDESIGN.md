@@ -11,8 +11,6 @@ The hwdoc.h header, for processing the HWDOC format, is awaiting a reimplementat
 
 The hwt.h and hwnet.h headers, to tokenize Half-World Track and Half-World Network .hwdoc files, respectively, are awaiting an implementation (TEDIOUS).
 
-The hwmath.h header is awaiting an implementation (ROADBLOCK!!) (EASY-ish, but a bit involved).
-
 The halfive.h header, for simulating physics, is awaiting an implementation that uses fixed-timestep semi-explicit Euler integration to remain framerate-independent, 
 as well as a redesign that includes the possibility of custom objects that aren't just cars, and of well-defined actions that may be mapped to real code or to a HWVM instance. (HARD)
 

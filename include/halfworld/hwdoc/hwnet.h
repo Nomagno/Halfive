@@ -42,7 +42,7 @@ struct HWNET_ServerData {
 	enum HWNET_Type1Enum flags_1; /*If it is -1, SHOULD BE LEFT EMPTY*/
 	enum HWNET_Type2Enum flags_2; /*If it is -1, SHOULD BE LEFT EMPTY*/
 	enum HWNET_Type3Enum flags_3; /*If it is -1, SHOULD BE LEFT EMPTY*/
-	hwcomppoint position;
+	hwpoint position;
 	hwuint leaderboard;
 };
 

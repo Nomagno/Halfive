@@ -1,19 +1,3 @@
-<head>
-<style type="text/css">
-body{
-line-height:1.6;
-font-size:18px;
-color:#444;
-padding:0
-10px}
-h1,h2,h3{
-line-height:1.2
-}
-</style>
-	<title>Half-World Track</title>
-	<meta name="description" content="The Universal Racing Game">
-</head>
-
 <h1>Half-World Track (Encoding) Specification</h1>
 <h4>SPDX identifier: COIL-1.0</h4>
 <h4>Copyright Nomagno 2021, 2022</h4>
@@ -39,7 +23,7 @@ _SEGMENTS
 <hr />
 <h3>EXPLANATION:</h3>
 <p>Always start the file with the track section, followed by flags/settings, of course replacing param and value for the parameter and the value. After the track table comes the segments table. Here you define the segments, from one to a maximum of 40.</p>
-<p>Where all numbers are unsigned integers, p1 and p3 are bezier curve anchors, p2 is a bezier curve control point. pNx and pNy are unsigned 24-bit integers &#x2018;shape_outer&#x2019; describes the outer outline of the track segment &#x2018;shape_inner&#x2019; describes the inner outline of the track segment</p>
+<p>Where all numbers are unsigned integers, p1 and p3 are bezier curve anchors, p2 is a bezier curve control point. pNx and pNy are unsigned 32-bit integers, and their unit is millimetres &#x2018;shape_outer&#x2019; describes the outer outline of the track segment &#x2018;shape_inner&#x2019; describes the inner outline of the track segment</p>
 <p>Aditionally, you can add special properties for that segment with local_param.</p>
 <hr />
 <h4>AVAILABLE GLOBAL PARAMETERS:</h4>

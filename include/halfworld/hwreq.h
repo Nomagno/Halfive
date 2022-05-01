@@ -22,8 +22,14 @@
 #error uint16_t is required, sorry!
 #endif
 
+#ifndef UINT32_MAX
+#error uint32_t is required, sorry!
+#endif
+
 typedef uint8_t hwuchar;
 typedef uint16_t hwuint;
+typedef uint32_t hwulong;
+typedef uintmax_t hwumax;
 
 #ifdef __cplusplus
 	static const int HWReq_const_one = 1;

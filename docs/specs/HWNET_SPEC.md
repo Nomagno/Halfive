@@ -63,7 +63,7 @@ _DATA
 Where (trackname) is an eight character alphanumerical string that represents the track being used.
 Where (gamemode) is an eight character alphanumerical string that represents the gamemode being used. To indicate a normal race mode, it should be "_DEFAULT"
 
-Where (pos1) and (pos2) are a the x and y of the player's position (unsigned, 24-bit, origin (0,0)), and t1-3 are the flags described below.
+Where (pos1) and (pos2) are a the x and y of the player's position (unsigned, 32-bit, origin (0,0)), and t1-3 are the flags described below.
 
 Note these flags are abstract and meant to give the client context, as opposed to any kind of computationally-specific indications. If the flag 'r' is received as the client packet mode, race type 1, race type 2, and race type 3 flags shall be supplied. If the flag 'l' is received, the leaderboard information should be supplied at (t1) flag, and the other two types should not be included.
 
