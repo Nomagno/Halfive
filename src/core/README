@@ -7,6 +7,7 @@ hwasm.h (Assembler for HWVM)
 hwvi.h (Abstraction over graphics, input, and sound)
 hwstdlib.h (Partial freestanding standard library replacement)
 rat.h (Rational number handling)
+hwmath.h (Math utilities) (PARTIAL IMPLEMENTATION)
 
 Pending implementation:
 hwt.h (Track encoder/decoder, wrapper over hwdoc.h, EASY/TEDIOUS)
@@ -19,9 +20,9 @@ halfworld/halfive.h (For using all specified interfaces except those in hwvi.h)
 halfworld/hwvi.h (Requires ***PORTING*** to each target)
 
 Back of the envelope calculations suggest that (depending on preprocessor macros used to conditionally enable excessively heavy features),
-the memory footprint of the (backend part of the) engine will range from around 70KBs to around 2MBs. It is reasonable to expect
+the memory footprint of the (backend part of the) engine will range in the best-case scenario from around 10KBs to around 800KiBs. It is reasonable to expect
 a maximum memory footprint (sound and graphic backends aside, but taking into account the display and network buffers and code) of
-4-8MBs when VM simulation is enabled.
+4-12MiBs when VM simulation is enabled.
 
 Run the command `make` to compile to a static library/archive file
 

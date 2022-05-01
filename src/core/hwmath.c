@@ -31,66 +31,40 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
-hwcompuint HWMath_CompAdd(hwcompuint a, hwcompuint b){
-	hwuchar low_add = a.low + b.low;
-	hwuint high_add = a.high + b.high;
-	return (hwcompuint){
-		.low = low_add,
-		.high = ((low_add < a.low) || (low_add < b.low)) 
-		          ? (high_add + 1) 
-		          : (high_add)
+hwpoint HWMath_PointAdd(hwpoint a, hwpoint b){
+	return (hwpoint){
+		.x = a.x + b.x,
+		.y = a.y + b.y
 	};
 }
 
-hwcompuint HWMath_CompSub(hwcompuint a, hwcompuint b){
-	hwuchar low_sub = a.low - b.low;
-	hwuint high_sub = a.high - b.high;
-	return (hwcompuint){
-		.low = low_sub,
-		.high = (low_sub > a.low) 
-		          ? (high_sub - 1) 
-		          : (high_sub)
+hwpoint HWMath_PointSub(hwpoint a, hwpoint b){
+	return (hwpoint){
+		.x = a.x - b.x,
+		.y = a.y - b.y
 	};
 }
 
-hwcompuint HWMath_CompMult(hwcompuint a, hwcompuint b){
-	hwcompuint incr = (hwcompuint){0};
-	for(hwcompuint i = b; !i.high && !i.low; i = HWMath_CompSub(i, (hwcompuint){0, 1})){
-		incr = HWMath_CompAdd(incr, a);
-	}
-	return incr;
-}
-
-hwcomppoint HWMath_CompPointAdd(hwcomppoint a, hwcomppoint b){
-	return (hwcomppoint){
-		.x = HWMath_CompAdd(a.x, b.x),
-		.y = HWMath_CompAdd(a.y, b.y)
-	};
-}
-
-hwcomppoint HWMath_CompPointSub(hwcomppoint a, hwcomppoint b){
-	return (hwcomppoint){
-		.x = HWMath_CompSub(a.x, b.x),
-		.y = HWMath_CompSub(a.y, b.y)
-	};
-}
-
-hwcomppoint HWMath_CompPointMultScalar(hwcomppoint a, hwuint k){
-	return (hwcomppoint){
-		.x = HWMath_CompMult(a.x, (hwcompuint){0, k}),
-		.y = HWMath_CompMult(a.y, (hwcompuint){0, k})
+hwpoint HWMath_PointMultScalar(hwpoint a, HWRat k){
+	return (hwpoint){
+		.x = HWRat_toUlong(HWRat_Product((HWRat){0, a.x, 1}, k)),
+		.y = HWRat_toUlong(HWRat_Product((HWRat){0, a.y, 1}, k))
 	};
 }
 
 /*A(1-t)(1-t) + B(1-t)(2t) + C(t)(t)*/
-hwcomppoint HWMath_getBezierPoint(hwcompbezier curve, hwuint t){
-	hwcomppoint a = HWMath_CompPointMultScalar(curve.p1, (255 - t)*(255 - t));
+hwpoint HWMath_getBezierPoint(hwbezier curve, HWRat t){
+	hwpoint a = HWMath_PointMultScalar(curve.p1, 
+	           HWRat_Product(
+	           HWRat_Add((HWRat){0, 1, 1}, (HWRat){!t.sign, t.num, t.denom}),
+	           HWRat_Add((HWRat){0, 1, 1}, (HWRat){!t.sign, t.num, t.denom})));
+	hwpoint b = HWMath_PointMultScalar(curve.control, 
+	           HWRat_Product(
+	           HWRat_Add((HWRat){0, 1, 1}, (HWRat){!t.sign, t.num, t.denom}),
+	           HWRat_Add(t, t)));
+	hwpoint c = HWMath_PointMultScalar(curve.p3, HWRat_Product(t, t));
 
-	hwcomppoint b = HWMath_CompPointMultScalar(curve.control, 2*(255 - t)*t);
-
-	hwcomppoint c = HWMath_CompPointMultScalar(curve.p1, t*t);
-
-	a = HWMath_CompPointAdd(a, b);
-	b = HWMath_CompPointAdd(a, c);
+	a = HWMath_PointAdd(a, b);
+	b = HWMath_PointAdd(a, c);
 	return a;
 }
