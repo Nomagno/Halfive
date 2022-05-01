@@ -67,8 +67,9 @@ int main(int argc, char **argv)
 				  a bit by essentially peeking at the operands*/
 		    (prog.code.opnd[prog.co][1] == 0xFFFD)) {
 			putchar('>');
-			mem.in = getchar();
-			putchar('\n');
+			unsigned readin;
+			scanf("%X", &readin);
+			mem.in = readin;
 		}
 
 		return_code = HWVM_Execute(&prog, &rwinf);
