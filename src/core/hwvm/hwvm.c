@@ -168,7 +168,9 @@ unsigned HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf)
 	case Inst_halt:
 		program->hf = 1;
 		break;
-	case Inst_nop:
+	case Inst_skz:
+		if(*(DATA[_ZF]) == 0)
+			_PROG_CO += CURR_OP[0];
 		_PROG_CO += 1;
 		break;
 	case Inst_set:

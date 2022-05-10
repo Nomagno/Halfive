@@ -61,7 +61,7 @@ ENGLISH: add the contents of address ONE and the number 1F, put the result back 
 
 ASSEMBLY FORMAT:
     It codes almost directly to the binary format. The available instructions
-are: {halt, nop, jmp, jcz, set, add, sub, not, and, xor, or, rot, func, ret,
+are: {halt, skz, jmp, jcz, set, add, sub, not, and, xor, or, rot, func, ret,
 call, jcnz} The syntax is the following: instruction ARGx ARGx \n Where ARGx
 is an address/pointer (Rx), a literal (ID), or any of these (Vx). Instructions
 are terminated by newline '\n'
@@ -78,7 +78,7 @@ typedef enum {
 	/*IMPORTANT NOTE: LITERALS ARE ONLY ALLOWED IN REGISTER ARGUMENTS
 	   DOCUMENTED AS VALUES 'Vx', NOT IN REGISTERS 'Rx'*/
 	Inst_halt = 0, /* ; halt*/
-	Inst_nop = 1,  /* ; do nothing*/
+	Inst_skz = 1,  /* LITERAL; if ZF == 0, add LITERAL+1 to program counter, else do nothing*/
 	Inst_set = 2,  /* R1 V2; set address R2 to value V1*/
 	Inst_jmp = 3,  /* V1; hand execution to instruction numbered V1. SPECIAL
 		     EXCEPTION: Take 16-bit literals, addresses are treated as
@@ -117,7 +117,7 @@ typedef struct {
 	/*Every second, third and fourth bytes*/
 	/*int because we need this to be at least 16 bits by default*/
 	hwuint opnd[MEMSIZE * 4][3];
-	/*The fourth row of the array indicates which arguments are addresses,
+	/*The third  row of the array indicates which arguments are addresses,
 	trough its least significant 2 bits.
 	E.G 00 ALL ARE ADDRESSES -- 11 BOTH ARE LITERALS*/
 

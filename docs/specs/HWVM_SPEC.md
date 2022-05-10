@@ -89,7 +89,7 @@ There are currently SIXTEEN (16) instructions, each numbered with the decimal nu
 
 ```
 halt (0) - TAKES NO ARGUMENTS, STOPS PROGRAM EXECUTION
-nop (1) - TAKES NO ARGUMENTS, DOES NOTHING FOR A FULL CYCLE
+skz (1) - LITERAL; add (LITERAL+1) to PROGRAM COUNTER *IF* 0xFFFF is ZERO (0), where LITERAL is a literal.
 set (2) V1 R2; SETS ADDRESS R2 *TO* VALUE V1
 jmp (3) V1 - JUMP (MOVE THE PROGRAM COUNTER, HAND EXECUTION) *TO* VALUE V1. SPECIAL EXCEPTION: Take 16-bit literals,
     addresses are treated as 16-bit literals, and pointers are treated as addresses with a 16-bit value

@@ -154,8 +154,8 @@ HWVM_InstructionSet _isinst(char *instr)
 {
 	if (hwstrcmp(instr, "halt") == 0)
 		return Inst_halt;
-	else if (hwstrcmp(instr, "nop") == 0)
-		return Inst_nop;
+	else if (hwstrcmp(instr, "skz") == 0)
+		return Inst_skz;
 	else if (hwstrcmp(instr, "set") == 0)
 		return Inst_set;
 	else if (hwstrcmp(instr, "jmp") == 0)
