@@ -40,15 +40,21 @@ INCLROOT="../../include/"
 
 PARAMS="-DHWVERSION=0 -DHALFIVE_VM_SIMULATION -DHWVI_GSERV_IMPL_SDL2 -DHWVI_AUDIOSERV_IMPL_SDL2 -DHWVI_STDINPUT_IMPL_PORTABLE"
 
-build: warn libhalfworld.a
-rebuild: clean build
+main: warn libhalfworld.a
+hwasm: warn hwassembler
+remain: clean main
+rehwasm: clean hwassembler
 clean:
-	rm *.o *.a
+	rm -f *.o *.a hwassembler
 
 warn:
 	echo "This program makes extensive used of C preprocessor macros. You may use the variable PARAMS=\"-DMYVAR1 -DMYVAR2\" like so to set them"
-libhalfworld.a : hwstdlib.o hwasm.o hwvm.o hwdoc.o
-	ar rcs libhalfworld.a hwstdlib.o hwasm.o hwvm.o hwdoc.o rat.o
+libhalfworld.a : hwstdlib.o hwasm.o hwvm.o hwdoc.o hwmath.o hwrat.o
+	ar rcs libhalfworld.a hwstdlib.o hwasm.o hwvm.o hwdoc.o hwmath.o hwrat.o
+hwassembler : hwassembler.o hwvm.o hwstdlib.o
+	cc $(PARAMS) -o hwassembler hwassembler.o hwvm.o hwstdlib.o
+hwassembler.o : hwvm.o
+	cc $(PARAMS) -I$(INCLROOT) -DHWASSEMBLY -c -o hwassembler.o hwvm/hwasm.c
 hwasm.o : hwvm.o
 	cc $(PARAMS) -I$(INCLROOT) -c -o hwasm.o hwvm/hwasm.c
 hwvm.o : hwstdlib.o
@@ -57,5 +63,7 @@ hwdoc.o : hwstdlib.o
 	cc $(PARAMS) -I$(INCLROOT) -c -o hwdoc.o hwdoc/hwdoc.c
 hwstdlib.o :
 	cc $(PARAMS) -I$(INCLROOT) -c -o hwstdlib.o hwstdlib.c
-rat.o :
-	cc $(PARAMS) -I$(INCLROOT) -c -o rat.o rat.c
+hwmath.o :
+	cc $(PARAMS) -I$(INCLROOT) -c -o hwmath.o hwmath.c
+hwrat.o :
+	cc $(PARAMS) -I$(INCLROOT) -c -o hwrat.o hwrat.c
