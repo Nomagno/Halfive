@@ -168,10 +168,20 @@ unsigned HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf)
 	case Inst_halt:
 		program->hf = 1;
 		break;
-	case Inst_skz:
+	case Inst_nop:
+		_PROG_CO += 1;
+		break;
+	case Inst_jmp:
+		goto _jmp;
+	case Inst_skpz:
 		if(*(DATA[_ZF]) == 0)
 			_PROG_CO += CURR_OP[0];
 		_PROG_CO += 1;
+		break;
+	case Inst_skmz:
+		if(*(DATA[_ZF]) == 0)
+			_PROG_CO -= CURR_OP[0];
+		_PROG_CO -= 1;
 		break;
 	case Inst_set:
 		GETVAR(getnum_orig, CURR_OP, 1, 1);
@@ -179,21 +189,6 @@ unsigned HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf)
 		dest_type = GETTYPE(CURR_OP, 2);
 		goto _set;
 		break;
-	case Inst_jmp:
-		goto _jmp;
-	case Inst_jcz: /*Jump if the zero flag is zero*/
-		if (*(DATA[_ZF]) == 0)
-			goto _jmp;
-		else
-			_PROG_CO += 1, _BREAK;
-		break;
-	case Inst_jcnz: /*Jump if the zero flag is NOT zero*/
-		if (*(DATA[_ZF]) != 0)
-			goto _jmp;
-		else
-			_PROG_CO += 1, _BREAK;
-		break;
-
 	case Inst_add:
 		GETVAR(tmpchar1, CURR_OP, 1, 0);
 		GETVAR(tmpchar2, CURR_OP, 2, 1);
