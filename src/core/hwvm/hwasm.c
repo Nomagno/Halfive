@@ -154,14 +154,17 @@ HWVM_InstructionSet _isinst(char *instr)
 {
 	if (hwstrcmp(instr, "halt") == 0)
 		return Inst_halt;
-	else if (hwstrcmp(instr, "skz") == 0)
-		return Inst_skz;
-	else if (hwstrcmp(instr, "set") == 0)
-		return Inst_set;
+	else if (hwstrcmp(instr, "nop") == 0)
+		return Inst_nop;
 	else if (hwstrcmp(instr, "jmp") == 0)
 		return Inst_jmp;
-	else if (hwstrcmp(instr, "jcz") == 0)
-		return Inst_jcz;
+	else if (hwstrcmp(instr, "skpz") == 0)
+		return Inst_skpz;
+	else if (hwstrcmp(instr, "skmz") == 0)
+		return Inst_skmz;
+
+	else if (hwstrcmp(instr, "set") == 0)
+		return Inst_set;
 	else if (hwstrcmp(instr, "add") == 0)
 		return Inst_add;
 	else if (hwstrcmp(instr, "sub") == 0)
@@ -176,14 +179,13 @@ HWVM_InstructionSet _isinst(char *instr)
 		return Inst_rot;
 	else if (hwstrcmp(instr, "cmp") == 0)
 		return Inst_cmp;
+
 	else if (hwstrcmp(instr, "func") == 0)
 		return Inst_func;
 	else if (hwstrcmp(instr, "ret") == 0)
 		return Inst_ret;
 	else if (hwstrcmp(instr, "call") == 0)
 		return Inst_call;
-	else if (hwstrcmp(instr, "jcnz") == 0)
-		return Inst_jcnz;
 	else
 		return (HWVM_InstructionSet)16;
 }
