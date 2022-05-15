@@ -40,12 +40,19 @@ HWVM_InstructionSet _isinst(char *instr);
 #include <stdio.h>
 int main(int argc, char **argv)
 {
-	/*Requires code file and drive file as arguments*/
-	if (argc < 2)
-		return 1;
+
+	FILE *codefile;
+	FILE *drivefile;
+
+	if (argc == 1)
+		codefile = stdin;
+	
+	if ( argc >= 2 && hwstrcmp(argv[1], "-") == 0) { codefile = stdin; }
+	else if (argc >= 2) { codefile = fopen(argv[1], "r"); }
+
+	if (argc < 3) { drivefile = fopen("/dev/null", "r"); }
+	else { drivefile = fopen(argv[2], "r"); }
 	char arr[30];
-	FILE *codefile = fopen(argv[1], "r");
-	FILE *drivefile = fopen(argv[2], "r");
 
 	HWVM_CodeMemory code = {(HWVM_InstructionSet)0};
 	int i = 0;
@@ -60,8 +67,9 @@ int main(int argc, char **argv)
 	fread(mem.driv, 1, sizeof(mem.driv), drivefile);
 
 	int return_code = 0;
-
+	hwuint prevcode = 0;
 	while ((!prog.hf) && (!return_code)) {
+		prevcode = prog.co;
 		if ((prog.code.opnd[prog.co][0] ==
 		     0xFFFD) || /*Preemtive/non-polling-but-ontime input, cheats
 				  a bit by essentially peeking at the operands*/
@@ -83,16 +91,16 @@ int main(int argc, char **argv)
 	else {
 		switch (return_code) {
 		case 1:
-			printf("ERROR: READ/WRITE - UNMAPPED MEM\n");
+			printf("ERROR AT INST 0x%X: READ/WRITE UNMAPPED MEM\n", prog.co);
 			break;
 		case 2:
-			printf("ERROR: WRITE TO READ-ONLY MEM\n");
+			printf("ERROR AT INST 0x%X: WRITE TO READ-ONLY MEM\n", prog.co);
 			break;
 		case 3:
-			printf("ERROR: WRONG OPERAND TYPE\n");
+			printf("ERROR AT INST 0x%X: WRONG ADDRESSING MODE\n", prog.co);
 			break;
 		default:
-			printf("ERROR: NO MORE INFO\n");
+			printf("ERROR AT INST 0x%X: UNKNOWN ERROR %u\n", prog.co, return_code);
 			break;
 		}
 	}

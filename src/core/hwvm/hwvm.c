@@ -88,8 +88,8 @@ enum optype { adr = 0, lit = 1, ptr = 2 };
 #define _PC_LOW 0xFFFA
 #define _ERROR_ADDR 0xFFF0
 
-#define _MEMMAX 0x4000
-#define _DRIVMAX 0xC000
+#define _MEMMAX 0x3FFF
+#define _DRIVMAX 0xBFFF
 
 /*Unknown address*/
 
@@ -119,9 +119,9 @@ HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory *code,
 		if ((ival != !!i) && (ival != 0))
 			break;
 		ival = !!i;
-		if (i < _MEMMAX) {
+		if (i <= _MEMMAX) {
 			returnval.data[i] = &(rawmem->gmem[i]);
-		} else if (i < _DRIVMAX) {
+		} else if (i <= _DRIVMAX) {
 			returnval.data[i] = &(rawmem->driv[i - 0x3FFF]);
 			returnval.mask[i] = 1; /*Read-only*/
 		} else if (i == _ZF) {
