@@ -122,7 +122,7 @@ HWVM_GeneralMemory HWVM_Init(HWVM_CodeMemory *code,
 		if (i <= _MEMMAX) {
 			returnval.data[i] = &(rawmem->gmem[i]);
 		} else if (i <= _DRIVMAX) {
-			returnval.data[i] = &(rawmem->driv[i - 0x3FFF]);
+			returnval.data[i] = &(rawmem->driv[i - 0x4000]);
 			returnval.mask[i] = 1; /*Read-only*/
 		} else if (i == _ZF) {
 			returnval.data[i] = &(rawmem->zf);
@@ -294,7 +294,6 @@ unsigned HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf)
 	_BREAK;
 
 _set:
-
 	if (set_cf == 1)
 		*DATA[_CF] = 1;
 	else if (set_cf == 2)
@@ -336,6 +335,7 @@ _set:
 	}
 	_PROG_CO += 1;
 	_BREAK;
+
 _jmp:
 	if (ISADR(CURR_OP[2], 1) || ISLIT(CURR_OP[2], 1)) {
 		/*If dealing with an address OR a literal, just
