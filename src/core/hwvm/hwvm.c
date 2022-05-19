@@ -179,9 +179,10 @@ unsigned HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf)
 		_PROG_CO += 1;
 		break;
 	case Inst_skmz:
-		if(*(DATA[_ZF]) == 0)
+		if(*(DATA[_ZF]) == 0){
 			_PROG_CO -= CURR_OP[0];
-		_PROG_CO -= 1;
+			_PROG_CO -= 1;
+		} else _PROG_CO += 1;
 		break;
 	case Inst_set:
 		GETVAR(getnum_orig, CURR_OP, 1, 1);
