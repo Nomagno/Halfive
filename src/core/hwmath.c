@@ -52,15 +52,33 @@ hwpoint HWMath_PointMultScalar(hwpoint a, HWRat k){
 	};
 }
 
+hwumax HWMath_umax_isqrt(hwumax a){
+	hwumax i = 1, sq = 1;
+	while(sq <= a){
+			i += 1;
+			sq = i*i;
+	}
+	return i - 1;
+}
+
+hwulong HWMath_isqrt(hwulong a){
+	hwulong i = 1, sq = 1;
+	while(sq <= a){
+			i += 1;
+			sq = i*i;
+	}
+	return i - 1;
+}
+
 /*A(1-t)(1-t) + B(1-t)(2t) + C(t)(t)*/
 hwpoint HWMath_getBezierPoint(hwbezier curve, HWRat t){
 	hwpoint a = HWMath_PointMultScalar(curve.p1, 
 	           HWRat_Product(
-	           HWRat_Add((HWRat){0, 1, 1}, (HWRat){!t.sign, t.num, t.denom}),
-	           HWRat_Add((HWRat){0, 1, 1}, (HWRat){!t.sign, t.num, t.denom})));
+	           HWRat_Add((HWRat){0, 1, 1}, (HWRat){0, t.num, t.denom}),
+	           HWRat_Add((HWRat){0, 1, 1}, (HWRat){0, t.num, t.denom})));
 	hwpoint b = HWMath_PointMultScalar(curve.control, 
 	           HWRat_Product(
-	           HWRat_Add((HWRat){0, 1, 1}, (HWRat){!t.sign, t.num, t.denom}),
+	           HWRat_Add((HWRat){0, 1, 1}, (HWRat){0, t.num, t.denom}),
 	           HWRat_Add(t, t)));
 	hwpoint c = HWMath_PointMultScalar(curve.p3, HWRat_Product(t, t));
 
@@ -68,3 +86,4 @@ hwpoint HWMath_getBezierPoint(hwbezier curve, HWRat t){
 	b = HWMath_PointAdd(a, c);
 	return a;
 }
+

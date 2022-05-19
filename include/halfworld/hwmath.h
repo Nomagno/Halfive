@@ -33,10 +33,12 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
-typedef struct {
-	_Bool sign;
-	hwuint num;
-} hwsint;
+#define HWMATH_MAKESIGN(type, name) typedef struct { _Bool sign; type num; } name
+
+HWMATH_MAKESIGN(hwuchar, hwschar);
+HWMATH_MAKESIGN(hwuint, hwsint);
+HWMATH_MAKESIGN(hwulong, hwslong);
+HWMATH_MAKESIGN(hwumax, hwsmax);
 
 /*Composite 2D vector*/
 typedef struct {
@@ -55,8 +57,11 @@ hwpoint HWMath_PointAdd(hwpoint a, hwpoint b); /*Composite point addition*/
 hwpoint HWMath_PointSub(hwpoint a, hwpoint b); /*Composite point substraction*/
 hwpoint HWMath_PointMultScalar(hwpoint a, HWRat k); /*Multiply hwpoint by scalar [k]*/
 
-HWRat HWMath_umax_sqrt(hwumax a); /*Square root of hwumax*/ /*To be implemented*/ 
-HWRat HWMath_ulong_sqrt(hwulong a); /*Square root of hwulong*/ /*To be implemented*/ 
+hwumax HWMath_umax_isqrt(hwumax a); /*Integer square root of hmax*/ 
+hwulong HWMath_isqrt(hwulong a); /*Integer square root of hwulong*/ 
+
+HWRat HWMath_umax_ratsqrt(hwumax a); /*Rational square root of hwumax*/ /*To be implemented*/ 
+HWRat HWMath_ratsqrt(hwulong a); /*Rational square root of hwulong*/ /*To be implemented*/ 
 
 hwpoint HWMath_getBezierPoint(hwbezier curve, HWRat t); /*Calculate point [t] of bezier curve, where 
                                                                    [t] is a number between zero and one*/
