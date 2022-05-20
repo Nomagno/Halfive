@@ -81,6 +81,16 @@ HWRat HWMath_ratsqrt(hwulong a){
 	return guess;
 }
 
+HWRat HWMath_umax_ratsqrt(hwumax a){
+	HWRat guess = HWRat_Simplify((HWRat){0, HWMath_isqrt(a), 1});
+	for(unsigned i = 0; i < HWMATH_SQRT_ITER; i++){
+		HWRat a_divided_by_guess = HWRat_Product((HWRat){0, a, 1}, (HWRat){0, guess.denom, guess.num});
+		guess = HWRat_Product((HWRat){0, 1, 2}, HWRat_Add(guess, a_divided_by_guess));
+		guess.sign = 0;
+	}
+	return guess;	
+}
+
 /*A(1-t)(1-t) + B(1-t)(2t) + C(t)(t)*/
 hwpoint HWMath_getBezierPoint(hwbezier curve, HWRat t){
 	hwpoint a = HWMath_PointMultScalar(curve.p1, 

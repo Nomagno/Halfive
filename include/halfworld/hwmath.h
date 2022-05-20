@@ -64,9 +64,8 @@ hwulong HWMath_isqrt(hwulong a); /*Integer square root of hwulong*/
 #ifndef HWMATH_SQRT_ITER
 	#define HWMATH_SQRT_ITER 5
 #endif
-
-HWRat HWMath_umax_ratsqrt(hwumax a); /*Rational square root of hwumax*/ /*To be implemented*/ 
-HWRat HWMath_ratsqrt(hwulong a); /*Rational square root of hwulong*/ /*To be implemented*/ 
+HWRat HWMath_umax_ratsqrt(hwumax a); /*Rational square root of hwumax*/ 
+HWRat HWMath_ratsqrt(hwulong a); /*Rational square root of hwulong*/
 
 hwpoint HWMath_getBezierPoint(hwbezier curve, HWRat t); /*Calculate point [t] of bezier curve, where 
                                                                    [t] is a number between zero and one*/
