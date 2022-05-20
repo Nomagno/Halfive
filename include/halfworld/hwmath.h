@@ -60,6 +60,11 @@ hwpoint HWMath_PointMultScalar(hwpoint a, HWRat k); /*Multiply hwpoint by scalar
 hwumax HWMath_umax_isqrt(hwumax a); /*Integer square root of hmax*/ 
 hwulong HWMath_isqrt(hwulong a); /*Integer square root of hwulong*/ 
 
+/*Number of iterations to do with Newton's method, 5 by default*/
+#ifndef HWMATH_SQRT_ITER
+	#define HWMATH_SQRT_ITER 5
+#endif
+
 HWRat HWMath_umax_ratsqrt(hwumax a); /*Rational square root of hwumax*/ /*To be implemented*/ 
 HWRat HWMath_ratsqrt(hwulong a); /*Rational square root of hwulong*/ /*To be implemented*/ 
 

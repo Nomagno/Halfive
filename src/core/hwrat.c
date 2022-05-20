@@ -111,6 +111,11 @@ HWRat HWRat_Product(HWRat a, HWRat b)
 	    (HWRat){(a.sign != b.sign), a.num * b.num, a.denom * b.denom});
 }
 
+hwulong HWRat_toUlong(HWRat a){
+	return a.denom / a.num;
+}
+
+
 #ifdef FLOATS_SUPPORTED
 float HWRat_toFloat(HWRat a)
 {
