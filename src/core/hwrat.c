@@ -39,12 +39,16 @@ void HWRat_XorSwap(hwumax *a, hwumax *b)
 
 hwumax HWRat_GCD(hwumax a, hwumax b)
 {
-	if (b > a)
-		HWRat_XorSwap(&a, &b);
-	if (b == 0)
+	hwumax tmp;
+	while (b != 0){
+		if (b > a)
+			HWRat_XorSwap(&a, &b);
+		else
+			tmp = b,
+			b = a % b,
+			a = tmp;
+	}			
 		return a;
-	else
-		return HWRat_GCD(b, a % b);
 }
 
 hwumax HWRat_LCM(hwumax a, hwumax b) { return ((a * b) / HWRat_GCD(a, b)); }
