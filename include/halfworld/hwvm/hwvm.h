@@ -61,8 +61,8 @@ ENGLISH: add the contents of address ONE and the number 1F, put the result back 
 
 ASSEMBLY FORMAT:
     It codes almost directly to the binary format. The available instructions
-are: {halt, skz, jmp, jcz, set, add, sub, not, and, xor, or, rot, func, ret,
-call, jcnz} The syntax is the following: instruction ARGx ARGx \n Where ARGx
+are: {halt, nop, skpz, skmz, jmp, set, add, sub, not, and, xor, or, shift, func, ret, call}
+The syntax is the following: instruction ARGx ARGx \n Where ARGx
 is an address/pointer (Rx), a literal (ID), or any of these (Vx). Instructions
 are terminated by newline '\n'
 
@@ -85,7 +85,7 @@ typedef enum {
 		     a 16-bit value*/
 	Inst_skpz = 3,  /* LITERAL; if ZF == 0, add LITERAL+1 to program counter, else do nothing*/
 	Inst_skmz = 4,  /* LITERAL; if ZF == 0, substract LITERAL-1 to program counter, else do nothing*/
-	/*SET trough to ROT: put result of doing
+	/*SET trough to SHIFT: put result of doing
 	stuff with Vn values into Rn address*/
 	Inst_set = 5,  /* R1 V2; set address R2 to value V1*/
 	Inst_add = 6, /* R1 V2; addition, carry goes to carry flag*/
@@ -93,7 +93,7 @@ typedef enum {
 	Inst_and = 8, /* R1 V2; binary and*/
 	Inst_or = 9,      /* R1 V2; binary or*/
 	Inst_xor = 10,     /* R1 V2; binary exclusive or*/
-	Inst_rot = 11,    /* R1 V2; If V2 is 0-7, bitshift R1 LEFT by V2 bits. Else
+	Inst_shift = 11,    /* R1 V2; If V2 is 0-7, bitshift R1 LEFT by V2 bits. Else
 			if V2 is 8-F, bitshift R1 RIGHT by (V2-8) bits. Else do
 			nothing. Put the result into R1*/
 	Inst_cmp = 12,    /* V1 V2; if V1 is bigger than V2, sets the carry flag to 0

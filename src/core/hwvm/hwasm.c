@@ -183,8 +183,8 @@ HWVM_InstructionSet _isinst(char *instr)
 		return Inst_or ;
 	else if (hwstrcmp(instr, "xor") == 0)
 		return Inst_xor;
-	else if (hwstrcmp(instr, "rot") == 0)
-		return Inst_rot;
+	else if (hwstrcmp(instr, "shift") == 0)
+		return Inst_shift;
 	else if (hwstrcmp(instr, "cmp") == 0)
 		return Inst_cmp;
 
