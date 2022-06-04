@@ -8,9 +8,11 @@ There is a modular no-dependency implementation of a racing game that adheres to
 'include' folder: Interfaces
 'src' folder: Implementations
 It has a lot of C utility interfaces, such as:
+- Portable freestanding implementation of the C standard library (include/halfworld/hwstdlib.h) 
+- Portable coroutine-esque utilities (include/halfworld/hwcr.h) 
 - HWDOC (Packet/Circuit) generic tokenizer (include/halfworld/hwdoc/hwdoc.h)
 - Packet/Circuit data structures and tokenizer (WIP) (include/halfworld/hwdoc/hwnet.h) (include/halfworld/hwdoc/hwt.h)
-- Portable VM with custom instruciton set,  and assembly language (include/halfworld/hwvm/hwvm.h)
+- Portable VM with custom instruciton set,  and assembly language (include/halfworld/hwvm/hwvm.h) (include/halfworld/hwvm/hwasm.h)
 - Portable abstraction over graphics, sound, and input backends (include/halfworld/hwvi.h)
 - Portable utilities for working with rational numbers (include/halfworld/rat.h)
 - Portable utilities for handling mathematical operations (include/halfworld/hwmath.h)

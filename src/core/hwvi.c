@@ -244,7 +244,7 @@ int main(void)
 	size_t bmpsize_1;
 	size_t bmpsize_2;
 	HWVI_GetBuffer_Size(&bmpsize_1, &bmpsize_2,
-			    "../../assets/sprites/zoom.bmp");
+			    "path/to/test/image.bmp");
 
 	HWVI_PixelData mybuf_green = {.size = {WCONSTANT, WCONSTANT},
 				      .pix = &array_one[0][0]};
@@ -255,7 +255,7 @@ int main(void)
 	}
 
 	HWVI_PlaySound(&myref, &(const HWVI_SoundData){
-				   .name = "../../assets/sound/applause.wav"});
+				   .name = "path/to/test/sound.wav"});
 
 	for (unsigned i = 0; i < FRAMERATE * 8; i++) {
 		for (unsigned j = 0; j < (WCONSTANT * WCONSTANT); j++) {

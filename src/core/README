@@ -6,7 +6,7 @@ hwvm.h (Virtual machine compliant with HWVM)
 hwasm.h (Assembler for HWVM)
 hwvi.h (Abstraction over graphics, input, and sound)
 hwstdlib.h (Partial freestanding standard library replacement)
-rat.h (Rational number handling)
+hwrat.h (Rational number handling)
 hwmath.h (Math utilities) (PARTIAL IMPLEMENTATION)
 
 Pending implementation:
