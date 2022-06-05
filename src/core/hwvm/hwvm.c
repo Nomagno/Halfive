@@ -185,9 +185,9 @@ unsigned HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf)
 		} else _PROG_CO += 1;
 		break;
 	case Inst_set:
-		GETVAR(getnum_orig, CURR_OP, 1, 1);
-		setnum_dest = CURR_OP[1];
-		dest_type = GETTYPE(CURR_OP, 2);
+		GETVAR(getnum_orig, CURR_OP, 2, 1);
+		setnum_dest = CURR_OP[0];
+		dest_type = GETTYPE(CURR_OP, 1);
 		goto _set;
 		break;
 	case Inst_add:

@@ -87,7 +87,7 @@ typedef enum {
 	Inst_skmz = 4,  /* LITERAL; if ZF == 0, substract LITERAL-1 to program counter, else do nothing*/
 	/*SET trough to SHIFT: put result of doing
 	stuff with Vn values into Rn address*/
-	Inst_set = 5,  /* R1 V2; set address R2 to value V1*/
+	Inst_set = 5,  /* R1 V2; set address R1 to value V2*/
 	Inst_add = 6, /* R1 V2; addition, carry goes to carry flag*/
 	Inst_sub = 7, /* R1 V2; substraction, carry flag set if result is negative*/
 	Inst_and = 8, /* R1 V2; binary and*/
