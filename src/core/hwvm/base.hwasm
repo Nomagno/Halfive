@@ -1,0 +1,93 @@
+;Copyright Nomagno 2021, 2022
+;
+;Redistributions, modified or unmodified, in whole or in part, must retain
+;applicable notices of copyright or other legal privilege, these conditions, and
+;the following license terms and disclaimer.  Subject to these conditions, each
+;holder of copyright or other legal privileges, author or assembler, and
+;contributor of this work, henceforth "licensor", hereby grants to any person
+;who obtains a copy of this work in any form:
+;
+;1. Permission to reproduce, modify, distribute, publish, sell, sublicense, use,
+;and/or otherwise deal in the licensed material without restriction.
+;
+;2. A perpetual, worldwide, non-exclusive, royalty-free, gratis, irrevocable
+;patent license to make, have made, provide, transfer, import, use, and/or
+;otherwise deal in the licensed material without restriction, for any and all
+;patents held by such licensor and necessarily infringed by the form of the work
+;upon distribution of that licensor's contribution to the work under the terms
+;of this license.
+;
+;NO WARRANTY OF ANY KIND IS IMPLIED BY, OR SHOULD BE INFERRED FROM, THIS LICENSE
+;OR THE ACT OF DISTRIBUTION UNDER THE TERMS OF THIS LICENSE, INCLUDING BUT NOT
+;LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE,
+;AND NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS, ASSEMBLERS, OR HOLDERS OF
+;COPYRIGHT OR OTHER LEGAL PRIVILEGE BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
+;LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
+;OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
+;WORK.
+
+
+; To be able to use the definitions here,
+; include at the start of your file:
+; #i /path/to/base.hwasm
+
+; To preprocess your code so it can
+; be accepted by the assembler, run:
+; sh asmpp.sh /path/to/yourcode.hwasm > preprocessed_file
+
+
+; Base library for Half-World assembly
+; Contains: 
+;   Special register mnemonic macros
+;   Two utility pseudo-instructions
+;   Shorthand symbols for 16 first addresses
+
+; Specification-defined registers:
+#d _ZF,FFFF
+#d _CF,FFFE
+#d _IN,FFFD
+#d _OU,FFFC
+#d _PCL,FFFB
+#d _PCH,FFFA
+#d _ERR,FFF0
+
+; Implementation-defined registers:
+#d _SP1,FFF1
+#d _SP2,FFF2
+#d _SP3,FFF3
+#d _SP4,FFF4
+#d _SP5,FFF5
+#d _SP6,FFF6
+#d _SP7,FFF7
+#d _SP8,FFF8
+#d _SP9,FFF9
+
+;Shorthand addresses:
+#d !A,0
+#d ?A,1
+#d !B,2
+#d ?B,3
+#d !C,4
+#d ?C,5
+#d !D,6
+#d ?D,7
+#d !W,8
+#d ?W,9
+#d !X,A
+#d ?X,B
+#d !Y,C
+#d ?Y,D
+#d !Z,E
+#d ?Z,F
+
+
+; Pseudo-instructions:
+
+; Normalize zero flag, TWO instructions:
+; if it is nonzero set it to one
+#d NRM_ZF,skpz =1 __ set _ZF =1
+
+; Invert zero flag, FOUR instructions: 
+; if it is nonzero set it to zero,
+; if it is zero set it to one
+#d INV_ZF,skpz =2 __ set _ZF =0 __ skpz =1 __ set _ZF =1
