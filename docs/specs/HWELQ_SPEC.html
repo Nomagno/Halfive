@@ -1,0 +1,70 @@
+<h1>Half-World Eloquent Scheme</h1>
+<h4>SPDX identifier: COIL-1.0</h4>
+<h4>Copyright Nomagno 2022</h4>
+<p>It is recommended to use the &#x201C;.hwelq&#x201D; extension for HW-Eloquent code files (where applicable). HW-Eloquent is identified by the MIME type <code>text/hwelq</code></p>
+<h3>HW-Eloquent is a minimalistic Scheme Lisp dialect to abstract over HWVM programs</h3>
+<h4>SYNTAX:</h4>
+<ul>
+<li>N -&gt; evaluates to N, where N is an 8-bit hexadecimal unsigned scalar</li>
+<li><code>'(expression)</code> -&gt; return expression without evaluating, equivalent to <code>(quote (expression))</code>:
+<ul>
+<li>EXAMPLE 1: <code>((lambda (X) (car (x))) '(cons 1 2))</code> -&gt; <code>(car '(cons . (1 . 2)))</code> -&gt; <code>'cons</code></li>
+<li>EXAMPLE 2: <code>((lambda (X) (car (x))) (cons 1 2))</code> -&gt; <code>(car (1 . 2))</code> -&gt; <code>1</code></li>
+<li>SPECIAL CASE: <code>'()</code> -&gt; special value pronounced NIL</li>
+</ul></li>
+<li>If statement:
+<ul>
+<li><code>(if (bool)</code> -&gt; If this evaluates to an atom that is not 0</li>
+<li><code>(ontrue)</code> -&gt; evaluate this</li>
+<li><code>(onfalse))</code> -&gt; otherwise evaluate this</li>
+</ul></li>
+<li><code>(procedure arg1 arg2...)</code> -&gt; call procedure with arguments</li>
+<li><code>(begin (expr1) (expr2) (expr3) ... (exprN))</code> -&gt; Evaluates input expressions in order. The <code>begin</code> statement itself evaluates to whatever the last expression evaluates to</li>
+</ul>
+<h3>CORE PROCEDURES:</h3>
+<ul>
+<li>PROCEDURE 1 (CONStruct dotted pair): <code>(cons A B)</code> -&gt; <code>(A . B)</code></li>
+<li>PROCEDURE 2: <code>(car a)</code> -&gt; Left element of dotted pair <code>a</code></li>
+<li>PROCEDURE 3: <code>(cdr a)</code> -&gt; Right element of dotted pair <code>a</code></li>
+<li>PROCEDURE 4: (create an unnamed procedure):
+<ul>
+<li><code>(lambda (args) (body))</code></li>
+<li><code>args</code> -&gt; list of symbols provided as input, e.g.&#xA0;<code>(a b c)</code></li>
+<li><code>body</code> -&gt; code to evaluate, can contain any syntax</li>
+</ul></li>
+<li>PROCEDURE 5: <code>(bind symbol (args) (body))</code> -&gt; make symbol mean a specific lambda, can not be redefined:
+<ul>
+<li>EXAMPLE: <code>(bind myfunc (x) (fn x))</code> -&gt; creates procedure that is passed an argument, and evaluates to <code>fn</code> applied to that argument. can be called like <code>(myfunc 42)</code></li>
+</ul></li>
+<li>PROCEDURE 6: <code>(isnil? a)</code> -&gt; evaluates to 1 if <code>a</code> is <code>'()</code>, pronounced NIL. Otherwise it evaluates to 0.</li>
+<li>PROCEDURE 7: <code>(isatom? a)</code> -&gt; evaluates to 1 if <code>a</code> is an atom. Otherwise it evaluates to 0.</li>
+<li>PROCEDURE 8: <code>(iseq? a b)</code> -&gt; evaluates to 1 if <code>a</code> and <code>b</code> are identical, otherwise it evaluates to 0.</li>
+</ul>
+<h3>OPERATION PROCEDURES:</h3>
+<ul>
+<li>RULES:
+<ul>
+<li>The first six apply the operation, and evaluate to an unsigned scalar dotted pair of the form <code>(A . (B . C))</code>, where <code>A</code> is the result, <code>B</code> is only zero if the result was zero, and <code>C</code> is only zero wether there was underflow/overflow (only for <code>add</code>, <code>substract</code>, otherwise its value is undefined)</li>
+<li>The last two unconditionally evaluate to 0, as they are only useful for their side effects</li>
+</ul></li>
+<li>PROCEDURE 9: (bitwise add): <code>(add x y)</code> -&gt; where <code>x</code> and <code>y</code> evaluate to unsigned scalars</li>
+<li>PROCEDURE 10: (bitwise substract): <code>(sub x y)</code> -&gt; where <code>x</code> and <code>y</code> evaluate to unsigned scalars</li>
+<li>PROCEDURE 11: (bitwise and): <code>(and x y)</code> -&gt; where <code>x</code> and <code>y</code> evaluate to unsigned scalars</li>
+<li>PROCEDURE 12: (bitwise or): <code>(or x y)</code> -&gt; where <code>x</code> and <code>y</code> evaluate to unsigned scalars</li>
+<li>PROCEDURE 13: (bitwise xor): <code>(xor x y)</code> -&gt; where <code>x</code> and <code>y</code> evaluate to unsigned scalars</li>
+<li>PROCEDURE 14: (bitwise rot): <code>(xor x y)</code> -&gt; where <code>x</code> and <code>y</code> evaluate to unsigned scalars</li>
+<li>PROCEDURE 15: (address set): <code>(set addrpair y)</code> -&gt; where <code>addrpair</code> is a dotted pair of the form <code>(high . low)</code>, for the high and low byte of the address to set, and <code>y</code> either evaluates to an unsigned scalar, or is a dotted pair of the form <code>high . low</code>, for the high and low byte of the address to set</li>
+<li>PROCEDURE 16: <code>(halt)</code> -&gt; terminates the program</li>
+</ul>
+<h3>SPECIAL RULES</h3>
+<ul>
+<li><code>'()</code>, pronounced NIL, is a special value that is treated as 0 when given as input to the operation procedures.</li>
+<li>Lists are dotted pairs that contain as their last element <code>'()</code>, pronounced NIL, and where that is the only NIL in the list.</li>
+<li>Atoms, also known as unsigned scalars, are single element, and inputting them alone to <code>car</code> or to <code>cdr</code> is an ERROR.</li>
+<li>Dotted pairs are the main component of lisp, and every program shall be enclosed in parentheses to mark them. They are essentially multiple scalars or NILs arranged into a binary tree, and inputting them to the operation procedures (except for <code>set</code>) is an ERROR.</li>
+<li>Symbols, declared using bind or as lambda arguments, evaluate to their associated value. Quotes symbols <code>'(symbol)</code> evaluate to themselves, but if they don&#x2019;t have an associated value the moment they need to be read for any operation, an ERROR results. In the case of lambdas, their arguments are replaced with the evaluation of the provided expression in the procedure call. For example, <code>(lambda (mysymbol) (nand mysymbol 1))</code> would have <code>mysymbol</code> in the body replaced with the first argument it is passed, so <code>(lambda (mysymbol) (nand mysymbol 1) 2)</code> would have the body evaluate to <code>(nand 2 1)</code>, which evaluates to the (hexadecimal base) scalar FC.</li>
+<li>Symbols may contain any of <code>abcdefghijklmnopqrstuvwxyz?</code></li>
+<li>Unsigned scalars may contain any of <code>0123456789ABCDEF</code></li>
+<li>To <code>set</code> addresses lower than <code>(01 . 00)</code> is an ERROR. These lower addresses are reserved for special purposes.</li>
+<li>Take into account HWVM allows addresses to be READ-ONLY or UNMAPPED. Writing to the former is an ERROR, doing anything with the latter is an ERROR.</li>
+</ul>
