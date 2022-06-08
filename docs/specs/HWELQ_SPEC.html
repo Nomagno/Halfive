@@ -1,3 +1,19 @@
+<head>
+<style type="text/css">
+body{
+line-height:1.6;
+font-size:18px;
+color:#444;
+padding:0
+10px}
+h1,h2,h3{
+line-height:1.2
+}
+</style>
+	<title>Half-World Eloquent Scheme</title>
+	<meta name="description" content="The Universal Racing Game">
+</head>
+
 <h1>Half-World Eloquent Scheme</h1>
 <h4>SPDX identifier: COIL-1.0</h4>
 <h4>Copyright Nomagno 2022</h4>
@@ -53,13 +69,14 @@
 <li>PROCEDURE 12: (bitwise or): <code>(or x y)</code> -&gt; where <code>x</code> and <code>y</code> evaluate to unsigned scalars</li>
 <li>PROCEDURE 13: (bitwise xor): <code>(xor x y)</code> -&gt; where <code>x</code> and <code>y</code> evaluate to unsigned scalars</li>
 <li>PROCEDURE 14: (bitwise rot): <code>(xor x y)</code> -&gt; where <code>x</code> and <code>y</code> evaluate to unsigned scalars</li>
-<li>PROCEDURE 15: (address set): <code>(set addrpair y)</code> -&gt; where <code>addrpair</code> is a dotted pair of the form <code>(high . low)</code>, for the high and low byte of the address to set, and <code>y</code> either evaluates to an unsigned scalar, or is a dotted pair of the form <code>high . low</code>, for the high and low byte of the address to set</li>
+<li>PROCEDURE 15: (address set): <code>(set addrpair y)</code> -&gt; where <code>addrpair</code> is a dotted pair of the form <code>(high . low)</code>, for the high and low byte of the address to set, and <code>y</code> either evaluates to an unsigned scalar, or is a dotted pair of the form <code>(high . low)</code>, for the high and low byte of the address to read</li>
 <li>PROCEDURE 16: <code>(halt)</code> -&gt; terminates the program</li>
 </ul>
 <h3>SPECIAL RULES</h3>
 <ul>
 <li><code>'()</code>, pronounced NIL, is a special value that is treated as 0 when given as input to the operation procedures.</li>
-<li>Lists are dotted pairs that contain as their last element <code>'()</code>, pronounced NIL, and where that is the only NIL in the list.</li>
+<li>Lists are dotted pairs that contain as their last element <code>'()</code>, pronounced NIL, and where that is the only NIL in the list. More formally, a proper list is a pair where both sides of the pair are also a pair, and only one NIl is present. Hence, <code>(a . (b . ()) . ())</code>, <code>(a . b)</code>, <code>a</code>, are all not lists, but <code>(a . ())</code> is a list</li>
+<li><code>(a b c)</code> notation stands for the list <code>(a . (b . (c . ())))</code>. Hence, <code>(procedure a b c)</code> stands for <code>(procedure . (a . (b . (c . ()))))</code></li>
 <li>Atoms, also known as unsigned scalars, are single element, and inputting them alone to <code>car</code> or to <code>cdr</code> is an ERROR.</li>
 <li>Dotted pairs are the main component of lisp, and every program shall be enclosed in parentheses to mark them. They are essentially multiple scalars or NILs arranged into a binary tree, and inputting them to the operation procedures (except for <code>set</code>) is an ERROR.</li>
 <li>Symbols, declared using bind or as lambda arguments, evaluate to their associated value. Quotes symbols <code>'(symbol)</code> evaluate to themselves, but if they don&#x2019;t have an associated value the moment they need to be read for any operation, an ERROR results. In the case of lambdas, their arguments are replaced with the evaluation of the provided expression in the procedure call. For example, <code>(lambda (mysymbol) (nand mysymbol 1))</code> would have <code>mysymbol</code> in the body replaced with the first argument it is passed, so <code>(lambda (mysymbol) (nand mysymbol 1) 2)</code> would have the body evaluate to <code>(nand 2 1)</code>, which evaluates to the (hexadecimal base) scalar FC.</li>

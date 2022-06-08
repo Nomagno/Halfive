@@ -50,13 +50,16 @@ HW-Eloquent is identified by the MIME type `text/hwelq`
 - PROCEDURE 13: (bitwise xor): `(xor x y)` -> where `x` and `y` evaluate to unsigned scalars
 - PROCEDURE 14: (bitwise rot): `(xor x y)` -> where `x` and `y` evaluate to unsigned scalars
 - PROCEDURE 15: (address set): `(set addrpair y)` -> where `addrpair` is a dotted pair of the form `(high . low)`, 
-  for the high and low byte of the address to set, and `y` either evaluates to an unsigned scalar, or is a dotted pair of the form `high . low`,
-  for the high and low byte of the address to set
+  for the high and low byte of the address to set, and `y` either evaluates to an unsigned scalar, or is a dotted pair of the form `(high . low)`,
+  for the high and low byte of the address to read
 - PROCEDURE 16: `(halt)` -> terminates the program
 
 ### SPECIAL RULES
 - `'()`, pronounced NIL, is a special value that is treated as 0 when given as input to the operation procedures.
-- Lists are dotted pairs that contain as their last element `'()`, pronounced NIL, and where that is the only NIL in the list.
+- Lists are dotted pairs that contain as their last element `'()`, pronounced NIL, and where that is the only NIL in the list. More formally, 
+  a proper list is a pair where both sides of the pair are also a pair, and only one NIl is present. 
+  Hence, `(a . (b . ()) . ())`, `(a . b)`, `a`, are all not lists, but `(a . ())` is a list
+- `(a b c)` notation stands for the list `(a . (b . (c . ())))`. Hence, `(procedure a b c)` stands for `(procedure . (a . (b . (c . ()))))`
 - Atoms, also known as unsigned scalars, are single element, and inputting them alone to `car` or to `cdr` is an ERROR.
 - Dotted pairs are the main component of lisp, and every program shall be enclosed in parentheses to mark them. 
   They are essentially multiple scalars or NILs arranged into a binary tree, and inputting them to the operation procedures (except for `set`) is an ERROR.
