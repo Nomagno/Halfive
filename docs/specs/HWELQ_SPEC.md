@@ -41,18 +41,18 @@ HW-Eloquent is identified by the MIME type `text/hwelq`
 ### OPERATION PROCEDURES:
 - RULES:
   * The first six apply the operation, and evaluate to an unsigned scalar dotted pair of the form `(A . (B . C))`, where `A` is the result, `B` is only zero 
-  if the result was zero,  and `C` is only zero wether there was underflow/overflow (only for `add`, `substract`, otherwise its value is undefined)
-  * The last two unconditionally evaluate to 0, as they are only useful for their side effects
-- PROCEDURE 9: (bitwise add): `(add x y)` -> where `x` and `y` evaluate to unsigned scalars
-- PROCEDURE 10: (bitwise substract): `(sub x y)` -> where `x` and `y` evaluate to unsigned scalars
-- PROCEDURE 11: (bitwise and): `(and x y)` -> where `x` and `y` evaluate to unsigned scalars
-- PROCEDURE 12: (bitwise or): `(or x y)` -> where `x` and `y` evaluate to unsigned scalars
-- PROCEDURE 13: (bitwise xor): `(xor x y)` -> where `x` and `y` evaluate to unsigned scalars
-- PROCEDURE 14: (bitwise rot): `(xor x y)` -> where `x` and `y` evaluate to unsigned scalars
+  if the result was zero,  and `C` is only zero wether there was underflow/overflow (only for `add`, `substract`, otherwise its value is undefined).
+  * `halt` evaluates to 0, as it is only useful for its side effects.
+- PROCEDURE 9: (bitwise add): `(add x y)` -> where `x` and `y` evaluate to unsigned scalars.
+- PROCEDURE 10: (bitwise substract): `(sub x y)` -> where `x` and `y` evaluate to unsigned scalars.
+- PROCEDURE 11: (bitwise and): `(and x y)` -> where `x` and `y` evaluate to unsigned scalars.
+- PROCEDURE 12: (bitwise or): `(or x y)` -> where `x` and `y` evaluate to unsigned scalars.
+- PROCEDURE 13: (bitwise xor): `(xor x y)` -> where `x` and `y` evaluate to unsigned scalars.
+- PROCEDURE 14: (bitwise rot): `(xor x y)` -> where `x` and `y` evaluate to unsigned scalars.
 - PROCEDURE 15: (address set): `(set addrpair y)` -> where `addrpair` is a dotted pair of the form `(high . low)`, 
   for the high and low byte of the address to set, and `y` either evaluates to an unsigned scalar, or is a dotted pair of the form `(high . low)`,
-  for the high and low byte of the address to read
-- PROCEDURE 16: `(halt)` -> terminates the program
+  for the high and low byte of the address to read. Evaluates to the value written to `addrpair`.
+- PROCEDURE 16: `(halt)` -> terminates the program.
 
 ### SPECIAL RULES
 - `'()`, pronounced NIL, is a special value that is treated as 0 when given as input to the operation procedures.
