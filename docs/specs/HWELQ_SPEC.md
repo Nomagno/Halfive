@@ -34,9 +34,9 @@ HW-Eloquent is identified by the MIME type `text/hwelq`
 - PROCEDURE 5: `(bind symbol (args) (body))` -> make symbol mean a specific lambda, can not be redefined:
   * EXAMPLE: `(bind myfunc (x) (fn x))` -> creates procedure that is passed an argument,
   and evaluates to `fn` applied to that argument. can be called like `(myfunc 42)`
-- PROCEDURE 6: `(isnil? a)` -> evaluates to 1 if `a` is `'()`, pronounced NIL. Otherwise it evaluates to 0.
-- PROCEDURE 7: `(isatom? a)` -> evaluates to 1 if `a` is an atom. Otherwise it evaluates to 0.
-- PROCEDURE 8: `(iseq? a b)` -> evaluates to 1 if `a` and `b` are identical, otherwise it evaluates to 0.
+- PROCEDURE 6: `(nil? a)` -> evaluates to 1 if `a` is `'()`, pronounced NIL. Otherwise it evaluates to 0.
+- PROCEDURE 7: `(atom? a)` -> evaluates to 1 if `a` is an atom. Otherwise it evaluates to 0.
+- PROCEDURE 8: `(eq? a b)` -> evaluates to 1 if `a` and `b` are identical, otherwise it evaluates to 0.
 
 ### OPERATION PROCEDURES:
 - RULES:
@@ -56,13 +56,11 @@ HW-Eloquent is identified by the MIME type `text/hwelq`
 
 ### SPECIAL RULES
 - `'()`, pronounced NIL, is a special value that is treated as 0 when given as input to the operation procedures.
-- Lists are dotted pairs that contain as their last element `'()`, pronounced NIL, and where that is the only NIL in the list. More formally, 
-  a proper list is a pair where both sides of the pair are also a pair, and only one NIl is present. 
-  Hence, `(a . (b . ()) . ())`, `(a . b)`, `a`, are all not lists, but `(a . ())` is a list
-- `(a b c)` notation stands for the list `(a . (b . (c . ())))`. Hence, `(procedure a b c)` stands for `(procedure . (a . (b . (c . ()))))`
+- Lists are dotted pairs where both sides of every pair are also a pair. Pairs are terminated by `'()`.
+  Hence, `(a . b)`, `a`, `(a . (b . c) . ())` are not lists, but `(a . (b . ()) . ())`, `(a . ())` are lists.
+- `(a b c)` notation stands for the list `(a . (b . (c . ())))`. Hence, `(procedure a b c)` stands for `(procedure . (a . (b . (c . ()))))`. `((a b) c)` stands for `((a . (b . ())) . (c . ()))`.
 - Atoms, also known as unsigned scalars, are single element, and inputting them alone to `car` or to `cdr` is an ERROR.
-- Dotted pairs are the main component of lisp, and every program shall be enclosed in parentheses to mark them. 
-  They are essentially multiple scalars or NILs arranged into a binary tree, and inputting them to the operation procedures (except for `set`) is an ERROR.
+- In Eloquent, every piece of data is either a dotted pair or an atom. The only two possible types for atoms are either unsigned scalar, or '(), pronounced NIL. An atom may be checked for with the procedure `atom?`, nil type if an atom with the procedure `nil?`, and equality of two pieces of data with `eq?`.
 - Symbols, declared using bind or as lambda arguments, evaluate to their associated value. Quotes symbols `'(symbol)` evaluate to 
   themselves, but if they don't have an associated value the moment they need to be read for any operation, an ERROR results. 
   In the case of lambdas, their arguments are replaced with the evaluation of the provided expression in the procedure call.

@@ -36,9 +36,9 @@
 <ul>
 <li>EXAMPLE: <code>(bind myfunc (x) (fn x))</code> -&gt; creates procedure that is passed an argument, and evaluates to <code>fn</code> applied to that argument. can be called like <code>(myfunc 42)</code></li>
 </ul></li>
-<li>PROCEDURE 6: <code>(isnil? a)</code> -&gt; evaluates to 1 if <code>a</code> is <code>'()</code>, pronounced NIL. Otherwise it evaluates to 0.</li>
-<li>PROCEDURE 7: <code>(isatom? a)</code> -&gt; evaluates to 1 if <code>a</code> is an atom. Otherwise it evaluates to 0.</li>
-<li>PROCEDURE 8: <code>(iseq? a b)</code> -&gt; evaluates to 1 if <code>a</code> and <code>b</code> are identical, otherwise it evaluates to 0.</li>
+<li>PROCEDURE 6: <code>(nil? a)</code> -&gt; evaluates to 1 if <code>a</code> is <code>'()</code>, pronounced NIL. Otherwise it evaluates to 0.</li>
+<li>PROCEDURE 7: <code>(atom? a)</code> -&gt; evaluates to 1 if <code>a</code> is an atom. Otherwise it evaluates to 0.</li>
+<li>PROCEDURE 8: <code>(eq? a b)</code> -&gt; evaluates to 1 if <code>a</code> and <code>b</code> are identical, otherwise it evaluates to 0.</li>
 </ul>
 <h3>OPERATION PROCEDURES:</h3>
 <ul>
@@ -59,10 +59,10 @@
 <h3>SPECIAL RULES</h3>
 <ul>
 <li><code>'()</code>, pronounced NIL, is a special value that is treated as 0 when given as input to the operation procedures.</li>
-<li>Lists are dotted pairs that contain as their last element <code>'()</code>, pronounced NIL, and where that is the only NIL in the list. More formally, a proper list is a pair where both sides of the pair are also a pair, and only one NIl is present. Hence, <code>(a . (b . ()) . ())</code>, <code>(a . b)</code>, <code>a</code>, are all not lists, but <code>(a . ())</code> is a list</li>
-<li><code>(a b c)</code> notation stands for the list <code>(a . (b . (c . ())))</code>. Hence, <code>(procedure a b c)</code> stands for <code>(procedure . (a . (b . (c . ()))))</code></li>
+<li>Lists are dotted pairs where both sides of every pair are also a pair. Pairs are terminated by <code>'()</code>. Hence, <code>(a . b)</code>, <code>a</code>, <code>(a . (b . c) . ())</code> are not lists, but <code>(a . (b . ()) . ())</code>, <code>(a . ())</code> are lists.</li>
+<li><code>(a b c)</code> notation stands for the list <code>(a . (b . (c . ())))</code>. Hence, <code>(procedure a b c)</code> stands for <code>(procedure . (a . (b . (c . ()))))</code>. <code>((a b) c)</code> stands for <code>((a . (b . ())) . (c . ()))</code>.</li>
 <li>Atoms, also known as unsigned scalars, are single element, and inputting them alone to <code>car</code> or to <code>cdr</code> is an ERROR.</li>
-<li>Dotted pairs are the main component of lisp, and every program shall be enclosed in parentheses to mark them. They are essentially multiple scalars or NILs arranged into a binary tree, and inputting them to the operation procedures (except for <code>set</code>) is an ERROR.</li>
+<li>In Eloquent, every piece of data is either a dotted pair or an atom. The only two possible types for atoms are either unsigned scalar, or &#x2019;(), pronounced NIL. An atom may be checked for with the procedure <code>atom?</code>, nil type if an atom with the procedure <code>nil?</code>, and equality of two pieces of data with <code>eq?</code>.</li>
 <li>Symbols, declared using bind or as lambda arguments, evaluate to their associated value. Quotes symbols <code>'(symbol)</code> evaluate to themselves, but if they don&#x2019;t have an associated value the moment they need to be read for any operation, an ERROR results. In the case of lambdas, their arguments are replaced with the evaluation of the provided expression in the procedure call. For example, <code>(lambda (mysymbol) (nand mysymbol 1))</code> would have <code>mysymbol</code> in the body replaced with the first argument it is passed, so <code>(lambda (mysymbol) (nand mysymbol 1) 2)</code> would have the body evaluate to <code>(nand 2 1)</code>, which evaluates to the (hexadecimal base) scalar FC.</li>
 <li>Symbols may contain any of <code>abcdefghijklmnopqrstuvwxyz?</code></li>
 <li>Unsigned scalars may contain any of <code>0123456789ABCDEF</code></li>
