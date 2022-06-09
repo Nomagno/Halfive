@@ -12,7 +12,7 @@ HW-Eloquent is identified by the MIME type `text/hwelq`
 - `'(expression)` -> Return expression without evaluating, equivalent to `(quote (expression))`:
   * EXAMPLE 1: `((lambda (X) (car (x))) '(cons 1 2))` -> `(car '(cons . (1 . 2)))` -> `'cons`
   * EXAMPLE 2: `((lambda (X) (car (x))) (cons 1 2))` -> `(car (1 . 2))` -> `1`
-  * SPECIAL CASE: `'()` -> Special value pronounced NIL
+  * SPECIAL CASE: `()` -> Special value pronounced NIL
 - If statement:
   * `(if (bool)` -> If this evaluates to an atom that is not 0
   * `(ontrue)`  -> Evaluate this
@@ -24,9 +24,9 @@ HW-Eloquent is identified by the MIME type `text/hwelq`
 
 ### CORE PROCEDURES:
 
-- PROCEDURE 1 (CONStruct dotted pair): `(cons A B)` -> `(A . B)`
-- PROCEDURE 2: `(car a)`    -> Left element of dotted pair `a`
-- PROCEDURE 3: `(cdr a)`    -> Right element of dotted pair `a`
+- PROCEDURE 1 (CONStruct dotted pair): `(cons A B)` -> `(A . B)` -> Known as a cons cell
+- PROCEDURE 2: `(car a)`    -> Left element of cons cell `a`
+- PROCEDURE 3: `(cdr a)`    -> Right element of cons cell `a`
 - PROCEDURE 4: (Create an unnamed procedure):
   * `(lambda (args) (body))`
   * `args` -> List of variables provided as input, e.g. `(a b c)`
@@ -34,15 +34,14 @@ HW-Eloquent is identified by the MIME type `text/hwelq`
 - PROCEDURE 5: `(bind variable (args) (body))` -> Make variable name mean a specific lambda, can not be redefined:
   * EXAMPLE: `(bind myfunc (x) (fn x))` -> Creates procedure that is passed an argument,
   and evaluates to `fn` applied to that argument. can be called like `(myfunc 42)`.
-- PROCEDURE 6: `(nil? a)` -> Evaluates to 1 if `a` is `'()`, pronounced NIL. Otherwise it evaluates to 0.
+- PROCEDURE 6: `(nil? a)` -> Evaluates to 1 if `a` is `()`, pronounced NIL. Otherwise it evaluates to 0.
 - PROCEDURE 7: `(atom? a)` -> Evaluates to 1 if `a` is an atom. Otherwise it evaluates to 0.
 - PROCEDURE 8: `(procedure? a)` -> Evaluates to 1 if `a` is a core procedure, otherwise it evaluates to 0.
 - PROCEDURE 9: `(eq? a b)` -> Evaluates to 1 if `a` and `b` are identical, otherwise it evaluates to 0.
 
 ### OPERATION PROCEDURES:
 - RULES:
-  * All apply, accounting for the fact they do not deal with pointers, the instruction opcode of the same name in HWVM assembly, with the exact same behaviour.
-  * The first six apply the operation, and evaluate to an unsigned scalar dotted pair of the form `(A . (B . C))`, where `A` is the result, `B` is only zero
+  * The first six apply the operation, and evaluate to an unsigned scalar cons cell of the form `(A . (B . C))`, where `A` is the result, `B` is only zero
   if the result was zero,  and `C` is only zero wether there was underflow/overflow (only for `add`, `substract`, otherwise its value is undefined).
   * `halt` evaluates to 0, as it is only useful for its side effects.
 - PROCEDURE 10: (bitwise add): `(add x y)` -> Where `x` and `y` evaluate to unsigned scalars.
@@ -51,17 +50,16 @@ HW-Eloquent is identified by the MIME type `text/hwelq`
 - PROCEDURE 13: (bitwise or): `(or x y)` -> Where `x` and `y` evaluate to unsigned scalars.
 - PROCEDURE 14: (bitwise xor): `(xor x y)` -> Where `x` and `y` evaluate to unsigned scalars.
 - PROCEDURE 15: (bitwise rot): `(rot x y)` -> Where `x` and `y` evaluate to unsigned scalars.
-- PROCEDURE 16: (address set): `(set addrpair y)` -> Where `addrpair` is a dotted pair of the form `(high . low)`,
-  for the high and low byte of the address to set, and `y` either evaluates to an unsigned scalar, or is a dotted pair of the form `(high . low)`,
+- PROCEDURE 16: (address set): `(set addrpair y)` -> Where `addrpair` is a cons cell of the form `(high . low)`,
+  for the high and low byte of the address to set, and `y` either evaluates to an unsigned scalar, or is a cons cell of the form `(high . low)`,
   for the high and low byte of the address to read. Evaluates to the value written to `addrpair`.
 - PROCEDURE 17: `(halt)` -> Terminates the program.
 
 ### SPECIAL RULES
-- `'()`, pronounced NIL, is a special value that is treated as 0 when given as argument to the operation procedures.
-- Lists are dotted pairs where both sides of every pair are also a pair. Pairs are terminated by `'()`.
+- Lists are cons cells where the right hand side is either a list or `()`.
   Hence, `(a . b)`, `a`, `(a . (b . c) . ())` are not lists, but `(a . (b . ()) . ())`, `(a . ())` are lists.
 - `(a b c)` notation stands for the list `(a . (b . (c . ())))`. Hence, `(procedure a b c)` stands for `(procedure . (a . (b . (c . ()))))`. `((a b) c)` stands for `((a . (b . ())) . (c . ()))`.
-- In Eloquent, every piece of data is either a dotted pair or an atom. The only three possible types for atoms are unsigned scalar, core procedure, or '(). An atom may be checked for with the procedure `atom?`, nil type with the procedure `nil?`, core procedure type with `procedure?`, and equality of two pieces of data with `eq?`. Giving atoms as arguments to `car` or to `cdr` is an ERROR.
+- In Eloquent, every piece of data is either a cons cell or an atom. The only three possible types for atoms are unsigned scalar, core procedure, or `()`. An atom may be checked for with the procedure `atom?`, `()` with the procedure `nil?`, core procedure type with `procedure?`, and equality of two pieces of data with `eq?`. Giving atoms as arguments to `car` or to `cdr` is an ERROR.
 - Variables, declared using bind or as lambda arguments, are replaced with their associated value. Variables may not appear in quoted expressions, since they don't mean anything there.
   In the case of lambdas, their arguments are replaced with the evaluation of the provided expression in the procedure call.
   For example, `(lambda (myvar) (nand myvar 1))` would have `myvar` in the body replaced with the first argument it is passed,

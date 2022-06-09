@@ -26,7 +26,7 @@ line-height:1.2
 <ul>
 <li>EXAMPLE 1: <code>((lambda (X) (car (x))) '(cons 1 2))</code> -&gt; <code>(car '(cons . (1 . 2)))</code> -&gt; <code>'cons</code></li>
 <li>EXAMPLE 2: <code>((lambda (X) (car (x))) (cons 1 2))</code> -&gt; <code>(car (1 . 2))</code> -&gt; <code>1</code></li>
-<li>SPECIAL CASE: <code>'()</code> -&gt; Special value pronounced NIL</li>
+<li>SPECIAL CASE: <code>()</code> -&gt; Special value pronounced NIL</li>
 </ul></li>
 <li>If statement:
 <ul>
@@ -39,9 +39,9 @@ line-height:1.2
 </ul>
 <h3>CORE PROCEDURES:</h3>
 <ul>
-<li>PROCEDURE 1 (CONStruct dotted pair): <code>(cons A B)</code> -&gt; <code>(A . B)</code></li>
-<li>PROCEDURE 2: <code>(car a)</code> -&gt; Left element of dotted pair <code>a</code></li>
-<li>PROCEDURE 3: <code>(cdr a)</code> -&gt; Right element of dotted pair <code>a</code></li>
+<li>PROCEDURE 1 (CONStruct dotted pair): <code>(cons A B)</code> -&gt; <code>(A . B)</code> -&gt; Known as a cons cell</li>
+<li>PROCEDURE 2: <code>(car a)</code> -&gt; Left element of cons cell <code>a</code></li>
+<li>PROCEDURE 3: <code>(cdr a)</code> -&gt; Right element of cons cell <code>a</code></li>
 <li>PROCEDURE 4: (Create an unnamed procedure):
 <ul>
 <li><code>(lambda (args) (body))</code></li>
@@ -52,7 +52,7 @@ line-height:1.2
 <ul>
 <li>EXAMPLE: <code>(bind myfunc (x) (fn x))</code> -&gt; Creates procedure that is passed an argument, and evaluates to <code>fn</code> applied to that argument. can be called like <code>(myfunc 42)</code>.</li>
 </ul></li>
-<li>PROCEDURE 6: <code>(nil? a)</code> -&gt; Evaluates to 1 if <code>a</code> is <code>'()</code>, pronounced NIL. Otherwise it evaluates to 0.</li>
+<li>PROCEDURE 6: <code>(nil? a)</code> -&gt; Evaluates to 1 if <code>a</code> is <code>()</code>, pronounced NIL. Otherwise it evaluates to 0.</li>
 <li>PROCEDURE 7: <code>(atom? a)</code> -&gt; Evaluates to 1 if <code>a</code> is an atom. Otherwise it evaluates to 0.</li>
 <li>PROCEDURE 8: <code>(procedure? a)</code> -&gt; Evaluates to 1 if <code>a</code> is a core procedure, otherwise it evaluates to 0.</li>
 <li>PROCEDURE 9: <code>(eq? a b)</code> -&gt; Evaluates to 1 if <code>a</code> and <code>b</code> are identical, otherwise it evaluates to 0.</li>
@@ -61,8 +61,7 @@ line-height:1.2
 <ul>
 <li>RULES:
 <ul>
-<li>All apply, accounting for the fact they do not deal with pointers, the instruction opcode of the same name in HWVM assembly, with the exact same behaviour.</li>
-<li>The first six apply the operation, and evaluate to an unsigned scalar dotted pair of the form <code>(A . (B . C))</code>, where <code>A</code> is the result, <code>B</code> is only zero if the result was zero, and <code>C</code> is only zero wether there was underflow/overflow (only for <code>add</code>, <code>substract</code>, otherwise its value is undefined).</li>
+<li>The first six apply the operation, and evaluate to an unsigned scalar cons cell of the form <code>(A . (B . C))</code>, where <code>A</code> is the result, <code>B</code> is only zero if the result was zero, and <code>C</code> is only zero wether there was underflow/overflow (only for <code>add</code>, <code>substract</code>, otherwise its value is undefined).</li>
 <li><code>halt</code> evaluates to 0, as it is only useful for its side effects.</li>
 </ul></li>
 <li>PROCEDURE 10: (bitwise add): <code>(add x y)</code> -&gt; Where <code>x</code> and <code>y</code> evaluate to unsigned scalars.</li>
@@ -71,15 +70,14 @@ line-height:1.2
 <li>PROCEDURE 13: (bitwise or): <code>(or x y)</code> -&gt; Where <code>x</code> and <code>y</code> evaluate to unsigned scalars.</li>
 <li>PROCEDURE 14: (bitwise xor): <code>(xor x y)</code> -&gt; Where <code>x</code> and <code>y</code> evaluate to unsigned scalars.</li>
 <li>PROCEDURE 15: (bitwise rot): <code>(rot x y)</code> -&gt; Where <code>x</code> and <code>y</code> evaluate to unsigned scalars.</li>
-<li>PROCEDURE 16: (address set): <code>(set addrpair y)</code> -&gt; Where <code>addrpair</code> is a dotted pair of the form <code>(high . low)</code>, for the high and low byte of the address to set, and <code>y</code> either evaluates to an unsigned scalar, or is a dotted pair of the form <code>(high . low)</code>, for the high and low byte of the address to read. Evaluates to the value written to <code>addrpair</code>.</li>
+<li>PROCEDURE 16: (address set): <code>(set addrpair y)</code> -&gt; Where <code>addrpair</code> is a cons cell of the form <code>(high . low)</code>, for the high and low byte of the address to set, and <code>y</code> either evaluates to an unsigned scalar, or is a cons cell of the form <code>(high . low)</code>, for the high and low byte of the address to read. Evaluates to the value written to <code>addrpair</code>.</li>
 <li>PROCEDURE 17: <code>(halt)</code> -&gt; Terminates the program.</li>
 </ul>
 <h3>SPECIAL RULES</h3>
 <ul>
-<li><code>'()</code>, pronounced NIL, is a special value that is treated as 0 when given as argument to the operation procedures.</li>
-<li>Lists are dotted pairs where both sides of every pair are also a pair. Pairs are terminated by <code>'()</code>. Hence, <code>(a . b)</code>, <code>a</code>, <code>(a . (b . c) . ())</code> are not lists, but <code>(a . (b . ()) . ())</code>, <code>(a . ())</code> are lists.</li>
+<li>Lists are cons cells where the right hand side is either a list or <code>()</code>. Hence, <code>(a . b)</code>, <code>a</code>, <code>(a . (b . c) . ())</code> are not lists, but <code>(a . (b . ()) . ())</code>, <code>(a . ())</code> are lists.</li>
 <li><code>(a b c)</code> notation stands for the list <code>(a . (b . (c . ())))</code>. Hence, <code>(procedure a b c)</code> stands for <code>(procedure . (a . (b . (c . ()))))</code>. <code>((a b) c)</code> stands for <code>((a . (b . ())) . (c . ()))</code>.</li>
-<li>In Eloquent, every piece of data is either a dotted pair or an atom. The only three possible types for atoms are unsigned scalar, core procedure, or &#x2019;(). An atom may be checked for with the procedure <code>atom?</code>, nil type with the procedure <code>nil?</code>, core procedure type with <code>procedure?</code>, and equality of two pieces of data with <code>eq?</code>. Giving atoms as arguments to <code>car</code> or to <code>cdr</code> is an ERROR.</li>
+<li>In Eloquent, every piece of data is either a cons cell or an atom. The only three possible types for atoms are unsigned scalar, core procedure, or <code>()</code>. An atom may be checked for with the procedure <code>atom?</code>, <code>()</code> with the procedure <code>nil?</code>, core procedure type with <code>procedure?</code>, and equality of two pieces of data with <code>eq?</code>. Giving atoms as arguments to <code>car</code> or to <code>cdr</code> is an ERROR.</li>
 <li>Variables, declared using bind or as lambda arguments, are replaced with their associated value. Variables may not appear in quoted expressions, since they don&#x2019;t mean anything there. In the case of lambdas, their arguments are replaced with the evaluation of the provided expression in the procedure call. For example, <code>(lambda (myvar) (nand myvar 1))</code> would have <code>myvar</code> in the body replaced with the first argument it is passed, so <code>((lambda (myvar) (nand myvar 1)) 2)</code> would have the body evaluate to <code>(nand 2 1)</code>, which evaluates to the (hexadecimal base) scalar FC.</li>
 <li>Variable names may contain any of <code>abcdefghijklmnopqrstuvwxyz?</code></li>
 <li>Unsigned scalars may contain any of <code>0123456789ABCDEF</code></li>
