@@ -18,9 +18,8 @@ HW-Eloquent is identified by the MIME type `text/hwelq`
   * `(ontrue)`  -> Evaluate this
   * `(onfalse))` -> Otherwise evaluate this
 
-- `(procedure arg1 arg2...)` -> Call procedure with arguments. `procedure` must
-- `(begin (expr1) (expr2) (expr3) ... (exprN))` -> Evaluates expressions in order. The `begin` statement
-                                                   itself evaluates to whatever the last expression evaluates to
+- `(procedure arg1 arg2 ...)` -> Call procedure with arguments.
+- `(begin expr1 expr2 ... exprN)` -> Evaluates expressions in order. The `begin` statement itself evaluates to whatever the last expression evaluates to
 
 ### CORE PROCEDURES:
 
