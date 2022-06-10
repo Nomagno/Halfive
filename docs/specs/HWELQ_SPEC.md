@@ -70,8 +70,8 @@ HW-Eloquent is identified by the MIME type `text/hwelq`
 
 ### SPECIAL RULES
 - N -> Evaluates to N, where N is an 8-bit hexadecimal unsigned scalar
-- Lists are cons cells where the right hand side is either a list or `()`.
-  Hence, `(a . b)`, `a`, `(a . (b . c) . ())` are not lists, but `(a . (b . ()) . ())`, `(a . ())` are lists.
+- A list is either `()` or a cons cell where the right hand side is a list.
+  Hence, `(a . b)`, `a`, `(a . (b . c) . ())` are not lists, but `(a . ((b . ()) . ()))`, `(a . ())` are lists.
 - `(a b c)` notation stands for the list `(a . (b . (c . ())))`. Hence, `(procedure a b c)` stands for `(procedure . (a . (b . (c . ()))))`. `((a b) c)` stands for `((a . (b . ())) . (c . ()))`.
 - In Eloquent, every piece of data is either a cons cell or an atom. The only three possible types for atoms are unsigned scalar, core procedure, or `()`. An atom may be checked for with the procedure `atom?`, `()` with the procedure `nil?`, core procedure type with `procedure?`, and equality of two pieces of data with `eq?`. Giving atoms as arguments to `car` or to `cdr` is an ERROR.
 - Variables, declared using bind or as lambda arguments, are replaced with their associated value.
