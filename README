@@ -8,8 +8,8 @@ There is a modular no-dependency implementation of a racing game that adheres to
 'include' folder: Interfaces
 'src' folder: Implementations
 It has a lot of C utility interfaces, such as:
-- Portable freestanding implementation of the C standard library (include/halfworld/hwstdlib.h) 
-- Portable coroutine-esque utilities (include/halfworld/hwcr.h) 
+- Portable freestanding implementation of the C standard library (include/halfworld/hwstdlib.h)
+- Portable coroutine-esque utilities (include/halfworld/hwcr.h)
 - HWDOC (Packet/Circuit) generic tokenizer (include/halfworld/hwdoc/hwdoc.h)
 - Packet/Circuit data structures and tokenizer (WIP) (include/halfworld/hwdoc/hwnet.h) (include/halfworld/hwdoc/hwt.h)
 - Portable VM with custom instruciton set,  and assembly language (include/halfworld/hwvm/hwvm.h) (include/halfworld/hwvm/hwasm.h)
@@ -35,6 +35,11 @@ List of specifications and corresponding mime types:
 			- text/hwasm
 			- application/hwbin
 			- application/hwdrive
+		Half-World Eloquent Lisp (HWElq)
+			- text/hwelq
+		Half-World Pixel Format (HWPIX)
+			- application/hwpix
+
 
 If you read all specifications in the docs, you should be able to:
  - Use HWNET as a basic communications standard

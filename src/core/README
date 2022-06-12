@@ -3,6 +3,7 @@ Implementation of interfaces in the '/include/halfworld' folder
 Implemented headers:
 hwdoc.h (Tokenizer of HWDOC format)
 hwvm.h (Virtual machine compliant with HWVM)
+hwelq.h (Transpiler to HWVM compliant with HWELQ Lisp) (PARTIAL IMPLEMENTATION, ONLY PARSER)
 hwasm.h (Assembler for HWVM)
 hwvi.h (Abstraction over graphics, input, and sound)
 hwstdlib.h (Partial freestanding standard library replacement)

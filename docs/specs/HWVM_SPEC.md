@@ -3,7 +3,7 @@
 #### SPDX identifier: COIL-1.0
 #### Copyright Nomagno 2021, 2022
 
-It is recommended to use the ".hwvm" extension for HWVM assembly documents (where applicable).
+It is recommended to use the ".hwasm" extension for HWVM assembly documents (where applicable).
 HWVM assembly is identified by the MIME type `text/hwasm`
 
 It is recommended to use the ".hwbin" extension for HWVM binary executables (where applicable).
