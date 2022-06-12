@@ -82,3 +82,5 @@ typedef struct {
 	HWElq_Node mempool[POOLMEM];
 } HWElq_NodeHeap;
 #undef POOLMEM
+
+HWElq_Node *HWElq_Parse(char *in, HWElq_NodeHeap *nodeheap);

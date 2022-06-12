@@ -35,32 +35,6 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
-HWElq_Node *HWElq_appendNode(HWElq_Node *parent, _Bool direction, HWElq_Node child, HWElq_NodeHeap *heap){
-	heap->mempool[heap->poolindex] = child;
-	if(parent != NULL){
-		if (direction) { parent->right = &heap->mempool[heap->poolindex]; }
-		if (!direction) { parent->left = &heap->mempool[heap->poolindex]; }
-		heap->mempool[heap->poolindex].parent = parent;
-	} else {
-		heap->mempool[heap->poolindex].parent = NULL;
-	}
-	heap->poolindex += 1;
-	return &heap->mempool[heap->poolindex - 1];
-}
-
-
-HWElq_Node *HWElq_Pop(HWElq_Stack *stack){
-	HWElq_Node *retval = stack->data[stack->index];
-	stack->index -= 1;
-	return retval;
-}
-
-void HWElq_Push(HWElq_Stack *stack, HWElq_Node *val){
-	stack->index += 1;
-	stack->data[stack->index] = val;
-	return;
-}
-
 #define ISUPPERCASEHEXDIGIT(x) (x == '0' || x == '1' || x == '2' || x == '3' || x == '4' || x == '5' || x == '6' || x == '7' || x == '8' || x == '9' || x == 'A' || x == 'B' || x == 'C' || x == 'D' || x == 'E' || x == 'F')
 #define ISVARIABLEDIGIT(x) (x == 'a' || x == 'b' || x == 'c' || x == 'd' || x == 'e' || x == 'f' || x == 'g' || x == 'h' || x == 'i' || x == 'j' || x == 'k' || x == 'l' || x == 'm' || x == 'n' || x == 'o' || x == 'p' || x == 'q' || x == 'r' || x == 's' || x == 't' || x == 'u' || x == 'v' || x == 'w' || x == 'x' || x == 'y' || x == 'z' || x == '?')
 
@@ -91,6 +65,32 @@ else if(CMPSTR(x, "set")){ y = ELQ_PROC_SET; }\
 else if(CMPSTR(x, "halt")){ y = ELQ_PROC_HALT; }\
 else if(CMPSTR(x, "lambda")){ y = ELQ_SYNTAX_LAMBDA; }\
 else if(CMPSTR(x, "if")){ y = ELQ_SYNTAX_IF; }
+
+HWElq_Node *HWElq_appendNode(HWElq_Node *parent, _Bool direction, HWElq_Node child, HWElq_NodeHeap *heap){
+	heap->mempool[heap->poolindex] = child;
+	if(parent != NULL){
+		if (direction) { parent->right = &heap->mempool[heap->poolindex]; }
+		if (!direction) { parent->left = &heap->mempool[heap->poolindex]; }
+		heap->mempool[heap->poolindex].parent = parent;
+	} else {
+		heap->mempool[heap->poolindex].parent = NULL;
+	}
+	heap->poolindex += 1;
+	return &heap->mempool[heap->poolindex - 1];
+}
+
+
+HWElq_Node *HWElq_Pop(HWElq_Stack *stack){
+	HWElq_Node *retval = stack->data[stack->index];
+	stack->index -= 1;
+	return retval;
+}
+
+void HWElq_Push(HWElq_Stack *stack, HWElq_Node *val){
+	stack->index += 1;
+	stack->data[stack->index] = val;
+	return;
+}
 
 HWElq_Node *HWElq_Parse(char *in, HWElq_NodeHeap *nodeheap){
 	HWElq_Stack forkstack = {0};
