@@ -96,7 +96,7 @@ HWElq_Node *HWElq_Parse(char *in, HWElq_NodeHeap *nodeheap){
 	HWElq_Stack forkstack = {0};
 	HWElq_Node *root = HWElq_appendNode(NULL, 0, (HWElq_Node){ .type = ELQ_EMPTY }, nodeheap);
 	HWElq_Node *currnode = root;
-	char tmpstring[0];
+	char tmpstring[24];
 	unsigned k;
 
 	char lastchar;
@@ -106,18 +106,24 @@ HWElq_Node *HWElq_Parse(char *in, HWElq_NodeHeap *nodeheap){
 #endif
 	while(*in != '\0'){
 		switch(*in){
-			case '%':
-				currnode->type = ELQ_NIL;
-				currnode = HWElq_appendNode(HWElq_Pop(&forkstack), 1, (HWElq_Node){ .type = ELQ_EMPTY }, nodeheap);
-				break;
+			case ' ':
 			case '(':
-				if(lastchar == '('){
+				if(lastchar == '(' || lastchar == ' '){
 					HWElq_Push(&forkstack, currnode->parent);
 				}
 				currnode = HWElq_appendNode(currnode, 0, (HWElq_Node){ .type = ELQ_EMPTY }, nodeheap);
 				break;
 			case ')':
-				break;
+				switch(*(in+1)){
+					case ' ':
+					case '(':
+					case '\0':
+						currnode->type = ELQ_NIL;
+						currnode = HWElq_appendNode(HWElq_Pop(&forkstack), 1, (HWElq_Node){ .type = ELQ_EMPTY }, nodeheap);
+						break;
+					default:
+						break;
+				}
 			default:
 				if(ISUPPERCASEHEXDIGIT(*in)){
 					currnode->type = ELQ_INT;
@@ -162,7 +168,7 @@ HWElq_Node *HWElq_Parse(char *in, HWElq_NodeHeap *nodeheap){
 }
 
 /*
-(12((hi(car%))(bye%)))
+(12 (hi car) bye)
 
 EXPECTED:
    .
@@ -178,7 +184,7 @@ EXPECTED:
 
 #ifdef HWELQ_DEBUG
 int main(void){
-	char *in = "(12((hi(car%))(bye%)))";
+	char *in = "(12 (hi car) bye)";
 	HWElq_NodeHeap nodeheap = {0};
 	HWElq_Node *root = HWElq_Parse(in, &nodeheap);
 
