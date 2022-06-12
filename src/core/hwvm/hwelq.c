@@ -114,16 +114,9 @@ HWElq_Node *HWElq_Parse(char *in, HWElq_NodeHeap *nodeheap){
 				currnode = HWElq_appendNode(currnode, 0, (HWElq_Node){ .type = ELQ_EMPTY }, nodeheap);
 				break;
 			case ')':
-				switch(*(in+1)){
-					case ' ':
-					case '(':
-					case '\0':
-						currnode->type = ELQ_NIL;
-						currnode = HWElq_appendNode(HWElq_Pop(&forkstack), 1, (HWElq_Node){ .type = ELQ_EMPTY }, nodeheap);
-						break;
-					default:
-						break;
-				}
+				currnode->type = ELQ_NIL;
+				currnode = HWElq_appendNode(HWElq_Pop(&forkstack), 1, (HWElq_Node){ .type = ELQ_EMPTY }, nodeheap);
+				break;
 			default:
 				if(ISUPPERCASEHEXDIGIT(*in)){
 					currnode->type = ELQ_INT;
@@ -151,6 +144,8 @@ HWElq_Node *HWElq_Parse(char *in, HWElq_NodeHeap *nodeheap){
 						}
 					}
 					in -= 1;
+				} else if (*in == '%'){
+					currnode->type = ELQ_LIT_NIL;
 				}
 				currnode = HWElq_appendNode(currnode->parent, 1, (HWElq_Node){ .type = ELQ_EMPTY }, nodeheap);
 				currnode = HWElq_appendNode(currnode->parent, 1, (HWElq_Node){ .type = ELQ_EMPTY }, nodeheap);
@@ -167,33 +162,20 @@ HWElq_Node *HWElq_Parse(char *in, HWElq_NodeHeap *nodeheap){
 	return root;
 }
 
-/*
-(12 (hi car) bye)
-
-EXPECTED:
-   .
- /   \
-12     .
-      / \
-   .       .
-  / \     / \
- car .   bye %
-    / \
-   m   %
-*/
-
 #ifdef HWELQ_DEBUG
 int main(void){
-	char *in = "(12 (hi car) bye)";
+	char in[1024];
+	printf("Input S-Expression:\n");
+	fgets(in, sizeof(in), stdin);
+
 	HWElq_NodeHeap nodeheap = {0};
 	HWElq_Node *root = HWElq_Parse(in, &nodeheap);
 
-	for(unsigned i = 0; i < 16; i++){
-		printf("INDEX %u: %c, %p, PARENT: %p\n", i,
-		     ((nodeheap.mempool[i].valScalar != 0)
-		               ? (nodeheap.mempool[i].valScalar)
-		               : ('0')
-		     ),
+	for(unsigned i = 0; i < 32; i++){
+		printf("INDEX %u: %X, %s, %u, %p, PARENT: %p\n", i,
+		     nodeheap.mempool[i].valScalar,
+		     nodeheap.mempool[i].valSymbol,
+		     nodeheap.mempool[i].type,
 		     (void *)&nodeheap.mempool[i],
 		     (void *)nodeheap.mempool[i].parent);
 	}

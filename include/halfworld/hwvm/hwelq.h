@@ -34,7 +34,8 @@ enum HWElq_Type {
 	ELQ_INT = 2,
 	ELQ_PROC = 3,
 	ELQ_SYNTAX = 4,
-	ELQ_VAR = 5
+	ELQ_VAR = 5,
+	ELQ_LIT_NIL = 6,
 };
 
 enum HWElq_Proc_Syntax {
