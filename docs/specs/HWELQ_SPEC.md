@@ -20,6 +20,10 @@ HW-Eloquent is identified by the MIME type `text/hwelq`
   * `body` -> Code to evaluate, can contain any syntax
 - Procedure call: `(procedure arg1 arg2 ...)`
   * Call procedure with arguments. The arguments are evaluated in left-to-right order before passing them to the procedure.
+- Bind variable: `(bind variable value)`
+  * Make variable name mean a specific value globally, or a `lambda` statement. Can be re-bound at any point in time. It can not be bound to an `if`, `bind`, or `begin` statement.
+  * EXAMPLE: `(bind myfunc (lambda x (fn x)))`
+    * Creates procedure that is passed an argument, and evaluates to `fn` applied to that argument. can be called like `(myfunc 42)`.
 
 
 ### CORE PROCEDURES:
@@ -30,11 +34,6 @@ HW-Eloquent is identified by the MIME type `text/hwelq`
   * Left element of cons cell `a`.
 - PROCEDURE: `(cdr a)`
   * Right element of cons cell `a`.
-- PROCEDURE: `(bind variable value)`
-  * Make variable name mean a specific value globally, can be redefined at any point in time.
-  * EXAMPLE: `(bind myfunc (lambda x (fn x)))`
-    * Creates procedure that is passed an argument, and evaluates to
-      `fn` applied to that argument. can be called like `(myfunc 42)`.
 - PROCEDURE: `(nil? a)`
   * Evaluates to 1 if `a` is `%`, pronounced NIL. Otherwise it evaluates to 0.
 - PROCEDURE: `(atom? a)`

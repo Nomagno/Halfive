@@ -51,7 +51,6 @@ if(CMPSTR(x, "car")){ y = ELQ_PROC_CAR; }\
 else if(CMPSTR(x, "begin")){ y = ELQ_SYNTAX_BEGIN; }\
 else if(CMPSTR(x, "cdr")){ y = ELQ_PROC_CDR; }\
 else if(CMPSTR(x, "cons")){ y = ELQ_PROC_CONS; }\
-else if(CMPSTR(x, "bind")){ y = ELQ_PROC_BIND; }\
 else if(CMPSTR(x, "nil?")){ y = ELQ_PROC_ISNIL; }\
 else if(CMPSTR(x, "atom?")){ y = ELQ_PROC_ISATOM; }\
 else if(CMPSTR(x, "proc?")){ y = ELQ_PROC_ISPROC; }\
@@ -65,6 +64,7 @@ else if(CMPSTR(x, "rot")){ y = ELQ_PROC_ROT; }\
 else if(CMPSTR(x, "set")){ y = ELQ_PROC_SET; }\
 else if(CMPSTR(x, "halt")){ y = ELQ_PROC_HALT; }\
 else if(CMPSTR(x, "lambda")){ y = ELQ_SYNTAX_LAMBDA; }\
+else if(CMPSTR(x, "bind")){ y = ELQ_SYNTAX_BIND; }\
 else if(CMPSTR(x, "if")){ y = ELQ_SYNTAX_IF; }
 
 HWElq_Node *HWElq_appendNode(HWElq_Node *parent, _Bool direction, HWElq_Node child, HWElq_NodeHeap *heap){
