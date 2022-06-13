@@ -1,4 +1,7 @@
+#ifndef HWASM_H
+#define HELQ_H
 #include <halfworld/hwreq.h>
+#include <halfworld/hwvm/hwvm.h>
 /*
 Copyright Nomagno 2021, 2022
 
@@ -84,3 +87,5 @@ typedef struct {
 #undef POOLMEM
 
 HWElq_Node *HWElq_Parse(char *in, HWElq_NodeHeap *nodeheap);
+void HWElq_GenerateCode(const HWElq_Node *ast, HWVM_GeneralMemory *program);
+#endif

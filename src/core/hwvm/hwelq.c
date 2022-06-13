@@ -1,4 +1,5 @@
 #include <halfworld/hwreq.h>
+#include <halfworld/hwvm/hwvm.h>
 #include <halfworld/hwvm/hwelq.h>
 #include <halfworld/hwstdlib.h>
 
@@ -160,6 +161,41 @@ HWElq_Node *HWElq_Parse(char *in, HWElq_NodeHeap *nodeheap){
 		in += 1;
 	}
 	return root;
+}
+
+/*
+A program in HWVM is *well-structured* when:
+- it does not contanin any 'jmp's to pointers
+- it does not read addresses past 7FFF, up until FFF9, but can read FFFA->FFFF, *except* FFFD
+- it does not write any addresses past 3FFFA, except FFFC, FFFE, FFFF
+
+A program in HWVM is *deterministic* when:
+- it only writes to R/W addresses
+- it only reads from mapped addresses
+
+The following minimal mapping for HWVM is *guaranteed*:
+0000->FFFF: R/W, deterministic
+4000->7FFF: R/O, deterministic
+FFF0      : UNMAPPED, deterministic
+FFFA      : R/O, chaotic
+FFFB      : R/O, chaotic
+FFFC      : R/W, deterministic
+FFFD      : R/O, nondeterministic
+FFFE      : R/W, chaotic
+FFFF      : R/W, chaotic
+--------------------------------------
+HWVM Runtime for HWElq:
+- Subroutine instructions unused
+MEMORY:
+	- Section 1: Lookup table for 'bind'
+	- Section 2: Stack with each item containing return address and five addresses of local variables, subroutines done manually with 'jmp'
+	- Section 3: Heap with six-byte words for holding tagged linked lists that can contain addresses of the following types: Integer, core procedure, NIL
+CODE:
+	- A manual subroutine pre-registered for each of the 15 core procedures
+*/
+
+void HWElq_GenerateCode(const HWElq_Node *ast, HWVM_GeneralMemory *program){
+	/*To be implemented*/
 }
 
 #ifdef HWELQ_DEBUG
