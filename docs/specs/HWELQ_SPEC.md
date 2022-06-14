@@ -14,10 +14,11 @@ HW-Eloquent is identified by the MIME type `text/hwelq`
     * `onfalse)` -> Otherwise evaluate this
 - Begin Statement: `(begin expr1 expr2 ... exprN)`
   * Evaluates expressions in order. The `begin` statement itself evaluates to whatever the last expression evaluates to
-- Lambda statement: (Create an unnamed procedure):
+- Lambda statement:
   * `(lambda args body)`
   * `args` -> List of variables provided as input, e.g. `(a b c)`
-  * `body` -> Code to evaluate, can contain any syntax
+  * `body` -> Code to evaluate when calling the procedure, can contain any syntax, input variables, or global variables
+  * Evaluates to an unnamed procedure that takes the number of arguments in the `args` list, and evaluates `body`, substituting them inside as appropiate
 - Procedure call: `(procedure arg1 arg2 ...)`
   * Call procedure with arguments. The arguments are evaluated in left-to-right order before passing them to the procedure.
 - Bind variable: `(bind variable value)`
@@ -39,7 +40,7 @@ HW-Eloquent is identified by the MIME type `text/hwelq`
 - PROCEDURE: `(atom? a)`
   * Evaluates to 1 if `a` is an atom. Otherwise it evaluates to 0.
 - PROCEDURE: `(procedure? a)`
-  * Evaluates to 1 if `a` is a core procedure, otherwise it evaluates to 0.
+  * Evaluates to 1 if `a` is a procedure, otherwise it evaluates to 0.
 - PROCEDURE: `(eq? a b)`
   * Evaluates to 1 if `a` and `b` are identical, otherwise it evaluates to 0.
 
@@ -72,7 +73,7 @@ HW-Eloquent is identified by the MIME type `text/hwelq`
 - A list is either `%` or a cons cell where the right hand side is a list.
   Hence, `(a . b)`, `a`, `(a . (b . c) . %)` are not lists, but `(a . ((b . %) . %))`, `(a . %)` are lists.
 - `(a b c)` notation stands for the list `(a . (b . (c . %)))`. Hence, `(procedure a b c)` stands for `(procedure . (a . (b . (c . %))))`. `((a b) c)` stands for `((a . (b . %)) . (c . %))`.
-- In Eloquent, every piece of data is either a cons cell or an atom. The only three possible types for atoms are unsigned scalar, core procedure, or `%`. An atom may be checked for with the procedure `atom?`, `%` with the procedure `nil?`, core procedure type with `procedure?`, and equality of two pieces of data with `eq?`. Giving atoms as arguments to `car` or to `cdr` is an ERROR.
+- In Eloquent, every piece of data is either a cons cell or an atom. The only three possible types for atoms are unsigned scalar, procedure, or `%`. An atom may be checked for with the procedure `atom?`, `%` with the procedure `nil?`, procedure type with `procedure?`, and equality of two pieces of data with `eq?`. Giving atoms as arguments to `car` or to `cdr` is an ERROR.
 - Variables, declared using bind or as lambda arguments, are replaced with their associated value.
   In the case of lambdas, their arguments are replaced with the evaluation of the provided expression in the procedure call.
   For example, `(lambda (myvar) (nand myvar 1))` would have `myvar` in the body replaced with the first argument it is passed,

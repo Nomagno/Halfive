@@ -1,3 +1,19 @@
+<head>
+<style type="text/css">
+body{
+line-height:1.6;
+font-size:18px;
+color:#444;
+padding:0
+10px}
+h1,h2,h3{
+line-height:1.2
+}
+</style>
+	<title>Half-World Eloquent Lisp</title>
+	<meta name="description" content="The Universal Racing Game">
+</head>
+
 <h1>Half-World Eloquent Lisp</h1>
 <h4>SPDX identifier: COIL-1.0</h4>
 <h4>Copyright Nomagno 2022</h4>
@@ -17,11 +33,12 @@
 <ul>
 <li>Evaluates expressions in order. The <code>begin</code> statement itself evaluates to whatever the last expression evaluates to</li>
 </ul></li>
-<li>Lambda statement: (Create an unnamed procedure):
+<li>Lambda statement:
 <ul>
 <li><code>(lambda args body)</code></li>
 <li><code>args</code> -&gt; List of variables provided as input, e.g.&#xA0;<code>(a b c)</code></li>
-<li><code>body</code> -&gt; Code to evaluate, can contain any syntax</li>
+<li><code>body</code> -&gt; Code to evaluate when calling the procedure, can contain any syntax, input variables, or global variables</li>
+<li>Evaluates to an unnamed procedure that takes the number of arguments in the <code>args</code> list, and evaluates <code>body</code>, substituting them inside as appropiate</li>
 </ul></li>
 <li>Procedure call: <code>(procedure arg1 arg2 ...)</code>
 <ul>
@@ -60,7 +77,7 @@
 </ul></li>
 <li>PROCEDURE: <code>(procedure? a)</code>
 <ul>
-<li>Evaluates to 1 if <code>a</code> is a core procedure, otherwise it evaluates to 0.</li>
+<li>Evaluates to 1 if <code>a</code> is a procedure, otherwise it evaluates to 0.</li>
 </ul></li>
 <li>PROCEDURE: <code>(eq? a b)</code>
 <ul>
@@ -112,7 +129,7 @@
 <li>N -&gt; Evaluates to N, where N is an 8-bit hexadecimal unsigned scalar</li>
 <li>A list is either <code>%</code> or a cons cell where the right hand side is a list. Hence, <code>(a . b)</code>, <code>a</code>, <code>(a . (b . c) . %)</code> are not lists, but <code>(a . ((b . %) . %))</code>, <code>(a . %)</code> are lists.</li>
 <li><code>(a b c)</code> notation stands for the list <code>(a . (b . (c . %)))</code>. Hence, <code>(procedure a b c)</code> stands for <code>(procedure . (a . (b . (c . %))))</code>. <code>((a b) c)</code> stands for <code>((a . (b . %)) . (c . %))</code>.</li>
-<li>In Eloquent, every piece of data is either a cons cell or an atom. The only three possible types for atoms are unsigned scalar, core procedure, or <code>%</code>. An atom may be checked for with the procedure <code>atom?</code>, <code>%</code> with the procedure <code>nil?</code>, core procedure type with <code>procedure?</code>, and equality of two pieces of data with <code>eq?</code>. Giving atoms as arguments to <code>car</code> or to <code>cdr</code> is an ERROR.</li>
+<li>In Eloquent, every piece of data is either a cons cell or an atom. The only three possible types for atoms are unsigned scalar, procedure, or <code>%</code>. An atom may be checked for with the procedure <code>atom?</code>, <code>%</code> with the procedure <code>nil?</code>, procedure type with <code>procedure?</code>, and equality of two pieces of data with <code>eq?</code>. Giving atoms as arguments to <code>car</code> or to <code>cdr</code> is an ERROR.</li>
 <li>Variables, declared using bind or as lambda arguments, are replaced with their associated value. In the case of lambdas, their arguments are replaced with the evaluation of the provided expression in the procedure call. For example, <code>(lambda (myvar) (nand myvar 1))</code> would have <code>myvar</code> in the body replaced with the first argument it is passed, so <code>((lambda (myvar) (nand myvar 1)) 2)</code> would have the body evaluate to <code>(nand 2 1)</code>, which evaluates to the (hexadecimal base) scalar FC.</li>
 <li>Variable names may contain any of <code>abcdefghijklmnopqrstuvwxyz?</code></li>
 <li>Unsigned scalars may contain any of <code>0123456789ABCDEF</code></li>

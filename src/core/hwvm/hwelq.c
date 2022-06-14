@@ -44,7 +44,7 @@ WORK.*/
 
 #define CMPSTR(x, str) (hwstrcmp(x, str) == 0)
 
-#define ISSTANDARDSYNTAX(x) (CMPSTR(x, "car") || CMPSTR(x, "cdr") || CMPSTR(x, "cons") || CMPSTR(x, "bind") || CMPSTR(x, "nil?") || CMPSTR(x, "atom?") || CMPSTR(x, "proc?") || CMPSTR(x, "eq?") || CMPSTR(x, "add") || CMPSTR(x, "sub") || CMPSTR(x, "and") || CMPSTR(x, "or") || CMPSTR(x, "xor") || CMPSTR(x, "rot") || CMPSTR(x, "set") || CMPSTR(x, "half") || CMPSTR(x, "if") || CMPSTR(x, "begin") || CMPSTR(x, "lambda"))
+#define ISSTANDARDSYNTAX(x) (CMPSTR(x, "car") || CMPSTR(x, "cdr") || CMPSTR(x, "cons") || CMPSTR(x, "bind") || CMPSTR(x, "nil?") || CMPSTR(x, "atom?") || CMPSTR(x, "procedure?") || CMPSTR(x, "eq?") || CMPSTR(x, "add") || CMPSTR(x, "sub") || CMPSTR(x, "and") || CMPSTR(x, "or") || CMPSTR(x, "xor") || CMPSTR(x, "rot") || CMPSTR(x, "set") || CMPSTR(x, "half") || CMPSTR(x, "if") || CMPSTR(x, "begin") || CMPSTR(x, "lambda"))
 
 #define GETSTANDARDSYNTAX(x, y)\
 if(CMPSTR(x, "car")){ y = ELQ_PROC_CAR; }\
@@ -189,7 +189,7 @@ HWVM Runtime for HWElq:
 MEMORY:
 	- Section 1: Lookup table for 'bind'
 	- Section 2: Stack with each item containing return address and five addresses of local variables, subroutines done manually with 'jmp'
-	- Section 3: Heap with six-byte words for holding tagged linked lists that can contain addresses of the following types: Integer, core procedure, NIL
+	- Section 3: Heap with six-byte words for holding binary trees that can contain values tagged with one of the following types: procedure, unsigned, NIL
 CODE:
 	- A manual subroutine pre-registered for each of the 15 core procedures
 */

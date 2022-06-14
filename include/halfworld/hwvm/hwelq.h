@@ -1,5 +1,5 @@
 #ifndef HWELQ_H
-#define HELQ_H
+#define HWELQ_H
 #include <halfworld/hwreq.h>
 #include <halfworld/hwvm/hwvm.h>
 /*
