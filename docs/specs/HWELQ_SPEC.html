@@ -44,12 +44,12 @@ line-height:1.2
 <ul>
 <li>Call procedure with arguments. The arguments are evaluated in left-to-right order before passing them to the procedure.</li>
 </ul></li>
-<li>Bind variable: <code>(bind variable value)</code>
+<li>Define variable: <code>(define variable value)</code>
 <ul>
-<li>Make variable name mean a specific value globally, or a <code>lambda</code> statement. Can be re-bound at any point in time. It can not be bound to an <code>if</code>, <code>bind</code>, or <code>begin</code> statement.</li>
-<li>EXAMPLE: <code>(bind myfunc (lambda x (fn x)))</code>
+<li>Make variable name mean a specific value globally.</li>
+<li>EXAMPLE: <code>(define myfunc (lambda x (fn x)))</code>
 <ul>
-<li>Creates procedure that is passed an argument, and evaluates to <code>fn</code> applied to that argument. can be called like <code>(myfunc 42)</code>.</li>
+<li>Defines <code>myfunc</code> to mean the evaluation of the <code>lambda</code> statement, that is, a procedure that is passed an argument, and evaluates to <code>fn</code> applied to that argument. Can be called like <code>(myfunc 42)</code>.</li>
 </ul></li>
 </ul></li>
 </ul>
@@ -69,7 +69,7 @@ line-height:1.2
 </ul></li>
 <li>PROCEDURE: <code>(nil? a)</code>
 <ul>
-<li>Evaluates to 1 if <code>a</code> is <code>%</code>, pronounced NIL. Otherwise it evaluates to 0.</li>
+<li>Evaluates to 1 if <code>a</code> is <code>%</code>. Otherwise it evaluates to 0.</li>
 </ul></li>
 <li>PROCEDURE: <code>(atom? a)</code>
 <ul>
@@ -130,10 +130,9 @@ line-height:1.2
 <li>A list is either <code>%</code> or a cons cell where the right hand side is a list. Hence, <code>(a . b)</code>, <code>a</code>, <code>(a . (b . c) . %)</code> are not lists, but <code>(a . ((b . %) . %))</code>, <code>(a . %)</code> are lists.</li>
 <li><code>(a b c)</code> notation stands for the list <code>(a . (b . (c . %)))</code>. Hence, <code>(procedure a b c)</code> stands for <code>(procedure . (a . (b . (c . %))))</code>. <code>((a b) c)</code> stands for <code>((a . (b . %)) . (c . %))</code>.</li>
 <li>In Eloquent, every piece of data is either a cons cell or an atom. The only three possible types for atoms are unsigned scalar, procedure, or <code>%</code>. An atom may be checked for with the procedure <code>atom?</code>, <code>%</code> with the procedure <code>nil?</code>, procedure type with <code>procedure?</code>, and equality of two pieces of data with <code>eq?</code>. Giving atoms as arguments to <code>car</code> or to <code>cdr</code> is an ERROR.</li>
-<li>Variables, declared using bind or as lambda arguments, are replaced with their associated value. In the case of lambdas, their arguments are replaced with the evaluation of the provided expression in the procedure call. For example, <code>(lambda (myvar) (nand myvar 1))</code> would have <code>myvar</code> in the body replaced with the first argument it is passed, so <code>((lambda (myvar) (nand myvar 1)) 2)</code> would have the body evaluate to <code>(nand 2 1)</code>, which evaluates to the (hexadecimal base) scalar FC.</li>
+<li>Variables, declared using <code>define</code> or as <code>lambda</code> arguments, are replaced with their associated value. In the case of lambdas, their arguments are replaced with the evaluation of the provided expression in the procedure call. For example, <code>(lambda (myvar) (nand myvar 1))</code> would have <code>myvar</code> in the body replaced with the first argument it is passed, so <code>((lambda (myvar) (nand myvar 1)) 2)</code> would have the body evaluate to <code>(nand 2 1)</code>, which evaluates to the (hexadecimal base) scalar FC.</li>
 <li>Variable names may contain any of <code>abcdefghijklmnopqrstuvwxyz?</code></li>
 <li>Unsigned scalars may contain any of <code>0123456789ABCDEF</code></li>
-<li>NIL is represented, explicitly, by <code>%</code></li>
 <li>To <code>set</code> addresses lower than <code>(01 . 00)</code> is an ERROR. These lower addresses are reserved for special purposes.</li>
 <li>To <code>set</code> an address to itself is considered only a read, and it is hence allowed even if the address is read-only.</li>
 <li>Take into account HWVM allows addresses to be READ-ONLY or UNMAPPED. Writing to the former is an ERROR, doing anything with the latter is an ERROR.</li>

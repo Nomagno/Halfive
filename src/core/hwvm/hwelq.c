@@ -44,7 +44,7 @@ WORK.*/
 
 #define CMPSTR(x, str) (hwstrcmp(x, str) == 0)
 
-#define ISSTANDARDSYNTAX(x) (CMPSTR(x, "car") || CMPSTR(x, "cdr") || CMPSTR(x, "cons") || CMPSTR(x, "bind") || CMPSTR(x, "nil?") || CMPSTR(x, "atom?") || CMPSTR(x, "procedure?") || CMPSTR(x, "eq?") || CMPSTR(x, "add") || CMPSTR(x, "sub") || CMPSTR(x, "and") || CMPSTR(x, "or") || CMPSTR(x, "xor") || CMPSTR(x, "rot") || CMPSTR(x, "set") || CMPSTR(x, "half") || CMPSTR(x, "if") || CMPSTR(x, "begin") || CMPSTR(x, "lambda"))
+#define ISSTANDARDSYNTAX(x) (CMPSTR(x, "car") || CMPSTR(x, "cdr") || CMPSTR(x, "cons") || CMPSTR(x, "define") || CMPSTR(x, "nil?") || CMPSTR(x, "atom?") || CMPSTR(x, "procedure?") || CMPSTR(x, "eq?") || CMPSTR(x, "add") || CMPSTR(x, "sub") || CMPSTR(x, "and") || CMPSTR(x, "or") || CMPSTR(x, "xor") || CMPSTR(x, "rot") || CMPSTR(x, "set") || CMPSTR(x, "half") || CMPSTR(x, "if") || CMPSTR(x, "begin") || CMPSTR(x, "lambda"))
 
 #define GETSTANDARDSYNTAX(x, y)\
 if(CMPSTR(x, "car")){ y = ELQ_PROC_CAR; }\
@@ -64,7 +64,7 @@ else if(CMPSTR(x, "rot")){ y = ELQ_PROC_ROT; }\
 else if(CMPSTR(x, "set")){ y = ELQ_PROC_SET; }\
 else if(CMPSTR(x, "halt")){ y = ELQ_PROC_HALT; }\
 else if(CMPSTR(x, "lambda")){ y = ELQ_SYNTAX_LAMBDA; }\
-else if(CMPSTR(x, "bind")){ y = ELQ_SYNTAX_BIND; }\
+else if(CMPSTR(x, "define")){ y = ELQ_SYNTAX_DEFINE; }\
 else if(CMPSTR(x, "if")){ y = ELQ_SYNTAX_IF; }
 
 HWElq_Node *HWElq_appendNode(HWElq_Node *parent, _Bool direction, HWElq_Node child, HWElq_NodeHeap *heap){
@@ -187,7 +187,7 @@ FFFF      : R/W, chaotic
 HWVM Runtime for HWElq:
 - Subroutine instructions unused
 MEMORY:
-	- Section 1: Lookup table for 'bind'
+	- Section 1: Lookup table for 'define'
 	- Section 2: Stack with each item containing return address and five addresses of local variables, subroutines done manually with 'jmp'
 	- Section 3: Heap with six-byte words for holding binary trees that can contain values tagged with one of the following types: procedure, unsigned, NIL
 CODE:
