@@ -93,6 +93,14 @@ void HWElq_Push(HWElq_Stack *stack, HWElq_Node *val){
 	return;
 }
 
+/*
+Rough sed command to sanizitize a program without newlines so the parser accepts it:
+
+sed 's/(/ (/g;
+s/[[:space:]]*[[:space:]]/ /g;
+s/^ //g;
+s/ )/)/g;'
+*/
 HWElq_Node *HWElq_Parse(char *in, HWElq_NodeHeap *nodeheap){
 	HWElq_Stack forkstack = {0};
 	HWElq_Node *root = HWElq_appendNode(NULL, 0, (HWElq_Node){ .type = ELQ_EMPTY }, nodeheap);
