@@ -23,7 +23,7 @@ line-height:1.2
 <ul>
 <li>If statement:
 <ul>
-<li><code>(if bool</code> -&gt; If <code>bool</code> evaluates to an atom that is not 0
+<li><code>(if bool</code> -&gt; If <code>bool</code> evaluates to an unsigned scalar that is not 0
 <ul>
 <li><code>ontrue</code> -&gt; Evaluate this</li>
 <li><code>onfalse)</code> -&gt; Otherwise evaluate this</li>
@@ -36,9 +36,10 @@ line-height:1.2
 <li>Lambda statement:
 <ul>
 <li><code>(lambda args body)</code></li>
-<li><code>args</code> -&gt; List of variables provided as input, e.g.&#xA0;<code>(a b c)</code></li>
+<li><code>args</code> -&gt; List of variables provided as input, e.g.&#xA0;literally <code>(a b c)</code>, or if a single variable, <code>a</code>, or if no variables, <code>%</code></li>
 <li><code>body</code> -&gt; Code to evaluate when calling the procedure, can contain any syntax, input variables, or global variables</li>
 <li>Evaluates to an unnamed procedure that takes the number of arguments in the <code>args</code> list, and evaluates <code>body</code>, substituting them inside as appropiate</li>
+<li>The variable called <code>self</code> represents the procedure itself, so it may be called to perform recursive calls, and it will run separately and perform independent variable substitution.</li>
 </ul></li>
 <li>Procedure call: <code>(procedure arg1 arg2 ...)</code>
 <ul>
@@ -47,9 +48,9 @@ line-height:1.2
 <li>Define variable: <code>(define variable value)</code>
 <ul>
 <li>Make variable name mean a specific value globally.</li>
-<li>EXAMPLE: <code>(define myfunc (lambda x (fn x)))</code>
+<li>EXAMPLE: <code>(define myfunc (lambda x (if (eq? x 0) (0) (self (sub x 1)) )))</code>
 <ul>
-<li>Defines <code>myfunc</code> to mean the evaluation of the <code>lambda</code> statement, that is, a procedure that is passed an argument, and evaluates to <code>fn</code> applied to that argument. Can be called like <code>(myfunc 42)</code>.</li>
+<li>Defines <code>myfunc</code> to mean the calling of <code>myfunc</code> as many times as the value of the unsigned scalar <code>x</code>, and it evaluates deterministically to the unsigned scalar <code>0</code>.</li>
 </ul></li>
 </ul></li>
 </ul>
@@ -61,11 +62,11 @@ line-height:1.2
 </ul></li>
 <li>PROCEDURE: <code>(car a)</code>
 <ul>
-<li>Left element of cons cell <code>a</code>.</li>
+<li>Where <code>a</code> is a cons cell, evaluates to the left element of <code>a</code>.</li>
 </ul></li>
 <li>PROCEDURE: <code>(cdr a)</code>
 <ul>
-<li>Right element of cons cell <code>a</code>.</li>
+<li>Where <code>a</code> is a cons cell, evaluates to the right element of <code>a</code>.</li>
 </ul></li>
 <li>PROCEDURE: <code>(nil? a)</code>
 <ul>
@@ -81,59 +82,62 @@ line-height:1.2
 </ul></li>
 <li>PROCEDURE: <code>(eq? a b)</code>
 <ul>
-<li>Evaluates to 1 if <code>a</code> and <code>b</code> are identical, otherwise it evaluates to 0.</li>
+<li>Evaluates to 1 if <code>a</code> and <code>b</code> are both atoms, and both are the exact same atom. Otherwise it evaluates to 0.</li>
 </ul></li>
 </ul>
 <h3>OPERATION PROCEDURES:</h3>
 <ul>
 <li>RULES:
 <ul>
-<li>The first six apply the operation, and evaluate to an unsigned scalar cons cell of the form <code>(A . (B . C))</code>, where <code>A</code> is the result, <code>B</code> is only zero if the result was zero, and <code>C</code> is only zero wether there was underflow/overflow (only for <code>add</code>, <code>substract</code>, otherwise its value is undefined).</li>
-<li><code>halt</code> evaluates to 0, as it is only useful for its side effects.</li>
+<li>The first six apply the operation, and evaluate to an unsigned scalar cons cell of the form <code>(A . (B . C))</code>, <code>A</code> is the result, <code>B</code> is only 0 if the result was zero, and <code>C</code> is only 1 when there was underflow/overflow (for <code>add</code> or <code>substract</code>, otherwise the value of <code>C</code> is irrelevant).</li>
+<li><code>halt</code> evaluates to <code>%</code>, as it is only useful for its side effects.</li>
 </ul></li>
 <li>PROCEDURE: (bitwise add): <code>(add x y)</code>
 <ul>
-<li>Where <code>x</code> and <code>y</code> evaluate to unsigned scalars.</li>
+<li>Where <code>x</code> and <code>y</code> are unsigned scalars.</li>
 </ul></li>
 <li>PROCEDURE: (bitwise substract): <code>(sub x y)</code>
 <ul>
-<li>Where <code>x</code> and <code>y</code> evaluate to unsigned scalars.</li>
+<li>Where <code>x</code> and <code>y</code> are unsigned scalars.</li>
 </ul></li>
 <li>PROCEDURE: (bitwise and): <code>(and x y)</code>
 <ul>
-<li>Where <code>x</code> and <code>y</code> evaluate to unsigned scalars.</li>
+<li>Where <code>x</code> and <code>y</code> are unsigned scalars.</li>
 </ul></li>
 <li>PROCEDURE: (bitwise or): <code>(or x y)</code>
 <ul>
-<li>Where <code>x</code> and <code>y</code> evaluate to unsigned scalars.</li>
+<li>Where <code>x</code> and <code>y</code> are unsigned scalars.</li>
 </ul></li>
 <li>PROCEDURE: (bitwise xor): <code>(xor x y)</code>
 <ul>
-<li>Where <code>x</code> and <code>y</code> evaluate to unsigned scalars.</li>
+<li>Where <code>x</code> and <code>y</code> are unsigned scalars.</li>
 </ul></li>
 <li>PROCEDURE: (bitwise rot): <code>(rot x y)</code>
 <ul>
-<li>Where <code>x</code> and <code>y</code> evaluate to unsigned scalars.</li>
+<li>Where <code>x</code> and <code>y</code> are unsigned scalars.</li>
 </ul></li>
 <li>PROCEDURE: (address set): <code>(set addrpair y)</code>
 <ul>
-<li>Where <code>addrpair</code> is a cons cell of the form <code>(high . low)</code>, for the high and low byte of the address to set, and <code>y</code> either evaluates to an unsigned scalar, or is a cons cell of the form <code>(high . low)</code>, for the high and low byte of the address to read. Evaluates to the value written to <code>addrpair</code>.</li>
+<li>Where <code>addrpair</code> is a cons cell of the form <code>(high . low)</code>, for the high and low byte of the address to set.</li>
+<li>Where <code>y</code> is either an unsigned scalar, or a cons cell of the form <code>(high . low)</code>, for the high and low byte of the address to read. Evaluates to the value written to <code>addrpair</code>.</li>
 </ul></li>
 <li>PROCEDURE 17: <code>(halt)</code>
 <ul>
 <li>Terminates the program.</li>
 </ul></li>
 </ul>
-<h3>SPECIAL RULES</h3>
+<h3>CLARIFICATIONS</h3>
 <ul>
-<li>N -&gt; Evaluates to N, where N is an 8-bit hexadecimal unsigned scalar</li>
 <li>A list is either <code>%</code> or a cons cell where the right hand side is a list. Hence, <code>(a . b)</code>, <code>a</code>, <code>(a . (b . c) . %)</code> are not lists, but <code>(a . ((b . %) . %))</code>, <code>(a . %)</code> are lists.</li>
 <li><code>(a b c)</code> notation stands for the list <code>(a . (b . (c . %)))</code>. Hence, <code>(procedure a b c)</code> stands for <code>(procedure . (a . (b . (c . %))))</code>. <code>((a b) c)</code> stands for <code>((a . (b . %)) . (c . %))</code>.</li>
-<li>In Eloquent, every piece of data is either a cons cell or an atom. The only three possible types for atoms are unsigned scalar, procedure, or <code>%</code>. An atom may be checked for with the procedure <code>atom?</code>, <code>%</code> with the procedure <code>nil?</code>, procedure type with <code>procedure?</code>, and equality of two pieces of data with <code>eq?</code>. Giving atoms as arguments to <code>car</code> or to <code>cdr</code> is an ERROR.</li>
-<li>Variables, declared using <code>define</code> or as <code>lambda</code> arguments, are replaced with their associated value. In the case of lambdas, their arguments are replaced with the evaluation of the provided expression in the procedure call. For example, <code>(lambda (myvar) (nand myvar 1))</code> would have <code>myvar</code> in the body replaced with the first argument it is passed, so <code>((lambda (myvar) (nand myvar 1)) 2)</code> would have the body evaluate to <code>(nand 2 1)</code>, which evaluates to the (hexadecimal base) scalar FC.</li>
+<li>In Eloquent, every piece of data is either a cons cell or an atom. The only three possible types for atoms are unsigned scalar, procedure, or <code>%</code>.</li>
+<li>An atom may be checked for with the procedure <code>atom?</code>, <code>%</code> with the procedure <code>nil?</code>, procedure type with <code>procedure?</code>, and equality of two atoms with <code>eq?</code>.</li>
+<li>In the above text of the specification, whenever <code>where X is Y</code> appears, it is to be interpreted as a statement that <code>X</code> MUST be of type <code>Y</code>, and if it is not, an ERROR occurs.</li>
+<li>Variables, declared using <code>define</code> or as <code>lambda</code> arguments, are replaced with their associated value. In the case of lambdas, their arguments are replaced with the evaluation of the provided expression in the procedure call. For example, <code>(lambda (myvar) (nand myvar 1))</code> would have <code>myvar</code> in the body replaced with the first argument it is passed, so <code>((lambda (myvar) (nand myvar 1)) 2)</code> would execute code equivalent to <code>(nand 2 1)</code>, which evaluates to the (hexadecimal base) scalar FC.</li>
 <li>Variable names may contain any of <code>abcdefghijklmnopqrstuvwxyz?</code></li>
 <li>Unsigned scalars may contain any of <code>0123456789ABCDEF</code></li>
 <li>To <code>set</code> addresses lower than <code>(01 . 00)</code> is an ERROR. These lower addresses are reserved for special purposes.</li>
 <li>To <code>set</code> an address to itself is considered only a read, and it is hence allowed even if the address is read-only.</li>
 <li>Take into account HWVM allows addresses to be READ-ONLY or UNMAPPED. Writing to the former is an ERROR, doing anything with the latter is an ERROR.</li>
+<li>No statement in this specification applies as soon as an ERROR has occurred. The program may continue functioning after handling the ERROR gracefully, it may stop functioning, or it may continue functioning in a noncompliant state.</li>
 </ul>
