@@ -195,11 +195,12 @@ FFFF      : R/W, chaotic
 HWVM Runtime for HWElq:
 - Subroutine instructions unused
 MEMORY:
-	- Section 1: Lookup table for 'define'
-	- Section 2: Stack with each item containing return address and five addresses of local variables, subroutines done manually with 'jmp'
-	- Section 3: Heap with six-byte words for holding binary trees that can contain values tagged with one of the following types: procedure, unsigned, NIL
+	- Section 1 (32 bytes): Address zero (to be used as null-terminator), 32 bytes for general purpose data (to help with registee pressure on subroutines, when suitable)
+	- Section 2 (256 bytes): Lookup table for 'define'
+	- Section 3 (256 bytes): Call stack with each frame containing return address and 4 addresses of local variables, temp variable address for returning, 4 general purpose bytes subroutines done manually with 'jmp'
+	- Section 4 (480 bytes): Heap with six-byte nodes for holding binary trees that can contain values tagged with one of the following types: procedure, unsigned, pair, NIL. Each node is: allocation info (1 byte), type (1 byte), value (2 bytes), rightchild (2 bytes)
 CODE:
-	- A manual subroutine pre-registered for each of the 15 core procedures
+	- A manual subroutine pre-registered for each of the core procedures, plus a few utility ones for internal usage only
 */
 
 void HWElq_GenerateCode(const HWElq_Node *ast, HWVM_GeneralMemory *program){
