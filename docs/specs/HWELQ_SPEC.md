@@ -46,8 +46,7 @@ HW-Eloquent is identified by the MIME type `text/hwelq`
 
 ### OPERATION PROCEDURES:
 - RULES:
-  * The first six apply the operation, and evaluate to an unsigned scalar cons cell of the form `(A . (B . C))`, `A` is the result, `B` is only 0
-  if the result was zero,  and `C` is only 1 when there was underflow/overflow (for `add` or `substract`, otherwise the value of `C` is irrelevant).
+  * The first six apply the operation, and evaluate to an unsigned scalar, the result.
   * `halt` evaluates to `%`, as it is only useful for its side effects.
 - PROCEDURE: (bitwise add): `(add x y)`
   * Where `x` and `y` are unsigned scalars.

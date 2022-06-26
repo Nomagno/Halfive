@@ -89,7 +89,7 @@ line-height:1.2
 <ul>
 <li>RULES:
 <ul>
-<li>The first six apply the operation, and evaluate to an unsigned scalar cons cell of the form <code>(A . (B . C))</code>, <code>A</code> is the result, <code>B</code> is only 0 if the result was zero, and <code>C</code> is only 1 when there was underflow/overflow (for <code>add</code> or <code>substract</code>, otherwise the value of <code>C</code> is irrelevant).</li>
+<li>The first six apply the operation, and evaluate to an unsigned scalar, the result.</li>
 <li><code>halt</code> evaluates to <code>%</code>, as it is only useful for its side effects.</li>
 </ul></li>
 <li>PROCEDURE: (bitwise add): <code>(add x y)</code>
