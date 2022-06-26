@@ -46,7 +46,7 @@ HW-Eloquent is identified by the MIME type `text/hwelq`
 
 ### OPERATION PROCEDURES:
 - RULES:
-  * The first six apply the operation, and evaluate to an unsigned scalar, the result.
+  * The first six apply the operation, and evaluate to a dotted pair of the form `(VAL . CF)`, where `VAL`is an unsigned scalar representing the result, and `CF` is an unsigned scalar that is one if there was overflow/underflow, and zero if there wasn't.
   * `halt` evaluates to `%`, as it is only useful for its side effects.
 - PROCEDURE: (bitwise add): `(add x y)`
   * Where `x` and `y` are unsigned scalars.
