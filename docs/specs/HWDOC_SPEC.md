@@ -18,7 +18,8 @@ HWDOC is identified by the MIME type `text/hwdoc`
 #### The types of elements are determined by these rules:
  - Sections, strings that do not contain whitespace, prefixed with underscore `'_'` (ASCII code 95, byte 0x5F) e.g. "_My_SECTION1"
  - Keys, strings that do not contain whitespace, NOT prefixed with underscore e.g. "My_Key1"
- - Values, strings that do contain whitespace, located after a key (separated by a simple space, 0x20), e.g. "mykey MYVal_!2"
+ - Values, strings located after a key (separated by a simple space, 0x20), e.g. "mykey value1 value2"
+
 ***
 
 #### Example:
@@ -31,10 +32,10 @@ _SUPER_SECTION
 _SECOND_SUPER_SECTION
 ```
 
-Same encoded with newline marked as '\n' and horizontal tab marked as '\n':
+Same document, but encoded with newline marked as `'\n'` and horizontal tab marked as `'\t'`:
 
 ```
 _SUPER_SECTION\n\tfirst_key 1 6 !k\n\t_SUB_SECTION\n\t\tsecond_key\n_SECOND_SUPER_SECTION
 ```
 
-'_SUPER_SECTION' is a section that contains a key 'first_key', (with values '1', '2' and '!') and another section '_SUB_SECTION', which contains a key without values 'second_key'. After '_SUPER_SECTION', there is '_SECOND_SUPER_SECTION', an empty section
+'_SUPER_SECTION' is a section that contains a key 'first_key', (with values '1', '2' and '!k') and another section '_SUB_SECTION', which contains a key without values 'second_key'. After '_SUPER_SECTION', there is '_SECOND_SUPER_SECTION', an empty section
