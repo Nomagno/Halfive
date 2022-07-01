@@ -1,0 +1,65 @@
+;Copyright 2022
+;
+;Redistributions, modified or unmodified, in whole or in part, must retain
+;applicable notices of copyright or other legal privilege, these conditions, and
+;the following license terms and disclaimer.  Subject to these conditions, each
+;holder of copyright or other legal privileges, author or assembler, and
+;contributor of this work, henceforth "licensor", hereby grants to any person
+;who obtains a copy of this work in any form:
+;
+;1. Permission to reproduce, modify, distribute, publish, sell, sublicense, use,
+;and/or otherwise deal in the licensed material without restriction.
+;
+;2. A perpetual, worldwide, non-exclusive, royalty-free, gratis, irrevocable
+;patent license to make, have made, provide, transfer, import, use, and/or
+;otherwise deal in the licensed material without restriction, for any and all
+;patents held by such licensor and necessarily infringed by the form of the work
+;upon distribution of that licensor's contribution to the work under the terms
+;of this license.
+;
+;NO WARRANTY OF ANY KIND IS IMPLIED BY, OR SHOULD BE INFERRED FROM, THIS LICENSE
+;OR THE ACT OF DISTRIBUTION UNDER THE TERMS OF THIS LICENSE, INCLUDING BUT NOT
+;LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE,
+;AND NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS, ASSEMBLERS, OR HOLDERS OF
+;COPYRIGHT OR OTHER LEGAL PRIVILEGE BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
+;LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
+;OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
+;WORK.
+
+; Eloquent Runtime System library for Half-World assembly
+
+#i base.hwasm
+
+; A program in HWVM is *well-structured* when:
+; - it does not contanin any 'jmp's to pointers
+; - it does not read addresses past 7FFF, up until FFF9, but can read FFFA->FFFF, *except* FFFD
+; - it does not write any addresses past 3FFFA, except FFFC, FFFE, FFFF
+;
+; A program in HWVM is *deterministic* when:
+; - it only writes to R/W addresses
+; - it only reads from mapped addresses
+;
+; The following minimal mapping for HWVM is *guaranteed*:
+; 0000->FFFF: R/W, deterministic
+; 4000->7FFF: R/O, deterministic
+; FFF0      : UNMAPPED, deterministic
+; FFFA      : R/O, chaotic
+; FFFB      : R/O, chaotic
+; FFFC      : R/W, deterministic
+; FFFD      : R/O, nondeterministic
+; FFFE      : R/W, chaotic
+; FFFF      : R/W, chaotic
+; --------------------------------------
+; HWVM Runtime for HWElq:
+; - Subroutine instructions unused
+; MEMORY:
+; 	- Section 1 (32 bytes): Address zero (to be used as base case for pointers), 31 bytes for general purpose data 
+; 	  (to help with register pressure on subroutines, when suitable)
+; 	- Section 2 (256 bytes): Lookup table for 'define', consisting of a 128 two-byte entries that are simply a pointer to somewhere in the heap
+; 	- Section 3 (256 bytes): Call stack with eight 32-byte frames, each frame containing return address, 4 addresses of local variables, temp variable 
+; 	  address for returning, 20 general purpose bytes. Subroutines/procedures done manually with 'jmp'
+; 	- Section 4 (480 bytes): Heap with six-byte nodes for holding binary trees that can contain values tagged with one of the following types: 
+; 	  procedure, unsigned, pair, NIL. 
+; 	  Node structure: allocation info (1 byte), type (1 byte), value (2 bytes), rightchild (2 bytes)
+; CODE:
+; 	- A manual subroutine pre-registered for each of the core procedures, plus a few utility ones for internal usage only
