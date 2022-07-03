@@ -205,6 +205,13 @@ MEMORY:
 	  Node structure: allocation info (1 byte), type (1 byte), value (2 bytes), rightchild (2 bytes)
 CODE:
 	- A manual subroutine pre-registered for each of the core procedures, plus a few utility ones for internal usage only
+
+Helpful notes: 
+	- Two pools of variables, a stack-like one for local variables, and a global one for global variables. This avoids name collission, by assigning a unique ID to each variable. 
+	- Procedure call initialization rests on the caller. Procedures that reference local variables taking advantage of lexical scope automatically get upgraded to a procedure that internally takes the superior-scope variables as arguments, and already has the values bundled.
+	- Example:
+		(define cons (lambda (x y) (lambda m (m x y))))
+		(cons 2 4) -> (lambda m (m 2 4)) -> {(lambda m (m x y)), x=2, x=4}
 */
 
 void HWElq_GenerateCode(const HWElq_Node *ast, HWVM_GeneralMemory *program){
