@@ -195,23 +195,31 @@ FFFF      : R/W, chaotic
 HWVM Runtime for HWElq:
 - Subroutine instructions unused
 MEMORY:
-	- Section 1 (32 bytes): Address zero (to be used as base case for pointers), 31 bytes for general purpose data 
-	  (to help with register pressure on subroutines, when suitable)
-	- Section 2 (256 bytes): Lookup table for 'define', consisting of a 128 two-byte entries that are simply a pointer to somewhere in the heap
-	- Section 3 (256 bytes): Call stack with eight 32-byte frames, each frame containing return address, 4 addresses of local variables, temp variable 
-	  address for returning, 20 general purpose bytes. Subroutines/procedures done manually with 'jmp'
-	- Section 4 (480 bytes): Heap with six-byte nodes for holding binary trees that can contain values tagged with one of the following types: 
-	  procedure, unsigned, pair, NIL. 
-	  Node structure: allocation info (1 byte), type (1 byte), value (2 bytes), rightchild (2 bytes)
-CODE:
-	- A manual subroutine pre-registered for each of the core procedures, plus a few utility ones for internal usage only
+	- Section 1 (PUBLICPAGE) structure (32 bytes): 
+		- Address zero (1 byte, base case for pointers) 
+		- Public 'garbage' bytes (31 bytes)
+	- Section 2 (VARHEAP) structure (32 bytes):
+		- Lookup table for 'define' (16x ADDRESSES (2 bytes))
+	- Section 3 (CALLSTACK) structure (512 bytes): 
+		- 8x STACKFRAMEs
+	- Section 4 (NODEHEAP) structure (444 bytes + 4 padding bytes):
+		- 74x manually (de)allocated NODEs
 
-Helpful notes: 
-	- Two pools of variables, a stack-like one for local variables, and a global one for global variables. This avoids name collission, by assigning a unique ID to each variable. 
-	- Procedure call initialization rests on the caller. Procedures that reference local variables taking advantage of lexical scope automatically get upgraded to a procedure that internally takes the superior-scope variables as arguments, and already has the values bundled.
-	- Example:
-		(define cons (lambda (x y) (lambda m (m x y))))
-		(cons 2 4) -> (lambda m (m 2 4)) -> {(lambda m (m x y)), x=2, x=4}
+	STRACKFRAME data structure (32 bytes):
+		- RETURN ADDRESS (2 bytes)
+		- 6x LOCAL VARIABLE ADDRESSES (2 bytes)
+		- RETVAL VARIABLE ADDRESS (2 bytes)
+		- PRIVATE DATA (16 bytes)
+	NODE data structure (6 bytes):
+		- ALLOC (1 byte)
+		- TYPE (1 byte)
+		- DATA (2 bytes)
+		- NEXT (2 bytes)
+	NODE internal structure per type:
+		- NIL       (TYPE FIELD: 0) (DATA       FIELD      UNUSED)
+		- Unsigned  (TYPE FIELD: 1) (DATA FIELD HIGH BYTE:  value)
+		- Pair      (TYPE FIELD: 2) (DATA FIELD:     node address)
+		- Procedure (TYPE FIELD: 3) (DATA FIELD: procedure address) (NEXT FIELD: 0 or varX (NEXT FIELD: 0 or varY (NEXT FIELD: 0 or ...)))
 */
 
 void HWElq_GenerateCode(const HWElq_Node *ast, HWVM_GeneralMemory *program){
