@@ -58,8 +58,9 @@ HW-Eloquent is identified by the MIME type `text/hwelq`
   * Where `x` and `y` are unsigned scalars.
 - PROCEDURE: (bitwise xor): `(xor x y)`
   * Where `x` and `y` are unsigned scalars.
-- PROCEDURE: (bitwise rot): `(rot x y)`
+- PROCEDURE: (bitwise shift): `(shift x y)`
   * Where `x` and `y` are unsigned scalars.
+  * Behaviour corresponds to HWVM shift instruction.
 - PROCEDURE: (address set): `(set addrpair y)`
   * Where `addrpair` is a cons cell of the form `(high . low)`, for the high and low byte
     of the address to set.

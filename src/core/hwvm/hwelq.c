@@ -44,7 +44,7 @@ WORK.*/
 
 #define CMPSTR(x, str) (hwstrcmp(x, str) == 0)
 
-#define ISSTANDARDSYNTAX(x) (CMPSTR(x, "car") || CMPSTR(x, "cdr") || CMPSTR(x, "cons") || CMPSTR(x, "define") || CMPSTR(x, "nil?") || CMPSTR(x, "atom?") || CMPSTR(x, "procedure?") || CMPSTR(x, "eq?") || CMPSTR(x, "add") || CMPSTR(x, "sub") || CMPSTR(x, "and") || CMPSTR(x, "or") || CMPSTR(x, "xor") || CMPSTR(x, "rot") || CMPSTR(x, "set") || CMPSTR(x, "half") || CMPSTR(x, "if") || CMPSTR(x, "begin") || CMPSTR(x, "lambda"))
+#define ISSTANDARDSYNTAX(x) (CMPSTR(x, "car") || CMPSTR(x, "cdr") || CMPSTR(x, "cons") || CMPSTR(x, "define") || CMPSTR(x, "nil?") || CMPSTR(x, "atom?") || CMPSTR(x, "procedure?") || CMPSTR(x, "eq?") || CMPSTR(x, "add") || CMPSTR(x, "sub") || CMPSTR(x, "and") || CMPSTR(x, "or") || CMPSTR(x, "xor") || CMPSTR(x, "shift") || CMPSTR(x, "set") || CMPSTR(x, "half") || CMPSTR(x, "if") || CMPSTR(x, "begin") || CMPSTR(x, "lambda"))
 
 #define GETSTANDARDSYNTAX(x, y)\
 if(CMPSTR(x, "car")){ y = ELQ_PROC_CAR; }\
@@ -60,7 +60,7 @@ else if(CMPSTR(x, "sub")){ y = ELQ_PROC_SUB; }\
 else if(CMPSTR(x, "and")){ y = ELQ_PROC_AND; }\
 else if(CMPSTR(x, "or")){ y = ELQ_PROC_OR; }\
 else if(CMPSTR(x, "xor")){ y = ELQ_PROC_XOR; }\
-else if(CMPSTR(x, "rot")){ y = ELQ_PROC_ROT; }\
+else if(CMPSTR(x, "shift")){ y = ELQ_PROC_SHIFT; }\
 else if(CMPSTR(x, "set")){ y = ELQ_PROC_SET; }\
 else if(CMPSTR(x, "halt")){ y = ELQ_PROC_HALT; }\
 else if(CMPSTR(x, "lambda")){ y = ELQ_SYNTAX_LAMBDA; }\
