@@ -16,14 +16,14 @@ HW-Eloquent is identified by the MIME type `text/hwelq`
   * Evaluates expressions in order. The `begin` statement itself evaluates to whatever the last expression evaluates to
 - Lambda statement:
   * `(lambda args body)`
-  * `args` -> List of variables provided as input, e.g. literally `(a b c)`, or if a single variable, `a`, or if no variables, `%`
-  * `body` -> Code to evaluate when calling the procedure, can contain any syntax, input variables, or global variables
-  * Evaluates to an unnamed procedure that takes the number of arguments in the `args` list, and evaluates `body`, substituting them inside as appropiate
+  * `args` -> List of local variables provided as arguments, e.g. literally `(a b c)`, or if a single variable, `a`, or if no variables, `%`.
+  * `body` -> Code to evaluate when calling the procedure, can contain any syntax, statements, or variables accessible from the current scope.
+  * Evaluates to an unnamed procedure that takes the number of arguments in the `args` list, and evaluates `body`, substituting them inside as appropiate.
   * The variable called `self` represents the procedure itself, so it may be called to perform recursive calls, and it will run separately and perform independent variable substitution.
 - Procedure call: `(procedure arg1 arg2 ...)`
-  * Call procedure with arguments. The arguments are evaluated in left-to-right order before passing them to the procedure.
-- Define variable: `(define variable value)`
-  * Make variable name mean a specific value globally.
+  * Call procedure with arguments. The arguments are evaluated in left-to-right order before passing them to the procedure. Evaluates to whatever the procedure body evaluates.
+- Define variable: `(define var val)`
+  * Define a local variable in the current scope, `var` to mean a specific value, `val`. If it already exists, redefine `var`.
   * EXAMPLE: `(define myfunc (lambda x (if (eq? x 0) (0) (self (sub x 1)) )))`
     * Defines `myfunc` to mean the calling of `myfunc` as many times as the value of the unsigned scalar `x`, and it evaluates deterministically to the unsigned scalar `0`.
 
@@ -82,7 +82,14 @@ HW-Eloquent is identified by the MIME type `text/hwelq`
   so `((lambda (myvar) (nand myvar 1)) 2)` would execute code equivalent to `(nand 2 1)`, which evaluates to the (hexadecimal base) scalar FC.
 - Variable names may contain any of `abcdefghijklmnopqrstuvwxyz?`
 - Unsigned scalars may contain any of `0123456789ABCDEF`
+- Unsigned scalars have a width of 8 bits, hence any unsigned scalar `X` is effectively processed like so: `modulo X 256`, before being entered, manipulated, or returned.
 - To `set` addresses lower than `(01 . 00)` is an ERROR. These lower addresses are reserved for special purposes.
 - To `set` an address to itself is considered only a read, and it is hence allowed even if the address is read-only.
 - Take into account HWVM allows addresses to be READ-ONLY or UNMAPPED. Writing to the former is an ERROR, doing anything with the latter is an ERROR.
 - No statement in this specification applies as soon as an ERROR has occurred. The program may continue functioning after handling the ERROR gracefully, it may stop functioning, or it may continue functioning in a noncompliant state. 
+- Any `lambda` bodies, or any statement or syntax (Usually enclosed in parentheses) present inside another (usually) parentheses-enclosed statement, may reference both local variables, and variables from a higher scope. More formally, variables are lexically scoped.
+  For instance, `(define curryadd (lambda x (lambda y (add x y))))` defines a procedure `curryadd` that returns another procedure `(lambda y (add x y))` incorporating a higher-scope variable. `(curryadd 2)` returns a procedure that adds `2` and `y` when called with a single argument.
+- Because of the aforementioned lexical scoping, variables defined with `define` or as arguments to a procedure with `lambda` automatically stop being available as soon as the procedure or statement scope is left.
+  These local variables always take priority over identically-named higher-scope variables, to avoid name clashing.
+- The highest scope or 'global' scope is that in which all statements start. A series of statements in the global scope will automatically be wrapped in a `begin` statement, so they are executed sequentially.
+  This ensures a program such as `(define x FF) (car (add x 4))` has a single return value of `3`, and it is equivalent to `(begin (define x FF) (car (add x 4)))`

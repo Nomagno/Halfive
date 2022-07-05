@@ -1,19 +1,3 @@
-<head>
-<style type="text/css">
-body{
-line-height:1.6;
-font-size:18px;
-color:#444;
-padding:0
-10px}
-h1,h2,h3{
-line-height:1.2
-}
-</style>
-	<title>Half-World Eloquent Lisp</title>
-	<meta name="description" content="The Universal Racing Game">
-</head>
-
 <h1>Half-World Eloquent Lisp</h1>
 <h4>SPDX identifier: COIL-1.0</h4>
 <h4>Copyright Nomagno 2022</h4>
@@ -36,18 +20,18 @@ line-height:1.2
 <li>Lambda statement:
 <ul>
 <li><code>(lambda args body)</code></li>
-<li><code>args</code> -&gt; List of variables provided as input, e.g.&#xA0;literally <code>(a b c)</code>, or if a single variable, <code>a</code>, or if no variables, <code>%</code></li>
-<li><code>body</code> -&gt; Code to evaluate when calling the procedure, can contain any syntax, input variables, or global variables</li>
-<li>Evaluates to an unnamed procedure that takes the number of arguments in the <code>args</code> list, and evaluates <code>body</code>, substituting them inside as appropiate</li>
+<li><code>args</code> -&gt; List of local variables provided as arguments, e.g.&#xA0;literally <code>(a b c)</code>, or if a single variable, <code>a</code>, or if no variables, <code>%</code>.</li>
+<li><code>body</code> -&gt; Code to evaluate when calling the procedure, can contain any syntax, statements, or variables accessible from the current scope.</li>
+<li>Evaluates to an unnamed procedure that takes the number of arguments in the <code>args</code> list, and evaluates <code>body</code>, substituting them inside as appropiate.</li>
 <li>The variable called <code>self</code> represents the procedure itself, so it may be called to perform recursive calls, and it will run separately and perform independent variable substitution.</li>
 </ul></li>
 <li>Procedure call: <code>(procedure arg1 arg2 ...)</code>
 <ul>
-<li>Call procedure with arguments. The arguments are evaluated in left-to-right order before passing them to the procedure.</li>
+<li>Call procedure with arguments. The arguments are evaluated in left-to-right order before passing them to the procedure. Evaluates to whatever the procedure body evaluates.</li>
 </ul></li>
-<li>Define variable: <code>(define variable value)</code>
+<li>Define variable: <code>(define var val)</code>
 <ul>
-<li>Make variable name mean a specific value globally.</li>
+<li>Define a local variable in the current scope, <code>var</code> to mean a specific value, <code>val</code>. If it already exists, redefine <code>var</code>.</li>
 <li>EXAMPLE: <code>(define myfunc (lambda x (if (eq? x 0) (0) (self (sub x 1)) )))</code>
 <ul>
 <li>Defines <code>myfunc</code> to mean the calling of <code>myfunc</code> as many times as the value of the unsigned scalar <code>x</code>, and it evaluates deterministically to the unsigned scalar <code>0</code>.</li>
@@ -137,8 +121,12 @@ line-height:1.2
 <li>Variables, declared using <code>define</code> or as <code>lambda</code> arguments, are replaced with their associated value. In the case of lambdas, their arguments are replaced with the evaluation of the provided expression in the procedure call. For example, <code>(lambda (myvar) (nand myvar 1))</code> would have <code>myvar</code> in the body replaced with the first argument it is passed, so <code>((lambda (myvar) (nand myvar 1)) 2)</code> would execute code equivalent to <code>(nand 2 1)</code>, which evaluates to the (hexadecimal base) scalar FC.</li>
 <li>Variable names may contain any of <code>abcdefghijklmnopqrstuvwxyz?</code></li>
 <li>Unsigned scalars may contain any of <code>0123456789ABCDEF</code></li>
+<li>Unsigned scalars have a width of 8 bits, hence any unsigned scalar <code>X</code> is effectively processed like so: <code>modulo X 256</code>, before being entered, manipulated, or returned.</li>
 <li>To <code>set</code> addresses lower than <code>(01 . 00)</code> is an ERROR. These lower addresses are reserved for special purposes.</li>
 <li>To <code>set</code> an address to itself is considered only a read, and it is hence allowed even if the address is read-only.</li>
 <li>Take into account HWVM allows addresses to be READ-ONLY or UNMAPPED. Writing to the former is an ERROR, doing anything with the latter is an ERROR.</li>
 <li>No statement in this specification applies as soon as an ERROR has occurred. The program may continue functioning after handling the ERROR gracefully, it may stop functioning, or it may continue functioning in a noncompliant state.</li>
+<li>Any <code>lambda</code> bodies, or any statement or syntax (Usually enclosed in parentheses) present inside another (usually) parentheses-enclosed statement, may reference both local variables, and variables from a higher scope. More formally, variables are lexically scoped. For instance, <code>(define curryadd (lambda x (lambda y (add x y))))</code> defines a procedure <code>curryadd</code> that returns another procedure <code>(lambda y (add x y))</code> incorporating a higher-scope variable. <code>(curryadd 2)</code> returns a procedure that adds <code>2</code> and <code>y</code> when called with a single argument.</li>
+<li>Because of the aforementioned lexical scoping, variables defined with <code>define</code> or as arguments to a procedure with <code>lambda</code> automatically stop being available as soon as the procedure or statement scope is left. These local variables always take priority over identically-named higher-scope variables, to avoid name clashing.</li>
+<li>The highest scope or &#x2018;global&#x2019; scope is that in which all statements start. A series of statements in the global scope will automatically be wrapped in a <code>begin</code> statement, so they are executed sequentially. This ensures a program such as <code>(define x FF) (car (add x 4))</code> has a single return value of <code>3</code>, and it is equivalent to <code>(begin (define x FF) (car (add x 4)))</code></li>
 </ul>
