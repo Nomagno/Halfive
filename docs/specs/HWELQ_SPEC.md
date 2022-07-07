@@ -9,11 +9,11 @@ HW-Eloquent is identified by the MIME type `text/hwelq`
 
 #### SYNTAX:
 - If statement:
-  * `(if bool` -> If `bool` evaluates to an unsigned scalar that is not 0
-    * `ontrue` -> Evaluate this
-    * `onfalse)` -> Otherwise evaluate this
+  * `(if bool` -> If `bool` evaluates to an unsigned scalar that is not 0:
+    * `ontrue` -> Evaluate this.
+    * `onfalse)` -> Otherwise evaluate this.
 - Begin Statement: `(begin expr1 expr2 ... exprN)`
-  * Evaluates expressions in order. The `begin` statement itself evaluates to whatever the last expression evaluates to
+  * Evaluates expressions in order. The `begin` statement itself evaluates to whatever the last expression evaluates to.
 - Lambda statement:
   * `(lambda args body)`
   * `args` -> List of local variables provided as arguments, e.g. literally `(a b c)`, or if a single variable, `a`, or if no variables, `%`.
@@ -24,6 +24,7 @@ HW-Eloquent is identified by the MIME type `text/hwelq`
   * Call procedure with arguments. The arguments are evaluated in left-to-right order before passing them to the procedure. Evaluates to whatever the procedure body evaluates.
 - Define variable: `(define var val)`
   * Define a local variable in the current scope, `var` to mean a specific value, `val`. If it already exists, redefine `var`.
+  * Evaluates to `val`.
   * EXAMPLE: `(define myfunc (lambda x (if (eq? x 0) (0) (self (sub x 1)) )))`
     * Defines `myfunc` to mean the calling of `myfunc` as many times as the value of the unsigned scalar `x`, and it evaluates deterministically to the unsigned scalar `0`.
 
@@ -92,4 +93,4 @@ HW-Eloquent is identified by the MIME type `text/hwelq`
 - Because of the aforementioned lexical scoping, variables defined with `define` or as arguments to a procedure with `lambda` automatically stop being available as soon as the procedure or statement scope is left.
   These local variables always take priority over identically-named higher-scope variables, to avoid name clashing.
 - The highest scope or 'global' scope is that in which all statements start. A series of statements in the global scope will automatically be wrapped in a `begin` statement, so they are executed sequentially.
-  This ensures a program such as `(define x FF) (car (add x 4))` has a single return value of `3`, and it is equivalent to `(begin (define x FF) (car (add x 4)))`
+  This ensures a program such as `(define x FF) (car (add x 4))` has a single return value of `3`, and it is equivalent to `(begin (define x FF) (car (add x 4)))`.
