@@ -196,60 +196,6 @@ HWElq_Node *HWElq_Parse(char *in, HWElq_NodeHeap *nodeheap){
 	return root;
 }
 
-/*
-A program in HWVM is *well-structured* when:
-- it does not contanin any 'jmp's to pointers
-- it does not read addresses past 7FFF, up until FFF9, 
-     but can read FFFA->FFFF, *except* FFFD
-- it does not write any addresses past 3FFFA, except FFFC, FFFE, FFFF
-
-A program in HWVM is *deterministic* when:
-- it only writes to R/W addresses
-- it only reads from mapped addresses
-
-The following minimal mapping for HWVM is *guaranteed*:
-0000->FFFF: R/W, deterministic
-4000->7FFF: R/O, deterministic
-FFF0      : UNMAPPED, deterministic
-FFFA      : R/O, chaotic
-FFFB      : R/O, chaotic
-FFFC      : R/W, deterministic
-FFFD      : R/O, nondeterministic
-FFFE      : R/W, chaotic
-FFFF      : R/W, chaotic
---------------------------------------
-HWVM Runtime for HWElq:
-- Subroutine instructions unused
-MEMORY:
-	- Section 1 (PUBLICPAGE) structure (32 bytes): 
-		- Address zero (1 byte, base case for pointers) 
-		- Public 'garbage' bytes (31 bytes)
-	- Section 2 (VARHEAP) structure (32 bytes):
-		- Lookup table for 'define' (16x ADDRESSES (2 bytes))
-	- Section 3 (CALLSTACK) structure (512 bytes): 
-		- 8x STACKFRAMEs
-	- Section 4 (NODEHEAP) structure (444 bytes + 4 padding bytes):
-		- 74x manually (de)allocated NODEs
-
-	STRACKFRAME data structure (32 bytes):
-		- RETURN ADDRESS (2 bytes)
-		- 6x LOCAL VARIABLE ADDRESSES (2 bytes)
-		- RETVAL VARIABLE ADDRESS (2 bytes)
-		- PRIVATE DATA (16 bytes)
-	NODE data structure (6 bytes):
-		- ALLOC (1 byte)
-		- TYPE (1 byte)
-		- DATA (2 bytes)
-		- NEXT (2 bytes)
-	NODE internal structure per type:
-		- NIL       (TYPE FIELD: 0) (DATA       FIELD      UNUSED)
-		- Unsigned  (TYPE FIELD: 1) (DATA FIELD HIGH BYTE:  value)
-		- Pair      (TYPE FIELD: 2) (DATA FIELD:     node address)
-		- Procedure (TYPE FIELD: 3) (DATA FIELD: procedure address) 
-		  (NEXT FIELD: 0 or varX (NEXT FIELD: 0 or varY
-		     (NEXT FIELD: 0 or ...)))
-*/
-
 void HWElq_GenerateCode(const HWElq_Node *ast, HWVM_GeneralMemory *program){
 	/*To be implemented*/
 }

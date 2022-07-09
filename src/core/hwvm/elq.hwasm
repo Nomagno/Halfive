@@ -54,14 +54,14 @@
 ; - Subroutine instructions unused
 ; MEMORY:
 ; 	- Section 1 (PUBLICPAGE) structure (32 bytes): 
-; 		- Address zero (1 byte, base case for pointers) 
+; 		- Address zero (base case for pointers)
 ; 		- Public 'garbage' bytes (31 bytes)
-; 	- Section 2 (VARHEAP) structure (32 bytes):
-; 		- Lookup table for 'define' (16x ADDRESSES (2 bytes))
-; 	- Section 3 (CALLSTACK) structure (512 bytes): 
-; 		- 8x STACKFRAMEs
-; 	- Section 4 (NODEHEAP) structure (444 bytes + 4 padding bytes):
-; 		- 74x manually (de)allocated NODEs
+; 	- Section 2 (VARHEAP) structure (256 bytes):
+; 		- Lookup table for 'define' (16x ADDRESSES)
+; 	- Section 3 (NODEHEAP) structure (732 bytes + 4 padding bytes):
+; 		- 122x manually (de)allocated NODEs
+; 	- Section 4 (CALLSTACK) structure (1024 bytes): 
+; 		- 16x STACKFRAMEs
 ;
 ; 	STRACKFRAME data structure (32 bytes):
 ; 		- RETURN ADDRESS (2 bytes)
