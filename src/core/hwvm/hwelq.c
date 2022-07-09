@@ -36,15 +36,28 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
-#define ISUPPERCASEHEXDIGIT(x) (x == '0' || x == '1' || x == '2' || x == '3' || x == '4' || x == '5' || x == '6' || x == '7' || x == '8' || x == '9' || x == 'A' || x == 'B' || x == 'C' || x == 'D' || x == 'E' || x == 'F')
-#define ISVARIABLEDIGIT(x) (x == 'a' || x == 'b' || x == 'c' || x == 'd' || x == 'e' || x == 'f' || x == 'g' || x == 'h' || x == 'i' || x == 'j' || x == 'k' || x == 'l' || x == 'm' || x == 'n' || x == 'o' || x == 'p' || x == 'q' || x == 'r' || x == 's' || x == 't' || x == 'u' || x == 'v' || x == 'w' || x == 'x' || x == 'y' || x == 'z' || x == '?')
+#define ISUPPERCASEHEXDIGIT(x)\
+(x == '0' || x == '1' || x == '2' || x == '3' || x == '4' ||\
+x == '5' || x == '6' || x == '7' || x == '8' || x == '9' ||\
+x == 'A' || x == 'B' || x == 'C' || x == 'D' || x == 'E' || x == 'F')
 
-
-#define ISVARIABLEDIGIT(x) (x == 'a' || x == 'b' || x == 'c' || x == 'd' || x == 'e' || x == 'f' || x == 'g' || x == 'h' || x == 'i' || x == 'j' || x == 'k' || x == 'l' || x == 'm' || x == 'n' || x == 'o' || x == 'p' || x == 'q' || x == 'r' || x == 's' || x == 't' || x == 'u' || x == 'v' || x == 'w' || x == 'x' || x == 'y' || x == 'z' || x == '?')
+#define ISVARIABLEDIGIT(x)\
+(x == 'a' || x == 'b' || x == 'c' || x == 'd' || x == 'e' ||\
+x == 'f' || x == 'g' || x == 'h' || x == 'i' || x == 'j' ||\
+x == 'k' || x == 'l' || x == 'm' || x == 'n' || x == 'o' ||\
+x == 'p' || x == 'q' || x == 'r' || x == 's' || x == 't' || x == 'u' ||\
+x == 'v' || x == 'w' || x == 'x' || x == 'y' || x == 'z' || x == '?')
 
 #define CMPSTR(x, str) (hwstrcmp(x, str) == 0)
 
-#define ISSTANDARDSYNTAX(x) (CMPSTR(x, "car") || CMPSTR(x, "cdr") || CMPSTR(x, "cons") || CMPSTR(x, "define") || CMPSTR(x, "nil?") || CMPSTR(x, "atom?") || CMPSTR(x, "procedure?") || CMPSTR(x, "eq?") || CMPSTR(x, "add") || CMPSTR(x, "sub") || CMPSTR(x, "and") || CMPSTR(x, "or") || CMPSTR(x, "xor") || CMPSTR(x, "shift") || CMPSTR(x, "set") || CMPSTR(x, "half") || CMPSTR(x, "if") || CMPSTR(x, "begin") || CMPSTR(x, "lambda"))
+#define ISSTANDARDSYNTAX(x)\
+(CMPSTR(x, "car") || CMPSTR(x, "cdr") || CMPSTR(x, "cons") ||\
+CMPSTR(x, "define") || CMPSTR(x, "nil?") || CMPSTR(x, "atom?") ||\
+CMPSTR(x, "procedure?") || CMPSTR(x, "eq?") || CMPSTR(x, "add") ||\
+CMPSTR(x, "sub") || CMPSTR(x, "and") || CMPSTR(x, "or") ||\
+CMPSTR(x, "xor") || CMPSTR(x, "shift") || CMPSTR(x, "set") ||\
+CMPSTR(x, "half") || CMPSTR(x, "if") || CMPSTR(x, "begin") ||\
+CMPSTR(x, "lambda"))
 
 #define GETSTANDARDSYNTAX(x, y)\
 if(CMPSTR(x, "car")){ y = ELQ_PROC_CAR; }\
@@ -68,11 +81,14 @@ else if(CMPSTR(x, "lambda")){ y = ELQ_SYNTAX_LAMBDA; }\
 else if(CMPSTR(x, "define")){ y = ELQ_SYNTAX_DEFINE; }\
 else if(CMPSTR(x, "if")){ y = ELQ_SYNTAX_IF; }
 
-HWElq_Node *HWElq_appendNode(HWElq_Node *parent, _Bool direction, HWElq_Node child, HWElq_NodeHeap *heap){
+HWElq_Node *HWElq_appendNode(HWElq_Node *parent, _Bool direction, 
+                             HWElq_Node child, HWElq_NodeHeap *heap){
 	heap->mempool[heap->poolindex] = child;
 	if(parent != NULL){
-		if (direction) { parent->right = &heap->mempool[heap->poolindex]; }
-		if (!direction) { parent->left = &heap->mempool[heap->poolindex]; }
+		if (direction) { parent->right = 
+		                 &heap->mempool[heap->poolindex]; }
+		if (!direction) { parent->left = 
+		                  &heap->mempool[heap->poolindex]; }
 		heap->mempool[heap->poolindex].parent = parent;
 	} else {
 		heap->mempool[heap->poolindex].parent = NULL;
@@ -95,7 +111,7 @@ void HWElq_Push(HWElq_Stack *stack, HWElq_Node *val){
 }
 
 /*
-Rough sed command to sanizitize a program without newlines so the parser accepts it:
+sed command to sanizitize a program so the parser accepts it:
 
 sed 's/(/ (/g;
 s/[[:space:]]*[[:space:]]/ /g;
@@ -104,7 +120,8 @@ s/ )/)/g;'
 */
 HWElq_Node *HWElq_Parse(char *in, HWElq_NodeHeap *nodeheap){
 	HWElq_Stack forkstack = {0};
-	HWElq_Node *root = HWElq_appendNode(NULL, 0, (HWElq_Node){ .type = ELQ_EMPTY }, nodeheap);
+	HWElq_Node *root = HWElq_appendNode(NULL, 0, 
+	                   (HWElq_Node){ .type = ELQ_EMPTY }, nodeheap);
 	HWElq_Node *currnode = root;
 	char tmpstring[24];
 	unsigned k;
@@ -121,20 +138,24 @@ HWElq_Node *HWElq_Parse(char *in, HWElq_NodeHeap *nodeheap){
 				if(lastchar == '(' || lastchar == ' '){
 					HWElq_Push(&forkstack, currnode->parent);
 				}
-				currnode = HWElq_appendNode(currnode, 0, (HWElq_Node){ .type = ELQ_EMPTY }, nodeheap);
+				currnode = HWElq_appendNode(currnode, 0,
+				           (HWElq_Node){ .type = ELQ_EMPTY }, nodeheap);
 				break;
 			case ')':
 				currnode->type = ELQ_NIL;
-				currnode = HWElq_appendNode(HWElq_Pop(&forkstack), 1, (HWElq_Node){ .type = ELQ_EMPTY }, nodeheap);
+				currnode = HWElq_appendNode(HWElq_Pop(&forkstack), 1,
+				           (HWElq_Node){ .type = ELQ_EMPTY }, nodeheap);
 				break;
 			default:
 				if(ISUPPERCASEHEXDIGIT(*in)){
 					currnode->type = ELQ_INT;
 					if (ISUPPERCASEHEXDIGIT(*(in + 1))){
-						currnode->valScalar = hwstrtoul((char[]){*in, *(in + 1), 0}, NULL, 16);
+						currnode->valScalar = hwstrtoul((char[]){*in,
+						                      *(in + 1), 0}, NULL, 16);
 						in += 1;
 					} else {
-						currnode->valScalar = hwstrtoul((char[]){*in, 0}, NULL, 16);
+						currnode->valScalar = hwstrtoul((char[]){*in, 0}, 
+						                      NULL, 16);
 					}
 				} else if(ISVARIABLEDIGIT(*in)){
 					k = 0;
@@ -157,12 +178,15 @@ HWElq_Node *HWElq_Parse(char *in, HWElq_NodeHeap *nodeheap){
 				} else if (*in == '%'){
 					currnode->type = ELQ_LIT_NIL;
 				}
-				currnode = HWElq_appendNode(currnode->parent, 1, (HWElq_Node){ .type = ELQ_EMPTY }, nodeheap);
-				currnode = HWElq_appendNode(currnode->parent, 1, (HWElq_Node){ .type = ELQ_EMPTY }, nodeheap);
+				currnode = HWElq_appendNode(currnode->parent, 1, 
+				           (HWElq_Node){ .type = ELQ_EMPTY }, nodeheap);
+				currnode = HWElq_appendNode(currnode->parent, 1, 
+				           (HWElq_Node){ .type = ELQ_EMPTY }, nodeheap);
 				break;
 		}
 #ifdef HWELQ_DEBUG
-		printf("COUNTER: %u\nCHARACTER: %c\n LASTCHAR: %c\n\n", i, *in, lastchar); /*DEBUG*/
+		printf("COUNTER: %u\nCHARACTER: %c\n LASTCHAR: %c\n\n", 
+		        i, *in, lastchar); /*DEBUG*/
 		i += 1; /*DEBUG*/
 #endif
 
@@ -175,7 +199,8 @@ HWElq_Node *HWElq_Parse(char *in, HWElq_NodeHeap *nodeheap){
 /*
 A program in HWVM is *well-structured* when:
 - it does not contanin any 'jmp's to pointers
-- it does not read addresses past 7FFF, up until FFF9, but can read FFFA->FFFF, *except* FFFD
+- it does not read addresses past 7FFF, up until FFF9, 
+     but can read FFFA->FFFF, *except* FFFD
 - it does not write any addresses past 3FFFA, except FFFC, FFFE, FFFF
 
 A program in HWVM is *deterministic* when:
@@ -220,7 +245,9 @@ MEMORY:
 		- NIL       (TYPE FIELD: 0) (DATA       FIELD      UNUSED)
 		- Unsigned  (TYPE FIELD: 1) (DATA FIELD HIGH BYTE:  value)
 		- Pair      (TYPE FIELD: 2) (DATA FIELD:     node address)
-		- Procedure (TYPE FIELD: 3) (DATA FIELD: procedure address) (NEXT FIELD: 0 or varX (NEXT FIELD: 0 or varY (NEXT FIELD: 0 or ...)))
+		- Procedure (TYPE FIELD: 3) (DATA FIELD: procedure address) 
+		  (NEXT FIELD: 0 or varX (NEXT FIELD: 0 or varY
+		     (NEXT FIELD: 0 or ...)))
 */
 
 void HWElq_GenerateCode(const HWElq_Node *ast, HWVM_GeneralMemory *program){
@@ -250,19 +277,25 @@ int main(void){
 	       "- HASPARENT: %u - HASLEFT: %u - HASRIGHT: %u"
 	       "- CYCLIC: %u"
 	       "- PPTR: %p - LPTR: %p - RPTR: %p\n",
-	       (root->type == ELQ_NIL) ? "NIL" : ((root->type == ELQ_INT) ? "INT" : ((root->type == ELQ_VAR) ? "VAR" : ((root->type == ELQ_PROC) ? "PROC" : "EMPTY"))), root->valScalar, root->valSymbol,
+	       (root->type == ELQ_NIL) ? "NIL" : ((root->type == ELQ_INT) ? "INT" :
+	             ((root->type == ELQ_VAR) ? "VAR" : ((root->type == ELQ_PROC) ?
+	             "PROC" : "EMPTY"))),
+	       root->valScalar, root->valSymbol,
 	       (root->parent != NULL), (root->left != NULL), (root->right != NULL),
 	       root->parent != NULL && (root->parent == root->left || root->parent == root->right),
 	       (void *)root->parent, (void *)root->left, (void *)root->right);
 	while((c = getchar()) != EOF){
-		printf("TYPE: %s - VAL: %X - STRING: %s - "
-		       "- HASPARENT: %u - HASLEFT: %u - HASRIGHT: %u"
-		       "- CYCLIC: %u"
-		       "- PPTR: %p - LPTR: %p - RPTR: %p\n",
-		       (root->type == ELQ_NIL) ? "NIL" : ((root->type == ELQ_INT) ? "INT" : ((root->type == ELQ_VAR) ? "VAR" : ((root->type == ELQ_PROC) ? "PROC" : "EMPTY"))), root->valScalar, root->valSymbol,
-		       (root->parent != NULL), (root->left != NULL), (root->right != NULL),
-		       root->parent != NULL && (root->parent == root->left || root->parent == root->right),
-		       (void *)root->parent, (void *)root->left, (void *)root->right);
+	printf("TYPE: %s - VAL: %X - STRING: %s - "
+	       "- HASPARENT: %u - HASLEFT: %u - HASRIGHT: %u"
+	       "- CYCLIC: %u"
+	       "- PPTR: %p - LPTR: %p - RPTR: %p\n",
+	       (root->type == ELQ_NIL) ? "NIL" : ((root->type == ELQ_INT) ? "INT" :
+	             ((root->type == ELQ_VAR) ? "VAR" : ((root->type == ELQ_PROC) ?
+	             "PROC" : "EMPTY"))),
+	       root->valScalar, root->valSymbol,
+	       (root->parent != NULL), (root->left != NULL), (root->right != NULL),
+	       root->parent != NULL && (root->parent == root->left || root->parent == root->right),
+	       (void *)root->parent, (void *)root->left, (void *)root->right);
 		switch(c){
 			case 'P':
 				root = root->parent;

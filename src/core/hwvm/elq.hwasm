@@ -78,3 +78,32 @@
 ; 		- Unsigned  (TYPE FIELD: 1) (DATA FIELD HIGH BYTE:  value)
 ; 		- Pair      (TYPE FIELD: 2) (DATA FIELD:     node address)
 ;		- Procedure (TYPE FIELD: 3) (DATA FIELD: procedure address) (NEXT FIELD: 0 or varX (NEXT FIELD: 0 or varY (NEXT FIELD: 0 or ...)))
+
+; Save program counter, FOUR instructions:
+#d SAVEPC,set FFFB ?W __ set FFFA !W __ add ?W =1 __ nop
+
+; Stack data structure:
+; Byte 0: high address of stack pointer
+; Byte 1: low address of stack pointer
+
+; Responsibilities for caller/callee of a manual subroutine:
+; Caller:
+;    - allocate stackframe (with PUSHFRAME)
+;    - fill in !Z and ?Z with the start of the frame
+;    - fill in return address in the frame with suitable PC number, within subroutine
+;    - fill in copies of local variables (first the arguments in order, 
+;           then the packaged vars in order, contiguously)
+;    - jump to subroutine
+; Callee:
+;    - do computations
+;    - clean up (don't leave any data but the retval variable allocated)
+;    - fill in return retval variable address of previous stack frame
+;        (node to be owned by caller)
+;    - jump to return address
+; Caller:
+;    - destroy copies of local variables
+;    - destroy stackframe (with POPFRAME)
+
+; Regular subroutines, they won't be called recursively
+#d PUSHFRAME,=10
+#d POPFRAME,=11
