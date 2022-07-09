@@ -33,7 +33,7 @@ WORK.*/
 #include <stddef.h>
 #include <stdint.h>
 
-/*Half-Workd VIsual interface*/
+/*Half-World VIsual interface*/
 
 /*Pixels are RGBA 16-bit 5551 format:
 00000 00000 00000 0
