@@ -53,31 +53,73 @@
 ; HWVM Runtime for HWElq:
 ; - Subroutine instructions unused
 ; MEMORY:
-; 	- Section 1 (PUBLICPAGE) structure (32 bytes): 
+; 	- Section 1 (PUBLICPAGE) structure (32 bytes):
 ; 		- Address zero (base case for pointers)
 ; 		- Public 'garbage' bytes (31 bytes)
-; 	- Section 2 (VARHEAP) structure (256 bytes):
-; 		- Lookup table for 'define' (16x ADDRESSES)
-; 	- Section 3 (NODEHEAP) structure (732 bytes + 4 padding bytes):
-; 		- 122x manually (de)allocated NODEs
-; 	- Section 4 (CALLSTACK) structure (1024 bytes): 
+#d _E_S_PUBPAGE,0000
+#d _E_S_H_PUBPAGE,00
+#d _E_S_L_PUBPAGE,00
+
+#d _E_F_PUBPAGE,001F
+#d _E_S_H_PUBPAGE,00
+#d _E_S_L_PUBPAGE,1F
+
+; 	- Section 2 (VARHEAP) structure (256 bytes) (20->11F):
+; 		- Lookup table for 'define' (128x ADDRESSES)
+#d _E_S_VARHEAP,0020
+#d _E_S_H_VARHEAP,00
+#d _E_S_L_VARHEAP,20
+
+#d _E_F_VARHEAP,011F
+#d _E_S_H_VARHEAP,01
+#d _E_S_L_VARHEAP,1F
+
+; 	- Section 3 (NODEHEAP) structure (735 bytes + 1 padding byte) (120->0FFF):
+; 		- 147x manually (de)allocated NODEs
+#d _E_S_NODEHEAP,0120
+#d _E_S_H_NODEHEAP,01
+#d _E_S_L_NODEHEAP,20
+
+#d _E_F_NODEHEAP,0FFF
+#d _E_S_H_NODEHEAP,0F
+#d _E_S_L_NODEHEAP,FF
+
+; 	- Section 4 (CALLSTACK) structure (1026 bytes) (1000->2001): 
+;		- 2 bytes for position of stack pointer
 ; 		- 16x STACKFRAMEs
-;
+#d _E_S_CALLSTACK,1000
+#d _E_S_H_CALLSTACK,10
+#d _E_S_L_CALLSTACK,00
+
+#d _E_F_CALLSTACK,2001
+#d _E_S_H_CALLSTACK,20
+#d _E_S_L_CALLSTACK,01
+
+; --------------------------------------
 ; 	STRACKFRAME data structure (32 bytes):
 ; 		- RETURN ADDRESS (2 bytes)
 ; 		- 6x LOCAL VARIABLE ADDRESSES (2 bytes)
 ; 		- RETVAL VARIABLE ADDRESS (2 bytes)
 ; 		- PRIVATE DATA (16 bytes)
-; 	NODE data structure (6 bytes):
-; 		- ALLOC (1 byte)
-; 		- TYPE (1 byte)
-; 		- DATA (2 bytes)
-; 		- NEXT (2 bytes)
+; 	NODE data structure (5 bytes):
+;		- META BYTE (A0LLLRRR)
+;			A - allocated?
+;			0 - padding
+;			LLL - left type
+;			RRR - right type
+; 		- DATA LEFT (2 bytes)
+; 		- DATA RIGHT (2 bytes)
 ; 	NODE internal structure per type:
-; 		- NIL       (TYPE FIELD: 0) (DATA       FIELD      UNUSED)
-; 		- Unsigned  (TYPE FIELD: 1) (DATA FIELD HIGH BYTE:  value)
-; 		- Pair      (TYPE FIELD: 2) (DATA FIELD:     node address)
-;		- Procedure (TYPE FIELD: 3) (DATA FIELD: procedure address) (NEXT FIELD: 0 or varX (NEXT FIELD: 0 or varY (NEXT FIELD: 0 or ...)))
+; 		- EMPTY     (TYPE FIELD: 0) (DATA       FIELD      UNUSED)
+; 		- NIL       (TYPE FIELD: 1) (DATA       FIELD      UNUSED)
+; 		- Unsigned  (TYPE FIELD: 2) (DATA FIELD HIGH BYTE:  value)
+; 		- Pair      (TYPE FIELD: 3) (DATA FIELD:     node address)
+;		- Procedure (TYPE FIELD: 4) (DATA FIELD: pointer to a special CLOSURENODE)
+;       - CLOSURENODE: 
+;                                 (META BYTE: 0xC (11001010)), 
+;                                 (DATA FIELD: address of procedure),
+;                                 (RIGHT FIELD: proper NIL-terminated list)
+
 
 ; Save program counter, FOUR instructions:
 #d SAVEPC,set FFFB ?W __ set FFFA !W __ add ?W =1 __ nop
@@ -105,5 +147,77 @@
 ;    - destroy stackframe (with POPFRAME)
 
 ; Regular subroutines, they won't be called recursively
-#d PUSHFRAME,=10
-#d POPFRAME,=11
+
+; PUSH_FRAME, reads from !Y and ?Y the start address of the stack, from !X the frame size,
+;     fills in !Z and ?Z with the start address of the pushed 32-byte frame
+#d PUSH_FRAME,=10
+func PUSH_FRAME
+	add ?Y !X
+	add !Y _CF
+	set !Z !Y
+	set ?Z ?Y
+ret PUSH_FRAME
+
+; POP_FRAME, reads from !Y and ?Y the start address of the stack, from !X the frame size, pops frame
+;     fills in !Z and ?Z with the start address of the frame after popping
+#d POP_FRAME,=11
+func POP_FRAME
+	sub ?Y !X
+	sub !Y _CF
+	set !Z !Y
+	set ?Z ?Y
+ret POP_FRAME
+
+; ALLOC_NODE, fills in !Z and ?Z with the start address of the allocated node
+#d ALLOC_NODE,=12
+func ALLOC_NODE
+	set ?B _E_S_L_NODEHEAP
+	set !B _E_S_H_NODEHEAP
+	; START OF LOOP
+	set _ZF &!B ; Set zero flag to alloc byte
+	INV_ZF ; Invert the zero flag
+	  ;
+	  ;
+	  ;
+	skpz =5 ; If the alloc byte is zero
+		or &!B =80 ; Set alloc flag to true
+		set ?Z ?B ; Set return register to node address
+		set !Z !B ; Set return register to node address
+		set _ZF =0
+		skpz =3 ; Terminate
+	add ?B =5
+	add !B _CF ; Increase node start address by 5
+	skmz =12 ; Loop
+ret ALLOC_NODE
+
+; DEALLOC_NODE, reads from !Z and ?Z the start address of the node of to deallocate
+; Uses stack with frames of two bytes in size, where the type of
+;    the nodes they point to is modified iteratively,
+;    so as to turn a cons cell into an empty node that
+;    can be deallocated, using a depth-first search algorithm
+;    on the binary trees formed by the nodes
+#d DEALLOC_NODE,=13
+;;;func DEALLOC_NODE
+;;;	set ?B ?Z
+;;;	set !B !Z
+;;;	set !C &!B ; Copy meta byte
+;;;	set ?C &!B ; Copy meta byte
+;;;	and !C =38 ; Preserve only left type
+;;;	rot !C =B  ; Bitshift right 3 bits
+;;;	and ?C =07 ; Preserve only right type
+;;;	cmp !C =3
+;;;	set !D _CF ; Check if left type is less than 3 (2, 1 or 0, atom types)
+;;;	cmp ?C =3
+;;;	set ?D _CF ; Check if right type is less than 3 (2, 1 or 0, atom types)
+;;;	set !X !D  ; Store first comparison
+;;;	cmp !X ?D  ; Compare both comparisons (Is the cell a pair of atoms or an atom?)
+;;;	INV_ZF     ; Invert comparison
+;;;	  ;
+;;;	  ;
+;;;	  ;
+;;;	skpz XX ; If both fields are atomic
+;;;		set &!B =0 ; Clear meta byte
+;;;		; IF STACK IS EMPTY, TERMINATE
+;;;		; ELSE, CLEAR STACK, POP FROM STACK, MODIFY PREVIOUS FRAME, AND LOOP
+;;; ........................................................... (UNFINISHED/PROTOTYPE)
+;;;ret DEALLOC_NODE
