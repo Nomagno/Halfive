@@ -80,9 +80,23 @@ int main(int argc, char **argv)
 			mem.in = readin;
 		}
 
+		hwuint prevco = prog.co;
+		printf("BEFORE: PC %4u -- %u, %u, %u, %u, %u, %u, %4X (%2X), %4X (%2X)\n", prog.co,
+		rwinf.was_err, rwinf.wrote_adrw, rwinf.read_adrw, rwinf.read_adrr,
+		rwinf.write_zf, rwinf.write_cf, rwinf.adrw, *prog.data[rwinf.adrw], rwinf.adrr,
+		*prog.data[rwinf.adrr]);
+
 		return_code = HWVM_Execute(&prog, &rwinf);
+
 		if ((rwinf.adrw == 0xFFFC) && (rwinf.wrote_adrw))
-			printf("OU: %X\n", mem.ou);
+			printf("OUTPUT at PC %4u: %X\n", mem.ou, prevco);
+
+		printf("AFTER:  PC %4u -- %u, %u, %u, %u, %u, %u, %4X (%2X), %4X (%2X)\n", prog.co,
+		rwinf.was_err, rwinf.wrote_adrw, rwinf.read_adrw, rwinf.read_adrr,
+		rwinf.write_zf, rwinf.write_cf, rwinf.adrw, *prog.data[rwinf.adrw], rwinf.adrr,
+		*prog.data[rwinf.adrr]);
+		putchar('\n');
+
 	}
 	fclose(codefile);
 	fclose(drivefile);

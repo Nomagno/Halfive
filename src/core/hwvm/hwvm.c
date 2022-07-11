@@ -45,7 +45,7 @@ enum optype { adr = 0, lit = 1, ptr = 2 };
 #define MASK program->mask
 #define DATA program->data
 #define _BREAK                                                                 \
-	rwinf->was_err = 1;                                                    \
+	rwinf->was_err = !!return_code;                                                    \
 	return return_code
 
 #define GETPTR(arr, where) ((arr[where] << 8) | (arr[where + 1]))
