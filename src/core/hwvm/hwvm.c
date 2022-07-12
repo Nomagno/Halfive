@@ -216,7 +216,7 @@ unsigned HWVM_Execute(HWVM_GeneralMemory *program, HWVM_ReadWriteInfo *rwinf)
 		GETVAR(tmpchar1, CURR_OP, 1, 0);
 		GETVAR(tmpchar2, CURR_OP, 2, 1);
 		getnum_orig = tmpchar1 - tmpchar2;
-		set_cf = (getnum_orig < tmpchar2) ? 1 : 2;
+		set_cf = (getnum_orig > tmpchar1) ? 1 : 2;
 		set_zf = (getnum_orig == 0) ? 2 : 1;
 		donot_save = 1;
 		goto _set;

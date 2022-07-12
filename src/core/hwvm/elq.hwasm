@@ -228,7 +228,7 @@ func DEALLOC_NODE
 	add ?Z =1
 	add !Z _CF
 	set ?X &!Z
-	set ?Z !X
+	set ?Z ?X
 	set !Z !X  ; Remove indirection (get value of current stack frame)
 
 	set ?B ?Z
@@ -236,14 +236,14 @@ func DEALLOC_NODE
 	set !C &!B ; Copy meta byte
 	set ?C &!B ; Copy meta byte
 	and !C =38 ; Preserve only left type
-	rot !C =B  ; Bitshift right 3 bits
+	shift !C =B  ; Bitshift right 3 bits
 	and ?C =07 ; Preserve only right type
 	cmp !C =3
 	set !D _CF ; Check if left type is less than 3 (2, 1 or 0, atom types)
 	cmp ?C =3
 	set ?D _CF ; Check if right type is less than 3 (2, 1 or 0, atom types)
 	set !X !D  ; Store first comparison
-	set ?X !D  ; Store second comparison
+	set ?X ?D  ; Store second comparison
 
 	cmp !X ?X
 	INV_ZF
@@ -352,12 +352,12 @@ ret DEALLOC_NODE
 ; ^ SUBROUTINE CURRENTLY BEING DEBUGGED, BECAUSE IT DOESN'T REALLY WORK
 
 
-;-set 120 =98 ; 10 011 000
-;-set 121 =01
-;-set 122 =25
-;-set 125 =80 ; 10 000 000
-;-set !Z =01
-;-set ?Z =20
-;-call DEALLOC_NODE
-;-set _OU 120
-;-set _OU 125
+set 120 =98 ; 10 011 000
+set 121 =01
+set 122 =25
+set 125 =80 ; 10 000 000
+set !Z =01
+set ?Z =20
+call DEALLOC_NODE
+set _OU 120
+set _OU 125
