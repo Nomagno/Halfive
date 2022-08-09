@@ -84,7 +84,7 @@
 #d _E_F_H_NODEHEAP,0F
 #d _E_F_L_NODEHEAP,FF
 
-; 	- Section 4 (CALLSTACK) structure (1026 bytes) (1000->2001): 
+; 	- Section 4 (CALLSTACK) structure (1026 bytes) (1000->2001):
 ;		- 2 bytes for position of stack pointer
 ; 		- 16x STACKFRAMEs
 #d _E_S_CALLSTACK,1000
@@ -115,8 +115,8 @@
 ; 		- Unsigned  (TYPE FIELD: 2) (DATA FIELD HIGH BYTE:  value)
 ; 		- Pair      (TYPE FIELD: 3) (DATA FIELD:     node address)
 ;		- Procedure (TYPE FIELD: 4) (DATA FIELD: pointer to a special CLOSURENODE)
-;       - CLOSURENODE: 
-;                                 (META BYTE: 0xC (11001010)), 
+;       - CLOSURENODE:
+;                                 (META BYTE: 0xC (11001010)),
 ;                                 (DATA FIELD: address of procedure),
 ;                                 (RIGHT FIELD: proper NIL-terminated list)
 
@@ -136,7 +136,7 @@
 ;    - allocate stackframe (with PUSHFRAME)
 ;    - fill in !Z and ?Z with the start of the frame
 ;    - fill in return address in the frame with suitable PC number, within subroutine
-;    - fill in copies of local variables (first the arguments in order, 
+;    - fill in copies of local variables (first the arguments in order,
 ;           then the packaged vars in order, contiguously)
 ;    - jump to subroutine
 ; Callee:
@@ -174,24 +174,6 @@ ret POP_FRAME
 ; ALLOC_NODE, fills in !Z and ?Z with the start address of the allocated node
 #d ALLOC_NODE,=12
 func ALLOC_NODE
-	set ?B =_E_S_L_NODEHEAP
-	set !B =_E_S_H_NODEHEAP
-	set !X =80 ; Pre-store literal
-	; START OF LOOP
-	set _ZF &!B ; Set zero flag to alloc byte
-	INV_ZF ; Invert the zero flag
-	  ;
-	  ;
-	  ;
-	skpz =5 ; If the alloc byte is zero
-		or &!B !X ; Set alloc flag to true (0x80)
-		set ?Z !X ; Set return register to node address
-		set !Z !B ; Set return register to node address
-		set _ZF =0
-		skpz =3 ; Terminate
-	add ?B =5
-	add !B _CF ; Increase node start address by 5
-	skmz =12 ; Loop
 ret ALLOC_NODE
 
 
@@ -210,146 +192,9 @@ ret ALLOC_NODE
 #d _E_F_L_PRIVSTACK,01
 
 
-; 'CCC': marker for hard-coded data that may need to 
-;        be modified every time the code changes.
-; SUBROUTINE CURRENTLY BEING DEBUGGED, BECAUSE IT DOESN'T REALLY WORK
 #d DEALLOC_NODE,=13
 func DEALLOC_NODE
-	set 2001 =20
-	set 2002 =04 ; SET UP STACK (CCC)
-	set 2003 !Z
-	set 2004 ?Z
-	set !Z =20
-	set ?Z =03   ; SET UP INDIRECTION (makes looping more homogeneous) (CCC)
-	set 18 =C7   ; Pre-stored literal
-	set 19 =F8   ; Pre-stored literal
-	; START OF LOOP
-	set !X &!Z
-	add ?Z =1
-	add !Z _CF
-	set ?X &!Z
-	set ?Z ?X
-	set !Z !X  ; Remove indirection (get value of current stack frame)
-
-	set ?B ?Z
-	set !B !Z
-	set !C &!B ; Copy meta byte
-	set ?C &!B ; Copy meta byte
-	and !C =38 ; Preserve only left type
-	shift !C =B  ; Bitshift right 3 bits
-	and ?C =07 ; Preserve only right type
-	cmp !C =3
-	set !D _CF ; Check if left type is less than 3 (2, 1 or 0, atom types)
-	cmp ?C =3
-	set ?D _CF ; Check if right type is less than 3 (2, 1 or 0, atom types)
-	set !X !D  ; Store first comparison
-	set ?X ?D  ; Store second comparison
-
-	cmp !X ?X
-	INV_ZF
-	  ;
-	  ;
-	  ;
-	skpz =12 ; If both fields are atomic
-		set &!B ZERO ; Clear meta byte
-		add ?B =1
-		add !B _CF
-		set &!B ZERO ; Clear high byte of left data
-		add ?B =1
-		add !B _CF
-		set &!B ZERO ; Clear low byte of left data
-		add ?B =1
-		add !B _CF
-		set &!B ZERO ; Clear high byte of right data
-		add ?B =1
-		add !B _CF
-		set &!B ZERO ; Clear low byte of right data
-		set !Y =_E_S_H_PRIVSTACK
-		set ?Y =_E_S_L_PRIVSTACK
-		set !X =02
-		cmp !Z =20 ; (CCC)
-		set ?A _ZF
-		cmp ?Z =03 ; (CCC)
-		and ?A _ZF ; Compare current frame (!Z) with first frame
-		INV_ZF
-		 ;
-		 ;
-		 ;
-		skpz =1 ; If this is the first frame
-			skpz =2E ; Return to caller (CCC)
-		call POP_FRAME ; Else POP current address
-		               ; (backtrack)
-		skmz =33 ; LOOP (CCC)
-	set _ZF !X
-	skpz =14 ; If first field is atomic
-		and &!B 18 ; Clear type of first field (0xC7)
-		add ?B =1
-		add !B _CF ; Increase pointer one byte
-		set &!B ZERO ; Clear high byte of left data
-		add ?B =1
-		add !B _CF ; Increase pointer one byte
-		set &!B ZERO ; Clear low byte of left data
-		set !Y =_E_S_H_PRIVSTACK
-		set ?Y =_E_S_L_PRIVSTACK
-		set !X =02
-		call PUSH_FRAME ; PUSH a new frame
-		               ; ('recurse' into right field)
-		add ?B =1
-		add !B _CF  ; Increase pointer one byte
-		set &!Y &!B ; Set high byte of frame to high byte of right field
-		add ?B =1
-		add !B _CF  ; Increase pointer one byte
-		add ?Y =1
-		add !Y _CF  ; Increase pointer one byte
-		set &!Y &!B ; Set low byte of frame to low byte of right field
-		skmz =89 ; LOOP (CCC)
-	set _ZF ?X
-	skpz =14 ; If second field is atomic
-		and &!B 19 ; Clear type of second field (0xF8)
-		add ?B =3
-		add !B _CF ; Increase pointer three bytes
-		set &!B ZERO ; Clear high byte of right data
-		add ?B =1
-		add !B _CF ; Increase pointer one byte
-		set &!B ZERO ; Clear low byte of right data
-		set !Y =_E_S_H_PRIVSTACK
-		set ?Y =_E_S_L_PRIVSTACK
-		set !X =02
-		call PUSH_FRAME ; PUSH a new frame
-		               ; ('recurse' into left field)
-		sub ?B =2
-		sub !B _CF ; Decrease pointer three bytes
-		set &!Y &!B ; Set high byte of frame to high byte of left field
-		add ?B =1
-		add !B _CF  ; Increase pointer one byte
-		add ?Y =1
-		add !Y _CF  ; Increase pointer one byte
-		set &!Y &!B ; Set low byte of frame to low byte of left field
-		skmz =5F ; LOOP (CCC)
-	;ELSE, both are nonatomic, just 'recurse' into left field
-	and &!B 18 ; Clear type of first field (0xC7)
-	add ?B =1
-	add !B _CF ; Increase pointer one byte
-	set &!B ZERO ; Clear high byte of left data
-	add ?B =1
-	add !B _CF ; Increase pointer one byte
-	set &!B ZERO ; Clear low byte of left data
-	set !Y =_E_S_H_PRIVSTACK
-	set ?Y =_E_S_L_PRIVSTACK
-	set !X =02
-	call PUSH_FRAME ; PUSH a new frame
-	               ; ('recurse' into right field)
-	add ?B =1
-	add !B _CF  ; Increase pointer one byte
-	set &!Y &!B ; Set high byte of frame to high byte of right field
-	add ?B =1
-	add !B _CF  ; Increase pointer one byte
-	add ?Y =1
-	add !Y _CF  ; Increase pointer one byte
-	set &!Y &!B ; Set low byte of frame to low byte of right field
-	skmz =63 ; LOOP (CCC)
 ret DEALLOC_NODE
-; ^ SUBROUTINE CURRENTLY BEING DEBUGGED, BECAUSE IT DOESN'T REALLY WORK
 
 
 set 120 =98 ; 10 011 000

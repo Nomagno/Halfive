@@ -61,7 +61,8 @@ enum HWElq_Proc_Syntax {
 	ELQ_SYNTAX_IF = 16,
 	ELQ_SYNTAX_DEFINE = 17,
 	ELQ_SYNTAX_BEGIN = 18,
-	ELQ_SYNTAX_LAMBDA = 19
+	ELQ_SYNTAX_LAMBDA = 19,
+	ELQ_SYNTAX_ASSIGN = 20
 };
 
 typedef struct HWElq_Node{

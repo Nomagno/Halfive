@@ -52,12 +52,12 @@ x == 'v' || x == 'w' || x == 'x' || x == 'y' || x == 'z' || x == '?')
 
 #define ISSTANDARDSYNTAX(x)\
 (CMPSTR(x, "car") || CMPSTR(x, "cdr") || CMPSTR(x, "cons") ||\
-CMPSTR(x, "define") || CMPSTR(x, "nil?") || CMPSTR(x, "atom?") ||\
-CMPSTR(x, "procedure?") || CMPSTR(x, "eq?") || CMPSTR(x, "add") ||\
-CMPSTR(x, "sub") || CMPSTR(x, "and") || CMPSTR(x, "or") ||\
-CMPSTR(x, "xor") || CMPSTR(x, "shift") || CMPSTR(x, "set") ||\
-CMPSTR(x, "half") || CMPSTR(x, "if") || CMPSTR(x, "begin") ||\
-CMPSTR(x, "lambda"))
+CMPSTR(x, "define") || CMPSTR(x, "assign") || CMPSTR(x, "nil?") ||\
+CMPSTR(x, "atom?") || CMPSTR(x, "procedure?") || CMPSTR(x, "eq?") ||\
+CMPSTR(x, "add") || CMPSTR(x, "sub") || CMPSTR(x, "and") ||\
+CMPSTR(x, "or") || CMPSTR(x, "xor") || CMPSTR(x, "shift") ||\
+CMPSTR(x, "set") || CMPSTR(x, "half") || CMPSTR(x, "if") ||\
+CMPSTR(x, "begin") || CMPSTR(x, "lambda"))
 
 #define GETSTANDARDSYNTAX(x, y)\
 if(CMPSTR(x, "car")){ y = ELQ_PROC_CAR; }\
@@ -79,15 +79,16 @@ else if(CMPSTR(x, "set")){ y = ELQ_PROC_SET; }\
 else if(CMPSTR(x, "halt")){ y = ELQ_PROC_HALT; }\
 else if(CMPSTR(x, "lambda")){ y = ELQ_SYNTAX_LAMBDA; }\
 else if(CMPSTR(x, "define")){ y = ELQ_SYNTAX_DEFINE; }\
+else if(CMPSTR(x, "assign")){ y = ELQ_SYNTAX_ASSIGN; }\
 else if(CMPSTR(x, "if")){ y = ELQ_SYNTAX_IF; }
 
-HWElq_Node *HWElq_appendNode(HWElq_Node *parent, _Bool direction, 
+HWElq_Node *HWElq_appendNode(HWElq_Node *parent, _Bool direction,
                              HWElq_Node child, HWElq_NodeHeap *heap){
 	heap->mempool[heap->poolindex] = child;
 	if(parent != NULL){
-		if (direction) { parent->right = 
+		if (direction) { parent->right =
 		                 &heap->mempool[heap->poolindex]; }
-		if (!direction) { parent->left = 
+		if (!direction) { parent->left =
 		                  &heap->mempool[heap->poolindex]; }
 		heap->mempool[heap->poolindex].parent = parent;
 	} else {
@@ -120,7 +121,7 @@ s/ )/)/g;'
 */
 HWElq_Node *HWElq_Parse(char *in, HWElq_NodeHeap *nodeheap){
 	HWElq_Stack forkstack = {0};
-	HWElq_Node *root = HWElq_appendNode(NULL, 0, 
+	HWElq_Node *root = HWElq_appendNode(NULL, 0,
 	                   (HWElq_Node){ .type = ELQ_EMPTY }, nodeheap);
 	HWElq_Node *currnode = root;
 	char tmpstring[24];
@@ -154,7 +155,7 @@ HWElq_Node *HWElq_Parse(char *in, HWElq_NodeHeap *nodeheap){
 						                      *(in + 1), 0}, NULL, 16);
 						in += 1;
 					} else {
-						currnode->valScalar = hwstrtoul((char[]){*in, 0}, 
+						currnode->valScalar = hwstrtoul((char[]){*in, 0},
 						                      NULL, 16);
 					}
 				} else if(ISVARIABLEDIGIT(*in)){
@@ -178,14 +179,14 @@ HWElq_Node *HWElq_Parse(char *in, HWElq_NodeHeap *nodeheap){
 				} else if (*in == '%'){
 					currnode->type = ELQ_LIT_NIL;
 				}
-				currnode = HWElq_appendNode(currnode->parent, 1, 
+				currnode = HWElq_appendNode(currnode->parent, 1,
 				           (HWElq_Node){ .type = ELQ_EMPTY }, nodeheap);
-				currnode = HWElq_appendNode(currnode->parent, 1, 
+				currnode = HWElq_appendNode(currnode->parent, 1,
 				           (HWElq_Node){ .type = ELQ_EMPTY }, nodeheap);
 				break;
 		}
 #ifdef HWELQ_DEBUG
-		printf("COUNTER: %u\nCHARACTER: %c\n LASTCHAR: %c\n\n", 
+		printf("COUNTER: %u\nCHARACTER: %c\n LASTCHAR: %c\n\n",
 		        i, *in, lastchar); /*DEBUG*/
 		i += 1; /*DEBUG*/
 #endif
@@ -258,3 +259,50 @@ int main(void){
 	}
 }
 #endif
+
+/*Execution example:
+(... ((lambda (x) (add (car (cons 4 7)) x)) 6) ...)
+
+allocate 6;
+create stack frame;
+set var x to address of 6;
+JUMP to anonymous procedure;
+	allocate 4;
+	allocate 7;
+	create stack frame;
+	set var x to address of 4;
+	set var y to address 7;
+	JUMP to cons;
+		allocate (4 . 7);
+		set return field of previous frame to address of (4 . 7);
+		RETURN to anonymous procedure;
+	destroy stack frame;
+	destroy 4;
+	destroy 7;
+	allocate copy of (4 . 7);
+	destroy return field object (4 . 7);
+	create stack frame;
+	set var x to address of (4 . 7);
+	JUMP to car;
+		allocate 4;
+		set return field of previous stack frame to address of 4;
+		RETURN to anonymous procedure;
+	destroy stack frame;
+	allocate copy of 4;
+	destroy return field object 4;
+	destroy (4 . 7);
+	allocate stack frame;
+	set var x to address of 4;
+	set var y to address of 6;
+	JUMP to add;
+		allocate 10;
+		set previous stack frame return field to address of 10;
+		RETURN to anonymous procedure;
+	destroy 4;
+	destroy 6;
+	allocate copy of 10;
+	destroy return field value 10;
+	set previous stack frame return field to address of 10;
+	RETURN to [CALLER]
+[CALLER HAPPILY CONTINUES WITH ITS EXECUTION]
+*/

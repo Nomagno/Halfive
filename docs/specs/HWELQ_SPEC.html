@@ -1,13 +1,13 @@
 <h1>Half-World Eloquent Lisp</h1>
 <h4>SPDX identifier: COIL-1.0</h4>
 <h4>Copyright Nomagno 2022</h4>
-<p>It is recommended to use the &#x201C;.hwelq&#x201D; extension for HW-Eloquent code files (where applicable). HW-Eloquent is identified by the MIME type <code>text/hwelq</code></p>
-<h3>HW-Eloquent is a minimalistic Lisp dialect to abstract over HWVM programs</h3>
-<h4>SYNTAX:</h4>
+<p>It is recommended to use the &#x201C;.hwelq&#x201D; extension for Eloquent code files (where applicable). Eloquent is identified by the MIME type <code>text/hwelq</code></p>
+<h3>Eloquent is a minimalistic Lisp dialect to abstract over HWVM programs</h3>
+<h3>SYNTAX:</h3>
 <ul>
 <li>If statement:
 <ul>
-<li><code>(if bool</code> -&gt; If <code>bool</code> evaluates to an unsigned scalar that is not 0:
+<li><code>(if bool</code> -&gt; If <code>bool</code> evaluates to anything other than <code>%</code>:
 <ul>
 <li><code>ontrue</code> -&gt; Evaluate this.</li>
 <li><code>onfalse)</code> -&gt; Otherwise evaluate this.</li>
@@ -15,7 +15,22 @@
 </ul></li>
 <li>Begin Statement: <code>(begin expr1 expr2 ... exprN)</code>
 <ul>
-<li>Evaluates expressions in order. The <code>begin</code> statement itself evaluates to whatever the last expression evaluates to.</li>
+<li>The expressions are evaluated in order.</li>
+<li>Evaluates to the value of the last expression.</li>
+</ul></li>
+<li>Define statement: <code>(define var val)</code>
+<ul>
+<li>Define a local variable, <code>var</code>, to mean a specific value, <code>val</code>.</li>
+<li>It may not be redefined in the current scope.</li>
+<li>Defining a variable with the same name in deeper scopes will cause the name to be eclipsed.</li>
+<li>Evaluates to <code>val</code>.</li>
+</ul></li>
+<li>Assign statement: <code>(assign var val)</code>
+<ul>
+<li>Where <code>var</code> is a variable that has already been defined, change its value to <code>val</code>.</li>
+<li>It may be reassigned in the current scope.</li>
+<li>It is possible to reassign it in deeper scopes where the name is not eclipsed.</li>
+<li>Evaluates to <code>val</code>.</li>
 </ul></li>
 <li>Lambda statement:
 <ul>
@@ -28,15 +43,6 @@
 <li>Procedure call: <code>(procedure arg1 arg2 ...)</code>
 <ul>
 <li>Call procedure with arguments. The arguments are evaluated in left-to-right order before passing them to the procedure. Evaluates to whatever the procedure body evaluates.</li>
-</ul></li>
-<li>Define variable: <code>(define var val)</code>
-<ul>
-<li>Define a local variable in the current scope, <code>var</code>, to mean a specific value, <code>val</code>. It can&#x2019;t be redefined in the current scope.</li>
-<li>Evaluates to <code>val</code>.</li>
-<li>EXAMPLE: <code>(define myfunc (lambda x (if (eq? x 0) (0) (self (sub x 1)) )))</code>
-<ul>
-<li>Defines <code>myfunc</code> to mean the calling of <code>myfunc</code> as many times as the value of the unsigned scalar <code>x</code>, and it evaluates deterministically to the unsigned scalar <code>0</code>.</li>
-</ul></li>
 </ul></li>
 </ul>
 <h3>CORE PROCEDURES:</h3>
@@ -55,32 +61,28 @@
 </ul></li>
 <li>PROCEDURE: <code>(unsigned? a)</code>
 <ul>
-<li>Evaluates to 1 if <code>a</code> is an unsigned scalar. Otherwise it evaluates to 0.</li>
+<li>Evaluates to 1 if <code>a</code> is an unsigned scalar. Otherwise it evaluates to <code>%</code>.</li>
 </ul></li>
 <li>PROCEDURE: <code>(nil? a)</code>
 <ul>
-<li>Evaluates to 1 if <code>a</code> is <code>%</code>. Otherwise it evaluates to 0.</li>
+<li>Evaluates to 1 if <code>a</code> is <code>%</code>. Otherwise it evaluates to <code>%</code>.</li>
 </ul></li>
 <li>PROCEDURE: <code>(procedure? a)</code>
 <ul>
-<li>Evaluates to 1 if <code>a</code> is a procedure, otherwise it evaluates to 0.</li>
+<li>Evaluates to 1 if <code>a</code> is a procedure, otherwise it evaluates to <code>%</code>.</li>
 </ul></li>
 <li>PROCEDURE: <code>(atom? a)</code>
 <ul>
-<li>Evaluates to 1 if <code>a</code> is an atom. Otherwise it evaluates to 0.</li>
+<li>Evaluates to 1 if <code>a</code> is an atom. Otherwise it evaluates to <code>%</code>.</li>
 </ul></li>
 <li>PROCEDURE: <code>(eq? a b)</code>
 <ul>
-<li>Evaluates to 1 if <code>a</code> and <code>b</code> are both atoms, and both are the exact same atom. Otherwise it evaluates to 0.</li>
+<li>Evaluates to 1 if <code>a</code> and <code>b</code> are both the exact same procedure. Otherwise it evaluates to <code>%</code>.</li>
 </ul></li>
 </ul>
 <h3>OPERATION PROCEDURES:</h3>
 <ul>
-<li>RULES:
-<ul>
-<li>The first six apply the operation, and evaluate to a dotted pair of the form <code>(VAL . CF)</code>, where <code>VAL</code>is an unsigned scalar representing the result, and <code>CF</code> is an unsigned scalar that is one if there was overflow/underflow, and zero if there wasn&#x2019;t.</li>
-<li><code>halt</code> evaluates to <code>%</code>, as it is only useful for its side effects.</li>
-</ul></li>
+<li>The first six procedures evaluate to the result of the operation.</li>
 <li>PROCEDURE: (bitwise add): <code>(add x y)</code>
 <ul>
 <li>Where <code>x</code> and <code>y</code> are unsigned scalars.</li>
@@ -106,32 +108,26 @@
 <li>Where <code>x</code> and <code>y</code> are unsigned scalars.</li>
 <li>Behaviour corresponds to HWVM shift instruction.</li>
 </ul></li>
-<li>PROCEDURE: (address set): <code>(set addrpair y)</code>
+<li>PROCEDURE: (address set): <code>(set x y)</code>
 <ul>
-<li>Where <code>addrpair</code> is a cons cell of the form <code>(high . low)</code>, for the high and low byte of the address to set.</li>
-<li>Where <code>y</code> is either an unsigned scalar, or a cons cell of the form <code>(high . low)</code>, for the high and low byte of the address to read. Evaluates to the value written to <code>addrpair</code>.</li>
+<li>Where <code>x</code> is a cons cell of the form <code>(high . low)</code>, for the high and low byte of the address to set.</li>
+<li>Where <code>y</code> is either an unsigned scalar, or a cons cell of the form <code>(high . low)</code>, for the high and low byte of the address to read.</li>
+<li>To <code>set</code> an address to itself is considered only a read.</li>
+<li>Evaluates to the value written to <code>x</code>.</li>
 </ul></li>
 <li>PROCEDURE 17: <code>(halt)</code>
 <ul>
 <li>Terminates the program.</li>
+<li>Evaluates to <code>%</code>.</li>
 </ul></li>
 </ul>
 <h3>CLARIFICATIONS</h3>
 <ul>
-<li>A list is either <code>%</code> or a cons cell where the right hand side is a list. Hence, <code>(a . b)</code>, <code>a</code>, <code>(a . (b . c) . %)</code> are not lists, but <code>(a . ((b . %) . %))</code>, <code>(a . %)</code> are lists.</li>
-<li><code>(a b c)</code> notation stands for the list <code>(a . (b . (c . %)))</code>.</li>
-<li>In Eloquent, every piece of data is either a cons cell or an atom. The only three possible types for atoms are unsigned scalar, procedure, or <code>%</code>.</li>
-<li>An atom may be checked for with the procedure <code>atom?</code>, <code>%</code> with the procedure <code>nil?</code>, procedure type with <code>procedure?</code>, and equality of two atoms with <code>eq?</code>.</li>
-<li>In the above text of the specification, whenever <code>where X is Y</code> appears, it is to be interpreted as a statement that <code>X</code> MUST be of type <code>Y</code>, and if it is not, an ERROR occurs.</li>
-<li>Variables, declared using <code>define</code> or as <code>lambda</code> arguments, are replaced with their associated value. In the case of lambdas, their arguments are replaced with the evaluation of the provided expression in the procedure call. For example, <code>(lambda (myvar) (nand myvar 1))</code> would have <code>myvar</code> in the body replaced with the first argument it is passed, so <code>((lambda (myvar) (nand myvar 1)) 2)</code> would execute code equivalent to <code>(nand 2 1)</code>, which evaluates to the (hexadecimal base) scalar FC.</li>
+<li>In Eloquent, every piece of data is either a cons cell or an atom. The only three possible types for atoms are <code>%</code>, procedure, or unsigned scalar.</li>
 <li>Variable names may contain any of <code>abcdefghijklmnopqrstuvwxyz?</code></li>
 <li>Unsigned scalars may contain any of <code>0123456789ABCDEF</code></li>
-<li>Unsigned scalars have a width of 8 bits, hence any unsigned scalar <code>X</code> is effectively processed like so: <code>modulo X 256</code>, before being entered, manipulated, or returned.</li>
-<li>To <code>set</code> addresses lower than <code>(30 . 00)</code> is an ERROR. These lower addresses are reserved for special purposes.</li>
-<li>To <code>set</code> an address to itself is considered only a read, and it is hence allowed even if the address is read-only.</li>
-<li>Take into account HWVM allows addresses to be READ-ONLY or UNMAPPED. Writing to the former is an ERROR, doing anything with the latter is an ERROR.</li>
-<li>No statement in this specification applies as soon as an ERROR has occurred. The program may continue functioning after handling the ERROR gracefully, it may stop functioning, or it may continue functioning in a noncompliant state.</li>
-<li>Variables, declared as <code>lambda</code> arguments or with <code>define</code>, are lexically scoped. Lexical closures are supported. For instance, <code>(define curryadd (lambda x (lambda y (add x y))))</code> defines a procedure <code>curryadd</code> that returns another procedure <code>(lambda y (add x y))</code> incorporating a higher-scope variable. <code>(curryadd 2)</code> returns a procedure that adds <code>2</code> and <code>y</code> when called with a single argument.</li>
-<li>Because of the aforementioned lexical scoping, local variables defined with <code>define</code> or as arguments to a procedure with <code>lambda</code> automatically stop being available as soon as the scope is left. These local variables always take priority over identically-named higher-scope variables, to avoid name clashing.</li>
-<li>The highest scope or &#x2018;global&#x2019; scope is that in which all statements start. A series of statements in the global scope will automatically be wrapped in a <code>begin</code> statement, so they are executed sequentially. This ensures a program such as <code>(define x FF) (car (add x 4))</code> has a single return value of <code>3</code>, and it is equivalent to <code>(begin (define x FF) (car (add x 4)))</code>.</li>
+<li>Unsigned scalars have a width of 8 bits.</li>
+<li>A list is either <code>%</code> or a cons cell where the right hand side is a list. Hence, <code>(a . b)</code>, <code>a</code>, <code>(a . (b . c) . %)</code> are not lists, but <code>(a . ((b . %) . %))</code>, <code>(a . %)</code> are lists.</li>
+<li><code>(a b c)</code> notation stands for the list <code>(a . (b . (c . %)))</code>.</li>
+<li>Note that the entire program and any sub-expressions are, themselves, lists.</li>
 </ul>
