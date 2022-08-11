@@ -82,6 +82,8 @@ else if(CMPSTR(x, "define")){ y = ELQ_SYNTAX_DEFINE; }\
 else if(CMPSTR(x, "assign")){ y = ELQ_SYNTAX_ASSIGN; }\
 else if(CMPSTR(x, "if")){ y = ELQ_SYNTAX_IF; }
 
+#define _DIR_RIGHT 1
+#define _DIR_LEFT 1
 HWElq_Node *HWElq_appendNode(HWElq_Node *parent, _Bool direction,
                              HWElq_Node child, HWElq_NodeHeap *heap){
 	heap->mempool[heap->poolindex] = child;
@@ -121,7 +123,7 @@ s/ )/)/g;'
 */
 HWElq_Node *HWElq_Parse(char *in, HWElq_NodeHeap *nodeheap){
 	HWElq_Stack forkstack = {0};
-	HWElq_Node *root = HWElq_appendNode(NULL, 0,
+	HWElq_Node *root = HWElq_appendNode(NULL, _DIR_LEFT,
 	                   (HWElq_Node){ .type = ELQ_EMPTY }, nodeheap);
 	HWElq_Node *currnode = root;
 	char tmpstring[24];
@@ -139,12 +141,12 @@ HWElq_Node *HWElq_Parse(char *in, HWElq_NodeHeap *nodeheap){
 				if(lastchar == '(' || lastchar == ' '){
 					HWElq_Push(&forkstack, currnode->parent);
 				}
-				currnode = HWElq_appendNode(currnode, 0,
+				currnode = HWElq_appendNode(currnode, _DIR_LEFT,
 				           (HWElq_Node){ .type = ELQ_EMPTY }, nodeheap);
 				break;
 			case ')':
 				currnode->type = ELQ_NIL;
-				currnode = HWElq_appendNode(HWElq_Pop(&forkstack), 1,
+				currnode = HWElq_appendNode(HWElq_Pop(&forkstack), _DIR_RIGHT,
 				           (HWElq_Node){ .type = ELQ_EMPTY }, nodeheap);
 				break;
 			default:
@@ -179,9 +181,9 @@ HWElq_Node *HWElq_Parse(char *in, HWElq_NodeHeap *nodeheap){
 				} else if (*in == '%'){
 					currnode->type = ELQ_LIT_NIL;
 				}
-				currnode = HWElq_appendNode(currnode->parent, 1,
+				currnode = HWElq_appendNode(currnode->parent, _DIR_RIGHT,
 				           (HWElq_Node){ .type = ELQ_EMPTY }, nodeheap);
-				currnode = HWElq_appendNode(currnode->parent, 1,
+				currnode = HWElq_appendNode(currnode->parent, _DIR_RIGHT,
 				           (HWElq_Node){ .type = ELQ_EMPTY }, nodeheap);
 				break;
 		}
@@ -196,6 +198,8 @@ HWElq_Node *HWElq_Parse(char *in, HWElq_NodeHeap *nodeheap){
 	}
 	return root;
 }
+#undef _DIR_LEFT
+#undef _DIR_RIGHT
 
 void HWElq_GenerateCode(const HWElq_Node *ast, HWVM_GeneralMemory *program){
 	/*To be implemented*/
