@@ -194,3 +194,11 @@ void *_hwlibcmemcpy(void *dest, const void *src, size_t n) {
 		d[i] = s[i];
 	return dest;
 }
+
+void *_hwlibcmemset(void *str, int val, size_t n) {
+	unsigned char *s = (unsigned char *)str;
+	for (size_t i = 0; i < n; i++) 
+		s[i] = val;
+	return str;
+}
+

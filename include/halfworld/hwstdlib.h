@@ -36,18 +36,29 @@ typedef unsigned long sulong;
 
 #if !defined(HWLIBC_HOSTED)
 	#define hwstrtoul _hwlibcstrtoul
-	#define hwstrcmp _hwlibcstrcmp
-	#define hwstrtok _hwlibcstrtok
-	#define hwmemcpy _hwlibcmemcpy
+	#define hwstrcmp  _hwlibcstrcmp
+	#define hwstrtok  _hwlibcstrtok
+	#define hwmemcpy  _hwlibcmemcpy
+	#define hwmemset  _hwlibcmemset
+
+	#define hwmalloc  _ERROR_UNIMPLEMENTED
+	#define hwrealloc _ERROR_UNIMPLEMENTED 
+	#define hwfree    _ERROR_UNIMPLEMENTED
 #else
 	#define hwstrtoul strtoul
-	#define hwstrcmp strcmp
-	#define hwstrtok strtok
-	#define hwmemcpy memcpy
+	#define hwstrcmp  strcmp
+	#define hwstrtok  strtok
+	#define hwmemcpy  memcpy
+	#define hwmemset  memset
+
+	#define hwmalloc  malloc
+	#define hwrealloc realloc
+	#define hwfree    free
 #endif
 
 extern sulong _hwlibcstrtoul(char *, char **, int);
 extern int _hwlibcstrcmp(char *, char *);
 extern char *_hwlibcstrtok(char *, char *);
 void *_hwlibcmemcpy(void *dest, const void *src, size_t n);
+void *_hwlibcmemset(void *str, int val, size_t n);
 #endif

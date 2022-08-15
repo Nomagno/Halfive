@@ -32,7 +32,7 @@ typedef uint32_t hwulong;
 typedef uintmax_t hwumax;
 
 #ifdef __cplusplus
-	static const int HWReq_const_one = 1;
+	static int HWReq_const_one = 1;
 	#define IS_LITTLE_ENDIAN (*(hwuchar *)&one)
 #else
 	#define IS_LITTLE_ENDIAN (*(hwuchar *)&(hwuint){1})
