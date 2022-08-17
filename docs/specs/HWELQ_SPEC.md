@@ -27,7 +27,7 @@ Eloquent is identified by the MIME type `text/hwelq`
   * Evaluates to `val`.
 - Lambda statement:
   * `(lambda args body)`
-  * `args` -> List of local variables provided as arguments, e.g. literally `(a b c)`, or if a single variable, `a`, or if no variables, `%`.
+  * `args` -> List of local variables provided as arguments. `(a b c)` - takes three arguments. `a` - takes a variable number of arguments, collected into a proper list. `%` - takes no arguments.
   * `body` -> Code to evaluate when calling the procedure, can contain any syntax, statements, or variables accessible from the current scope.
   * Evaluates to an unnamed procedure that takes the number of arguments in the `args` list, and evaluates `body`, substituting them inside as appropiate.
   * The variable called `self` represents the procedure itself, so it may be called to do recursion.
@@ -51,7 +51,8 @@ Eloquent is identified by the MIME type `text/hwelq`
   * Evaluates to 1 if `a` is an atom. Otherwise it evaluates to `%`.
 - PROCEDURE: `(eq? a b)`
   * Evaluates to 1 if `a` and `b` are both the exact same procedure. Otherwise it evaluates to `%`.
-
+- PROCEDURE: `(apply proc args)`
+  * Calls the procedure `proc` with arguments being each element of the proper list `args`. Evaluates to the result of the procedure.
 ### OPERATION PROCEDURES:
 - The first six procedures evaluate to the result of the operation.
 - PROCEDURE: (bitwise add): `(add x y)`

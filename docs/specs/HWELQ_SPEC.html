@@ -35,7 +35,7 @@
 <li>Lambda statement:
 <ul>
 <li><code>(lambda args body)</code></li>
-<li><code>args</code> -&gt; List of local variables provided as arguments, e.g.&#xA0;literally <code>(a b c)</code>, or if a single variable, <code>a</code>, or if no variables, <code>%</code>.</li>
+<li><code>args</code> -&gt; List of local variables provided as arguments. <code>(a b c)</code> - takes three arguments. <code>a</code> - takes a variable number of arguments, collected into a proper list. <code>%</code> - takes no arguments.</li>
 <li><code>body</code> -&gt; Code to evaluate when calling the procedure, can contain any syntax, statements, or variables accessible from the current scope.</li>
 <li>Evaluates to an unnamed procedure that takes the number of arguments in the <code>args</code> list, and evaluates <code>body</code>, substituting them inside as appropiate.</li>
 <li>The variable called <code>self</code> represents the procedure itself, so it may be called to do recursion.</li>
@@ -79,9 +79,10 @@
 <ul>
 <li>Evaluates to 1 if <code>a</code> and <code>b</code> are both the exact same procedure. Otherwise it evaluates to <code>%</code>.</li>
 </ul></li>
-</ul>
-<h3>OPERATION PROCEDURES:</h3>
+<li>PROCEDURE: <code>(apply proc args)</code>
 <ul>
+<li>Calls the procedure <code>proc</code> with arguments being each element of the proper list <code>args</code>. Evaluates to the result of the procedure. ### OPERATION PROCEDURES:</li>
+</ul></li>
 <li>The first six procedures evaluate to the result of the operation.</li>
 <li>PROCEDURE: (bitwise add): <code>(add x y)</code>
 <ul>

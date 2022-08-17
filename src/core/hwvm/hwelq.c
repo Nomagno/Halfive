@@ -57,7 +57,7 @@ CMPSTR(x, "atom?") || CMPSTR(x, "procedure?") || CMPSTR(x, "eq?") ||\
 CMPSTR(x, "add") || CMPSTR(x, "sub") || CMPSTR(x, "and") ||\
 CMPSTR(x, "or") || CMPSTR(x, "xor") || CMPSTR(x, "shift") ||\
 CMPSTR(x, "set") || CMPSTR(x, "half") || CMPSTR(x, "if") ||\
-CMPSTR(x, "begin") || CMPSTR(x, "lambda"))
+CMPSTR(x, "begin") || CMPSTR(x, "lambda") || CMPSTR(x, "apply"))
 
 #define GETSTANDARDSYNTAX(x, y)\
 if(CMPSTR(x, "car")){ y = ELQ_PROC_CAR; }\
@@ -69,6 +69,7 @@ else if(CMPSTR(x, "unsigned?")){ y = ELQ_PROC_ISUNSIGNED; }\
 else if(CMPSTR(x, "atom?")){ y = ELQ_PROC_ISATOM; }\
 else if(CMPSTR(x, "proc?")){ y = ELQ_PROC_ISPROC; }\
 else if(CMPSTR(x, "eq?")){ y = ELQ_PROC_ISEQ; }\
+else if(CMPSTR(x, "apply")){ y = ELQ_PROC_APPLY; }\
 else if(CMPSTR(x, "add")){ y = ELQ_PROC_ADD; }\
 else if(CMPSTR(x, "sub")){ y = ELQ_PROC_SUB; }\
 else if(CMPSTR(x, "and")){ y = ELQ_PROC_AND; }\
