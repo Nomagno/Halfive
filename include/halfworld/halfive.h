@@ -43,6 +43,8 @@ WORK.*/
 #include <halfworld/hwvm/hwvm.h>
 #endif
 
+/*[hwvi graphics + audio] <& [Monolithic Object Scheduler (Halfive MOS, handles physics)] (<-> [Network Play Module (Halfive NETPM)]) <- [hwt track data, hwvi input, hwvm instances]*/
+
 /*Approximate default storage with VM: 140KBs
 Without VM worst-case scenario: 256Bs
 */
