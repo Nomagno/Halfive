@@ -53,6 +53,7 @@ Eloquent is identified by the MIME type `text/hwelq`
   * Evaluates to 1 if `a` and `b` are both the exact same procedure. Otherwise it evaluates to `%`.
 - PROCEDURE: `(apply proc args)`
   * Calls the procedure `proc` with arguments being each element of the proper list `args`. Evaluates to the result of the procedure.
+
 ### OPERATION PROCEDURES:
 - The first six procedures evaluate to the result of the operation.
 - PROCEDURE: (bitwise add): `(add x y)`
