@@ -8,10 +8,8 @@ Eloquent is identified by the MIME type `text/hwelq`
 ### Eloquent is a minimalistic Lisp dialect to abstract over HWVM programs
 
 ### SYNTAX:
-- If statement:
-  * `(if bool` -> If `bool` evaluates to anything other than `%`:
-    * `ontrue` -> Evaluate this.
-    * `onfalse)` -> Otherwise evaluate this.
+- If statement: `(if bool onfalse ontrue)`
+  * If `bool` evaluates to `%`, evaluate `onfalse`, otherwise evaluate `ontrue`.
 - Begin Statement: `(begin expr1 expr2 ... exprN)`
   * The expressions are evaluated in order.
   * Evaluates to the value of the last expression.
@@ -25,8 +23,7 @@ Eloquent is identified by the MIME type `text/hwelq`
   * It may be reassigned in the current scope.
   * It is possible to reassign it in deeper scopes where the name is not eclipsed.
   * Evaluates to `val`.
-- Lambda statement:
-  * `(lambda args body)`
+- Lambda statement: `(lambda args body)`
   * `args` -> List of local variables provided as arguments. `(a b c)` - takes three arguments. `a` - takes a variable number of arguments, collected into a proper list. `%` - takes no arguments.
   * `body` -> Code to evaluate when calling the procedure, can contain any syntax, statements, or variables accessible from the current scope.
   * Evaluates to an unnamed procedure that takes the number of arguments in the `args` list, and evaluates `body`, substituting them inside as appropiate.

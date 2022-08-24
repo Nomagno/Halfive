@@ -5,13 +5,9 @@
 <h3>Eloquent is a minimalistic Lisp dialect to abstract over HWVM programs</h3>
 <h3>SYNTAX:</h3>
 <ul>
-<li>If statement:
+<li>If statement: <code>(if bool onfalse ontrue)</code>
 <ul>
-<li><code>(if bool</code> -&gt; If <code>bool</code> evaluates to anything other than <code>%</code>:
-<ul>
-<li><code>ontrue</code> -&gt; Evaluate this.</li>
-<li><code>onfalse)</code> -&gt; Otherwise evaluate this.</li>
-</ul></li>
+<li>If <code>bool</code> evaluates to <code>%</code>, evaluate <code>onfalse</code>, otherwise evaluate <code>ontrue</code>.</li>
 </ul></li>
 <li>Begin Statement: <code>(begin expr1 expr2 ... exprN)</code>
 <ul>
@@ -32,9 +28,8 @@
 <li>It is possible to reassign it in deeper scopes where the name is not eclipsed.</li>
 <li>Evaluates to <code>val</code>.</li>
 </ul></li>
-<li>Lambda statement:
+<li>Lambda statement: <code>(lambda args body)</code>
 <ul>
-<li><code>(lambda args body)</code></li>
 <li><code>args</code> -&gt; List of local variables provided as arguments. <code>(a b c)</code> - takes three arguments. <code>a</code> - takes a variable number of arguments, collected into a proper list. <code>%</code> - takes no arguments.</li>
 <li><code>body</code> -&gt; Code to evaluate when calling the procedure, can contain any syntax, statements, or variables accessible from the current scope.</li>
 <li>Evaluates to an unnamed procedure that takes the number of arguments in the <code>args</code> list, and evaluates <code>body</code>, substituting them inside as appropiate.</li>
