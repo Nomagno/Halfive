@@ -38,11 +38,11 @@ Eloquent is identified by the MIME type `text/hwelq`
   * Where `a` is a cons cell, evaluates to the left element of `a`.
 - PROCEDURE: `(cdr a)`
   * Where `a` is a cons cell, evaluates to the right element of `a`.
-- PROCEDURE: `(unsigned? a)`
+- PROCEDURE: `(num? a)`
   * Evaluates to 1 if `a` is an unsigned scalar. Otherwise it evaluates to `%`.
 - PROCEDURE: `(nil? a)`
   * Evaluates to 1 if `a` is `%`. Otherwise it evaluates to `%`.
-- PROCEDURE: `(procedure? a)`
+- PROCEDURE: `(proc? a)`
   * Evaluates to 1 if `a` is a procedure, otherwise it evaluates to `%`.
 - PROCEDURE: `(atom? a)`
   * Evaluates to 1 if `a` is an atom. Otherwise it evaluates to `%`.
@@ -80,6 +80,7 @@ Eloquent is identified by the MIME type `text/hwelq`
 ### CLARIFICATIONS
 - In Eloquent, every piece of data is either a cons cell or an atom. The only three possible types for atoms are `%`, procedure, or unsigned scalar.
 - Variable names may contain any of `abcdefghijklmnopqrstuvwxyz?`
+- An implementation may reject variable names with more than 6 characters, as long as it is indicated in the documentation.
 - Unsigned scalars may contain any of `0123456789ABCDEF`
 - Unsigned scalars have a width of 8 bits.
 - A list is either `%` or a cons cell where the right hand side is a list.

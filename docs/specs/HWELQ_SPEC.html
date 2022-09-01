@@ -1,3 +1,19 @@
+<head>
+<style type="text/css">
+body{
+line-height:1.6;
+font-size:18px;
+color:#444;
+padding:0
+10px}
+h1,h2,h3{
+line-height:1.2
+}
+</style>
+	<title>Half-World Eloquent Lisp</title>
+	<meta name="description" content="The Universal Racing Game">
+</head>
+
 <h1>Half-World Eloquent Lisp</h1>
 <h4>SPDX identifier: COIL-1.0</h4>
 <h4>Copyright Nomagno 2022</h4>
@@ -54,7 +70,7 @@
 <ul>
 <li>Where <code>a</code> is a cons cell, evaluates to the right element of <code>a</code>.</li>
 </ul></li>
-<li>PROCEDURE: <code>(unsigned? a)</code>
+<li>PROCEDURE: <code>(num? a)</code>
 <ul>
 <li>Evaluates to 1 if <code>a</code> is an unsigned scalar. Otherwise it evaluates to <code>%</code>.</li>
 </ul></li>
@@ -62,7 +78,7 @@
 <ul>
 <li>Evaluates to 1 if <code>a</code> is <code>%</code>. Otherwise it evaluates to <code>%</code>.</li>
 </ul></li>
-<li>PROCEDURE: <code>(procedure? a)</code>
+<li>PROCEDURE: <code>(proc? a)</code>
 <ul>
 <li>Evaluates to 1 if <code>a</code> is a procedure, otherwise it evaluates to <code>%</code>.</li>
 </ul></li>
@@ -124,6 +140,7 @@
 <ul>
 <li>In Eloquent, every piece of data is either a cons cell or an atom. The only three possible types for atoms are <code>%</code>, procedure, or unsigned scalar.</li>
 <li>Variable names may contain any of <code>abcdefghijklmnopqrstuvwxyz?</code></li>
+<li>An implementation may reject variable names with more than 6 characters, as long as it is indicated in the documentation.</li>
 <li>Unsigned scalars may contain any of <code>0123456789ABCDEF</code></li>
 <li>Unsigned scalars have a width of 8 bits.</li>
 <li>A list is either <code>%</code> or a cons cell where the right hand side is a list. Hence, <code>(a . b)</code>, <code>a</code>, <code>(a . (b . c) . %)</code> are not lists, but <code>(a . ((b . %) . %))</code>, <code>(a . %)</code> are lists.</li>

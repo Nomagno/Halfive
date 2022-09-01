@@ -53,7 +53,7 @@ x == 'v' || x == 'w' || x == 'x' || x == 'y' || x == 'z' || x == '?')
 #define ISSTANDARDSYNTAX(x)\
 (CMPSTR(x, "car") || CMPSTR(x, "cdr") || CMPSTR(x, "cons") ||\
 CMPSTR(x, "define") || CMPSTR(x, "assign") || CMPSTR(x, "nil?") ||\
-CMPSTR(x, "atom?") || CMPSTR(x, "procedure?") || CMPSTR(x, "eq?") ||\
+CMPSTR(x, "atom?") || CMPSTR(x, "proc?") || CMPSTR(x, "eq?") || CMPSTR(x, "num?") || \
 CMPSTR(x, "add") || CMPSTR(x, "sub") || CMPSTR(x, "and") ||\
 CMPSTR(x, "or") || CMPSTR(x, "xor") || CMPSTR(x, "shift") ||\
 CMPSTR(x, "set") || CMPSTR(x, "half") || CMPSTR(x, "if") ||\
@@ -65,7 +65,7 @@ else if(CMPSTR(x, "begin")){ y = ELQ_SYNTAX_BEGIN; }\
 else if(CMPSTR(x, "cdr")){ y = ELQ_PROC_CDR; }\
 else if(CMPSTR(x, "cons")){ y = ELQ_PROC_CONS; }\
 else if(CMPSTR(x, "nil?")){ y = ELQ_PROC_ISNIL; }\
-else if(CMPSTR(x, "unsigned?")){ y = ELQ_PROC_ISUNSIGNED; }\
+else if(CMPSTR(x, "num?")){ y = ELQ_PROC_ISNUM; }\
 else if(CMPSTR(x, "atom?")){ y = ELQ_PROC_ISATOM; }\
 else if(CMPSTR(x, "proc?")){ y = ELQ_PROC_ISPROC; }\
 else if(CMPSTR(x, "eq?")){ y = ELQ_PROC_ISEQ; }\
