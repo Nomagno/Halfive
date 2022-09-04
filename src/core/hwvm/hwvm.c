@@ -44,9 +44,9 @@ enum optype { adr = 0, lit = 1, ptr = 2 };
 #define CURR_OP program->code.opnd[_PROG_CO]
 #define MASK program->mask
 #define DATA program->data
-#define _BREAK                                                                 \
+#define _BREAK do {                                                               \
 	rwinf->was_err = !!return_code;                                                    \
-	return return_code
+	return return_code; } while(0)
 
 #define GETPTR(arr, where) ((arr[where] << 8) | (arr[where + 1]))
 
@@ -54,7 +54,7 @@ enum optype { adr = 0, lit = 1, ptr = 2 };
 	((arr[where] != NULL && arr[where + 1] != NULL) &&                     \
 	 (arr[GETPTR(*arr, where)] != NULL))
 
-#define GETVAR(dest, arr, pos, rvar)                                           \
+#define GETVAR(dest, arr, pos, rvar) do {                                        \
 	if (ISLIT(arr[2], pos)) {                                              \
 		dest = arr[pos - 1];                                           \
 	} else if (ISADR(arr[2], pos) && DATA[arr[pos - 1]] != NULL) {         \
@@ -75,7 +75,9 @@ enum optype { adr = 0, lit = 1, ptr = 2 };
 			rwinf->adrw = GETPTR(*DATA, arr[pos - 1]);             \
 			rwinf->read_adrw = 1;                                  \
 		}                                                              \
-	}
+			}                                                          \
+		} while(0)
+
 
 #define GETTYPE(arr, pos)                                                      \
 	((ISPTR(arr[2], pos)) ? ptr : ((ISADR(arr[2], pos)) ? adr : lit))

@@ -59,7 +59,7 @@ CMPSTR(x, "or") || CMPSTR(x, "xor") || CMPSTR(x, "shift") ||\
 CMPSTR(x, "set") || CMPSTR(x, "half") || CMPSTR(x, "if") ||\
 CMPSTR(x, "begin") || CMPSTR(x, "lambda") || CMPSTR(x, "apply"))
 
-#define GETSTANDARDSYNTAX(x, y)\
+#define GETSTANDARDSYNTAX(x, y) do{ \
 if(CMPSTR(x, "car")){ y = ELQ_PROC_CAR; }\
 else if(CMPSTR(x, "begin")){ y = ELQ_SYNTAX_BEGIN; }\
 else if(CMPSTR(x, "cdr")){ y = ELQ_PROC_CDR; }\
@@ -81,7 +81,8 @@ else if(CMPSTR(x, "halt")){ y = ELQ_PROC_HALT; }\
 else if(CMPSTR(x, "lambda")){ y = ELQ_SYNTAX_LAMBDA; }\
 else if(CMPSTR(x, "define")){ y = ELQ_SYNTAX_DEFINE; }\
 else if(CMPSTR(x, "assign")){ y = ELQ_SYNTAX_ASSIGN; }\
-else if(CMPSTR(x, "if")){ y = ELQ_SYNTAX_IF; }
+else if(CMPSTR(x, "if")){ y = ELQ_SYNTAX_IF; }\
+	} while(0)
 
 #define _DIR_RIGHT 1
 #define _DIR_LEFT 1
