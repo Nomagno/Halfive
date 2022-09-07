@@ -1,50 +1,50 @@
-HALF-WORLD, THE UNIVERSAL RACING GAME
+HALFIVE, THE UNIVERSAL RACING GAME
 
-Half-World is a stateless protocol for racing games, and with a bit more work any 2D game that needs to be accessible, lightweight, and work under heavy/total packet loss.
+Halfive is a stateless protocol for racing games, and with a bit more work any 2D game that needs to be accessible, lightweight, and work under heavy/total packet loss.
 
 It has no implementation requirements whatsoever.
 
-There is a modular no-dependency implementation of a racing game that adheres to Half-World.
+There is a modular no-dependency implementation of a racing game that adheres to Halfive.
 'include' folder: Interfaces
 'src' folder: Implementations
 It has a lot of C utility interfaces, such as:
-- Portable freestanding implementation of the C standard library (include/halfworld/hwstdlib.h)
-- Portable coroutine-esque utilities (include/halfworld/hwcr.h)
-- HWDOC (Packet/Circuit) generic tokenizer (include/halfworld/hwdoc/hwdoc.h)
-- Packet/Circuit data structures and tokenizer (WIP) (include/halfworld/hwdoc/hwnet.h) (include/halfworld/hwdoc/hwt.h)
-- Portable VM with custom instruciton set,  and assembly language (include/halfworld/hwvm/hwvm.h) (include/halfworld/hwvm/hwasm.h)
-- Portable abstraction over graphics, sound, and input backends (include/halfworld/hwvi.h)
-- Portable utilities for working with rational numbers (include/halfworld/rat.h)
-- Portable utilities for handling mathematical operations (include/halfworld/hwmath.h)
-- Portable RPG battle simulator and prototypes (WIP) (include/halfworld/hwrpg.h) (include/halfworld/hwrpg_proto.h)
-- Portable declarative physics engine (WIP) (include/halfworld/halfive.h)
+- Portable freestanding implementation of the C standard library (include/halfive/h5stdlib.h)
+- Portable coroutine-esque utilities (include/halfive/h5cr.h)
+- H5DOC (Packet/Circuit) generic tokenizer (include/halfive/h5doc/h5doc.h)
+- Packet/Circuit data structures and tokenizer (WIP) (include/halfive/h5doc/h5net.h) (include/halfive/h5doc/h5t.h)
+- Portable VM with custom instruciton set,  and assembly language (include/halfive/h5vm/h5vm.h) (include/halfive/h5vm/h5asm.h)
+- Portable abstraction over graphics, sound, and input backends (include/halfive/h5vi.h)
+- Portable utilities for working with rational numbers (include/halfive/rat.h)
+- Portable utilities for handling mathematical operations (include/halfive/h5math.h)
+- Portable RPG battle simulator and prototypes (WIP) (include/halfive/h5rpg.h) (include/halfive/h5rpg_proto.h)
+- Portable declarative physics engine (WIP) (include/halfive/h5phy.h)
 
 List of specifications and corresponding mime types:
 	Encoding formats:
-		Half-World Document (HWDOC)
-			- text/hwdoc
+		Halfive Document (H5DOC)
+			- text/h5doc
 
 	Domain-specific data formats:
-		Half-World Network (HWNET)
-			- text/hwnet
-		Half-World Track (HWT)
-			- text/hwt
+		Halfive Network (H5NET)
+			- text/h5net
+		Halfive Track (H5T)
+			- text/h5t
 
 	General-purpose tools:
-		Half-World Virtual Machine (HWVM)
-			- text/hwasm
-			- application/hwbin
-			- application/hwdrive
-		Half-World Eloquent Lisp (HWElq)
-			- text/hwelq
-		Half-World Pixel Format (HWPIX)
-			- application/hwpix
+		Halfive Virtual Machine (H5VM)
+			- text/h5asm
+			- application/h5bin
+			- application/h5drive
+		Halfive Eloquent Lisp (H5Elq)
+			- text/h5elq
+		Halfive Pixel Format (H5PIX)
+			- application/h5pix
 
 
 If you read all specifications in the docs, you should be able to:
- - Use HWNET as a basic communications standard
- - Use HWT as a basic format for circuits
- - Use HWVM as a basic runtime for user-generated content
+ - Use H5NET as a basic communications standard
+ - Use H5T as a basic format for circuits
+ - Use H5VM as a basic runtime for user-generated content
 
 To make them extensions easily trackable, I recommend specifying inside them an 8-character alphanumerical name (underscore hyphen 0-9 A-Z a-z, e.g "_My-Ext2").
 

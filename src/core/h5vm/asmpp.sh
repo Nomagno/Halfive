@@ -28,35 +28,78 @@
 #OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 #WORK.
 
-# Generate RSS feed from files in directory
-# Requirements:
-# POSIX sh
-# POSIX sed
-# POSIX grep
-# POSIX ls
-# POSIX printf
+# Preprocess Halfive Assembly
 
-FEED_FILE='rss.xml'
-TEMPLATE='<?xml version="1.0" encoding="US-ASCII" ?>
-<rss version="2.0">
-<channel>
-<title>Halfive Blog</title>
-<description>Feed for news on the development of Halfive</description>
-<link>_URL/index.html</link>
-<copyright>2021,2022 Nomagno COIL License</copyright>'
-ITEM='<item>
-<title>_TITLE</title>
-<description>Halfive Blog Entry</description>
-<link>_URL/news/_FILE</link>
-</item>
+#REQUIREMENTS:
+#POSIX sh
+#POSIX printf
+#POSIX echo
+#POSIX grep
+#POSIX cut
+#POSIX cat
+#POSIX sed
+#POSIX awk
+#POSIX head
+#POSIX tail
+
+
+# Takes file, inserts other files in place of '#i /path/to/file' lines, saves to temp file
+includepp(){
+	file2=
+	IFS='
 '
-CLOSURE='</channel></rss>'
-REP_URL='http://halfive.nomagno.xyz'
+	tmp=$(mktemp)
+	
+	while read -r line; do
+		case "$line" in
+		'#i'*)
+			file2="$file2
+$(cat "$(printf "%s" "$line" | sed 's|^#i ||g')")"
+		;;
+		*)
+			file2="$file2
+$line"
+		;;
+		esac
+	done < "$1"
+	printf '%s\n' "$file2" > "$tmp"
+	printf '%s\n' "$tmp"
+}
 
-printf '%s\n' "$TEMPLATE" | sed "s|_URL|$REP_URL|g" > $FEED_FILE
-for REP_FILE in $(ls | grep 'html' | grep -ve 'genfeed.sh' -ve "$FEED_FILE"); do
-REP_TITLE=$(printf '%s\n' "$REP_FILE" | sed 's|_| |g; s|\..*$||g')
-printf '\n%s\n' "$ITEM" | sed "s|_URL|$REP_URL|g; s|_FILE|$REP_FILE|g; s|_TITLE|$REP_TITLE|g" \
->> $FEED_FILE
-done
-printf '%s' "$CLOSURE" >> $FEED_FILE
+# Preprocesses macros defined as '#d macro,meaning', '__' means newline
+asmpp(){
+	. ../utils.sh # Import script with the stac 'line-by-line reversal' function
+	f=$(sed 's|;.*$||g; /#d /d' < "$1")
+	rep=$(grep '^#d' "$1" |
+	      sed 's/^#d //g; s/ /|/g')
+	rep=$(echo $rep | stac) # Reverse $rep line-by-line
+
+	# For each line in $rep, get the macro name and meaning
+	for i in $rep; do
+		p1=$(printf '%s\n' "$i" |
+		     cut -d',' -f1 |
+		     sed 's/|/ /g; s/\&/\\&/g')
+		p2=$(printf '%s\n' "$i" | 
+		     cut -d',' -f2 | 
+		     sed 's/|/ /g; s/\&/\\&/g') 
+
+		# For each line in $rep, scan the entire file and replace the macro name for its macro meaning
+		f=$(printf '%s ' "$f" | 
+		    sed "s/$p1/$p2/g") 
+	done
+
+	# Replace __ with newline, eliminate indentation and whitespace padding
+	f=$(printf '%s\n' "$f" | 
+	    sed 's/__/\n/g; /^[[:space:]]*$/d;' | 
+	    sed 's/^[ \t]*//g') 
+	printf '%s\n' "$f"
+}
+
+# Preprocess for includes
+tmp2=$(includepp "$1") 
+
+# Preprocess for macros
+asmpp "$tmp2"
+
+# Remove tmpfile
+rm "$tmp2" 

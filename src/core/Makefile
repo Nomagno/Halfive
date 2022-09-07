@@ -29,41 +29,41 @@
 
 
 #Available macros (not setting any of these makes for a headless/nolibc build):
-#HWVI_GSERV_IMPL_FOO - Enable HWVI graphics server implementation foo
-#HWVI_AUDIOSERV_IMPL_FOO - Enable HWVI audio server implementation foo
-#HWVI_STDINPUT_IMPL_FOO - Enable HWVI input server implementation foo
-#HWASSEMBLY - Enable entry point for assembler
-#HALFIVE_VM_SIMULATION - Most memory consuming option, enable doing per-player HWVM simulation.
+#H5VI_GSERV_IMPL_FOO - Enable H5VI graphics server implementation foo
+#H5VI_AUDIOSERV_IMPL_FOO - Enable H5VI audio server implementation foo
+#H5VI_STDINPUT_IMPL_FOO - Enable H5VI input server implementation foo
+#H5ASSEMBLY - Enable entry point for assembler
+#H5PHY_VM_SIMULATION - Most memory consuming option, enable doing per-player H5VM simulation.
 #FLOATS_SUPPORTED - Are floats permissible on the target platform?
 
 INCLROOT="../../include/"
 
-PARAMS="-DHWVERSION=0 -DHALFIVE_VM_SIMULATION -DHWVI_GSERV_IMPL_SDL2 -DHWVI_AUDIOSERV_IMPL_SDL2 -DHWVI_STDINPUT_IMPL_PORTABLE"
+PARAMS="-DH5VERSION=0 -DH5PHY_VM_SIMULATION -DH5VI_GSERV_IMPL_SDL2 -DH5VI_AUDIOSERV_IMPL_SDL2 -DH5VI_STDINPUT_IMPL_PORTABLE"
 
-main: warn libhalfworld.a
-hwasm: warn hwassembler
+main: warn libhalfive.a
+h5asm: warn h5assembler
 remain: clean main
-rehwasm: clean hwassembler
+reh5asm: clean h5assembler
 clean:
-	rm -f *.o *.a hwassembler
+	rm -f *.o *.a h5assembler
 
 warn:
 	echo "This program makes extensive used of C preprocessor macros. You may use the variable PARAMS=\"-DMYVAR1 -DMYVAR2\" like so to set them"
-libhalfworld.a : hwstdlib.o hwasm.o hwvm.o hwdoc.o hwmath.o hwrat.o
-	ar rcs libhalfworld.a hwstdlib.o hwasm.o hwvm.o hwdoc.o hwmath.o hwrat.o
-hwassembler : hwassembler.o hwvm.o hwstdlib.o
-	cc $(PARAMS) -o hwassembler hwassembler.o hwvm.o hwstdlib.o
-hwassembler.o : hwvm.o
-	cc $(PARAMS) -I$(INCLROOT) -DHWASSEMBLY -c -o hwassembler.o hwvm/hwasm.c
-hwasm.o : hwvm.o
-	cc $(PARAMS) -I$(INCLROOT) -c -o hwasm.o hwvm/hwasm.c
-hwvm.o : hwstdlib.o
-	cc $(PARAMS) -I$(INCLROOT) -c -o hwvm.o hwvm/hwvm.c
-hwdoc.o : hwstdlib.o
-	cc $(PARAMS) -I$(INCLROOT) -c -o hwdoc.o hwdoc/hwdoc.c
-hwstdlib.o :
-	cc $(PARAMS) -I$(INCLROOT) -c -o hwstdlib.o hwstdlib.c
-hwmath.o :
-	cc $(PARAMS) -I$(INCLROOT) -c -o hwmath.o hwmath.c
-hwrat.o :
-	cc $(PARAMS) -I$(INCLROOT) -c -o hwrat.o hwrat.c
+libhalfive.a : h5stdlib.o h5asm.o h5vm.o h5doc.o h5math.o h5rat.o
+	ar rcs libhalfive.a h5stdlib.o h5asm.o h5vm.o h5doc.o h5math.o h5rat.o
+h5assembler : h5assembler.o h5vm.o h5stdlib.o
+	cc $(PARAMS) -o h5assembler h5assembler.o h5vm.o h5stdlib.o
+h5assembler.o : h5vm.o
+	cc $(PARAMS) -I$(INCLROOT) -Dh5ASSEMBLY -c -o h5assembler.o h5vm/h5asm.c
+h5asm.o : h5vm.o
+	cc $(PARAMS) -I$(INCLROOT) -c -o h5asm.o h5vm/h5asm.c
+h5vm.o : h5stdlib.o
+	cc $(PARAMS) -I$(INCLROOT) -c -o h5vm.o h5vm/h5vm.c
+h5doc.o : h5stdlib.o
+	cc $(PARAMS) -I$(INCLROOT) -c -o h5doc.o h5doc/h5doc.c
+h5stdlib.o :
+	cc $(PARAMS) -I$(INCLROOT) -c -o h5stdlib.o h5stdlib.c
+h5math.o :
+	cc $(PARAMS) -I$(INCLROOT) -c -o h5math.o h5math.c
+h5rat.o :
+	cc $(PARAMS) -I$(INCLROOT) -c -o h5rat.o h5rat.c

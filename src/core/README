@@ -1,24 +1,24 @@
-Implementation of interfaces in the '/include/halfworld' folder
+Implementation of interfaces in the '/include/halfive' folder
 
 Implemented headers:
-hwdoc.h (Tokenizer of HWDOC format)
-hwvm.h (Virtual machine compliant with HWVM)
-hwelq.h (Transpiler to HWVM compliant with HWELQ Lisp) (PARTIAL IMPLEMENTATION, ONLY PARSER)
-hwasm.h (Assembler for HWVM)
-hwvi.h (Abstraction over graphics, input, and sound)
-hwstdlib.h (Partial freestanding standard library replacement)
-hwrat.h (Rational number handling)
-hwmath.h (Math utilities) (PARTIAL IMPLEMENTATION)
+h5doc.h (Tokenizer of H5DOC format)
+h5vm.h (Virtual machine compliant with H5VM)
+h5elq.h (Transpiler to H5VM compliant with H5ELQ Lisp) (PARTIAL IMPLEMENTATION, ONLY PARSER)
+h5asm.h (Assembler for H5VM)
+h5vi.h (Abstraction over graphics, input, and sound)
+h5stdlib.h (Partial freestanding standard library replacement)
+h5rat.h (Rational number handling)
+h5math.h (Math utilities) (PARTIAL IMPLEMENTATION)
 
 Pending implementation:
-hwt.h (Track encoder/decoder, wrapper over hwdoc.h, EASY/TEDIOUS)
-hwnet.h (Packet encoder/decoder, wrapper over hwdoc.h, EASY/TEDIOUS)
-(hwrpg.h, hwrpg_proto.h) (Turn-based battle engine, EASY/ENTERTAINING)
-halfive.h (Arcade racing physics engine, HARD/ENTERTAINING)
+h5t.h (Track encoder/decoder, wrapper over h5doc.h, EASY/TEDIOUS)
+h5net.h (Packet encoder/decoder, wrapper over h5doc.h, EASY/TEDIOUS)
+(h5rpg.h, h5rpg_proto.h) (Turn-based battle engine, EASY/ENTERTAINING)
+h5phy.h (Arcade racing physics engine, HARD/ENTERTAINING)
 
 The following headers should be used on the caller side:
-halfworld/halfive.h (For using all specified interfaces except those in hwvi.h)
-halfworld/hwvi.h (Requires ***PORTING*** to each target)
+halfive/h5phy.h (For using all specified interfaces except those in h5vi.h)
+halfive/h5vi.h (Requires ***PORTING*** to each target)
 
 Back of the envelope calculations suggest that (depending on preprocessor macros used to conditionally enable excessively heavy features),
 the memory footprint of the (backend part of the) engine will range in the best-case scenario from around 10KBs to around 800KiBs. It is reasonable to expect
@@ -27,14 +27,14 @@ a maximum memory footprint (sound and graphic backends aside, but taking into ac
 
 Run the command `make` to compile to a static library/archive file
 
-You can use `make INCLROOT="/path/to/include/halfworld/"` to change the default path of the folder with the headers
+You can use `make INCLROOT="/path/to/include/halfive/"` to change the default path of the folder with the headers
 Available macros (use `make PARAMS="-DMACRO1 -DMACRO2"`)
 (not setting any of these makes for a headless/nodependency build):
 
-HWVI_GSERV_IMPL_FOO - Enable HWVI graphics server implementation foo (Probably ***REQUIRES*** external dependencies)
-HWVI_AUDIOSERV_IMPL_FOO - Enable HWVI audio server implementation foo (Probably ***REQUIRES*** external dependencies)
-HWVI_STDINPUT_IMPL_FOO - Enable HWVI input server implementation foo (Probably ***REQUIRES*** external dependencies)
-HWVI_TEST - Enable entry point for example HWVI program (***REQUIRES*** external dependencies) (***ENTRY POINT***)
-HALFIVE_VM_SIMULATION - Most memory consuming option, enable doing per-player HWVM simulation. If not set, hwvm.h is not available in halfive.h
-HWASSEMBLY - Enable assembler frontend (***REQUIRES*** stdio.h) (***ENTRY POINT***)
+H5VI_GSERV_IMPL_FOO - Enable H5VI graphics server implementation foo (Probably ***REQUIRES*** external dependencies)
+H5VI_AUDIOSERV_IMPL_FOO - Enable H5VI audio server implementation foo (Probably ***REQUIRES*** external dependencies)
+H5VI_STDINPUT_IMPL_FOO - Enable H5VI input server implementation foo (Probably ***REQUIRES*** external dependencies)
+H5VI_TEST - Enable entry point for example H5VI program (***REQUIRES*** external dependencies) (***ENTRY POINT***)
+H5PHY_VM_SIMULATION - Most memory consuming option, enable doing per-player H5VM simulation. If not set, h5vm.h is not available in h5phy.h
+H5ASSEMBLY - Enable assembler frontend (***REQUIRES*** stdio.h) (***ENTRY POINT***)
 FLOATS_SUPPORTED - Floats are available on the target (***REQUIRES*** the 'float' type to exist, ***UNPORTABLE***)

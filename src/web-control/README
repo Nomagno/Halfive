@@ -1,5 +1,5 @@
 Utility to POST a pair of 'analog' (0-100) HTML slider values to a server. 
-Makes for a great improvised controller for Half-World implementations.
+Makes for a great improvised controller for Halfive implementations.
 USAGE: 
   - Serve the HTML file
   - The server now receives POST URL-encoded at the URL '/post'

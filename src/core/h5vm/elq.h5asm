@@ -1,0 +1,208 @@
+;Copyright Nomagno 2022
+;
+;Redistributions, modified or unmodified, in whole or in part, must retain
+;applicable notices of copyright or other legal privilege, these conditions, and
+;the following license terms and disclaimer.  Subject to these conditions, each
+;holder of copyright or other legal privileges, author or assembler, and
+;contributor of this work, henceforth "licensor", hereby grants to any person
+;who obtains a copy of this work in any form:
+;
+;1. Permission to reproduce, modify, distribute, publish, sell, sublicense, use,
+;and/or otherwise deal in the licensed material without restriction.
+;
+;2. A perpetual, worldwide, non-exclusive, royalty-free, gratis, irrevocable
+;patent license to make, have made, provide, transfer, import, use, and/or
+;otherwise deal in the licensed material without restriction, for any and all
+;patents held by such licensor and necessarily infringed by the form of the work
+;upon distribution of that licensor's contribution to the work under the terms
+;of this license.
+;
+;NO WARRANTY OF ANY KIND IS IMPLIED BY, OR SHOULD BE INFERRED FROM, THIS LICENSE
+;OR THE ACT OF DISTRIBUTION UNDER THE TERMS OF THIS LICENSE, INCLUDING BUT NOT
+;LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE,
+;AND NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS, ASSEMBLERS, OR HOLDERS OF
+;COPYRIGHT OR OTHER LEGAL PRIVILEGE BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
+;LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
+;OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
+;WORK.
+
+; Eloquent Runtime System library for Halfive assembly
+
+#i base.h5asm
+
+; A program in H5VM is *well-structured* when:
+; - it does not contanin any 'jmp's to pointers
+; - it does not read addresses past 7FFF, up until FFF9, but can read FFFA->FFFF, *except* FFFD
+; - it does not write any addresses past 3FFFA, except FFFC, FFFE, FFFF
+;
+; A program in H5VM is *deterministic* when:
+; - it only writes to R/W addresses
+; - it only reads from mapped addresses
+;
+; The following minimal mapping for H5VM is *guaranteed*:
+; 0000->FFFF: R/W, deterministic
+; 4000->7FFF: R/O, deterministic
+; FFF0      : UNMAPPED, deterministic
+; FFFA      : R/O, chaotic
+; FFFB      : R/O, chaotic
+; FFFC      : R/W, deterministic
+; FFFD      : R/O, nondeterministic
+; FFFE      : R/W, chaotic
+; FFFF      : R/W, chaotic
+; --------------------------------------
+; H5VM Runtime for H5Elq:
+; - Subroutine instructions unused
+; MEMORY:
+; 	- Section 1 (PUBLICPAGE) structure (32 bytes):
+; 		- Address zero (base case for pointers)
+; 		- Public 'garbage' bytes (31 bytes)
+#d _E_S_PUBPAGE,0000
+#d _E_S_H_PUBPAGE,00
+#d _E_S_L_PUBPAGE,00
+
+#d _E_F_PUBPAGE,001F
+#d _E_F_H_PUBPAGE,00
+#d _E_F_L_PUBPAGE,1F
+
+; 	- Section 2 (VARHEAP) structure (256 bytes) (20->11F):
+; 		- Lookup table for 'define' (128x ADDRESSES)
+#d _E_S_VARHEAP,0020
+#d _E_S_H_VARHEAP,00
+#d _E_S_L_VARHEAP,20
+
+#d _E_F_VARHEAP,011F
+#d _E_F_H_VARHEAP,01
+#d _E_F_L_VARHEAP,1F
+
+; 	- Section 3 (NODEHEAP) structure (735 bytes + 1 padding byte) (120->0FFF):
+; 		- 147x manually (de)allocated NODEs
+#d _E_S_NODEHEAP,0120
+#d _E_S_H_NODEHEAP,01
+#d _E_S_L_NODEHEAP,20
+
+#d _E_F_NODEHEAP,0FFF
+#d _E_F_H_NODEHEAP,0F
+#d _E_F_L_NODEHEAP,FF
+
+; 	- Section 4 (CALLSTACK) structure (1026 bytes) (1000->2001):
+;		- 2 bytes for position of stack pointer
+; 		- 16x STACKFRAMEs
+#d _E_S_CALLSTACK,1000
+#d _E_S_H_CALLSTACK,10
+#d _E_S_L_CALLSTACK,00
+
+#d _E_F_CALLSTACK,2001
+#d _E_F_H_CALLSTACK,20
+#d _E_F_L_CALLSTACK,01
+
+; --------------------------------------
+; 	STRACKFRAME data structure (32 bytes):
+; 		- RETURN ADDRESS (2 bytes)
+; 		- 6x LOCAL VARIABLE ADDRESSES (2 bytes)
+; 		- RETVAL VARIABLE ADDRESS (2 bytes)
+; 		- PRIVATE DATA (16 bytes)
+; 	NODE data structure (5 bytes):
+;		- META BYTE (A0LLLRRR)
+;			A - allocated?
+;			0 - padding
+;			LLL - left type
+;			RRR - right type
+; 		- DATA LEFT (2 bytes)
+; 		- DATA RIGHT (2 bytes)
+; 	NODE internal structure per type:
+; 		- EMPTY     (TYPE FIELD: 0) (DATA       FIELD      UNUSED)
+; 		- NIL       (TYPE FIELD: 1) (DATA       FIELD      UNUSED)
+; 		- Unsigned  (TYPE FIELD: 2) (DATA FIELD HIGH BYTE:  value)
+; 		- Pair      (TYPE FIELD: 3) (DATA FIELD:     node address)
+;		- Procedure (TYPE FIELD: 4) (DATA FIELD: pointer to a special CLOSURENODE)
+;       - CLOSURENODE:
+;                                 (META BYTE: 0xC (11001010)),
+;                                 (DATA FIELD: address of procedure),
+;                                 (RIGHT FIELD: proper NIL-terminated list)
+
+
+; Save program counter, FOUR instructions:
+#d SAVEPC,set FFFB ?W __ set FFFA !W __ add ?W =1 __ nop
+
+; ADDRESS ZERO MUST ALWAYS CONTAIN ZERO, IN THIS CONVENTION
+#d ZERO,0
+
+; Stack data structure:
+; Byte 0: high address of stack pointer
+; Byte 1: low address of stack pointer
+
+; Responsibilities for caller/callee of a manual subroutine:
+; Caller:
+;    - allocate stackframe (with PUSHFRAME)
+;    - fill in !Z and ?Z with the start of the frame
+;    - fill in return address in the frame with suitable PC number, within subroutine
+;    - fill in copies of local variables (first the arguments in order,
+;           then the packaged vars in order, contiguously)
+;    - jump to subroutine
+; Callee:
+;    - do computations
+;    - clean up (don't leave any data but the retval variable allocated)
+;    - fill in return retval variable address of previous stack frame
+;        (node to be owned by caller)
+;    - jump to return address
+; Caller:
+;    - destroy copies of local variables
+;    - destroy stackframe (with POPFRAME)
+
+; Regular subroutines, they won't be called recursively
+
+; PUSH_FRAME, reads from !Y and ?Y the start address of the stack, from !X the frame size,
+;     fills in !Z and ?Z with the start address of the pushed 32-byte frame
+#d PUSH_FRAME,=10
+func PUSH_FRAME
+	add ?Y !X
+	add !Y _CF
+	set !Z !Y
+	set ?Z ?Y
+ret PUSH_FRAME
+
+; POP_FRAME, reads from !Y and ?Y the start address of the stack, from !X the frame size, pops frame
+;     fills in !Z and ?Z with the start address of the frame after popping
+#d POP_FRAME,=11
+func POP_FRAME
+	sub ?Y !X
+	sub !Y _CF
+	set !Z !Y
+	set ?Z ?Y
+ret POP_FRAME
+
+; ALLOC_NODE, fills in !Z and ?Z with the start address of the allocated node
+#d ALLOC_NODE,=12
+func ALLOC_NODE
+ret ALLOC_NODE
+
+
+; DEALLOC_NODE, reads from !Z and ?Z the start address of the node of to deallocate
+; Uses stack with frames of two bytes in size, where the type of
+;    the nodes they point to is modified iteratively,
+;    so as to turn a cons cell into an empty node that
+;    can be deallocated, using a depth-first search algorithm
+;    on the binary trees formed by the nodes
+#d _E_S_PRIVSTACK,2002
+#d _E_S_H_PRIVSTACK,20
+#d _E_S_L_PRIVSTACK,02
+
+#d _E_F_PRIVSTACK,2201
+#d _E_F_H_PRIVSTACK,22
+#d _E_F_L_PRIVSTACK,01
+
+
+#d DEALLOC_NODE,=13
+func DEALLOC_NODE
+ret DEALLOC_NODE
+
+
+set 120 =98 ; 10 011 000
+set 121 =01
+set 122 =25
+set 125 =80 ; 10 000 000
+set !Z =01
+set ?Z =20
+call DEALLOC_NODE
+set _OU 120
+set _OU 125

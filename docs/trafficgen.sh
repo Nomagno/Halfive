@@ -67,7 +67,7 @@ h1,h2,h3{
 line-height:1.2
 }
 </style>
-        <title>Half-World Traffic</title>
+        <title>Halfive Traffic</title>
         <meta name="description" content="The Universal Racing Game">
 </head>
 <body>
