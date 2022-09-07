@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- SPDX identifier: COIL-1.0 -->
+<!-- Copyright Nomagno 2022 -->
+
+<svg
+   width="100mm"
+   height="100mm"
+   viewBox="0 0 100 100"
+   version="1.1"
+   id="svg5"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs2">
+    <linearGradient
+       id="linearGradient9316">
+      <stop
+         style="stop-color:#10665d;stop-opacity:1;"
+         offset="0.3"
+         id="stop9312" />
+      <stop
+         style="stop-color:#1bae61;stop-opacity:1;"
+         offset="1"
+         id="stop9314" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient9308">
+      <stop
+         style="stop-color:#11582d;stop-opacity:1;"
+         offset="0"
+         id="stop9304" />
+      <stop
+         style="stop-color:#148342;stop-opacity:1;"
+         offset="0.76"
+         id="stop9306" />
+    </linearGradient>
+    <linearGradient
+       xlink:href="#linearGradient9308"
+       id="linearGradient9310"
+       x1="6.2"
+       y1="64.7"
+       x2="48.2"
+       y2="64.7"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       xlink:href="#linearGradient9316"
+       id="linearGradient9318"
+       x1="36.4"
+       y1="68.6"
+       x2="66.0"
+       y2="68.6"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.8005,0.0237,-0.0386,0.8177,9.9290,7.1780)" />
+  </defs>
+  <g
+     id="layer1">
+    <g
+       id="g9322"
+       transform="matrix(1.7735,0,0,1.7210,-8.9300,-63.1030)">
+      <path
+         style="opacity:1;fill:url(#linearGradient9310);fill-opacity:1;stroke-width:0.265;stroke-dasharray:none"
+         d="m 6.2526,86.3157 9.3612,0.0343 8.3668,-23.6638 9.3275,1.2143 -6.3153,21.4655 9.5271,0.2526 11.6838,-39.7506 -8.2468,-1.1988 -3.6707,14.0058 -11.5220,-1.9585 4.3932,-13.6829 -9.2398,0.0483 z"
+         id="path9247" />
+      <path
+         style="opacity:1;fill:url(#linearGradient9318);fill-opacity:1;stroke-width:0.2146;stroke-dasharray:none"
+         d="m 60.6626,52.9450 -19.8249,-2.4257 -3.0028,8.6916 13.7249,2.0982 3.1968,3.9329 0.1909,3.1813 -3.6327,3.7144 -3.9526,1.1983 -10.7596,-2.1168 0.2129,4.2394 5.5183,0.8750 7.0738,0.9098 4.2539,-1.2682 1.9613,-2.7930 2.6776,-7.1605 -1.0505,-4.7633 -4.5984,-2.3168 -10.1649,-2.0520 1.5427,-3.0546 11.5993,1.5639 2.3571,-0.5998 z"
+         id="path9253" />
+    </g>
+  </g>
+</svg>
