@@ -32,6 +32,9 @@ SDL2 Graphics: H5VI_GSERV_IMPL_SDL2
 SDL2 Audio: H5VI_AUDIOSERV_IMPL_SDL2
 STDIN Read input: H5VI_STDINPUT_IMPL_PORTABLE
 */
+#define H5VI_GSERV_IMPL_SDL2
+#define H5VI_AUDIOSERV_IMPL_SDL2
+#define H5VI_STDINPUT_IMPL_PORTABLE
 
 /*SDL2 is available for the following targets (Official or unofficial):
 Linux, Android, FreeBSD, OpenBSD, NetBSD, MacOS, Windows,
@@ -50,9 +53,10 @@ All platforms
 */
 /*
 STDIN input key format (string):
-quit,b1,b2,b3,b4,b5,b6,b7,b8,b9,m1,m2,keyup,keydown,keyleft,keyright,axis1,axis2,axis3,axis4
+quit,pause,b1,b2,b3,b4,b5,b6,b7,b8,m1,m2,up,down,left,right,axis1,axis2,axis3,axis4
 
-quit, bX, mx, and keyX are booleans 0 or 1, axisX are 8-bit ints 0-255
+comma-separated booleans (0 or 1) replacing from 'quit' until 'right'
+comma separated 8-bit uints (0-255) replacing from 'axis1' until 'axis4'
 */
 
 #include <halfive/h5req.h>
@@ -175,11 +179,7 @@ unsigned H5VI_GetBuffer_Data(const char *spritename, H5VI_PixelData *inbuf)
 #endif
 
 #ifdef H5VI_AUDIOSERV_IMPL_SDL2
-
-#include <halfive/h5stdlib.h>
-
 /*For sound media caching*/
-
 unsigned H5VI_PlaySound(H5VI_Reference *stream,
 			const H5VI_SoundData *const insound)
 {
@@ -194,18 +194,13 @@ unsigned H5VI_PlaySound(H5VI_Reference *stream,
 	return 0;
 }
 #else
-
 /*No sound support, stub*/
-unsigned H5VI_PlaySound(H5VI_Reference *stream,
-			const H5VI_SoundData *const insound)
-{
-	return 0;
-}
-
+unsigned H5VI_PlaySound(H5VI_Reference *stream, const H5VI_SoundData *const insound) { return 0; }
 #endif
 
 #ifdef H5VI_STDINPUT_IMPL_PORTABLE
 #include <stdio.h>
+#include <halfive/h5stdlib.h>
 unsigned H5VI_GetInput(H5VI_Reference *tty, H5VI_InputData *keys)
 {
 	int i = 0;
@@ -254,7 +249,7 @@ int main(void)
 		return 1;
 	}
 
-	H5VI_PlaySound(&myref, &(const H5VI_SoundData){
+	H5VI_PlaySound(&myref, &(const H5VI_SoundData){.volume = 127,
 				   .name = "path/to/test/sound.wav"});
 
 	for (unsigned i = 0; i < FRAMERATE * 8; i++) {
