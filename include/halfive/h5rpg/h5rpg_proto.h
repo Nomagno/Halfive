@@ -3,8 +3,8 @@
 #ifndef H5RPGPROTO_H
 #define H5RPGPROTO_H
 
-#define protoHuman (Agent){ \
-	human, /*type*/ \
+#define protoHuman (H5RPG_Agent){ \
+	H5RPG_human, /*type*/ \
 	100, /*max_health*/ \
 	100, /*current_health*/ \
 	60, /*attack*/ \
@@ -20,16 +20,16 @@
 	30, /*special*/ \
 	10, /*magic_special_consumption*/ \
 	5, /*special_refill_rate*/ \
-	{ slash, parry, strangle, heal }, /*moves[4]*/ \
-	fail, /*special_move*/ \
-	thunder, /*element*/ \
+	{ H5RPG_slash, H5RPG_parry, H5RPG_strangle, H5RPG_heal }, /*moves[4]*/ \
+	H5RPG_fail, /*special_move*/ \
+	H5RPG_thunder, /*element*/ \
 	25, /*fail_chance*/ \
 	0, /*fail_chance_boost*/ \
 	0 /*fail_chance_boost_turns*/ \
 }
 
-#define protoMonster (Agent){ \
-	monster, /*type*/ \
+#define protoMonster (H5RPG_Agent){ \
+	H5RPG_monster, /*type*/ \
 	140, /*max_health*/ \
 	140, /*current_health*/ \
 	70, /*attack*/ \
@@ -45,16 +45,16 @@
 	5, /*special*/ \
 	15, /*magic_special_consumption*/ \
 	5, /*special_refill_rate*/ \
-	{ bite, punch, strangle, block }, /*moves[4]*/ \
-	super_destroy, /*special_move*/ \
-	rock, /*element*/ \
+	{ H5RPG_bite, H5RPG_punch, H5RPG_strangle, H5RPG_block }, /*moves[4]*/ \
+	H5RPG_super_destroy, /*special_move*/ \
+	H5RPG_rock, /*element*/ \
 	25, /*fail_chance*/ \
 	0, /*fail_chance_boost*/ \
 	0 /*fail_chance_boost_turns*/ \
 }
 
-#define protoStrongPlant (Agent){ \
-	strongplant, /*type*/ \
+#define protoStrongPlant (H5RPG_Agent){ \
+	H5RPG_strongplant, /*type*/ \
 	80, /*max_health*/ \
 	80, /*current_health*/ \
 	40, /*attack*/ \
@@ -70,16 +70,16 @@
 	80, /*special*/ \
 	20, /*magic_special_consumption*/ \
 	15, /*special_refill_rate*/ \
-	{ magic_beam, bite, strangle, magic_heal }, /*moves[4]*/ \
-	super_defend, /*special_move*/ \
-	plant, /*element*/ \
+	{ H5RPG_magic_beam, H5RPG_bite, H5RPG_strangle, H5RPG_magic_heal }, /*moves[4]*/ \
+	H5RPG_super_defend, /*special_move*/ \
+	H5RPG_plant, /*element*/ \
 	25, /*fail_chance*/ \
 	0, /*fail_chance_boost*/ \
 	0 /*fail_chance_boost_turns*/ \
 }
 
-#define protoGoblin (Agent){ \
-	goblin, /*type*/ \
+#define protoGoblin (H5RPG_Agent){ \
+	H5RPG_goblin, /*type*/ \
 	90, /*max_health*/ \
 	90, /*current_health*/ \
 	50, /*attack*/ \
@@ -95,9 +95,9 @@
 	10, /*special*/ \
 	10, /*magic_special_consumption*/ \
 	5, /*special_refill_rate*/ \
-	{ punch, kick, parry, magic_shield }, /*moves[4]*/ \
-	fail, /*special_move*/ \
-	fire, /*element*/ \
+	{ H5RPG_punch, H5RPG_kick, H5RPG_parry, H5RPG_magic_shield }, /*moves[4]*/ \
+	H5RPG_fail, /*special_move*/ \
+	H5RPG_fire, /*element*/ \
 	25, /*fail_chance*/ \
 	0, /*fail_chance_boost*/ \
 	0 /*fail_chance_boost_turns*/ \

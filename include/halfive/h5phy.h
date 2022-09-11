@@ -117,7 +117,7 @@ typedef struct {
 
 	h5ulong speed; /*Meters per second*/
 	h5ulong accel; /*Meters per second square*/	
-	h5point pos; /*position, x and y, unsigned 32-bit (in millimiters)*/
+	h5point_ulong pos; /*position, x and y, unsigned 32-bit (in millimiters)*/
 	h5uchar rideheight; /*ride height, in mm, lower means more stable and faster, but also more succeptible to yaw/pitch changes*/
 	h5uchar roll; /*roll relative to floor, in degrees. Depending on ride height, car width, length and height, might collide*/
 	h5uchar pitch; /*pitch relative to floor, in degrees. Depending on ride height, car width, length and height, might collide*/

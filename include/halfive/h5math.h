@@ -44,18 +44,23 @@ H5MATH_MAKESIGN(h5umax, h5smax);
 typedef struct {
 	h5ulong x;
 	h5ulong y;
-} h5point;
+} h5point_ulong;
+
+typedef struct {
+	h5uint x;
+	h5uint y;
+} h5point_uint;
 
 /*Composite bezier curve*/
 typedef struct {
-	h5point p1;
-	h5point control;
-	h5point p3;
+	h5point_ulong p1;
+	h5point_ulong control;
+	h5point_ulong p3;
 } h5bezier;
 
-h5point H5Math_PointAdd(h5point a, h5point b); /*Composite point addition*/
-h5point H5Math_PointSub(h5point a, h5point b); /*Composite point substraction*/
-h5point H5Math_PointMultScalar(h5point a, H5Rat k); /*Multiply h5point by scalar [k]*/
+h5point_ulong H5Math_PointAdd(h5point_ulong a, h5point_ulong b); /*Composite point addition*/
+h5point_ulong H5Math_PointSub(h5point_ulong a, h5point_ulong b); /*Composite point substraction*/
+h5point_ulong H5Math_PointMultScalar(h5point_ulong a, H5Rat k); /*Multiply h5point_ulong by scalar [k]*/
 
 h5umax H5Math_umax_isqrt(h5umax a); /*Integer square root of h5umax*/ 
 h5ulong H5Math_isqrt(h5ulong a); /*Integer square root of h5ulong*/ 
@@ -67,7 +72,7 @@ h5ulong H5Math_isqrt(h5ulong a); /*Integer square root of h5ulong*/
 H5Rat H5Math_umax_ratsqrt(h5umax a); /*Rational square root of h5umax*/ 
 H5Rat H5Math_ratsqrt(h5ulong a); /*Rational square root of h5ulong*/
 
-h5point H5Math_getBezierPoint(h5bezier curve, H5Rat t); /*Calculate point [t] of bezier curve, where 
+h5point_ulong H5Math_getBezierPoint(h5bezier curve, H5Rat t); /*Calculate point [t] of bezier curve, where 
                                                                    [t] is a number between zero and one*/
 /*To be implemented*/
 void H5Math_eventSimulation(h5uchar event_num, h5uchar *dist, h5uchar *vals, 

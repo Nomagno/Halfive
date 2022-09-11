@@ -31,22 +31,22 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
-h5point H5Math_PointAdd(h5point a, h5point b){
-	return (h5point){
+h5point_ulong H5Math_PointAdd(h5point_ulong a, h5point_ulong b){
+	return (h5point_ulong){
 		.x = a.x + b.x,
 		.y = a.y + b.y
 	};
 }
 
-h5point H5Math_PointSub(h5point a, h5point b){
-	return (h5point){
+h5point_ulong H5Math_PointSub(h5point_ulong a, h5point_ulong b){
+	return (h5point_ulong){
 		.x = a.x - b.x,
 		.y = a.y - b.y
 	};
 }
 
-h5point H5Math_PointMultScalar(h5point a, H5Rat k){
-	return (h5point){
+h5point_ulong H5Math_PointMultScalar(h5point_ulong a, H5Rat k){
+	return (h5point_ulong){
 		.x = H5Rat_toUlong(H5Rat_Product((H5Rat){0, a.x, 1}, k)),
 		.y = H5Rat_toUlong(H5Rat_Product((H5Rat){0, a.y, 1}, k))
 	};
@@ -92,16 +92,16 @@ H5Rat H5Math_umax_ratsqrt(h5umax a){
 }
 
 /*A(1-t)(1-t) + B(1-t)(2t) + C(t)(t)*/
-h5point H5Math_getBezierPoint(h5bezier curve, H5Rat t){
-	h5point a = H5Math_PointMultScalar(curve.p1, 
+h5point_ulong H5Math_getBezierPoint(h5bezier curve, H5Rat t){
+	h5point_ulong a = H5Math_PointMultScalar(curve.p1, 
 	           H5Rat_Product(
 	           H5Rat_Add((H5Rat){0, 1, 1}, (H5Rat){0, t.num, t.denom}),
 	           H5Rat_Add((H5Rat){0, 1, 1}, (H5Rat){0, t.num, t.denom})));
-	h5point b = H5Math_PointMultScalar(curve.control, 
+	h5point_ulong b = H5Math_PointMultScalar(curve.control, 
 	           H5Rat_Product(
 	           H5Rat_Add((H5Rat){0, 1, 1}, (H5Rat){0, t.num, t.denom}),
 	           H5Rat_Add(t, t)));
-	h5point c = H5Math_PointMultScalar(curve.p3, H5Rat_Product(t, t));
+	h5point_ulong c = H5Math_PointMultScalar(curve.p3, H5Rat_Product(t, t));
 
 	a = H5Math_PointAdd(a, b);
 	b = H5Math_PointAdd(a, c);

@@ -41,7 +41,7 @@ typedef struct {
 	size_t string_start, string_end, parent;
 } H5DOC_Token;
 
-extern unsigned H5DOC_Parse(const unsigned char *input, unsigned size,
+extern unsigned H5DOC_Parse(const unsigned char *const input, unsigned size,
 			    H5DOC_Token *toks);
 
 #endif

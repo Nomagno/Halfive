@@ -32,9 +32,6 @@ SDL2 Graphics: H5VI_GSERV_IMPL_SDL2
 SDL2 Audio: H5VI_AUDIOSERV_IMPL_SDL2
 STDIN Read input: H5VI_STDINPUT_IMPL_PORTABLE
 */
-#define H5VI_GSERV_IMPL_SDL2
-#define H5VI_AUDIOSERV_IMPL_SDL2
-#define H5VI_STDINPUT_IMPL_PORTABLE
 
 /*SDL2 is available for the following targets (Official or unofficial):
 Linux, Android, FreeBSD, OpenBSD, NetBSD, MacOS, Windows,
@@ -62,9 +59,9 @@ comma separated 8-bit uints (0-255) replacing from 'axis1' until 'axis4'
 #include <halfive/h5req.h>
 #include <halfive/h5vi.h>
 
-unsigned H5VI_Init(H5VI_Reference *ref, size_t h, size_t w);
-unsigned H5VI_Destroy(H5VI_Reference *ref);
-unsigned H5VI_PlaySound(H5VI_Reference *stream,
+unsigned H5VI_Init(H5VI_Reference *handle, size_t h, size_t w);
+unsigned H5VI_Destroy(H5VI_Reference *handle);
+unsigned H5VI_PlaySound(H5VI_Reference *handle,
 			const H5VI_SoundData *const insound);
 
 #if defined(H5VI_GSERV_IMPL_SDL2)
@@ -145,9 +142,9 @@ unsigned H5VI_SetBuffer(H5VI_Reference *ref, const H5VI_PixelData *const inbuf)
 {
 	SDL_Surface *surfptr = ((struct h5vi_sdl_track *)ref->data)->globsurf;
 	SDL_LockSurface(surfptr);
-	SDL_ConvertPixels(inbuf->size.w, inbuf->size.h,
+	SDL_ConvertPixels(inbuf->width, inbuf->height,
 			  SDL_PIXELFORMAT_RGBA5551, inbuf->pix,
-			  2 * (inbuf->size.w), surfptr->format->format,
+			  2 * (inbuf->width), surfptr->format->format,
 			  surfptr->pixels, surfptr->pitch);
 	SDL_UnlockSurface(surfptr);
 	SDL_UpdateWindowSurface(
@@ -167,10 +164,10 @@ unsigned H5VI_GetBuffer_Size(size_t *h, size_t *w, const char *spritename)
 unsigned H5VI_GetBuffer_Data(const char *spritename, H5VI_PixelData *inbuf)
 {
 	SDL_Surface *surfptr = SDL_LoadBMP(spritename);
-	SDL_ConvertPixels(inbuf->size.w, inbuf->size.h, surfptr->format->format,
+	SDL_ConvertPixels(inbuf->width, inbuf->height, surfptr->format->format,
 			  surfptr->pixels, surfptr->pitch,
 			  SDL_PIXELFORMAT_RGBA5551, inbuf->pix,
-			  2 * (inbuf->size.w));
+			  2 * (inbuf->width));
 	SDL_FreeSurface(surfptr);
 	return 0;
 }
@@ -180,14 +177,14 @@ unsigned H5VI_GetBuffer_Data(const char *spritename, H5VI_PixelData *inbuf)
 
 #ifdef H5VI_AUDIOSERV_IMPL_SDL2
 /*For sound media caching*/
-unsigned H5VI_PlaySound(H5VI_Reference *stream,
+unsigned H5VI_PlaySound(H5VI_Reference *handle,
 			const H5VI_SoundData *const insound)
 {
 	h5uchar *buf;
 	uint32_t size;
 	SDL_AudioSpec auspec;
 
-	((struct h5vi_sdl_track *)(stream->data))->globsound =
+	((struct h5vi_sdl_track *)(handle->data))->globsound =
 	    *SDL_LoadWAV(insound->name, &auspec, &(buf), &(size));
 	SDL_QueueAudio(globalref.globstream, buf, size);
 	SDL_FreeWAV(buf);
@@ -201,7 +198,7 @@ unsigned H5VI_PlaySound(H5VI_Reference *stream, const H5VI_SoundData *const inso
 #ifdef H5VI_STDINPUT_IMPL_PORTABLE
 #include <stdio.h>
 #include <halfive/h5stdlib.h>
-unsigned H5VI_GetInput(H5VI_Reference *tty, H5VI_InputData *keys)
+unsigned H5VI_GetInput(H5VI_Reference *handle, H5VI_InputData *keys)
 {
 	int i = 0;
 	char str[60];
@@ -224,11 +221,11 @@ unsigned H5VI_GetInput(H5VI_Reference *tty, H5VI_InputData *keys)
 }
 #else
 /*No input support, stub*/
-unsigned H5VI_GetInput(H5VI_Reference *tty, H5VI_InputData *keys) { return 0; }
+unsigned H5VI_GetInput(H5VI_Reference *handle, H5VI_InputData *keys) { return 0; }
 #endif
 
 /*EXAMPLE:*/
-#ifdef H5VI_TEST
+#ifndef H5VI_TEST
 #define WCONSTANT 1080
 #define FRAMERATE 60
 int main(void)
@@ -241,7 +238,7 @@ int main(void)
 	H5VI_GetBuffer_Size(&bmpsize_1, &bmpsize_2,
 			    "path/to/test/image.bmp");
 
-	H5VI_PixelData mybuf_green = {.size = {WCONSTANT, WCONSTANT},
+	H5VI_PixelData mybuf_green = {WCONSTANT, WCONSTANT,
 				      .pix = &array_one[0][0]};
 
 	if (H5VI_Init(&myref, WCONSTANT, WCONSTANT)) {

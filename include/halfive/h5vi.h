@@ -40,54 +40,55 @@ WORK.*/
 RED   GREEN BLUE  ALPHA
 */
 
-typedef struct {
-	const size_t w;
-	const size_t h;
-} H5VI_Point;
 
 /*Pixel buffer*/
 typedef struct {
-	H5VI_Point size;
+	size_t width;
+	size_t height;
 	h5uint *pix;
 } H5VI_PixelData;
 
 /*Direction keys,
-9 general-purpose buttons,
+8 general-purpose buttons,
 2 mouse buttons,
-quit button*/
+quit button,
+pause button*/
 enum H5VI_KeyEnum {
-	up = 0,
-	down = 1,
-	left = 2,
-	right = 3,
-	b1 = 4,
-	b2 = 5,
-	b3 = 6,
-	b4 = 7,
-	b5 = 8,
-	b6 = 9,
-	b7 = 10,
-	b8 = 11,
-	b9 = 12,
-	m1 = 13,
-	m2 = 14,
-	quit = 15
+	H5Key_up = 0,
+	H5Key_down = 1,
+	H5Key_left = 2,
+	H5Key_right = 3,
+	H5Key_b1 = 4,
+	H5Key_b2 = 5,
+	H5Key_b3 = 6,
+	H5Key_b4 = 7,
+	H5Key_b5 = 8,
+	H5Key_b6 = 9,
+	H5Key_b7 = 10,
+	H5Key_b8 = 11,
+	H5Key_m1 = 12,
+	H5Key_m2 = 13,
+	H5Key_quit = 14,
+	H5Key_pause = 15
 };
 
 typedef struct {
-	_Bool keys[16];    /*See enum for what each pos means*/
-	h5uchar axis[4];   /*Max 4 axis*/
-	h5uint cursor_x; /*Mouse X*/
-	h5uint cursor_y; /*Mouse Y*/
+	_Bool keys[16];  /*See enum for what each pos means*/
+	h5uchar axis[4]; /*Max 4 axis*/
+	h5uint cursor_x; /*Cursor/mouse pointer X*/
+	h5uint cursor_y; /*Cursor/mouse pointer Y*/
 } H5VI_InputData;
 
 typedef struct {
-	int16_t length_milli;
-	_Bool do_loop;
-	_Bool loop_length_milli;
-	_Bool do_block;
+	_Bool do_block; /*Set to true to disable playing multiple sounds at once*/
+	h5uchar volume; /*Relative volume, 0 = mute, 255 = maximum volume, default = 127*/
 
-	char name[128];
+	h5ulong length_milli; /*Length, must not exceed length of the sound, 0 = autodetect sound length*/
+
+	_Bool do_loop; /*Set to true to loop at the loop point*/
+	h5ulong loop_point_milli; /*At which point in the audio loop?*/
+
+	char name[128]; /*Name*/
 } H5VI_SoundData;
 
 typedef struct {
@@ -97,40 +98,47 @@ typedef struct {
 	MACOS, ANDROID, SDL
 	*/
 	char platform[16];
+
+	_Bool graphics_enabled; /*might be */
+	_Bool sound_enabled;    /*might be */
+	_Bool input_enabled;    /*might be */
+
 	void *data;
-	/*Opaque hangle to identify at
+	/*Opaque handle to identify at
 	the very least the display,
 	but also possibly the sound
 	and input devices. It SHOULD
-	NOT be touched by the frontend.
+	NOT be dereferenced by the user.
 	*/
 } H5VI_Reference;
 
 extern unsigned H5VI_Init(H5VI_Reference *buf, size_t h, size_t w);
-/*Initialize display*/
+/*Initialize display (following width w and height h, error if not possible), sound,
+and input, following the advice of the foo_enabled booleans, and modify those if
+can't enable graphics, sound, or input*/
 
 extern unsigned H5VI_Destroy(H5VI_Reference *ref);
 /*Exit gracefully*/
 
 extern unsigned H5VI_GetBuffer_Size(size_t *h, size_t *w,
 				    const char *spritename);
-/*Get size of sprite buffer*/
+/*Get size of sprite in HWPIX format*/
 
 extern unsigned H5VI_GetBuffer_Data(const char *const spritename,
 				    H5VI_PixelData *inbuf);
-/*Ger sprite buffer copied*/
+/*Ger sprite in HWPIX format copied*/
 
-extern unsigned H5VI_SetBuffer(H5VI_Reference *surf,
+extern unsigned H5VI_SetBuffer(H5VI_Reference *handle,
 			       const H5VI_PixelData *const inbuf);
 /*Set display to buffer*/
 
-extern unsigned H5VI_PlaySound(H5VI_Reference *stream,
+extern unsigned H5VI_PlaySound(H5VI_Reference *handle,
 			       const H5VI_SoundData *const sound);
 /*Play in a nonblocking manner (within reason).
 The length of the sound will get adjusted if it
 is more than that of the sound itself.
 */
 
-extern unsigned H5VI_GetInput(H5VI_Reference *tty, H5VI_InputData *keys);
+extern unsigned H5VI_GetInput(H5VI_Reference *handle, H5VI_InputData *keys);
 /*Get current user input*/
 #endif

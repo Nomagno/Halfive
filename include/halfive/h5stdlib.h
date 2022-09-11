@@ -28,8 +28,11 @@ OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 #ifndef H5STRING_H
 #define H5STRING_H
+
 #include <halfive/h5req.h>
+
 #define N (UCHAR_MAX + 1)
+
 typedef unsigned char suchar;
 typedef unsigned suint;
 typedef unsigned long sulong;
@@ -61,4 +64,5 @@ extern int _h5libcstrcmp(char *, char *);
 extern char *_h5libcstrtok(char *, char *);
 void *_h5libcmemcpy(void *dest, const void *src, size_t n);
 void *_h5libcmemset(void *str, int val, size_t n);
+
 #endif
