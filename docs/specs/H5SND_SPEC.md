@@ -18,7 +18,7 @@ Notes
 FILE START:
 ```
 66 4C 61 43
-80 00 00 00
+80 00 00 22
 .a(16) .a(16) 00 00 00 00 00 00 .b(20) .c(3) .d(5) .e(36) .f(128)
 ```
 - a: BLOCKSIZE, in inter-channel samples, 16-bit, repeated twice
