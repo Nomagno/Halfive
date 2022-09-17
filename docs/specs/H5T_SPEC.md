@@ -47,12 +47,13 @@ Aditionally, you can add special properties for that segment with local_param.
 
 `name trckname`
 
-#THE NAME HAS TO BE AN EIGHT CHARACTER ALPHANUMERICAL STRING THAT IS NOT '_DEFAULT'
+The name must be an eight character alphanumerical string that is now '_DEFAULT'
 
 `time night/day`
 
 `biome = snow/lava/lake/desert/forest/rosegarden`
-#AN ADDITIONAL "color - white/red/blue/yellow/green/pink" PARAMETER WILl BE GENERATED FROM THE BIOME. IF YOU ONLY CARE ABOUT THE COLOR OF THE STAGE/TRACK BACKGROUND, PLEASE STILL SPECIFY A BIOME
+
+An additional "color - while/red/blue/yellow/green/pink" parameter will be generated from the biome.
 
 `max_players (NUMBER)`
 
