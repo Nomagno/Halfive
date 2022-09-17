@@ -1,149 +1,16 @@
-<head>
-<style type="text/css">
-body{
-line-height:1.6;
-font-size:18px;
-color:#444;
-padding:0
-10px}
-h1,h2,h3{
-line-height:1.2
-}
-</style>
-	<title>Halfive Eloquent Lisp</title>
-	<meta name="description" content="The Universal Racing Game"">
-</head>
-
-<h1>Halfive Eloquent Lisp</h1>
+<h1>Halfive Bitmap Specification</h1>
 <h4>SPDX identifier: COIL-1.0</h4>
-<h4>Copyright Nomagno 2022</h4>
-<p>It is recommended to use the &#x201C;.h5elq&#x201D; extension for Eloquent code files (where applicable). Eloquent is identified by the MIME type <code>text/h5elq</code></p>
-<h3>Eloquent is a minimalistic Lisp dialect to abstract over H5VM programs</h3>
-<h3>SYNTAX:</h3>
+<h4>Copyright Nomagno 2021, 2022</h4>
+<p>It is recommended to use the &#x201C;.h5bmp&#x201D; extension for H5BMP bitmaps (where applicable). H5BMP is identified by the MIME type <code>application/h5bmp</code></p>
+<h3>H5BMP is a simple storage format for bitmaps</h3>
+<hr />
+<h4>The H5BMP format:</h4>
+<p>It is identified by the null-terminated ASCII string &#x2018;H5BMP\0&#x2019;. These six bytes shall appear at the start of every bitmap. After the identifier string, two bytes shall follow and mark the bitmap width, and right after two bytes shall indicate the bitmap width. Following the width and height, (width times height) two-byte pixels follow, where each string of (width) pixels represents a row, starting from the top left of the image.</p>
+<h4>The pixel format (RGBA 5551) in binary:</h4>
+<pre><code>RRRRR GGGGG BBBBB A</code></pre>
 <ul>
-<li>If statement: <code>(if bool onfalse ontrue)</code>
-<ul>
-<li>If <code>bool</code> evaluates to <code>%</code>, evaluate <code>onfalse</code>, otherwise evaluate <code>ontrue</code>.</li>
-</ul></li>
-<li>Begin Statement: <code>(begin expr1 expr2 ... exprN)</code>
-<ul>
-<li>The expressions are evaluated in order.</li>
-<li>Evaluates to the value of the last expression.</li>
-</ul></li>
-<li>Define statement: <code>(define var val)</code>
-<ul>
-<li>Define a local variable, <code>var</code>, to mean a specific value, <code>val</code>.</li>
-<li>It may not be redefined in the current scope.</li>
-<li>Defining a variable with the same name in deeper scopes will cause the name to be eclipsed.</li>
-<li>Evaluates to <code>val</code>.</li>
-</ul></li>
-<li>Assign statement: <code>(assign var val)</code>
-<ul>
-<li>Where <code>var</code> is a variable that has already been defined, change its value to <code>val</code>.</li>
-<li>It may be reassigned in the current scope.</li>
-<li>It is possible to reassign it in deeper scopes where the name is not eclipsed.</li>
-<li>Evaluates to <code>val</code>.</li>
-</ul></li>
-<li>Lambda statement: <code>(lambda args body)</code>
-<ul>
-<li><code>args</code> -&gt; List of local variables provided as arguments. <code>(a b c)</code> - takes three arguments. <code>a</code> - takes a variable number of arguments, collected into a proper list. <code>%</code> - takes no arguments.</li>
-<li><code>body</code> -&gt; Code to evaluate when calling the procedure, can contain any syntax, statements, or variables accessible from the current scope.</li>
-<li>Evaluates to an unnamed procedure that takes the number of arguments in the <code>args</code> list, and evaluates <code>body</code>, substituting them inside as appropiate.</li>
-<li>The variable called <code>self</code> represents the procedure itself, so it may be called to do recursion.</li>
-</ul></li>
-<li>Procedure call: <code>(procedure arg1 arg2 ...)</code>
-<ul>
-<li>Call procedure with arguments. The arguments are evaluated in left-to-right order before passing them to the procedure. Evaluates to whatever the procedure body evaluates.</li>
-</ul></li>
-</ul>
-<h3>CORE PROCEDURES:</h3>
-<ul>
-<li>PROCEDURE: (CONStruct dotted pair): <code>(cons A B)</code> -&gt; <code>(A . B)</code>
-<ul>
-<li>Result is known as a cons cell.</li>
-</ul></li>
-<li>PROCEDURE: <code>(car a)</code>
-<ul>
-<li>Where <code>a</code> is a cons cell, evaluates to the left element of <code>a</code>.</li>
-</ul></li>
-<li>PROCEDURE: <code>(cdr a)</code>
-<ul>
-<li>Where <code>a</code> is a cons cell, evaluates to the right element of <code>a</code>.</li>
-</ul></li>
-<li>PROCEDURE: <code>(num? a)</code>
-<ul>
-<li>Evaluates to 1 if <code>a</code> is an unsigned scalar. Otherwise it evaluates to <code>%</code>.</li>
-</ul></li>
-<li>PROCEDURE: <code>(nil? a)</code>
-<ul>
-<li>Evaluates to 1 if <code>a</code> is <code>%</code>. Otherwise it evaluates to <code>%</code>.</li>
-</ul></li>
-<li>PROCEDURE: <code>(proc? a)</code>
-<ul>
-<li>Evaluates to 1 if <code>a</code> is a procedure, otherwise it evaluates to <code>%</code>.</li>
-</ul></li>
-<li>PROCEDURE: <code>(atom? a)</code>
-<ul>
-<li>Evaluates to 1 if <code>a</code> is an atom. Otherwise it evaluates to <code>%</code>.</li>
-</ul></li>
-<li>PROCEDURE: <code>(eq? a b)</code>
-<ul>
-<li>Evaluates to 1 if <code>a</code> and <code>b</code> are both the exact same procedure. Otherwise it evaluates to <code>%</code>.</li>
-</ul></li>
-<li>PROCEDURE: <code>(apply proc args)</code>
-<ul>
-<li>Calls the procedure <code>proc</code> with arguments being each element of the proper list <code>args</code>. Evaluates to the result of the procedure.</li>
-</ul></li>
-</ul>
-<h3>OPERATION PROCEDURES:</h3>
-<ul>
-<li>The first six procedures evaluate to the result of the operation.</li>
-<li>PROCEDURE: (bitwise add): <code>(add x y)</code>
-<ul>
-<li>Where <code>x</code> and <code>y</code> are unsigned scalars.</li>
-</ul></li>
-<li>PROCEDURE: (bitwise substract): <code>(sub x y)</code>
-<ul>
-<li>Where <code>x</code> and <code>y</code> are unsigned scalars.</li>
-</ul></li>
-<li>PROCEDURE: (bitwise and): <code>(and x y)</code>
-<ul>
-<li>Where <code>x</code> and <code>y</code> are unsigned scalars.</li>
-</ul></li>
-<li>PROCEDURE: (bitwise or): <code>(or x y)</code>
-<ul>
-<li>Where <code>x</code> and <code>y</code> are unsigned scalars.</li>
-</ul></li>
-<li>PROCEDURE: (bitwise xor): <code>(xor x y)</code>
-<ul>
-<li>Where <code>x</code> and <code>y</code> are unsigned scalars.</li>
-</ul></li>
-<li>PROCEDURE: (bitwise shift): <code>(shift x y)</code>
-<ul>
-<li>Where <code>x</code> and <code>y</code> are unsigned scalars.</li>
-<li>Behaviour corresponds to H5VM shift instruction.</li>
-</ul></li>
-<li>PROCEDURE: (address set): <code>(set x y)</code>
-<ul>
-<li>Where <code>x</code> is a cons cell of the form <code>(high . low)</code>, for the high and low byte of the address to set.</li>
-<li>Where <code>y</code> is either an unsigned scalar, or a cons cell of the form <code>(high . low)</code>, for the high and low byte of the address to read.</li>
-<li>To <code>set</code> an address to itself is considered only a read.</li>
-<li>Evaluates to the value written to <code>x</code>.</li>
-</ul></li>
-<li>PROCEDURE 17: <code>(halt)</code>
-<ul>
-<li>Terminates the program.</li>
-<li>Evaluates to <code>%</code>.</li>
-</ul></li>
-</ul>
-<h3>CLARIFICATIONS</h3>
-<ul>
-<li>In Eloquent, every piece of data is either a cons cell or an atom. The only three possible types for atoms are <code>%</code>, procedure, or unsigned scalar.</li>
-<li>Variable names may contain any of <code>abcdefghijklmnopqrstuvwxyz?</code></li>
-<li>An implementation may reject variable names with more than 6 characters, as long as it is indicated in the documentation.</li>
-<li>Unsigned scalars may contain any of <code>0123456789ABCDEF</code></li>
-<li>Unsigned scalars have a width of 8 bits.</li>
-<li>A list is either <code>%</code> or a cons cell where the right hand side is a list. Hence, <code>(a . b)</code>, <code>a</code>, <code>(a . (b . c) . %)</code> are not lists, but <code>(a . ((b . %) . %))</code>, <code>(a . %)</code> are lists.</li>
-<li><code>(a b c)</code> notation stands for the list <code>(a . (b . (c . %)))</code>.</li>
-<li>Note that the entire program and any sub-expressions are, themselves, lists.</li>
+<li>Where R marks the value of the color red 0-31</li>
+<li>Where G marks the value of the color green 0-31</li>
+<li>Where B marks the value of the color blue 0-31</li>
+<li>Where A indicates whether the pixel is transparent (0) or opaque (1)</li>
 </ul>

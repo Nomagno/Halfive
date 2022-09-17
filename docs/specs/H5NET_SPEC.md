@@ -28,10 +28,13 @@ _QUERY
 ***
 
 Where (identification) is the desired player number(s) to control, however the client node may not request more than 4.
-where (ext) is the extension the client wants to use. The client should be prepared to roll back to basic 'Halfive' if the server does not reply in the expected format of the extension.
+
+Where (ext) is the extension the client wants to use. The client should be prepared to roll back to basic 'Halfive' if the server does not reply in the expected format of the extension.
 
 Where (thru1) is the value of the left thruster axis, (unsigned, 8-bit)
+
 Where (thru2) is the value of the right thruster axis (unsigned, 8-bit)
+
 Where (buttons) is a bitmask holding the state of eight buttons (unsigned, 8-bit)
 
 Where (mode) is one of the letters described below
@@ -61,6 +64,7 @@ _DATA
 ***
 
 Where (trackname) is an eight character alphanumerical string that represents the track being used.
+
 Where (gamemode) is an eight character alphanumerical string that represents the gamemode being used. To indicate a normal race mode, it should be "_DEFAULT"
 
 Where (pos1) and (pos2) are a the x and y of the player's position (unsigned, 32-bit, origin (0,0)), and t1-3 are the flags described below.
@@ -72,7 +76,9 @@ Note these flags are abstract and meant to give the client context, as opposed t
 #### GAME STATE QUERY
 
 r - RACE
+
 l - LEADERBOARD
+
 ***
 
 ```
@@ -100,7 +106,7 @@ m - MULTIPLEX
 t - TIMEOUT
 h - PAUSE
 ```
-1
+
 #### LEADERBOARD STATES TYPE 1
 
 (1..8) - POSITION

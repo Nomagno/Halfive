@@ -20,7 +20,7 @@ as well as a redesign that includes the possibility of custom objects that aren'
 The h5vi.h header needs a big library with auxiliary software rendering functions such as blitting,
 bitmap text rendering, arbirary shapes, line rendering, quadratic bezier curve rendering, etcetera:  h5render.h (TEDIOUS)
 
-The Halfive Pixel format needs a library utilities for converting to/from at least BMP, JPG and SVG images: h5pix.h (HARD)
+The Halfive Pixel format needs a library with utilities for converting to/from the BMP image format, at the very least: h5pix.h (HARD)
 
 A new comprehensive, higher-level implementation for user interface, track rendering, network code
 handling, balancing, content, etcetera, that exists on top of all other low-level modules, is needed: halfive_engine.h (HARD)
