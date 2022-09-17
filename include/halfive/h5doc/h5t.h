@@ -37,21 +37,23 @@ WORK.*/
 #include <halfive/h5req.h>
 #include <halfive/h5math.h>
 
-enum H5T_TimeEnum { day, night };
-enum H5T_SpeedEnum { normal, boost, antiboost };
-enum H5T_FinishEnum { no, finish_line, checkpoint };
-enum H5T_RailEnum { empty, metal, electric };
-enum H5T_BiomeEnum { forest, desert, snow };
-enum H5T_ColorEnum { white, red, blue, yellow, green, pink };
+enum H5T_TimeEnum { H5T_TimeDay, H5T_TimeNight };
+enum H5T_SpeedEnum { H5T_NormalBoost, H5T_Boost, H5T_AntiBoost };
+enum H5T_FinishEnum { H5T_NoFinish, H5T_FinishLine, H5T_Checkpoint };
+enum H5T_RailEnum { H5T_NoRails, H5T_RailMetal, H5T_RailElectric };
+enum H5T_BiomeEnum { H5T_BiomeSnow, H5T_BiomeLava, H5T_BiomeLake,
+                     	H5T_BiomeDesert, H5T_BiomeForest, H5T_BiomeRosegarden };
+enum H5T_ColorEnum { H5T_ColorWhite, H5T_ColorRed, H5T_ColorBlue,
+                     	H5T_ColorYellow, H5T_ColorGreen, H5T_ColorPink };
 
 struct H5T_Biome {
-	enum H5T_ColorEnum main_color;
-	enum H5T_BiomeEnum the_biome;
+	enum H5T_ColorEnum color;
+	enum H5T_BiomeEnum biome;
 };
 
 struct H5T_Segment {
-	h5bezier inner_shape;
-	h5bezier outer_shape;
+	h5bezier_ulong inner_shape;
+	h5bezier_ulong outer_shape;
 
 	enum H5T_SpeedEnum speed;
 	enum H5T_FinishEnum racing_line;

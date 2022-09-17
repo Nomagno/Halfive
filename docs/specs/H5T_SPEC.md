@@ -51,7 +51,7 @@ Aditionally, you can add special properties for that segment with local_param.
 
 `time night/day`
 
-`biome = desert/snow/forest`
+`biome = snow/lava/lake/desert/forest/rosegarden`
 #AN ADDITIONAL "color - white/red/blue/yellow/green/pink" PARAMETER WILl BE GENERATED FROM THE BIOME. IF YOU ONLY CARE ABOUT THE COLOR OF THE STAGE/TRACK BACKGROUND, PLEASE STILL SPECIFY A BIOME
 
 `max_players (NUMBER)`

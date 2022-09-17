@@ -56,7 +56,14 @@ typedef struct {
 	h5point_ulong p1;
 	h5point_ulong control;
 	h5point_ulong p3;
-} h5bezier;
+} h5bezier_ulong;
+
+/*Composite bezier curve*/
+typedef struct {
+	h5point_uint p1;
+	h5point_uint control;
+	h5point_uint p3;
+} h5bezier_uint;
 
 h5point_ulong H5Math_PointAdd(h5point_ulong a, h5point_ulong b); /*Composite point addition*/
 h5point_ulong H5Math_PointSub(h5point_ulong a, h5point_ulong b); /*Composite point substraction*/
@@ -72,7 +79,7 @@ h5ulong H5Math_isqrt(h5ulong a); /*Integer square root of h5ulong*/
 H5Rat H5Math_umax_ratsqrt(h5umax a); /*Rational square root of h5umax*/ 
 H5Rat H5Math_ratsqrt(h5ulong a); /*Rational square root of h5ulong*/
 
-h5point_ulong H5Math_getBezierPoint(h5bezier curve, H5Rat t); /*Calculate point [t] of bezier curve, where 
+h5point_ulong H5Math_getBezierPoint(h5bezier_ulong curve, H5Rat t); /*Calculate point [t] of bezier curve, where 
                                                                    [t] is a number between zero and one*/
 /*To be implemented*/
 void H5Math_eventSimulation(h5uchar event_num, h5uchar *dist, h5uchar *vals, 

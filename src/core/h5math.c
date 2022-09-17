@@ -92,7 +92,7 @@ H5Rat H5Math_umax_ratsqrt(h5umax a){
 }
 
 /*A(1-t)(1-t) + B(1-t)(2t) + C(t)(t)*/
-h5point_ulong H5Math_getBezierPoint(h5bezier curve, H5Rat t){
+h5point_ulong H5Math_getBezierPoint(h5bezier_ulong curve, H5Rat t){
 	h5point_ulong a = H5Math_PointMultScalar(curve.p1, 
 	           H5Rat_Product(
 	           H5Rat_Add((H5Rat){0, 1, 1}, (H5Rat){0, t.num, t.denom}),

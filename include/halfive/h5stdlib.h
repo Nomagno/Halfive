@@ -42,6 +42,7 @@ typedef unsigned long sulong;
 	#define h5strcmp  _h5libcstrcmp
 	#define h5strtok  _h5libcstrtok
 	#define h5memcpy  _h5libcmemcpy
+	#define h5strncpy  _h5libcstrncpy
 	#define h5memset  _h5libcmemset
 
 	#define h5malloc  _ERROR_UNIMPLEMENTED
@@ -52,6 +53,7 @@ typedef unsigned long sulong;
 	#define h5strcmp  strcmp
 	#define h5strtok  strtok
 	#define h5memcpy  memcpy
+	#define h5strncpy  strncpy
 	#define h5memset  memset
 
 	#define h5malloc  malloc
@@ -62,7 +64,9 @@ typedef unsigned long sulong;
 extern sulong _h5libcstrtoul(char *, char **, int);
 extern int _h5libcstrcmp(char *, char *);
 extern char *_h5libcstrtok(char *, char *);
+
 void *_h5libcmemcpy(void *dest, const void *src, size_t n);
+char *_h5libcstrncpy(char *dest, const char *src, size_t n);
 void *_h5libcmemset(void *str, int val, size_t n);
 
 #endif

@@ -195,10 +195,17 @@ void *_h5libcmemcpy(void *dest, const void *src, size_t n) {
 	return dest;
 }
 
+char *_h5libcstrncpy(char *dest, const char *src, size_t n) {
+	for (size_t i = 0; (i < n) || (src[i] != '\0'); i++) {
+		if(i < n) dest[i] = src[i];
+		else      dest[i] = '\0';
+	}
+	return dest;
+}
+
 void *_h5libcmemset(void *str, int val, size_t n) {
 	unsigned char *s = (unsigned char *)str;
 	for (size_t i = 0; i < n; i++) 
 		s[i] = val;
 	return str;
 }
-
