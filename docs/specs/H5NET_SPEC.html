@@ -6,7 +6,7 @@
 <h3>H5NET is a specification for racing game communication</h3>
 <hr />
 <p>When querying the node that is acting as the server or &#x2018;MASTER&#x2019;, the following format should be followed:</p>
-<h4>CLIENT NODE FORMAT:</h4>
+<h3>CLIENT NODE FORMAT:</h3>
 <pre><code>_USER
     id (identification) ...
 
@@ -17,7 +17,6 @@ _DATA
 
 _QUERY
     mode (mode)</code></pre>
-<hr />
 <p>Where (identification) is the desired player number(s) to control, however the client node may not request more than 4.</p>
 <p>Where (ext) is the extension the client wants to use. The client should be prepared to roll back to basic &#x2018;Halfive&#x2019; if the server does not reply in the expected format of the extension.</p>
 <p>Where (thru1) is the value of the left thruster axis, (unsigned, 8-bit)</p>
@@ -26,8 +25,9 @@ _QUERY
 <p>Where (mode) is one of the letters described below</p>
 <h4>CLIENT NODE MODES:</h4>
 <p>r - RACE INFORMATION l - LEADERBOARD INFORMATION</p>
-<p>The server should reply to the IP address (or closest equivalent at the implementation&#x2019;s discretion, in case the protocol used is not IP) following this template: ***</p>
-<h4>MASTER NODE FORMAT:</h4>
+<hr />
+<p>The server should reply to the IP address (or closest equivalent at the implementation&#x2019;s discretion, in case the protocol used is not IP) following this template:</p>
+<h3>MASTER NODE FORMAT:</h3>
 <pre><code>_DATA
     track (trackname)
     game (gamemode)
@@ -44,15 +44,12 @@ _QUERY
 <p>Where (gamemode) is an eight character alphanumerical string that represents the gamemode being used. To indicate a normal race mode, it should be &#x201C;_DEFAULT&#x201D;</p>
 <p>Where (pos1) and (pos2) are a the x and y of the player&#x2019;s position (unsigned, 32-bit, origin (0,0)), and t1-3 are the flags described below.</p>
 <p>Note these flags are abstract and meant to give the client context, as opposed to any kind of computationally-specific indications. If the flag &#x2018;r&#x2019; is received as the client packet mode, race type 1, race type 2, and race type 3 flags shall be supplied. If the flag &#x2018;l&#x2019; is received, the leaderboard information should be supplied at (t1) flag, and the other two types should not be included.</p>
-<h4>MASTER NODE FLAGS:</h4>
-<hr />
+<h3>MASTER NODE FLAGS:</h3>
 <h4>GAME STATE QUERY</h4>
 <p>r - RACE</p>
 <p>l - LEADERBOARD</p>
-<hr />
-<pre><code>RACE STATES
-
-- TYPE 1 - VEHICLE STATES -
+<h4>RACE STATES</h4>
+<pre><code>- TYPE 1 - VEHICLE STATES -
 o - OFFTRACK
 u - DRIFT
 x - HURT

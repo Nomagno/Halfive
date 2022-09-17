@@ -11,7 +11,7 @@ H5NET is identified by the MIME type `text/h5net`
 ***
 When querying the node that is acting as the server or 'MASTER', the following format should be followed:
 
-#### CLIENT NODE FORMAT:
+### CLIENT NODE FORMAT:
 
 ```
 _USER
@@ -25,7 +25,6 @@ _DATA
 _QUERY
 	mode (mode)
 ```
-***
 
 Where (identification) is the desired player number(s) to control, however the client node may not request more than 4.
 
@@ -43,10 +42,12 @@ Where (mode) is one of the letters described below
 r - RACE INFORMATION
 l - LEADERBOARD INFORMATION
 
-The server should reply to the IP address (or closest equivalent at the implementation's discretion, in case the protocol used is not IP) following this template:
 ***
 
-#### MASTER NODE FORMAT:
+The server should reply to the IP address (or closest equivalent at the implementation's discretion, in case the protocol used is not IP) following this template:
+
+
+### MASTER NODE FORMAT:
 
 ```
 _DATA
@@ -71,19 +72,17 @@ Where (pos1) and (pos2) are a the x and y of the player's position (unsigned, 32
 
 Note these flags are abstract and meant to give the client context, as opposed to any kind of computationally-specific indications. If the flag 'r' is received as the client packet mode, race type 1, race type 2, and race type 3 flags shall be supplied. If the flag 'l' is received, the leaderboard information should be supplied at (t1) flag, and the other two types should not be included.
 
-#### MASTER NODE FLAGS:
-***
+### MASTER NODE FLAGS:
+
 #### GAME STATE QUERY
 
 r - RACE
 
 l - LEADERBOARD
 
-***
+#### RACE STATES
 
 ```
-RACE STATES
-
 - TYPE 1 - VEHICLE STATES -
 o - OFFTRACK
 u - DRIFT
