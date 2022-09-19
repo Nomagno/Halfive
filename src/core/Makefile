@@ -54,7 +54,7 @@ libhalfive.a : h5stdlib.o h5asm.o h5vm.o h5doc.o h5math.o h5rat.o
 h5assembler : h5assembler.o h5vm.o h5stdlib.o
 	cc $(PARAMS) -o h5assembler h5assembler.o h5vm.o h5stdlib.o
 h5assembler.o : h5vm.o
-	cc $(PARAMS) -I$(INCLROOT) -Dh5ASSEMBLY -c -o h5assembler.o h5vm/h5asm.c
+	cc $(PARAMS) -I$(INCLROOT) -DH5ASSEMBLY -c -o h5assembler.o h5vm/h5asm.c
 h5asm.o : h5vm.o
 	cc $(PARAMS) -I$(INCLROOT) -c -o h5asm.o h5vm/h5asm.c
 h5vm.o : h5stdlib.o
