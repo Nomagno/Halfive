@@ -75,13 +75,6 @@ typedef struct H5Elq_Node{
 	struct H5Elq_Node *right;
 } H5Elq_Node;
 
-#define STACKMEM 64
-typedef struct {
-	size_t index;
-	H5Elq_Node *data[STACKMEM];
-} H5Elq_Stack;
-#undef STACKMEM
-
 #define POOLMEM 1024
 typedef struct {
 	size_t poolindex;

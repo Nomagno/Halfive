@@ -62,7 +62,7 @@ comma separated 8-bit uints (0-255) replacing from 'axis1' until 'axis4'
 unsigned H5VI_Init(H5VI_Reference *handle, size_t h, size_t w);
 unsigned H5VI_Destroy(H5VI_Reference *handle);
 unsigned H5VI_PlaySound(H5VI_Reference *handle,
-			const H5VI_SoundData *const insound);
+			const H5VI_SoundData *insound);
 
 #if defined(H5VI_GSERV_IMPL_SDL2)
 #include <SDL2/SDL.h>
@@ -138,7 +138,7 @@ unsigned H5VI_Destroy(H5VI_Reference *ref)
 	return 0;
 }
 
-unsigned H5VI_SetBuffer(H5VI_Reference *ref, const H5VI_PixelData *const inbuf)
+unsigned H5VI_SetBuffer(H5VI_Reference *ref, const H5VI_PixelData *inbuf)
 {
 	SDL_Surface *surfptr = ((struct h5vi_sdl_track *)ref->data)->globsurf;
 	SDL_LockSurface(surfptr);
@@ -178,7 +178,7 @@ unsigned H5VI_GetBuffer_Data(const char *spritename, H5VI_PixelData *inbuf)
 #ifdef H5VI_AUDIOSERV_IMPL_SDL2
 /*For sound media caching*/
 unsigned H5VI_PlaySound(H5VI_Reference *handle,
-			const H5VI_SoundData *const insound)
+			const H5VI_SoundData *insound)
 {
 	h5uchar *buf;
 	uint32_t size;
@@ -192,7 +192,7 @@ unsigned H5VI_PlaySound(H5VI_Reference *handle,
 }
 #else
 /*No sound support, stub*/
-unsigned H5VI_PlaySound(H5VI_Reference *stream, const H5VI_SoundData *const insound) { return 0; }
+unsigned H5VI_PlaySound(H5VI_Reference *stream, const H5VI_SoundData *insound) { return 0; }
 #endif
 
 #ifdef H5VI_STDINPUT_IMPL_PORTABLE

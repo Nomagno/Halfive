@@ -124,16 +124,16 @@ extern unsigned H5VI_GetBuffer_Size(size_t *h, size_t *w,
 				    const char *spritename);
 /*Get size of sprite in HWPIX format*/
 
-extern unsigned H5VI_GetBuffer_Data(const char *const spritename,
+extern unsigned H5VI_GetBuffer_Data(const char *spritename,
 				    H5VI_PixelData *inbuf);
 /*Ger sprite in HWPIX format copied*/
 
 extern unsigned H5VI_SetBuffer(H5VI_Reference *handle,
-			       const H5VI_PixelData *const inbuf);
+			       const H5VI_PixelData *inbuf);
 /*Set display to buffer*/
 
 extern unsigned H5VI_PlaySound(H5VI_Reference *handle,
-			       const H5VI_SoundData *const sound);
+			       const H5VI_SoundData *sound);
 /*Play in a nonblocking manner (within reason).
 The length of the sound will get adjusted if it
 is more than that of the sound itself.

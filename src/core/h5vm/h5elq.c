@@ -102,17 +102,23 @@ H5Elq_Node *H5Elq_appendNode(H5Elq_Node *parent, _Bool direction,
 	return &heap->mempool[heap->poolindex - 1];
 }
 
-
-H5Elq_Node *H5Elq_Pop(H5Elq_Stack *stack){
-	H5Elq_Node *retval = stack->data[stack->index];
-	stack->index -= 1;
-	return retval;
-}
+#define STACKMEM 64
+typedef struct {
+	size_t index;
+	H5Elq_Node *data[STACKMEM];
+} H5Elq_Stack;
+#undef STACKMEM
 
 void H5Elq_Push(H5Elq_Stack *stack, H5Elq_Node *val){
 	stack->index += 1;
 	stack->data[stack->index] = val;
 	return;
+}
+
+H5Elq_Node *H5Elq_Pop(H5Elq_Stack *stack){
+	H5Elq_Node *retval = stack->data[stack->index];
+	stack->index -= 1;
+	return retval;
 }
 
 /*
