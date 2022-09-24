@@ -41,31 +41,47 @@
 # POSIX echo
 
 
+
+toupper()     { printf '%s\n' "$1" | tr 'a-zA-Z' 'A-Za-z'; } # To uppercase
+tolower()     { printf '%s\n' "$1" | tr 'A-Za-z' 'a-zA-Z'; } # To lowercase
+rot13()       { cat | tr 'A-Z' 'N-ZA-M';                   } # Rot13 encryption
+printstr()    { printf '%s' "$1";                          } # Print string
+printstr_n()  { printf '%s\n' "$1";                        } # Print string with trailing newline
+printhex()    { toupper "$(printf '%x\n' "$1")";           } # Print hexadecimal
+
+
+# Absolute value of number
+abs(){
+	if [ "$(($1 < 0))" = 1 ]; then
+		echo "$1" | cut -c 2-
+	else
+		echo "$1"
+	fi
+}
+
+# Reverse line-by-line
 stac(){
 	words=$(cat)
 	size='-1'
 	count='-1'
 
 	IFS=' '
-	for i in $words; do
+	for _ in $words; do
 		size=$((size + 1))
 	done	
-	for i in $words; do
+	for _ in $words; do
 		count=$((count + 1))
 		opposite_count=$((size - count + 1))
-		printf "%s " "$(printf '%s\n' "$words" | cut -d' ' -f"$opposite_count")"
+		printstr "$(printstr_n "$words" | cut -d' ' -f"$opposite_count") "
 	done
 	echo
 }
 
-# $1 - random byte stream (e.g. /dev/urandom)
-# $2 - character count of the key (e.g. 10)
+# Generate uppercase key from randomness source
+#	 $1 - random byte stream (e.g. /dev/urandom)
+#	 $2 - character count of the key (e.g. 10)
 genkey(){
-	(LC_CTYPE=C tr -dc 'A-Z' |\
+	(LC_CTYPE=C tr -dc 'A-Z' |
 	 LC_CTYPE=C dd bs=1 count="$2" 2>/dev/null) < "$1"
 	echo	
-}
-
-rot13(){
-	tr 'A-Z' 'N-ZA-M'
 }
