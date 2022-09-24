@@ -29,7 +29,7 @@
 #WORK.
 
 # Requirements:
-# POSIX compliant shell
+# POSIX compliant environment
 
 if patch --help >/dev/null 2>&1; then
 	NOBACKUP_ARGS='--no-backup-if-mismatch'

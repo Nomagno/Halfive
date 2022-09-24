@@ -1,5 +1,5 @@
 Halfive Version Control System
-A lightweight 50-line sh VCS that uses patch and diff
+A lightweight 100-line sh VCS that uses patch and diff
 
 For safety reasons, h5vcs.sh will not delete files, 
 and will simply empty the contents of files deleted 

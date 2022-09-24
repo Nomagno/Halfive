@@ -30,17 +30,19 @@
 
 # Preprocess Halfive Assembly
 
-#REQUIREMENTS:
-#POSIX sh
-#POSIX printf
-#POSIX echo
-#POSIX grep
-#POSIX cut
-#POSIX cat
-#POSIX sed
-#POSIX awk
-#POSIX head
-#POSIX tail
+# REQUIREMENTS:
+# POSIX sh
+# POSIX printf
+# POSIX echo
+# POSIX grep
+# POSIX sed
+# POSIX cut
+# POSIX tr
+# POSIX dd
+# POSIX cat
+# POSIX expr
+
+. ../utils.sh # Import script with the stac 'line-by-line reversal' function
 
 
 # Takes file, inserts other files in place of '#i /path/to/file' lines, saves to temp file
@@ -54,7 +56,7 @@ includepp(){
 		case "$line" in
 		'#i'*)
 			file2="$file2
-$(cat "$(printf "%s" "$line" | sed 's|^#i ||g')")"
+$(cat "$(printstr "$line" | sed 's|^#i ||g')")"
 		;;
 		*)
 			file2="$file2
@@ -62,13 +64,12 @@ $line"
 		;;
 		esac
 	done < "$1"
-	printf '%s\n' "$file2" > "$tmp"
-	printf '%s\n' "$tmp"
+	printstr_n "$file2" > "$tmp"
+	printstr_n "$tmp"
 }
 
 # Preprocesses macros defined as '#d macro,meaning', '__' means newline
 asmpp(){
-	. ../utils.sh # Import script with the stac 'line-by-line reversal' function
 	f=$(sed 's|;.*$||g; /#d /d' < "$1")
 	rep=$(grep '^#d' "$1" |
 	      sed 's/^#d //g; s/ /|/g')
@@ -76,23 +77,23 @@ asmpp(){
 
 	# For each line in $rep, get the macro name and meaning
 	for i in $rep; do
-		p1=$(printf '%s\n' "$i" |
+		p1=$(printstr_n "$i" |
 		     cut -d',' -f1 |
 		     sed 's/|/ /g; s/\&/\\&/g')
-		p2=$(printf '%s\n' "$i" | 
+		p2=$(printstr_n "$i" | 
 		     cut -d',' -f2 | 
 		     sed 's/|/ /g; s/\&/\\&/g') 
 
 		# For each line in $rep, scan the entire file and replace the macro name for its macro meaning
-		f=$(printf '%s ' "$f" | 
+		f=$(printstr "$f " | 
 		    sed "s/$p1/$p2/g") 
 	done
 
 	# Replace __ with newline, eliminate indentation and whitespace padding
-	f=$(printf '%s\n' "$f" | 
+	f=$(printstr_n "$f" | 
 	    sed 's/__/\n/g; /^[[:space:]]*$/d;' | 
 	    sed 's/^[ \t]*//g') 
-	printf '%s\n' "$f"
+	printstr_n "$f"
 }
 
 # Preprocess for includes
