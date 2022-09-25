@@ -46,14 +46,13 @@
 
 # Number file in hexadecimal
 numberhex(){
-	decfile=$(printstr_n "$1" | nl -ba -w6 -v0 -s- -nln)
-	hexfile=
+	decfile=$(printstr_n "$1" | nl -ba -w6 -v0 -s: -nln)
 	IFS='
 '
 	printstr_n "$decfile" | while read -r line; do
 		decnum=$(printstr "$line" | head -c 6)
-		hexnum=$(printhex $(printstr $decnum | trim))
-		hexline=$(printstr "$line" | sed "s/^....../$(printf '%-6s' "$hexnum")/g")
+		hexnum=$(printhex "$(printstr "$decnum" | trim)")
+		hexline=$(printstr "$line" | sed "s/^....../$hexnum/g")
 		printstr_n "$hexline"
 	done
 }
@@ -101,13 +100,41 @@ asmpp(){
 		f=$(printstr "$f " | 
 		    sed "s/$p1/$p2/g") 
 	done
-
 	# Replace __ with newline, eliminate indentation and whitespace padding
 	f=$(printstr_n "$f" | 
 	    sed 's/__/\n/g; /^[[:space:]]*$/d;' | 
 	    sed 's/^[ \t]*//g') 
+
+	# This is not pretty, but it works and is not too egregious
+	# Labels <FOO> -> every occurrance of >FOO< is replaced with (+1/-1) absolute of the
+	# instruction number >FOO< appears in minus absolute of the instruction number
+	# <FOO> appears in
 	
+	hexfile=$(numberhex "$f")
+	hexrep=$(printstr_n "$hexfile" | grep '^.*:<.*>' | cut -d'>' -f1)
+
+	IFS='
+'
+	for i in $hexrep; do
+		labelhexnum=$(printstr "$i" | cut -d':' -f1 | sed 's/ //g')
+		labelhexstr=$(printstr "$i" | cut -d'<' -f2)
+		f=
+		for j in $hexfile; do
+			currhexnum=$(printstr_n "$j" | cut -d':' -f1)
+			currdiff=$(weirdabs $((0x"$labelhexnum" - 0x"$currhexnum")))
+			replacedstring=$(printstr_n "$j" |
+				sed "s/>$labelhexstr</=$currdiff/g")
+			f=$(printf '%s\n%s' "$f" "$replacedstring")
+		done
+		f=$(printstr_n "$f" | sed "s/<$labelhexstr> *//g") # FAILURE POINT
+		hexfile=$f
+	done
+	# Replace __ with newline, eliminate indentation and whitespace padding + numbering
+	f=$(printstr_n "$f" | 
+	    sed 's/__/\n/g; /^[[:space:]]*$/d;' | 
+	    sed 's/^[ \t]*//g' | cut -d':' -f2) 
 	printstr_n "$f"
+
 }
 
 # Preprocess for includes

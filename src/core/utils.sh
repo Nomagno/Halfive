@@ -50,12 +50,12 @@ printstr_n()  { printf '%s\n' "$1";                        } # Print string with
 printhex()    { toupper "$(printf '%x\n' "$1")";           } # Print hexadecimal
 
 
-# Absolute value of number
-abs(){
+# Absolute value of number, but if negative add one, and if positive substract one
+weirdabs(){
 	if [ "$(($1 < 0))" = 1 ]; then
-		echo "$1" | cut -c 2-
+		echo "$(($1 + 1))" | sed 's/-//g'
 	else
-		echo "$1"
+		echo "$(($1 - 1))" | sed 's/-//g'
 	fi
 }
 

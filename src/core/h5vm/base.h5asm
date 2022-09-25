@@ -31,6 +31,23 @@
 ; include at the start of your file:
 ; #i /path/to/base.h5asm
 
+; INCLUDE
+; #i /path/to/file.h5asm
+; file.h5asm substituted in place of statement and preprocessed normally
+
+; MACRO
+; #d macro,meaning
+; Every instance of macro is replaced with meaning, starting expansion with the ones defined later
+
+; LABEL
+; <LABELNAME>
+; Must appear at the beggining of a line containing a
+; regular instruction after the preprocessing stage.
+; All references in the code to >LABELNAME< get replaced
+; with the difference of the instruction index to instruction
+; index <LABELNAME> appeared in. Used for absolute jumping
+; with skpz and skmz
+
 ; To preprocess your code so it can
 ; be accepted by the assembler, run:
 ; sh asmpp.sh /path/to/yourcode.h5asm > preprocessed_file
