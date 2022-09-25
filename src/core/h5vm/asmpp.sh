@@ -44,6 +44,19 @@
 
 . ../utils.sh # Import script with the stac 'line-by-line reversal' function
 
+# Number file in hexadecimal
+numberhex(){
+	decfile=$(printstr_n "$1" | nl -ba -w6 -v0 -s- -nln)
+	hexfile=
+	IFS='
+'
+	printstr_n "$decfile" | while read -r line; do
+		decnum=$(printstr "$line" | head -c 6)
+		hexnum=$(printhex $(printstr $decnum | trim))
+		hexline=$(printstr "$line" | sed "s/^....../$(printf '%-6s' "$hexnum")/g")
+		printstr_n "$hexline"
+	done
+}
 
 # Takes file, inserts other files in place of '#i /path/to/file' lines, saves to temp file
 includepp(){
@@ -93,6 +106,7 @@ asmpp(){
 	f=$(printstr_n "$f" | 
 	    sed 's/__/\n/g; /^[[:space:]]*$/d;' | 
 	    sed 's/^[ \t]*//g') 
+	
 	printstr_n "$f"
 }
 

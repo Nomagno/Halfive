@@ -59,6 +59,9 @@ abs(){
 	fi
 }
 
+trim(){
+	cat | sed 's/ *$//g'
+}
 # Reverse line-by-line
 stac(){
 	words=$(cat)
