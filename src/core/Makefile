@@ -28,13 +28,13 @@
 
 
 
-#Available macros (not setting any of these makes for a headless/nolibc build):
-#H5VI_GSERV_IMPL_FOO - Enable H5VI graphics server implementation foo
-#H5VI_AUDIOSERV_IMPL_FOO - Enable H5VI audio server implementation foo
-#H5VI_STDINPUT_IMPL_FOO - Enable H5VI input server implementation foo
-#H5ASSEMBLY - Enable entry point for assembler
-#H5PHY_VM_SIMULATION - Most memory consuming option, enable doing per-player H5VM simulation.
-#FLOATS_SUPPORTED - Are floats permissible on the target platform?
+# Main available macros (not setting any of these makes for a headless/nolibc build):
+# H5VI_GSERV_IMPL_FOO - Enable H5VI graphics server implementation foo
+# H5VI_AUDIOSERV_IMPL_FOO - Enable H5VI audio server implementation foo
+# H5VI_STDINPUT_IMPL_FOO - Enable H5VI input server implementation foo
+# H5ASSEMBLY - Enable entry point for assembler
+# H5PHY_VM_SIMULATION - Most memory consuming option, enable doing per-player H5VM simulation.
+# FLOATS_SUPPORTED - Are floats permissible on the target platform?
 
 INCLROOT="../../include/"
 
@@ -42,19 +42,30 @@ PARAMS="-DH5VERSION=0 -DH5PHY_VM_SIMULATION -DH5VI_GSERV_IMPL_SDL2 -DH5VI_AUDIOS
 
 main: warn libhalfive.a
 h5asm: warn h5assembler
+h5asm_debug: warn h5assembler_debug
 remain: clean main
 reh5asm: clean h5assembler
-clean:
-	rm -f *.o *.a h5assembler
+reh5asm_debug: clean h5assembler_debug
 
+clean:
+	rm -f *.o *.a h5assembler h5assembler_debug
 warn:
 	echo "This program makes extensive used of C preprocessor macros. You may use the variable PARAMS=\"-DMYVAR1 -DMYVAR2\" like so to set them"
+
 libhalfive.a : h5stdlib.o h5asm.o h5vm.o h5doc.o h5math.o h5rat.o
 	ar rcs libhalfive.a h5stdlib.o h5asm.o h5vm.o h5doc.o h5math.o h5rat.o
+
 h5assembler : h5assembler.o h5vm.o h5stdlib.o
 	cc $(PARAMS) -o h5assembler h5assembler.o h5vm.o h5stdlib.o
 h5assembler.o : h5vm.o
 	cc $(PARAMS) -I$(INCLROOT) -DH5ASSEMBLY -c -o h5assembler.o h5vm/h5asm.c
+
+h5assembler_debug : h5assembler_debug.o h5vm.o h5stdlib.o
+	cc $(PARAMS) -o h5assembler_debug h5assembler_debug.o h5vm.o h5stdlib.o
+h5assembler_debug.o : h5vm.o
+	cc $(PARAMS) -I$(INCLROOT) -DH5ASSEMBLY -DH5ASM_VERBOSE -c -o h5assembler_debug.o h5vm/h5asm.c
+
+
 h5asm.o : h5vm.o
 	cc $(PARAMS) -I$(INCLROOT) -c -o h5asm.o h5vm/h5asm.c
 h5vm.o : h5stdlib.o

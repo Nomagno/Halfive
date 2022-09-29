@@ -81,23 +81,32 @@ int main(int argc, char **argv)
 		}
 
 		h5uint prevco = prog.co;
+
+#ifdef H5ASM_VERBOSE
 		printf("BEFORE: PC %4u -- %u, %u, %u, %u, %u, %u, %4X (%2X), %4X (%2X)\n", prog.co,
 		rwinf.was_err, rwinf.wrote_adrw, rwinf.read_adrw, rwinf.read_adrr,
 		rwinf.write_zf, rwinf.write_cf, rwinf.adrw, *prog.data[rwinf.adrw], rwinf.adrr,
 		*prog.data[rwinf.adrr]);
-
+#endif
 		return_code = H5VM_Execute(&prog, &rwinf);
 
-		if ((rwinf.adrw == 0xFFFC) && (rwinf.wrote_adrw))
+		if ((rwinf.adrw == 0xFFFC) && (rwinf.wrote_adrw)) {
+#ifdef H5ASM_VERBOSE
 			printf("OUTPUT at PC %4u: %X\n", prevco, mem.ou);
+#else
+			printf("OU: %X\n", mem.ou);
+#endif
+		}
 
+#ifdef H5ASM_VERBOSE
 		printf("AFTER:  PC %4u -- %u, %u, %u, %u, %u, %u, %4X (%2X), %4X (%2X)\n", prog.co,
 		rwinf.was_err, rwinf.wrote_adrw, rwinf.read_adrw, rwinf.read_adrr,
 		rwinf.write_zf, rwinf.write_cf, rwinf.adrw, *prog.data[rwinf.adrw], rwinf.adrr,
 		*prog.data[rwinf.adrr]);
 		putchar('\n');
-
+#endif
 	}
+
 	fclose(codefile);
 	fclose(drivefile);
 	if (prog.hf)
