@@ -121,7 +121,7 @@ asmpp(){
 		f=
 		for j in $hexfile; do
 			currhexnum=$(printstr_n "$j" | cut -d':' -f1)
-			currdiff=$(weirdabs $((0x"$labelhexnum" - 0x"$currhexnum")))
+			currdiff=$(weirdabs $((0x$labelhexnum - 0x$currhexnum)))
 			replacedstring=$(printstr_n "$j" |
 				sed "s/>$labelhexstr</=$currdiff/g")
 			f=$(printf '%s\n%s' "$f" "$replacedstring")
