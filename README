@@ -1,35 +1,49 @@
 HALFIVE, THE UNIVERSAL RACING GAME
 
-Halfive is a stateless protocol for racing games, and with a bit more work any 2D game that needs to be accessible, lightweight, and work under heavy/total packet loss.
+Halfive is a collection of specifications, libraries and implementations for a portable racing game.
+Extension ID: _DEFAULT
+To make extensions/modifications to this project easily trackable, I recommend specifying an 8-character alphanumerical extension ID (underscore hyphen 0-9 A-Z a-z, e.g "_My-Ext2").
 
-It has no implementation requirements whatsoever.
-
-There is a modular no-dependency implementation of a racing game that adheres to Halfive.
+'docs'    folder: Documentation
 'include' folder: Interfaces
-'src' folder: Implementations
-It has a lot of C utility interfaces, such as:
-- Portable freestanding implementation of the C standard library (include/halfive/h5stdlib.h)
-- Portable coroutine-esque utilities (include/halfive/h5cr.h)
-- H5DOC (Packet/Circuit) generic tokenizer (include/halfive/h5doc/h5doc.h)
-- Packet/Circuit data structures and tokenizer (WIP) (include/halfive/h5doc/h5net.h) (include/halfive/h5doc/h5t.h)
-- Portable VM with custom instruciton set,  and assembly language (include/halfive/h5vm/h5vm.h) (include/halfive/h5vm/h5asm.h)
-- Portable abstraction over graphics, sound, and input backends (include/halfive/h5vi.h)
-- Portable utilities for working with rational numbers (include/halfive/rat.h)
-- Portable utilities for handling mathematical operations (include/halfive/h5math.h)
-- Portable RPG battle simulator and prototypes (WIP) (include/halfive/h5rpg.h) (include/halfive/h5rpg_proto.h)
-- Portable declarative physics engine (WIP) (include/halfive/h5phy.h)
+'src'     folder: Implementations
 
-List of specifications and corresponding mime types:
+It has a lot of portable C utility interfaces, such as:
+	- Freestanding standard library   (RRS) (include/halfive/h5stdlib.h)
+	- Coroutines                      (SBL) (include/halfive/h5cr.h)
+	- Custom document format          (SBL) (include/halfive/h5doc/h5doc.h)
+	- Racing track    format          (WIP) (include/halfive/h5doc/h5t.h)
+	- Network packet  format    (UNS) (WIP) (include/halfive/h5doc/h5net.h)
+	- Custom virtual machine          (SBL) (include/halfive/h5vm/h5vm.h)
+	- Assembler    for the VM         (SBL) (include/halfive/h5vm/h5asm.h)
+	- Lisp dialect for the VM         (WIP) (include/halfive/h5vm/h5elq.h)
+	- Rational numbers                (SBL) (include/halfive/rat.h)
+	- Other mathematical tools        (RRU) (include/halfive/h5math.h)
+	- Physics engine                  (WIP) (include/halfive/h5phy.h)
+	- Abstraction over graphics/sound/input backends (include/halfive/h5vi.h)
+	- RPG battle simulator            (WIP) (include/halfive/h5rpg.h)
+	- RPG battle simulator prototypes (WIP) (include/halfive/h5rpg_proto.h)
+
+WIP: Work in progress
+SBL: Stable
+UNS: Unstable
+RRS: Rolling release stable
+RRU: Rolling release unstable
+
+
+List of specifications and corresponding MIME types:
 	Encoding formats:
 		Halfive Document (H5DOC)
 			- text/h5doc
-
+		Halfive Bitmap Format (H5BMP)
+			- application/h5bmp
+		[ARCHIVED] Halfive Sound Format (H5SND)
+			- sound/flac
 	Domain-specific data formats:
 		Halfive Network (H5NET)
 			- text/h5net
 		Halfive Track (H5T)
 			- text/h5t
-
 	General-purpose tools:
 		Halfive Virtual Machine (H5VM)
 			- text/h5asm
@@ -37,17 +51,21 @@ List of specifications and corresponding mime types:
 			- application/h5drive
 		Halfive Eloquent Lisp (H5Elq)
 			- text/h5elq
-		Halfive Pixel Format (H5PIX)
-			- application/h5pix
-
 
 If you read all specifications in the docs, you should be able to:
- - Use H5NET as a basic communications standard
- - Use H5T as a basic format for circuits
- - Use H5VM as a basic runtime for user-generated content
+ - Use H5T   as a basic format for circuits
+ - Use H5BMP as a basic format for sprites
+ - Use H5SND as a basic format for sound effects and music
+ - Use H5NET as a basic format for communication
+ - Use H5VM  as a basic runtime for user-generated content
 
-To make them extensions easily trackable, I recommend specifying inside them an 8-character alphanumerical name (underscore hyphen 0-9 A-Z a-z, e.g "_My-Ext2").
 
+Bonus projects in this repo:
+	- Custom Version Control System                    (SBL) (src/h5vcs/)
+	- Custom web client for controlling the server     (UNS) (src/web-control/)
+	- Preprocessor for H5VM assembly                   (RRS) (src/core/h5vm/asmpp.sh)
+	- Generate an RSS feed from a directory            (SBL) (docs/news/genfeed.sh)
+	- Generate a traffic page from an nginx log file   (SBL) (docs/trafficgen.sh)
 
 --- Licensing ---
-The whole project is released under the COIL license, as well as all *original* assets/code. Please see each file for individual licensing information, however.
+The whole project is released under the COIL license (SPDX: COIL-1.0). Please see each folder/file for individual licensing information.

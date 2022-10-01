@@ -1,6 +1,6 @@
-Utility to POST a pair of 'analog' (0-100) HTML slider values to a server. 
+Utility to POST a pair of 'analog' (0-100) HTML slider values and four button booleans to a server. 
 Makes for a great improvised controller for Halfive implementations.
 USAGE: 
   - Serve the HTML file
   - The server now receives POST URL-encoded at the URL '/post'
-  - The format of the sent data is "pos1=INT&pos2=INT", where INT is a number from 0 to 100.
+  - The format of the sent data is "pos1=INT&pos2=INT&but1=BOOL&but2=BOOL&but3=BOOL&but4=BOOL", where INT is a number from 0 to 100, and BOOL is either 'true' or 'false'.
