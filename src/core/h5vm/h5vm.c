@@ -118,7 +118,7 @@ H5VM_GeneralMemory H5VM_Init(H5VM_CodeMemory *code,
 	h5uint ival = 0;
 	h5uint i = 0;
 	while (1) {
-		if ((ival != !!i) && (ival != 0))
+		if ((ival != !!i) && (ival != 0)) /*Overflow check*/
 			break;
 		ival = !!i;
 		if (i <= _MEMMAX) {
