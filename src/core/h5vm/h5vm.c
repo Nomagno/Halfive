@@ -82,16 +82,20 @@ enum optype { adr = 0, lit = 1, ptr = 2 };
 #define GETTYPE(arr, pos)                                                      \
 	((ISPTR(arr[2], pos)) ? ptr : ((ISADR(arr[2], pos)) ? adr : lit))
 
-#define _ZF 0xFFFF
-#define _CF 0xFFFE
-#define _IN 0xFFFD
-#define _OU 0xFFFC
-#define _PC_HIGH 0xFFFB
-#define _PC_LOW 0xFFFA
-#define _ERROR_ADDR 0xFFF0
+/*DEFAULTS IN COMMENTS*/
+/*MEMUNIT: 4096*/
+/*MEMSIZE: 16*/
+#define _ZF (MEMUNIT * MEMSIZE - 1)      /*0xFFFF*/
+#define _CF (MEMUNIT * MEMSIZE - 2)      /*0xFFFE*/
+#define _IN (MEMUNIT * MEMSIZE - 3)      /*0xFFFD*/
+#define _OU (MEMUNIT * MEMSIZE - 4)      /*0xFFFC*/
+#define _PC_HIGH (MEMUNIT * MEMSIZE - 5) /*0xFFFB*/
+#define _PC_LOW  (MEMUNIT * MEMSIZE - 6) /*0xFFFA*/
+#define _ERROR_ADDR (MEMUNIT*MEMSIZE-15) /*0xFFF0*/
 
-#define _MEMMAX 0x3FFF
-#define _DRIVMAX 0xBFFF
+/*GUARANTEED TO BE CONTIGUOUS*/
+#define _MEMMAX (MEMUNIT *  GMEMSIZE - 1)             /*0x3FFF*/
+#define _DRIVMAX (MEMUNIT * DRIVSIZE + _MEMMAX) /*0xBFFF*/
 
 /*Unknown address*/
 
@@ -115,16 +119,12 @@ H5VM_GeneralMemory H5VM_Init(H5VM_CodeMemory *code,
 	rawmem->co_low = (IS_LITTLE_ENDIAN) ? ((h5uchar *)&returnval.co + 1)
 					    : ((h5uchar *)&returnval.co);
 
-	h5uint ival = 0;
-	h5uint i = 0;
-	while (1) {
-		if ((ival != !!i) && (ival != 0)) /*Overflow check*/
-			break;
-		ival = !!i;
+	_Bool overflow_check = 0;
+	for(h5ulong i = 0; i < (MEMUNIT * MEMSIZE); i++) {
 		if (i <= _MEMMAX) {
 			returnval.data[i] = &(rawmem->gmem[i]);
 		} else if (i <= _DRIVMAX) {
-			returnval.data[i] = &(rawmem->driv[i - 0x4000]);
+			returnval.data[i] = &(rawmem->driv[i - _DRIVMAX - 1]);
 			returnval.mask[i] = 1; /*Read-only*/
 		} else if (i == _ZF) {
 			returnval.data[i] = &(rawmem->zf);
@@ -142,7 +142,6 @@ H5VM_GeneralMemory H5VM_Init(H5VM_CodeMemory *code,
 			returnval.data[i] = rawmem->co_low;
 			returnval.mask[i] = 1; /*Read-only*/
 		}
-		i += 1;
 	}
 
 	return returnval;

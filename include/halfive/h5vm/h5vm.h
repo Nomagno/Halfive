@@ -34,7 +34,19 @@ WORK.*/
 #include <halfive/h5req.h>
 #include <stdint.h>
 
-#define MEMSIZE 4096
+#define MEMUNIT 0x1000 /*Minimal byte chunks*/
+#define MEMSIZE 16 /*Size in MEMUNIT byte chunks*/
+
+/* THERE MUST BE AT LEAST ENOUGH SPACE FOR THE 16 SPECIAL REGISTERS: */
+/* (MEMUNIT * (MEMSIZE - GMEMSIZE - DRIVSIZE)) >= 16*/
+
+#define CODE_MEMSIZE 64 /*Size in MEMUNIT instruction chunks of the code memory*/
+
+/*These two are guaranteed to be contiguous*/
+#define GMEMSIZE 4 /*Size in MEMUNIT byte chunks*/
+#define DRIVSIZE 8 /*Size in MEMUNIT byte chunks*/
+
+#define FMEMSIZE 64 /*Size in bytes of the subroutine memory*/
 
 /*Halfive Virtual Machine
 
@@ -112,22 +124,22 @@ typedef enum {
 /*Execution memory*/
 typedef struct {
 	/*Every first byte*/
-	H5VM_InstructionSet inst[MEMSIZE * 4];
+	H5VM_InstructionSet inst[MEMUNIT * CODE_MEMSIZE];
 
 	/*Every second, third and fourth bytes*/
 	/*int because we need this to be at least 16 bits by default*/
-	h5uint opnd[MEMSIZE * 4][3];
+	h5uint opnd[MEMUNIT * CODE_MEMSIZE][3];
 	/*The third  row of the array indicates which arguments are addresses,
 	trough its least significant 2 bits.
 	E.G 00 ALL ARE ADDRESSES -- 11 BOTH ARE LITERALS*/
 
 } H5VM_CodeMemory;
 
-/*Approximate size on disk for MEMSIZE = 4096:
-200KBs*/
+/*Approximate size on disk for MEMUNIT = 0x1000, MEMSIZE = 16:
+100KBs*/
 typedef struct {
 	H5VM_CodeMemory code;        /*Code memory*/
-	h5uchar *data[MEMSIZE * 16]; /*Data memory, default setup:*/
+	h5uchar *data[MEMUNIT * MEMSIZE]; /*Data memory, default setup:*/
 	/*GEN mem (RW), 0x0000 to 0x3FFF, RECOMMENDED TO EXIST*/
 	/*DRIVE (persistent, R-only) mem, 0x4000 to 0xBFFF, RECOMMENDED TO
 	 * EXIST*/
@@ -137,10 +149,10 @@ typedef struct {
 	/*Output register, 0xFFFC, OBLIGATORY*/
 
 	/*If 0, data index is RW, if 1 it is read only*/
-	_Bool mask[MEMSIZE * 16];
-	h5uint func_co[64]; /*For storing counter values corresponding to the FUNC instruction of each subroutine ID*/
-	h5uint return_co[64]; /*For storing counter values corresponding to the execution environment of the branch that executes CALLS, for each subroutine ID*/
-	h5uint skip_co[64]; /*Counter values FUNC has to skip to*/
+	_Bool mask[MEMUNIT * MEMSIZE];
+	h5uint func_co[FMEMSIZE]; /*For storing counter values corresponding to the FUNC instruction of each subroutine ID*/
+	h5uint return_co[FMEMSIZE]; /*For storing counter values corresponding to the execution environment of the branch that executes CALLS, for each subroutine ID*/
+	h5uint skip_co[FMEMSIZE]; /*Counter values FUNC has to skip to*/
 	/*Halt flag, 1 if it has halted.*/
 	_Bool hf;
 	/*Program counter (R-only), 0xFFFB (low) and 0xFFFA (high), OBLIGATORY*/
@@ -149,8 +161,8 @@ typedef struct {
 
 /*Default memory setup*/
 typedef struct {
-	h5uchar gmem[MEMSIZE * 4];
-	h5uchar driv[MEMSIZE * 8];
+	h5uchar gmem[MEMSIZE * GMEMSIZE];
+	h5uchar driv[MEMSIZE * DRIVSIZE];
 	h5uchar zf;
 	h5uchar cf;
 	h5uchar in;
