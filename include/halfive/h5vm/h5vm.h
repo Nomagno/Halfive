@@ -32,7 +32,6 @@ WORK.*/
 #ifndef H5VM_H
 #define H5VM_H
 #include <halfive/h5req.h>
-#include <stdint.h>
 
 #define MEMUNIT 0x1000 /*Minimal byte chunks*/
 #define MEMSIZE 16 /*Size in MEMUNIT byte chunks*/

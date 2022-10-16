@@ -30,8 +30,6 @@ WORK.*/
 #define H5VI_H
 
 #include <halfive/h5req.h>
-#include <stddef.h>
-#include <stdint.h>
 
 /*Halfive VIsual interface*/
 

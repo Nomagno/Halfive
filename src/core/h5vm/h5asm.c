@@ -29,6 +29,7 @@ WORK.*/
 
 #include <halfive/h5req.h>
 #include <halfive/h5vm/h5asm.h>
+#include <halfive/h5stdlib.h>
 
 h5uint H5ASM_Parse(char *linestr, H5VM_InstructionSet *inst, h5uint opnds[3]);
 H5VM_InstructionSet _isinst(char *instr);
