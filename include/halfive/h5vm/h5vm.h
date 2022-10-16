@@ -40,7 +40,7 @@ WORK.*/
 /* THERE MUST BE AT LEAST ENOUGH SPACE FOR THE 16 SPECIAL REGISTERS: */
 /* (MEMUNIT * (MEMSIZE - GMEMSIZE - DRIVSIZE)) >= 16*/
 
-#define CODE_MEMSIZE 64 /*Size in MEMUNIT instruction chunks of the code memory*/
+#define CODE_MEMSIZE 4 /*Size in MEMUNIT instruction chunks of the code memory*/
 
 /*These two are guaranteed to be contiguous*/
 #define GMEMSIZE 4 /*Size in MEMUNIT byte chunks*/
