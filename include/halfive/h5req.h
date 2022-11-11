@@ -29,7 +29,7 @@
 #define H5UCHAR_MAX UINT8_MAX
 typedef uint8_t h5uchar;
 
-#define H5UINT_MAX UINT16_MAX 
+#define H5UINT_MAX UINT16_MAX
 typedef uint16_t h5uint;
 
 #define H5ULONG_MAX UINT32_MAX

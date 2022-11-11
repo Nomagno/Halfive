@@ -45,15 +45,8 @@ WORK.*/
 
 /*[h5vi graphics + audio] <& [Monolithic Object Scheduler (H5PHY MOS, handles physics)] (<-> [Network Play Module (H5PHY NETPM)]) <- [h5t track data, h5vi input, h5vm instances]*/
 
-/*Approximate default storage with VM: 140KBs
-Without VM worst-case scenario: 256Bs
-*/
-
-typedef enum {
-	Horizontal_Magnets,
-	Vertical_Magnets
-} Magnet_Type;
-
+/*Size without VM: 160 B*/
+/*Size with    VM: 737 KiB*/
 typedef struct {
 
 	/*Intrinsic properties of the vehicle
@@ -66,37 +59,38 @@ typedef struct {
 	                 Characters 7 - 9: String to identify racing category
 	                 Characters 10-13: Decimal number string, position in category
 	                 Characters 14-16: Decimal number string, driver number*/
-	
+
 	h5uchar additional_network_data[16]; /*String*/
 
-	Magnet_Type magnet_type;
-	h5uint width;           /*MILLIMETERS*/
-	h5uint length;          /*MILLIMETERS*/
-	h5uint height;          /*MILLIMETERS*/
-	h5uchar agility;        /*FORCIBLY BOOST TURNING DEGREES OF CAR*/
-	h5uint baseline_speed;  /*METERS PER SECOND*/
-	h5uint baseline_accel;  /*METERS PER SECOND SQUARED*/
-	h5uint weight;          /*HECTOGRAMS*/
-	h5uint grip_level;      /*VERY COMPLEX, IF UNSURE KEEP AT 16k-32k*/
-	h5uint downforce_level; /*0 TO 65535
-	                        0 - NO DOWNFORCE
-	                        65535 - CAR GLUED TO FLOOR*/
-	h5uint battery_capacity; /*0 TO 65535, in mAH. Amperage determined 
-	                           automatically by the rest of car stats*/
+	h5uint width;            /*Millimeters*/
+	h5uint length;           /*Millimeters*/
+	h5uint height;           /*Millimeters*/
+	h5uchar agility;         /*Impacts cornering*/
+	h5uint baseline_speed;   /*Kilometers per hour*/
+	h5uint baseline_accel;   /*Kilometers per hour*/
+	h5uint weight;           /*Hectograms*/
+	h5uchar magnetic_adapt;  /*0 TO 255,
+	                             The capability of the magnets to compensate for excessive aero
+	                             grip and other situations where the floor would scrape the floor*/
+	h5uchar aero_grip;       /*0 TO 255
+	                             0  :  No downforce
+	                             255:  F1-level downforce*/
+	h5uint power_consumption;/*Milliamperes*/
+	h5uint battery_capacity; /*Milliamperes X hour*/
 
 
 	/*Input properties of the car
 	 (BACKEND WILL NOT MODIFY THESE, FRONTEND CAN MODIFY THEM)*/
 
-	_Bool active; /*0 OR 1*/
+	_Bool active;  /*0 OR 1*/
 	h5uchar axis1; /*0 TO 255*/
 	h5uchar axis2; /*0 TO 255*/
 	h5uchar axis3; /*0 TO 255*/
 	h5uchar axis4; /*0 TO 255*/
-	_Bool btn1;   /*0 OR 1*/
-	_Bool btn2;   /*0 OR 1*/
-	_Bool btn3;   /*0 OR 1*/
-	_Bool btn4;   /*0 OR 1*/
+	_Bool btn1;    /*0 OR 1*/
+	_Bool btn2;    /*0 OR 1*/
+	_Bool btn3;    /*0 OR 1*/
+	_Bool btn4;    /*0 OR 1*/
 
 	/*Simulated properties of the car (MODIFYING THESE CAN LEAD TO
     FUNKY RESULTS, HOWEVER THERE IS NOTHING INHERENTLY WRONG WITH IT)*/
@@ -104,29 +98,23 @@ typedef struct {
 #ifdef H5PHY_VM_SIMULATION
 	H5VM_DefaultMemSetup vmmem;
 	H5VM_GeneralMemory computer; /*More or less 140KBs of storage with default settings*/
-	h5uchar
-	    status_screen[16]; /*8x8 4-color screen for VM, each two contiguous
-				  bits are a pixel. Mapped 0xC000 to 0xC00F*/
-	h5uchar status_lights; /*Each two contiguous bits is a single light,
-			       which can be off, color one, two, or three.
-			       Mapped 0xC011 to 0xC014*/
+	h5uchar status_lights;       /*16 lights,  each two contiguous bits is a light, 4-color. Mapped 0x1010 to 0x1013*/
+	h5uchar status_screen[16];   /*8x8 screen, each two contiguous bits are pixels, 4-color. Mapped 0x1014 to 0x1023*/
 #endif
 
-	h5ulong leaderboard_local;  /*RACE LEADERBOARD POSITION*/
-	h5ulong leaderboard_global; /*GLOBAL LEADERBOARD POSITION*/
-
-	h5ulong speed; /*Meters per second*/
-	h5ulong accel; /*Meters per second square*/	
-	h5point_ulong pos; /*position, x and y, unsigned 32-bit (in millimiters)*/
-	h5uchar rideheight; /*ride height, in mm, lower means more stable and faster, but also more succeptible to yaw/pitch changes*/
-	h5uchar roll; /*roll relative to floor, in degrees. Depending on ride height, car width, length and height, might collide*/
-	h5uchar pitch; /*pitch relative to floor, in degrees. Depending on ride height, car width, length and height, might collide*/
-	h5uchar yaw; /*absolute yaw, biggest determinant of car direction, depending on grip a fast change in yaw
-	               might contribute to loosing the rear of the car*/
+	h5uint leaderboard_local;            /*Current race leaderboard position*/
+	h5uint leaderboard_global;           /*Current global leaderboard position*/
+	h5ulong prev_speed, speed;           /*Kilometers per hour*/
+	h5ulong prev_accel, accel;           /*Kilometers per hour squared*/
+	h5point_ulong prev_pos, pos;         /*Position, x and y, unsigned 32-bit (in millimiters)*/
+	h5uchar prev_rideheight, rideheight; /*Ride height, in mm, lower means more stable and faster, but might scrape the floor. Influenced by magnetic adaptability*/
+	h5uchar prev_roll, roll;             /*Roll relative to floor, in degrees. Depending on ride height, car width, length and height,  might scrape the floor*/
+	h5uchar prev_pitch, pitch;           /*Pitch relative to floor, in degrees. Depending on ride height, car width, length and height, might scrape the floor*/
+	h5uchar prev_yaw, yaw;               /*Absolute yaw, biggest determinant of car direction. A fast change in yaw might make the car spin*/
 
 	h5uint avg_curr_load; /*Average current load, in milliamperes*/
-	h5uint battery_level; /*Percentage of battery level, where 0xFFFF is 100%*/
-	h5uint revolutions; /*ENGINE REVOLUTIONS PER MINUTE*/
+	h5uint battery_level; /*Milliamperes X hour*/
+	h5uint revolutions;   /*Engine revolutions per minute*/
 	h5ulong states[2];
 	h5uchar engine1[4]; /*Store how ramped up it is, its current power, degradation info, and flags*/
 	h5uchar engine2[4]; /*Store how ramped up it is, its current power, degradation info, and flags*/
@@ -138,8 +126,10 @@ typedef struct {
 
 } H5_Vehicle;
 
-/*Size for RACENUM = 4, with average VM: 3MiBs max
-Size for RACENUM = 4 without VM: 3KiBs max*/
+/*Size without VM for RACENUM=4 : 3076 B*/
+/*Size without VM for RACENUM=16: 4996 B*/
+/*Size with VM for    RACENUM=4 :  2.8  MiB*/
+/*Size with VM for    RACENUM=16: 11.6 MiB*/
 typedef struct {
 	H5_Vehicle racers[RACENUM];
 	H5T_Circuit track;
