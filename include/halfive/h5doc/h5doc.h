@@ -34,14 +34,14 @@ WORK.*/
 
 #include <halfive/h5req.h>
 
-typedef enum { SEC = 0, KEY = 1, VAL = 2 } H5DOC_Type;
+typedef enum { H5DOC_SEC = 0, H5DOC_KEY = 1, H5DOC_VAL = 2 } H5DOC_Type;
 
 typedef struct {
 	H5DOC_Type type;
-	size_t string_start, string_end, parent;
+	size_t string_start, string_end;
+	unsigned childnum;
 } H5DOC_Token;
 
-extern unsigned H5DOC_Parse(const unsigned char *const input, unsigned size,
-			    H5DOC_Token *toks);
+extern unsigned H5DOC_Parse(const char *const input, unsigned size, H5DOC_Token *toks);
 
 #endif

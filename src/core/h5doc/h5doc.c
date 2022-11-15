@@ -31,87 +31,192 @@ WORK.*/
 #include <halfive/h5req.h>
 
 #define TOP_LAYER UINT16_MAX
-unsigned H5DOC_Parse(const unsigned char *input, unsigned tok_size,
-		     H5DOC_Token *toks);
+unsigned H5DOC_Parse(const char *input, unsigned tok_size, H5DOC_Token *toks);
 
-unsigned H5DOC_Parse(const unsigned char *input, unsigned tok_size,
-		     H5DOC_Token *toks)
-{
-	int i = 0,           /*Character iterator var*/
-	    t = 0,           /*Temporary storate for iterator vars*/
-	    returnval = 0,   /*Store error number*/
-	    c = 1,           /*Continue boolean*/
-	    itr = 0,         /*Indentation track boolean;*/
-	    curr_indent = 0; /*Store current indentation level*/
+struct H5DOC_Stack {
+	size_t stackptr;
+	size_t parents[16]; /*Keep track of parents for 'childnum' stat 
+	                      (if you're indenting more than 16 levels
+	                      deep please redesign your document format)*/
+};
 
-	unsigned last_parent[10] = {0}; /*Index of tokens and their 
-	                                  indentation levels*/
-	unsigned j = 0; /*Token iterator var*/
+void H5DOC_Push(struct H5DOC_Stack *stack, size_t data) {
+	if (stack->stackptr == SIZE_T_MAX) {
+		stack->stackptr = 0;
+	} else if (stack->stackptr < ((sizeof stack->parents) - 1)) {
+		stack->stackptr++;
+	}
+	stack->parents[stack->stackptr] = data;
+	return;
+}
 
-	toks[0].type = SEC;       /*First token always section*/
-	toks[0].string_start = 0; /*Set start of first token*/
-	while (c) {
-		switch (input[i]) {
-		case 0x20: /*Space always occurs before VAL token*/
-			t = j;
-			j += 1;
-			while ((t >= 0) && (toks[t].type == VAL))
-				t -= 1;     /*Look for closest key*/
-			toks[j].type = VAL; /*Set type of current token*/
-			toks[j - 1].string_end =
-			    i - 1; /*Set end of previous token*/
-			toks[j].string_start =
-			    i + 1;          /*Set start of current token*/
-			toks[j].parent = t; /*Set closest key as */
-			break;
-		case 0x0A: /*Falltrough newline to htab*/
-		case 0x09: /*Only two separator patterns are valid:
-			    - Single newline FOO\nBAR,
-			    - Single newline followed by any number of htabs
-			    FOO\n\t\t...BAR*/
-			if (input[i + 1] ==
-			    0x09) /*Not last separator in sequence, abort*/
-				break;
-			curr_indent = 0;
-			t = i;
-			j += 1;
-			while ((t >= 0) && ((itr = (input[t] == 0x09)) ||
-					    (input[t] == 0x0A))) {
-				curr_indent += itr;
-				t -= 1; /*Look for closest non-separator*/
+size_t H5DOC_Pop(struct H5DOC_Stack *stack) {
+	if (stack->stackptr != 0) {
+		stack->stackptr--;
+		return stack->parents[stack->stackptr];
+	} else {
+		stack->stackptr = SIZE_T_MAX; /*Uninitialize the stack pointer*/
+		return SIZE_T_MAX;
+	}
+}
+
+unsigned H5DOC_IncreaseChildnum(struct H5DOC_Stack *stack, unsigned tok_size, H5DOC_Token *toks){
+	if (stack->stackptr != SIZE_T_MAX) {
+		for (size_t i = stack->stackptr; 1; i--){
+			if (stack->parents[i] < tok_size){
+				toks[stack->parents[i]].childnum += 1;
+			} else {
+				return 1; /*Out of bounds*/
 			}
-			last_parent[curr_indent] =
-			    j; /*Annotate this token as last one on this indent
-				  level*/
-			toks[j].parent =
-			    last_parent[(curr_indent == 0)
-					    ? TOP_LAYER
-					    : curr_indent - 1] /*Get parent token*/;
-			toks[j - 1].string_end =
-			    t; /*Set end of previous token*/
-			toks[j].string_start = i + 1;
-			toks[j].type = (input[i + 1] == 0x5F) ? SEC : KEY;
-			break;
-		case 0x00:
-			toks[j].string_end = i - 1; /*Terminate previous token*/
-			returnval = j; /*Return number of tokens read*/
-			c = 0;         /*Stop execution*/
-			break;
-		default:
-			break;
+			if (i == 0) return 0; /*Successful*/
 		}
-		i += 1;
-		if (j >= tok_size) {
-			returnval = -1; /*Insufficient tokens error*/
-			c = 0;          /*Stop execution*/
+	} else {
+		return 0; /*Stackptr is uninitialized*/
+	}
+	return 1; /*Impossible control path*/
+	
+}
+
+#include <stdio.h>
+#include <string.h>
+
+unsigned H5DOC_Parse(const char *input, unsigned tok_size, H5DOC_Token *toks) {
+	struct H5DOC_Stack stack = (struct H5DOC_Stack){SIZE_T_MAX, {0}};
+	int previndent = -1;
+	int currindent = 0;
+	_Bool endreached = 0;
+	H5DOC_Type prevtype = H5DOC_SEC;
+	int returnval = 0;
+
+	size_t i = 0, /*String iterator*/ 
+	       j = 0; /*Token iterator*/ 
+	while (j < tok_size) {
+		switch (input[i]) {
+			case 0x0A: /*Newline, delimits separation between different tables or different key/value sets*/
+				currindent = 0; /*Rotate indentation*/
+				prevtype = H5DOC_SEC; /*Base case*/
+				break;
+
+			case 0x20: /*Space, delimits keys and values*/
+				prevtype = H5DOC_KEY; /*If there's a space, well, for all intents and purposes last one was a key*/
+				break;
+
+			case 0x09: /*Tab, determines parent-child relationships*/
+				currindent += 1;
+				break;
+
+			case '\0': /*End of string, delimits the last token*/
+				endreached = 1;
+				break;
+
+			case 0x5F: /*Underscore, at the start of the token it means its a table*/
+				if (currindent > previndent) { /*If indentation is strictly greater, push self as next child*/
+					returnval = H5DOC_IncreaseChildnum(&stack, tok_size, toks);
+					H5DOC_Push(&stack, j);
+				} else if (currindent < previndent) {
+					for (int i = 0; i < (previndent - currindent); i++){
+						H5DOC_Pop(&stack); /*Indentation is smaller, so pop until last known parent is
+						                     reached, then push self*/
+					}
+					returnval = H5DOC_IncreaseChildnum(&stack, tok_size, toks);
+					H5DOC_Push(&stack, j);
+				} else if (currindent == previndent) {
+					H5DOC_Pop(&stack); /*Indentation is same, so pop once, then push self*/
+					returnval = H5DOC_IncreaseChildnum(&stack, tok_size, toks);
+					H5DOC_Push(&stack, j);					
+				}
+				previndent = currindent;
+
+				toks[j].type = H5DOC_SEC; /*Section*/
+				prevtype = H5DOC_SEC;
+				toks[j].string_start = i;
+				while (1) { /*Skip until string end*/
+					if (input[i+1] == '\n') {
+						break;
+					} else if (input[i+1] == '\0') {
+						endreached = 1;
+						break;
+					} else {
+						i++;
+					}
+				}
+				toks[j].string_end = i;
+				j++;
+				break;
+
+			default: /*Any other character, at the start of the token it means its a key or a value*/
+				if (prevtype != H5DOC_KEY) { /*Last one was not a key (was a section)*/
+					toks[j].type = H5DOC_KEY;
+					prevtype = H5DOC_KEY;
+
+					if (currindent > previndent) { /*If indentation is strictly greater, push self as next child*/
+						returnval = H5DOC_IncreaseChildnum(&stack, tok_size, toks);
+						H5DOC_Push(&stack, j);
+					} else if (currindent < previndent) {
+						for (int i = 0; i < (previndent - currindent); i++){
+							H5DOC_Pop(&stack); /*Indentation is smaller, so pop until last known parent is
+							                     reached, then push self*/
+						}
+						returnval = H5DOC_IncreaseChildnum(&stack, tok_size, toks);
+						H5DOC_Push(&stack, j);
+					} else if (currindent == previndent) {
+						H5DOC_Pop(&stack); /*Indentation is same, so pop once, then push self*/
+						returnval = H5DOC_IncreaseChildnum(&stack, tok_size, toks);
+						H5DOC_Push(&stack, j);					
+					}
+
+				} else if (prevtype == H5DOC_KEY) { /*Last one was a key*/
+					returnval = H5DOC_IncreaseChildnum(&stack, tok_size, toks); /*Increase key parent count*/
+					toks[j].type = H5DOC_VAL;
+					prevtype = H5DOC_VAL;
+				}
+				previndent = currindent;
+
+				toks[j].string_start = i;
+				while (1) { /*Skip until string end*/
+					if (input[i+1] == ' ' || input[i+1] == '\n') {
+						break;
+					} else if (input[i+1] == '\0') {
+						endreached = 1;
+						break;
+					} else {
+						i++;
+					}
+				}
+				toks[j].string_end = i;
+				j++;
+				break;			
+		}
+		i++;
+		if (endreached){
+			break;
 		}
 	}
-	return returnval;
+	if (endreached) return j; /*Number of tokens read*/
+	else return 0; /*Insufficient space*/
 }
+
+/*
+int main(void){
+	char doc[256] = "_ONE\n\tkey val1 val2 val3\n\tkey2 val1 val2 val3\n\t_SUBONE\n\t\tsubkey val0 val1 val2";
+	H5DOC_Token toks[128] = {0};
+	unsigned tokensread = H5DOC_Parse(doc, sizeof toks, toks);
+	for (unsigned long i = 0; i < tokensread; i++){
+		char substr[20] = {0};
+		strncpy(substr, doc+(toks[i].string_start), toks[i].string_end - toks[i].string_start + 1);
+		printf("TOK %lu:\n\tSTR...: [%s]\n\tTYPE: %s\n\t"
+		       "START.: %lu\n\tEND...: %lu\n\t"
+		       "CHILDS: %u\n", i, substr,
+		       (toks[i].type == H5DOC_SEC) ? "SECTION" : ((toks[i].type == H5DOC_KEY) ? "KEY" : "VALUE"),
+		       toks[i].string_start, toks[i].string_end,
+		       toks[i].childnum);
+	}
+	return 0;
+}
+*/
 
 /*
 EXAMPLE OF VALID H5DOC
 
-_ONE\n\tkey val1 val2 val3\n\tkey2 val1 val2 val3\n\t_SUBONE\n\t\tsubkey val0
-val1 val2
+_ONE\n\tkey val1 val2 val3\n\tkey2 val1 val2 val3\n\t_SUBONE\n\t\tsubkey val0 val1 val2
 */
