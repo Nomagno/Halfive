@@ -144,56 +144,54 @@ H5Elq_Node *H5Elq_Parse(char *in, H5Elq_NodeHeap *nodeheap){
 #endif
 	while(*in != '\0'){
 		switch(*in){
-			case ' ':
-			case '(':
-				if(lastchar == '(' || lastchar == ' '){
-					H5Elq_Push(&forkstack, currnode->parent);
+		case ' ':
+		case '(':
+			if(lastchar == '(' || lastchar == ' '){
+				H5Elq_Push(&forkstack, currnode->parent);
+			}
+			currnode = H5Elq_appendNode(currnode, _DIR_LEFT,
+			           (H5Elq_Node){ .type = ELQ_EMPTY }, nodeheap);
+			break;
+		case ')':
+			currnode->type = ELQ_NIL;
+			currnode = H5Elq_appendNode(H5Elq_Pop(&forkstack), _DIR_RIGHT,
+			           (H5Elq_Node){ .type = ELQ_EMPTY }, nodeheap);
+			break;
+		default:
+			if(ISUPPERCASEHEXDIGIT(*in)){
+				currnode->type = ELQ_INT;
+				if (ISUPPERCASEHEXDIGIT(*(in + 1))){
+					currnode->valScalar = h5strtoul((char[]){*in, *(in + 1), 0}, NULL, 16);
+					in += 1;
+				} else {
+					currnode->valScalar = h5strtoul((char[]){*in, 0}, NULL, 16);
 				}
-				currnode = H5Elq_appendNode(currnode, _DIR_LEFT,
-				           (H5Elq_Node){ .type = ELQ_EMPTY }, nodeheap);
-				break;
-			case ')':
-				currnode->type = ELQ_NIL;
-				currnode = H5Elq_appendNode(H5Elq_Pop(&forkstack), _DIR_RIGHT,
-				           (H5Elq_Node){ .type = ELQ_EMPTY }, nodeheap);
-				break;
-			default:
-				if(ISUPPERCASEHEXDIGIT(*in)){
-					currnode->type = ELQ_INT;
-					if (ISUPPERCASEHEXDIGIT(*(in + 1))){
-						currnode->valScalar = h5strtoul((char[]){*in,
-						                      *(in + 1), 0}, NULL, 16);
-						in += 1;
-					} else {
-						currnode->valScalar = h5strtoul((char[]){*in, 0},
-						                      NULL, 16);
-					}
-				} else if(ISVARIABLEDIGIT(*in)){
-					k = 0;
-					while(ISVARIABLEDIGIT(*in)){
-						tmpstring[k] = *in;
-						in += 1;
-						k += 1;
-					}
-					tmpstring[k] = '\0';
-					if(ISSTANDARDSYNTAX(tmpstring)){
-						currnode->type = ELQ_PROC;
-						GETSTANDARDSYNTAX(tmpstring, currnode->valScalar);
-					} else{
-						currnode->type = ELQ_VAR;
-						for(int j = 0; j < 24; j++){
-							currnode->valSymbol[j] = tmpstring[j];
-						}
-					}
-					in -= 1;
-				} else if (*in == '%'){
-					currnode->type = ELQ_LIT_NIL;
+			} else if(ISVARIABLEDIGIT(*in)){
+				k = 0;
+				while(ISVARIABLEDIGIT(*in)){
+					tmpstring[k] = *in;
+					in += 1;
+					k += 1;
 				}
-				currnode = H5Elq_appendNode(currnode->parent, _DIR_RIGHT,
-				           (H5Elq_Node){ .type = ELQ_EMPTY }, nodeheap);
-				currnode = H5Elq_appendNode(currnode->parent, _DIR_RIGHT,
-				           (H5Elq_Node){ .type = ELQ_EMPTY }, nodeheap);
-				break;
+				tmpstring[k] = '\0';
+				if(ISSTANDARDSYNTAX(tmpstring)){
+					currnode->type = ELQ_PROC;
+					GETSTANDARDSYNTAX(tmpstring, currnode->valScalar);
+				} else{
+					currnode->type = ELQ_VAR;
+					for(int j = 0; j < 24; j++){
+						currnode->valSymbol[j] = tmpstring[j];
+					}
+				}
+				in -= 1;
+			} else if (*in == '%'){
+				currnode->type = ELQ_LIT_NIL;
+			}
+			currnode = H5Elq_appendNode(currnode->parent, _DIR_RIGHT,
+			           (H5Elq_Node){ .type = ELQ_EMPTY }, nodeheap);
+			currnode = H5Elq_appendNode(currnode->parent, _DIR_RIGHT,
+			           (H5Elq_Node){ .type = ELQ_EMPTY }, nodeheap);
+			break;
 		}
 #ifdef H5ELQ_DEBUG
 		printf("COUNTER: %u\nCHARACTER: %c\n LASTCHAR: %c\n\n",

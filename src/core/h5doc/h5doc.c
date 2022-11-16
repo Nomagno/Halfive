@@ -77,9 +77,6 @@ unsigned H5DOC_IncreaseChildnum(struct H5DOC_Stack *stack, unsigned tok_size, H5
 	
 }
 
-#include <stdio.h>
-#include <string.h>
-
 unsigned H5DOC_Parse(const char *input, unsigned tok_size, H5DOC_Token *toks) {
 	struct H5DOC_Stack stack = (struct H5DOC_Stack){SIZE_T_MAX, {0}};
 	int previndent = -1;
@@ -92,24 +89,63 @@ unsigned H5DOC_Parse(const char *input, unsigned tok_size, H5DOC_Token *toks) {
 	       j = 0; /*Token iterator*/ 
 	while (j < tok_size) {
 		switch (input[i]) {
-			case 0x0A: /*Newline, delimits separation between different tables or different key/value sets*/
-				currindent = 0; /*Rotate indentation*/
-				prevtype = H5DOC_SEC; /*Base case*/
-				break;
+		case 0x0A: /*Newline, delimits separation between different tables or different key/value sets*/
+			currindent = 0; /*Rotate indentation*/
+			prevtype = H5DOC_SEC; /*Base case*/
+			break;
 
-			case 0x20: /*Space, delimits keys and values*/
-				prevtype = H5DOC_KEY; /*If there's a space, well, for all intents and purposes last one was a key*/
-				break;
+		case 0x20: /*Space, delimits keys and values*/
+			prevtype = H5DOC_KEY; /*If there's a space, well, for all intents and purposes last one was a key*/
+			break;
 
-			case 0x09: /*Tab, determines parent-child relationships*/
-				currindent += 1;
-				break;
+		case 0x09: /*Tab, determines parent-child relationships*/
+			currindent += 1;
+			break;
 
-			case '\0': /*End of string, delimits the last token*/
-				endreached = 1;
-				break;
+		case '\0': /*End of string, delimits the last token*/
+			endreached = 1;
+			break;
 
-			case 0x5F: /*Underscore, at the start of the token it means its a table*/
+		case 0x5F: /*Underscore, at the start of the token it means its a table*/
+			if (currindent > previndent) { /*If indentation is strictly greater, push self as next child*/
+				returnval = H5DOC_IncreaseChildnum(&stack, tok_size, toks);
+				H5DOC_Push(&stack, j);
+			} else if (currindent < previndent) {
+				for (int i = 0; i < (previndent - currindent); i++){
+					H5DOC_Pop(&stack); /*Indentation is smaller, so pop until last known parent is
+					                     reached, then push self*/
+				}
+				returnval = H5DOC_IncreaseChildnum(&stack, tok_size, toks);
+				H5DOC_Push(&stack, j);
+			} else if (currindent == previndent) {
+				H5DOC_Pop(&stack); /*Indentation is same, so pop once, then push self*/
+				returnval = H5DOC_IncreaseChildnum(&stack, tok_size, toks);
+				H5DOC_Push(&stack, j);					
+			}
+			previndent = currindent;
+
+			toks[j].type = H5DOC_SEC; /*Section*/
+			prevtype = H5DOC_SEC;
+			toks[j].string_start = i;
+			while (1) { /*Skip until string end*/
+				if (input[i+1] == '\n') {
+					break;
+				} else if (input[i+1] == '\0') {
+					endreached = 1;
+					break;
+				} else {
+					i++;
+				}
+			}
+			toks[j].string_end = i;
+			j++;
+			break;
+
+		default: /*Any other character, at the start of the token it means its a key or a value*/
+			if (prevtype != H5DOC_KEY) { /*Last one was not a key (was a section)*/
+				toks[j].type = H5DOC_KEY;
+				prevtype = H5DOC_KEY;
+
 				if (currindent > previndent) { /*If indentation is strictly greater, push self as next child*/
 					returnval = H5DOC_IncreaseChildnum(&stack, tok_size, toks);
 					H5DOC_Push(&stack, j);
@@ -125,67 +161,28 @@ unsigned H5DOC_Parse(const char *input, unsigned tok_size, H5DOC_Token *toks) {
 					returnval = H5DOC_IncreaseChildnum(&stack, tok_size, toks);
 					H5DOC_Push(&stack, j);					
 				}
-				previndent = currindent;
 
-				toks[j].type = H5DOC_SEC; /*Section*/
-				prevtype = H5DOC_SEC;
-				toks[j].string_start = i;
-				while (1) { /*Skip until string end*/
-					if (input[i+1] == '\n') {
-						break;
-					} else if (input[i+1] == '\0') {
-						endreached = 1;
-						break;
-					} else {
-						i++;
-					}
+			} else if (prevtype == H5DOC_KEY) { /*Last one was a key*/
+				returnval = H5DOC_IncreaseChildnum(&stack, tok_size, toks); /*Increase key parent count*/
+				toks[j].type = H5DOC_VAL;
+				prevtype = H5DOC_VAL;
+			}
+			previndent = currindent;
+
+			toks[j].string_start = i;
+			while (1) { /*Skip until string end*/
+				if (input[i+1] == ' ' || input[i+1] == '\n') {
+					break;
+				} else if (input[i+1] == '\0') {
+					endreached = 1;
+					break;
+				} else {
+					i++;
 				}
-				toks[j].string_end = i;
-				j++;
-				break;
-
-			default: /*Any other character, at the start of the token it means its a key or a value*/
-				if (prevtype != H5DOC_KEY) { /*Last one was not a key (was a section)*/
-					toks[j].type = H5DOC_KEY;
-					prevtype = H5DOC_KEY;
-
-					if (currindent > previndent) { /*If indentation is strictly greater, push self as next child*/
-						returnval = H5DOC_IncreaseChildnum(&stack, tok_size, toks);
-						H5DOC_Push(&stack, j);
-					} else if (currindent < previndent) {
-						for (int i = 0; i < (previndent - currindent); i++){
-							H5DOC_Pop(&stack); /*Indentation is smaller, so pop until last known parent is
-							                     reached, then push self*/
-						}
-						returnval = H5DOC_IncreaseChildnum(&stack, tok_size, toks);
-						H5DOC_Push(&stack, j);
-					} else if (currindent == previndent) {
-						H5DOC_Pop(&stack); /*Indentation is same, so pop once, then push self*/
-						returnval = H5DOC_IncreaseChildnum(&stack, tok_size, toks);
-						H5DOC_Push(&stack, j);					
-					}
-
-				} else if (prevtype == H5DOC_KEY) { /*Last one was a key*/
-					returnval = H5DOC_IncreaseChildnum(&stack, tok_size, toks); /*Increase key parent count*/
-					toks[j].type = H5DOC_VAL;
-					prevtype = H5DOC_VAL;
-				}
-				previndent = currindent;
-
-				toks[j].string_start = i;
-				while (1) { /*Skip until string end*/
-					if (input[i+1] == ' ' || input[i+1] == '\n') {
-						break;
-					} else if (input[i+1] == '\0') {
-						endreached = 1;
-						break;
-					} else {
-						i++;
-					}
-				}
-				toks[j].string_end = i;
-				j++;
-				break;			
+			}
+			toks[j].string_end = i;
+			j++;
+			break;			
 		}
 		i++;
 		if (endreached){
@@ -197,6 +194,9 @@ unsigned H5DOC_Parse(const char *input, unsigned tok_size, H5DOC_Token *toks) {
 }
 
 /*
+#include <stdio.h>
+#include <string.h>
+
 int main(void){
 	char doc[256] = "_ONE\n\tkey val1 val2 val3\n\tkey2 val1 val2 val3\n\t_SUBONE\n\t\tsubkey val0 val1 val2";
 	H5DOC_Token toks[128] = {0};
