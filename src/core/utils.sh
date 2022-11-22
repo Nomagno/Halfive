@@ -71,7 +71,7 @@ stac(){
 	IFS=' '
 	for _ in $words; do
 		size=$((size + 1))
-	done	
+	done
 	for _ in $words; do
 		count=$((count + 1))
 		opposite_count=$((size - count + 1))
@@ -86,5 +86,5 @@ stac(){
 genkey(){
 	(LC_CTYPE=C tr -dc 'A-Z' |
 	 LC_CTYPE=C dd bs=1 count="$2" 2>/dev/null) < "$1"
-	echo	
+	echo
 }

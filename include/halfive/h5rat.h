@@ -33,36 +33,115 @@ WORK.*/
 
 typedef struct {
 	_Bool sign;
+	h5uint num;
+	h5uint denom;
+} H5Rat_uint;
+
+typedef struct {
+	_Bool sign;
+	h5ulong num;
+	h5ulong denom;
+} H5Rat_ulong;
+
+typedef struct {
+	_Bool sign;
 	h5umax num;
 	h5umax denom;
-} H5Rat;
+} H5Rat_umax;
 
-h5umax H5Rat_GCD(h5umax a, h5umax b);
-h5umax H5Rat_LCM(h5umax a, h5umax b);
-void H5Rat_XorSwap(h5umax *a, h5umax *b);
+h5uint H5Rat_uint_GCD(h5uint a, h5uint b);
+h5ulong H5Rat_ulong_GCD(h5ulong a, h5ulong b);
+h5umax H5Rat_umax_GCD(h5umax a, h5umax b);
 
-H5Rat H5Rat_Simplify(H5Rat a);
-void H5Rat_Equate(H5Rat *a, H5Rat *b);
-_Bool H5Rat_Compare(H5Rat a, H5Rat b);
-H5Rat H5Rat_Add(H5Rat a, H5Rat b);
-H5Rat H5Rat_Product(H5Rat a, H5Rat b);
+h5uint H5Rat_uint_LCM(h5uint a, h5uint b);
+h5ulong H5Rat_ulong_LCM(h5ulong a, h5ulong b);
+h5umax H5Rat_umax_LCM(h5umax a, h5umax b);
+
+void H5Rat_uint_XorSwap(h5uint *a, h5uint *b);
+void H5Rat_ulong_XorSwap(h5ulong *a, h5ulong *b);
+void H5Rat_umax_XorSwap(h5umax *a, h5umax *b);
+
+H5Rat_uint H5Rat_uint_Simplify(H5Rat_uint a);
+H5Rat_ulong H5Rat_ulong_Simplify(H5Rat_ulong a);
+H5Rat_umax H5Rat_umax_Simplify(H5Rat_umax a);
+
+void H5Rat_uint_Equate(H5Rat_uint *a, H5Rat_uint *b);
+void H5Rat_ulong_Equate(H5Rat_ulong *a, H5Rat_ulong *b);
+void H5Rat_umax_Equate(H5Rat_umax *a, H5Rat_umax *b);
+
+_Bool H5Rat_uint_Compare(H5Rat_uint a, H5Rat_uint b);
+_Bool H5Rat_ulong_Compare(H5Rat_ulong a, H5Rat_ulong b);
+_Bool H5Rat_umax_Compare(H5Rat_umax a, H5Rat_umax b);
+
+H5Rat_uint H5Rat_uint_Add(H5Rat_uint a, H5Rat_uint b);
+H5Rat_ulong H5Rat_ulong_Add(H5Rat_ulong a, H5Rat_ulong b);
+H5Rat_umax H5Rat_umax_Add(H5Rat_umax a, H5Rat_umax b);
+
+H5Rat_uint H5Rat_uint_Product(H5Rat_uint a, H5Rat_uint b);
+H5Rat_ulong H5Rat_ulong_Product(H5Rat_ulong a, H5Rat_ulong b);
+H5Rat_umax H5Rat_umax_Product(H5Rat_umax a, H5Rat_umax b);
 
 
-h5ulong H5Rat_toUlong(H5Rat a);
+h5uint H5Rat_uint_toInt(H5Rat_uint a);
+h5ulong H5Rat_ulong_toInt(H5Rat_ulong a);
+h5umax H5Rat_umax_toInt(H5Rat_umax a);
+
+H5Rat_umax H5Rat_UtoM(H5Rat_uint a);
+H5Rat_umax H5Rat_LtoM(H5Rat_ulong a);
+
+H5Rat_ulong H5Rat_UtoL(H5Rat_uint a);
+H5Rat_ulong H5Rat_MtoL(H5Rat_umax a);
+
+H5Rat_uint H5Rat_LtoU(H5Rat_ulong a);
+H5Rat_uint H5Rat_MtoU(H5Rat_umax a);
+
 #ifdef FLOATS_SUPPORTED
-	float H5Rat_toFloat(H5Rat a);
+	float H5Rat_uint_toFloat(H5Rat_uint a);
+	float H5Rat_ulong_toFloat(H5Rat_ulong a);
+	float H5Rat_umax_toFloat(H5Rat_umax a);
 #endif
 
 #ifdef H5RAT_SHORTHAND
-	#define GCD H5Rat_GCD
-	#define LCM H5Rat_LCM
-	#define RSwap H5Rat_XorSwap
-	#define RSimp H5Rat_Simplify
-	#define REq H5Rat_Equate
-	#define RCmp H5Rat_Compare
-	#define RAdd H5Rat_Add
-	#define RProd H5Rat_Product
-	#define RUlong H5Rat_toUlong
-	#define RFloat H5Rat_toFloat
+	#define H5_GCD_U H5Rat_uint_GCD
+	#define H5_GCD_L H5Rat_GCD
+	#define H5_GCD_M H5Rat_GCD
+
+	#define H5_LCM_U H5Rat_uint_LCM
+	#define H5_LCM_L H5Rat_LCM
+	#define H5_LCM_M H5Rat_LCM
+
+	#define H5_RSwap_U H5Rat_uint_XorSwap
+	#define H5_RSwap_L H5Rat_ulong_XorSwap
+	#define H5_RSwap_M H5Rat_umax_XorSwap
+
+	#define H5_RSimp_U H5Rat_uint_Simplify
+	#define H5_RSimp_L H5Rat_ulong_Simplify
+	#define H5_RSimp_M H5Rat_umax_Simplify
+
+	#define H5_REq_U H5Rat_uint_Equate
+	#define H5_REq_L H5Rat_ulong_Equate
+	#define H5_REq_M H5Rat_umax_Equate
+
+	#define H5_RCmp_U H5Rat_uint_Compare
+	#define H5_RCmp_L H5Rat_ulong_Compare
+	#define H5_RCmp_M H5Rat_umax_Compare
+
+	#define H5_RAdd_U H5Rat_uint_Add
+	#define H5_RAdd_L H5Rat_ulong_Add
+	#define H5_RAdd_M H5Rat_umax_Add
+
+	#define H5_RProd_U H5Rat_uint_Product
+	#define H5_RProd_L H5Rat_ulong_Product
+	#define H5_RProd_M H5Rat_umax_Product
+
+	#define H5_RInt_U H5Rat_uint_toInt
+	#define H5_RInt_L H5Rat_ulong_toInt
+	#define H5_RInt_M H5Rat_umax_toInt
+
+	#ifdef FLOATS_SUPPORTED
+		#define H5_RFloat_U H5Rat_uint_toFloat
+		#define H5_RFloat_L H5Rat_ulong_toFloat
+		#define H5_RFloat_M H5Rat_umax_toFloat
+	#endif
 #endif
 #endif

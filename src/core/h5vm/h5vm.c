@@ -119,7 +119,6 @@ H5VM_GeneralMemory H5VM_Init(H5VM_CodeMemory *code,
 	rawmem->co_low = (IS_LITTLE_ENDIAN) ? ((h5uchar *)&returnval.co + 1)
 					    : ((h5uchar *)&returnval.co);
 
-	_Bool overflow_check = 0;
 	for(h5ulong i = 0; i < (MEMUNIT * MEMSIZE); i++) {
 		if (i <= _MEMMAX) {
 			returnval.data[i] = &(rawmem->gmem[i]);

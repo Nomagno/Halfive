@@ -63,7 +63,7 @@ includepp(){
 	IFS='
 '
 	tmp=$(mktemp)
-	
+
 	while read -r line; do
 		case "$line" in
 		'#i'*)
@@ -92,24 +92,24 @@ asmpp(){
 		p1=$(printstr_n "$i" |
 		     cut -d',' -f1 |
 		     sed 's/|/ /g; s/\&/\\&/g')
-		p2=$(printstr_n "$i" | 
-		     cut -d',' -f2 | 
-		     sed 's/|/ /g; s/\&/\\&/g') 
+		p2=$(printstr_n "$i" |
+		     cut -d',' -f2 |
+		     sed 's/|/ /g; s/\&/\\&/g')
 
 		# For each line in $rep, scan the entire file and replace the macro name for its macro meaning
-		f=$(printstr "$f " | 
-		    sed "s/$p1/$p2/g") 
+		f=$(printstr "$f " |
+		    sed "s/$p1/$p2/g")
 	done
 	# Replace __ with newline, eliminate indentation and whitespace padding
-	f=$(printstr_n "$f" | 
-	    sed 's/__/\n/g; /^[[:space:]]*$/d;' | 
-	    sed 's/^[ \t]*//g') 
+	f=$(printstr_n "$f" |
+	    sed 's/__/\n/g; /^[[:space:]]*$/d;' |
+	    sed 's/^[ \t]*//g')
 
 	# This is not pretty, but it works and is not too egregious
 	# Labels <FOO> -> every occurrance of >FOO< is replaced with (+1/-1) absolute of the
 	# instruction number >FOO< appears in minus absolute of the instruction number
 	# <FOO> appears in
-	
+
 	hexfile=$(numberhex "$f")
 	hexrep=$(printstr_n "$hexfile" | grep '^.*:<.*>' | cut -d'>' -f1)
 
@@ -130,18 +130,18 @@ asmpp(){
 		hexfile=$f
 	done
 	# Replace __ with newline, eliminate indentation and whitespace padding + numbering
-	f=$(printstr_n "$f" | 
-	    sed 's/__/\n/g; /^[[:space:]]*$/d;' | 
-	    sed 's/^[ \t]*//g' | cut -d':' -f2) 
+	f=$(printstr_n "$f" |
+	    sed 's/__/\n/g; /^[[:space:]]*$/d;' |
+	    sed 's/^[ \t]*//g' | cut -d':' -f2)
 	printstr_n "$f"
 
 }
 
 # Preprocess for includes
-tmp2=$(includepp "$1") 
+tmp2=$(includepp "$1")
 
 # Preprocess for macros
 asmpp "$tmp2"
 
 # Remove tmpfile
-rm "$tmp2" 
+rm "$tmp2"

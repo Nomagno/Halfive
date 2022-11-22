@@ -190,7 +190,7 @@ WORK.*/
 void *_h5libcmemcpy(void *dest, const void *src, size_t n) {
 	unsigned char *d = (unsigned char *)dest;
 	const unsigned char *s = (const unsigned char *)src;
-	for (size_t i = 0; i < n; i++) 
+	for (size_t i = 0; i < n; i++)
 		d[i] = s[i];
 	return dest;
 }
@@ -205,7 +205,7 @@ char *_h5libcstrncpy(char *dest, const char *src, size_t n) {
 
 void *_h5libcmemset(void *str, int val, size_t n) {
 	unsigned char *s = (unsigned char *)str;
-	for (size_t i = 0; i < n; i++) 
+	for (size_t i = 0; i < n; i++)
 		s[i] = val;
 	return str;
 }

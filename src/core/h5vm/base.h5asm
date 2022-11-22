@@ -54,7 +54,7 @@
 
 
 ; Base library for Halfive assembly
-; Contains: 
+; Contains:
 ;   Special register mnemonic macros
 ;   Two utility pseudo-instructions
 ;   Shorthand symbols for 16 first addresses
@@ -104,7 +104,7 @@
 ; if it is nonzero set it to one
 #d NRM_ZF,skpz =1 __ set _ZF =1
 
-; Invert zero flag, FOUR instructions: 
+; Invert zero flag, FOUR instructions:
 ; if it is nonzero set it to zero,
 ; if it is zero set it to one
 #d INV_ZF,skpz =2 __ set _ZF =0 __ skpz =1 __ set _ZF =1

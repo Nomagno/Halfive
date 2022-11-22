@@ -47,7 +47,7 @@ int main(int argc, char **argv)
 
 	if (argc == 1)
 		codefile = stdin;
-	
+
 	if ( argc >= 2 && h5strcmp(argv[1], "-") == 0) { codefile = stdin; }
 	else if (argc >= 2) { codefile = fopen(argv[1], "r"); }
 

@@ -35,13 +35,13 @@ unsigned H5DOC_Parse(const char *input, unsigned tok_size, H5DOC_Token *toks);
 
 struct H5DOC_Stack {
 	size_t stackptr;
-	size_t parents[16]; /*Keep track of parents for 'childnum' stat 
+	size_t parents[16]; /*Keep track of parents for 'childnum' stat
 	                      (if you're indenting more than 16 levels
 	                      deep please redesign your document format)*/
 };
 
 void H5DOC_Push(struct H5DOC_Stack *stack, size_t data) {
-	if (stack->stackptr == SIZE_T_MAX) {
+	if (stack->stackptr == SIZE_MAX) {
 		stack->stackptr = 0;
 	} else if (stack->stackptr < ((sizeof stack->parents) - 1)) {
 		stack->stackptr++;
@@ -55,13 +55,13 @@ size_t H5DOC_Pop(struct H5DOC_Stack *stack) {
 		stack->stackptr--;
 		return stack->parents[stack->stackptr];
 	} else {
-		stack->stackptr = SIZE_T_MAX; /*Uninitialize the stack pointer*/
-		return SIZE_T_MAX;
+		stack->stackptr = SIZE_MAX; /*Uninitialize the stack pointer*/
+		return SIZE_MAX;
 	}
 }
 
 unsigned H5DOC_IncreaseChildnum(struct H5DOC_Stack *stack, unsigned tok_size, H5DOC_Token *toks){
-	if (stack->stackptr != SIZE_T_MAX) {
+	if (stack->stackptr != SIZE_MAX) {
 		for (size_t i = stack->stackptr; 1; i--){
 			if (stack->parents[i] < tok_size){
 				toks[stack->parents[i]].childnum += 1;
@@ -74,19 +74,19 @@ unsigned H5DOC_IncreaseChildnum(struct H5DOC_Stack *stack, unsigned tok_size, H5
 		return 0; /*Stackptr is uninitialized*/
 	}
 	return 1; /*Impossible control path*/
-	
+
 }
 
 unsigned H5DOC_Parse(const char *input, unsigned tok_size, H5DOC_Token *toks) {
-	struct H5DOC_Stack stack = (struct H5DOC_Stack){SIZE_T_MAX, {0}};
+	struct H5DOC_Stack stack = (struct H5DOC_Stack){SIZE_MAX, {0}};
 	int previndent = -1;
 	int currindent = 0;
 	_Bool endreached = 0;
 	H5DOC_Type prevtype = H5DOC_SEC;
 	int returnval = 0;
 
-	size_t i = 0, /*String iterator*/ 
-	       j = 0; /*Token iterator*/ 
+	size_t i = 0, /*String iterator*/
+	       j = 0; /*Token iterator*/
 	while (j < tok_size) {
 		switch (input[i]) {
 		case 0x0A: /*Newline, delimits separation between different tables or different key/value sets*/
@@ -120,7 +120,7 @@ unsigned H5DOC_Parse(const char *input, unsigned tok_size, H5DOC_Token *toks) {
 			} else if (currindent == previndent) {
 				H5DOC_Pop(&stack); /*Indentation is same, so pop once, then push self*/
 				returnval = H5DOC_IncreaseChildnum(&stack, tok_size, toks);
-				H5DOC_Push(&stack, j);					
+				H5DOC_Push(&stack, j);
 			}
 			previndent = currindent;
 
@@ -159,7 +159,7 @@ unsigned H5DOC_Parse(const char *input, unsigned tok_size, H5DOC_Token *toks) {
 				} else if (currindent == previndent) {
 					H5DOC_Pop(&stack); /*Indentation is same, so pop once, then push self*/
 					returnval = H5DOC_IncreaseChildnum(&stack, tok_size, toks);
-					H5DOC_Push(&stack, j);					
+					H5DOC_Push(&stack, j);
 				}
 
 			} else if (prevtype == H5DOC_KEY) { /*Last one was a key*/
@@ -182,7 +182,7 @@ unsigned H5DOC_Parse(const char *input, unsigned tok_size, H5DOC_Token *toks) {
 			}
 			toks[j].string_end = i;
 			j++;
-			break;			
+			break;
 		}
 		i++;
 		if (endreached){

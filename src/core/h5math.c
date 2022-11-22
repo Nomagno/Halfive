@@ -31,29 +31,65 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
-h5point_ulong H5Math_PointAdd(h5point_ulong a, h5point_ulong b){
+h5point_uint H5Math_uint_PointAddPoint(h5point_uint a, h5point_uint b){
+	return (h5point_uint){
+		.x = a.x + b.x,
+		.y = a.y + b.y
+	};
+}
+h5point_uint H5Math_uint_PointSubPoint(h5point_uint a, h5point_uint b){
+	return (h5point_uint){
+		.x = a.x - b.x,
+		.y = a.y - b.y
+	};
+}
+h5point_uint H5Math_uint_PointMultScalar(h5point_uint a, H5Rat_uint k){
+	return (h5point_uint){
+		.x = H5Rat_uint_toInt(H5Rat_uint_Product((H5Rat_uint){0, a.x, 1}, k)),
+		.y = H5Rat_uint_toInt(H5Rat_uint_Product((H5Rat_uint){0, a.y, 1}, k))
+	};
+}
+
+h5point_ulong H5Math_ulong_PointAddPoint(h5point_ulong a, h5point_ulong b){
 	return (h5point_ulong){
 		.x = a.x + b.x,
 		.y = a.y + b.y
 	};
 }
-
-h5point_ulong H5Math_PointSub(h5point_ulong a, h5point_ulong b){
+h5point_ulong H5Math_ulong_PointSubPoint(h5point_ulong a, h5point_ulong b){
 	return (h5point_ulong){
 		.x = a.x - b.x,
 		.y = a.y - b.y
 	};
 }
-
-h5point_ulong H5Math_PointMultScalar(h5point_ulong a, H5Rat k){
+h5point_ulong H5Math_ulong_PointMultScalar(h5point_ulong a, H5Rat_ulong k){
 	return (h5point_ulong){
-		.x = H5Rat_toUlong(H5Rat_Product((H5Rat){0, a.x, 1}, k)),
-		.y = H5Rat_toUlong(H5Rat_Product((H5Rat){0, a.y, 1}, k))
+		.x = H5Rat_ulong_toInt(H5Rat_ulong_Product((H5Rat_ulong){0, a.x, 1}, k)),
+		.y = H5Rat_ulong_toInt(H5Rat_ulong_Product((H5Rat_ulong){0, a.y, 1}, k))
 	};
 }
 
-h5umax H5Math_umax_isqrt(h5umax a){
-	h5umax i = 1, sq = 1;
+h5point_umax H5Math_umax_PointAddPoint(h5point_umax a, h5point_umax b){
+	return (h5point_umax){
+		.x = a.x + b.x,
+		.y = a.y + b.y
+	};
+}
+h5point_umax H5Math_umax_PointSubPoint(h5point_umax a, h5point_umax b){
+	return (h5point_umax){
+		.x = a.x - b.x,
+		.y = a.y - b.y
+	};
+}
+h5point_umax H5Math_umax_PointMultScalar(h5point_umax a, H5Rat_umax k){
+	return (h5point_umax){
+		.x = H5Rat_umax_toInt(H5Rat_umax_Product((H5Rat_umax){0, a.x, 1}, k)),
+		.y = H5Rat_umax_toInt(H5Rat_umax_Product((H5Rat_umax){0, a.y, 1}, k))
+	};
+}
+
+h5uint H5Math_uint_IntegerSquareRoot(h5uint a){
+	h5uint i = 1, sq = 1;
 	while(sq <= a){
 			i += 1;
 			sq = i*i;
@@ -61,7 +97,7 @@ h5umax H5Math_umax_isqrt(h5umax a){
 	return i - 1;
 }
 
-h5ulong H5Math_isqrt(h5ulong a){
+h5ulong H5Math_ulong_IntegerSquareRoot(h5ulong a){
 	h5ulong i = 1, sq = 1;
 	while(sq <= a){
 			i += 1;
@@ -70,40 +106,99 @@ h5ulong H5Math_isqrt(h5ulong a){
 	return i - 1;
 }
 
+h5umax H5Math_umax_IntegerSquareRoot(h5umax a){
+	h5umax i = 1, sq = 1;
+	while(sq <= a){
+			i += 1;
+			sq = i*i;
+	}
+	return i - 1;
+}
+
+
 /*Newton's method*/
-H5Rat H5Math_ratsqrt(h5ulong a){
-	H5Rat guess = H5Rat_Simplify((H5Rat){0, H5Math_isqrt(a), 1});
+H5Rat_uint H5Math_uint_RationalSquareRoot(h5uint a){
+	H5Rat_uint guess = H5Rat_uint_Simplify((H5Rat_uint){0, H5Math_uint_IntegerSquareRoot(a), 1});
 	for(unsigned i = 0; i < H5MATH_SQRT_ITER; i++){
-		H5Rat a_divided_by_guess = H5Rat_Product((H5Rat){0, a, 1}, (H5Rat){0, guess.denom, guess.num});
-		guess = H5Rat_Product((H5Rat){0, 1, 2}, H5Rat_Add(guess, a_divided_by_guess));
+		H5Rat_uint a_divided_by_guess = H5Rat_uint_Product((H5Rat_uint){0, a, 1},
+		                                                     (H5Rat_uint){0, guess.denom, guess.num});
+		guess = H5Rat_uint_Product((H5Rat_uint){0, 1, 2}, H5Rat_uint_Add(guess, a_divided_by_guess));
 		guess.sign = 0;
 	}
 	return guess;
 }
 
-H5Rat H5Math_umax_ratsqrt(h5umax a){
-	H5Rat guess = H5Rat_Simplify((H5Rat){0, H5Math_isqrt(a), 1});
+/*Newton's method*/
+H5Rat_ulong H5Math_ulong_RationalSquareRoot(h5ulong a){
+	H5Rat_ulong guess = H5Rat_ulong_Simplify((H5Rat_ulong){0, H5Math_ulong_IntegerSquareRoot(a), 1});
 	for(unsigned i = 0; i < H5MATH_SQRT_ITER; i++){
-		H5Rat a_divided_by_guess = H5Rat_Product((H5Rat){0, a, 1}, (H5Rat){0, guess.denom, guess.num});
-		guess = H5Rat_Product((H5Rat){0, 1, 2}, H5Rat_Add(guess, a_divided_by_guess));
+		H5Rat_ulong a_divided_by_guess = H5Rat_ulong_Product((H5Rat_ulong){0, a, 1},
+		                                                     (H5Rat_ulong){0, guess.denom, guess.num});
+		guess = H5Rat_ulong_Product((H5Rat_ulong){0, 1, 2}, H5Rat_ulong_Add(guess, a_divided_by_guess));
 		guess.sign = 0;
 	}
-	return guess;	
+	return guess;
+}
+
+/*Newton's method*/
+H5Rat_umax H5Math_umax_RationalSquareRoot(h5umax a){
+	H5Rat_umax guess = H5Rat_umax_Simplify((H5Rat_umax){0, H5Math_umax_IntegerSquareRoot(a), 1});
+	for(unsigned i = 0; i < H5MATH_SQRT_ITER; i++){
+		H5Rat_umax a_divided_by_guess = H5Rat_umax_Product((H5Rat_umax){0, a, 1},
+		                                                     (H5Rat_umax){0, guess.denom, guess.num});
+		guess = H5Rat_umax_Product((H5Rat_umax){0, 1, 2}, H5Rat_umax_Add(guess, a_divided_by_guess));
+		guess.sign = 0;
+	}
+	return guess;
 }
 
 /*A(1-t)(1-t) + B(1-t)(2t) + C(t)(t)*/
-h5point_ulong H5Math_getBezierPoint(h5bezier_ulong curve, H5Rat t){
-	h5point_ulong a = H5Math_PointMultScalar(curve.p1, 
-	           H5Rat_Product(
-	           H5Rat_Add((H5Rat){0, 1, 1}, (H5Rat){0, t.num, t.denom}),
-	           H5Rat_Add((H5Rat){0, 1, 1}, (H5Rat){0, t.num, t.denom})));
-	h5point_ulong b = H5Math_PointMultScalar(curve.control, 
-	           H5Rat_Product(
-	           H5Rat_Add((H5Rat){0, 1, 1}, (H5Rat){0, t.num, t.denom}),
-	           H5Rat_Add(t, t)));
-	h5point_ulong c = H5Math_PointMultScalar(curve.p3, H5Rat_Product(t, t));
+h5point_uint H5Math_uint_getBezierPoint(h5bezier_uint curve, H5Rat_uint t){
+	h5point_uint a = H5Math_uint_PointMultScalar(curve.p1,
+	           H5Rat_uint_Product(
+	           H5Rat_uint_Add((H5Rat_uint){0, 1, 1}, (H5Rat_uint){0, t.num, t.denom}),
+	           H5Rat_uint_Add((H5Rat_uint){0, 1, 1}, (H5Rat_uint){0, t.num, t.denom})));
+	h5point_uint b = H5Math_uint_PointMultScalar(curve.control,
+	           H5Rat_uint_Product(
+	           H5Rat_uint_Add((H5Rat_uint){0, 1, 1}, (H5Rat_uint){0, t.num, t.denom}),
+	           H5Rat_uint_Add(t, t)));
+	h5point_uint c = H5Math_uint_PointMultScalar(curve.p3, H5Rat_uint_Product(t, t));
 
-	a = H5Math_PointAdd(a, b);
-	b = H5Math_PointAdd(a, c);
+	a = H5Math_uint_PointAddPoint(a, b);
+	b = H5Math_uint_PointAddPoint(a, c);
+	return a;
+}
+
+/*A(1-t)(1-t) + B(1-t)(2t) + C(t)(t)*/
+h5point_ulong H5Math_ulong_getBezierPoint(h5bezier_ulong curve, H5Rat_ulong t){
+	h5point_ulong a = H5Math_ulong_PointMultScalar(curve.p1,
+	           H5Rat_ulong_Product(
+	           H5Rat_ulong_Add((H5Rat_ulong){0, 1, 1}, (H5Rat_ulong){0, t.num, t.denom}),
+	           H5Rat_ulong_Add((H5Rat_ulong){0, 1, 1}, (H5Rat_ulong){0, t.num, t.denom})));
+	h5point_ulong b = H5Math_ulong_PointMultScalar(curve.control,
+	           H5Rat_ulong_Product(
+	           H5Rat_ulong_Add((H5Rat_ulong){0, 1, 1}, (H5Rat_ulong){0, t.num, t.denom}),
+	           H5Rat_ulong_Add(t, t)));
+	h5point_ulong c = H5Math_ulong_PointMultScalar(curve.p3, H5Rat_ulong_Product(t, t));
+
+	a = H5Math_ulong_PointAddPoint(a, b);
+	b = H5Math_ulong_PointAddPoint(a, c);
+	return a;
+}
+
+/*A(1-t)(1-t) + B(1-t)(2t) + C(t)(t)*/
+h5point_umax H5Math_umax_getBezierPoint(h5bezier_umax curve, H5Rat_umax t){
+	h5point_umax a = H5Math_umax_PointMultScalar(curve.p1,
+	           H5Rat_umax_Product(
+	           H5Rat_umax_Add((H5Rat_umax){0, 1, 1}, (H5Rat_umax){0, t.num, t.denom}),
+	           H5Rat_umax_Add((H5Rat_umax){0, 1, 1}, (H5Rat_umax){0, t.num, t.denom})));
+	h5point_umax b = H5Math_umax_PointMultScalar(curve.control,
+	           H5Rat_umax_Product(
+	           H5Rat_umax_Add((H5Rat_umax){0, 1, 1}, (H5Rat_umax){0, t.num, t.denom}),
+	           H5Rat_umax_Add(t, t)));
+	h5point_umax c = H5Math_umax_PointMultScalar(curve.p3, H5Rat_umax_Product(t, t));
+
+	a = H5Math_umax_PointAddPoint(a, b);
+	b = H5Math_umax_PointAddPoint(a, c);
 	return a;
 }

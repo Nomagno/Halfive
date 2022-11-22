@@ -33,14 +33,19 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
-#define H5MATH_MAKESIGN(type, name) typedef struct { _Bool sign; type num; } name
+#define H5MATH_MAKESIGNED(type, name) typedef struct { _Bool sign; type num; } name
 
-H5MATH_MAKESIGN(h5uchar, h5schar);
-H5MATH_MAKESIGN(h5uint, h5sint);
-H5MATH_MAKESIGN(h5ulong, h5slong);
-H5MATH_MAKESIGN(h5umax, h5smax);
+H5MATH_MAKESIGNED(h5uchar, h5schar);
+H5MATH_MAKESIGNED(h5uint, h5sint);
+H5MATH_MAKESIGNED(h5ulong, h5slong);
+H5MATH_MAKESIGNED(h5umax, h5smax);
 
 /*Composite 2D vector*/
+typedef struct {
+	h5umax x;
+	h5umax y;
+} h5point_umax;
+
 typedef struct {
 	h5ulong x;
 	h5ulong y;
@@ -53,43 +58,52 @@ typedef struct {
 
 /*Composite bezier curve*/
 typedef struct {
+	h5point_umax p1;
+	h5point_umax control;
+	h5point_umax p3;
+} h5bezier_umax;
+
+typedef struct {
 	h5point_ulong p1;
 	h5point_ulong control;
 	h5point_ulong p3;
 } h5bezier_ulong;
 
-/*Composite bezier curve*/
 typedef struct {
 	h5point_uint p1;
 	h5point_uint control;
 	h5point_uint p3;
 } h5bezier_uint;
 
-h5point_ulong H5Math_PointAdd(h5point_ulong a, h5point_ulong b); /*Composite point addition*/
-h5point_ulong H5Math_PointSub(h5point_ulong a, h5point_ulong b); /*Composite point substraction*/
-h5point_ulong H5Math_PointMultScalar(h5point_ulong a, H5Rat k); /*Multiply h5point_ulong by scalar [k]*/
 
-h5umax H5Math_umax_isqrt(h5umax a); /*Integer square root of h5umax*/ 
-h5ulong H5Math_isqrt(h5ulong a); /*Integer square root of h5ulong*/ 
+h5point_uint H5Math_uint_PointAddPoint(h5point_uint a, h5point_uint b); /*Composite point addition*/
+h5point_uint H5Math_uint_PointSubPoint(h5point_uint a, h5point_uint b); /*Composite point substraction*/
+h5point_uint H5Math_uint_PointMultScalar(h5point_uint a, H5Rat_uint k); /*Multiply h5point_uint by scalar [k]*/
+
+h5point_ulong H5Math_ulong_PointAddPoint(h5point_ulong a, h5point_ulong b); /*Composite point addition*/
+h5point_ulong H5Math_ulong_PointSubPoint(h5point_ulong a, h5point_ulong b); /*Composite point substraction*/
+h5point_ulong H5Math_ulong_PointMultScalar(h5point_ulong a, H5Rat_ulong k); /*Multiply h5point_ulong by scalar [k]*/
+
+h5point_umax H5Math_umax_PointAddPoint(h5point_umax a, h5point_umax b); /*Composite point addition*/
+h5point_umax H5Math_umax_PointSubPoint(h5point_umax a, h5point_umax b); /*Composite point substraction*/
+h5point_umax H5Math_umax_PointMultScalar(h5point_umax a, H5Rat_umax k); /*Multiply h5point_umax by scalar [k]*/
+
+
+h5uint H5Math_uint_IntegerSquareRoot(h5uint a); /*Integer square root of h5uint*/
+h5ulong H5Math_ulong_IntegerSquareRoot(h5ulong a); /*Integer square root of h5ulong*/
+h5umax H5Math_umax_IntegerSquareRoot(h5umax a); /*Integer square root of h5umax*/
 
 /*Number of iterations to do with Newton's method, 5 by default*/
 #ifndef H5MATH_SQRT_ITER
 	#define H5MATH_SQRT_ITER 5
 #endif
-H5Rat H5Math_umax_ratsqrt(h5umax a); /*Rational square root of h5umax*/ 
-H5Rat H5Math_ratsqrt(h5ulong a); /*Rational square root of h5ulong*/
+H5Rat_uint H5Math_uint_RationalSquareRoot(h5uint a); /*Rational square root of h5uint*/
+H5Rat_ulong H5Math_ulong_RationalSquareRoot(h5ulong a); /*Rational square root of h5ulong*/
+H5Rat_umax H5Math_umax_RationalSquareRoot(h5umax a); /*Rational square root of h5umax*/
 
-h5point_ulong H5Math_getBezierPoint(h5bezier_ulong curve, H5Rat t); /*Calculate point [t] of bezier curve, where 
-                                                                   [t] is a number between zero and one*/
-/*To be implemented*/
-void H5Math_eventSimulation(h5uchar event_num, h5uchar *dist, h5uchar *vals, 
-                       h5uchar run_num, h5uchar *run_results); /*Simulate events.
-                       [event_num]: number of possible results of the event
-                       [dist]: array of size [event_num], filled with numbers from 0-100,
-                               where the array has to add up to 100 percent
-                       [vals]: array of size [event_num], the value associated
-                               with each result at the same index
-                       [run_num]: number of times to simulate the event
-                       [run_results]: array of size [run_num], each cell contains the 
-                                      result of each run of the event*/
+/*Calculate point [t] of bezier curve, where  [t] is a number between zero and one*/
+h5point_uint H5Math_uint_getBezierPoint(h5bezier_uint curve, H5Rat_uint t);
+h5point_ulong H5Math_ulong_getBezierPoint(h5bezier_ulong curve, H5Rat_ulong t);
+h5point_umax H5Math_umax_getBezierPoint(h5bezier_umax curve, H5Rat_umax t);
+
 #endif

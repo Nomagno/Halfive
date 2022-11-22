@@ -84,7 +84,7 @@ typedef struct {
 	h5uchar attack;
 	h5uchar attack_boost;
 	h5uchar attack_boost_turns;
-	
+
 	h5uchar defense;
 	h5uchar defense_boost;
 	h5uchar defense_boost_turns;
@@ -114,7 +114,7 @@ typedef struct {
 
 	H5RPG_Agent team_2[4];
 	H5RPG_Action actions_2[4];
-	
+
 	_Bool team1_winner;
 	_Bool team2_winner;
 

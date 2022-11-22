@@ -46,7 +46,7 @@ typedef unsigned long sulong;
 	#define h5memset  _h5libcmemset
 
 	#define h5malloc  _ERROR_UNIMPLEMENTED
-	#define h5realloc _ERROR_UNIMPLEMENTED 
+	#define h5realloc _ERROR_UNIMPLEMENTED
 	#define h5free    _ERROR_UNIMPLEMENTED
 #else
 	#define h5strtoul strtoul
