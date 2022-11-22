@@ -9,26 +9,24 @@ To make extensions/modifications to this project easily trackable, I recommend s
 'src'     folder: Implementations
 
 It has a lot of portable C utility interfaces, such as:
-	- Freestanding standard library   (RRS) (include/halfive/h5stdlib.h)
-	- Coroutines                      (SBL) (include/halfive/h5cr.h)
-	- Custom document format          (SBL) (include/halfive/h5doc/h5doc.h)
+	- Freestanding standard library   (SWP) (include/halfive/h5stdlib.h)
+	- Coroutines                      (SWP) (include/halfive/h5cr.h)
+	- Custom document format          (SWP) (include/halfive/h5doc/h5doc.h)
 	- Racing track    format          (WIP) (include/halfive/h5doc/h5t.h)
-	- Network packet  format    (UNS) (WIP) (include/halfive/h5doc/h5net.h)
-	- Custom virtual machine          (SBL) (include/halfive/h5vm/h5vm.h)
-	- Assembler    for the VM         (SBL) (include/halfive/h5vm/h5asm.h)
+	- Network packet  format          (UWP) (include/halfive/h5doc/h5net.h)
+	- Custom virtual machine          (SWP) (include/halfive/h5vm/h5vm.h)
+	- Assembler    for the VM         (SWP) (include/halfive/h5vm/h5asm.h)
 	- Lisp dialect for the VM         (WIP) (include/halfive/h5vm/h5elq.h)
-	- Rational numbers                (SBL) (include/halfive/rat.h)
-	- Other mathematical tools        (RRU) (include/halfive/h5math.h)
+	- Rational numbers                (SWP) (include/halfive/h5rat.h)
+	- Other mathematical tools        (UWP) (include/halfive/h5math.h)
 	- Physics engine                  (WIP) (include/halfive/h5phy.h)
-	- Abstraction over graphics/sound/input backends (include/halfive/h5vi.h)
+	- Graphics/Sound/input glue code  (UWP) (include/halfive/h5vi.h)
 	- RPG battle simulator            (WIP) (include/halfive/h5rpg.h)
 	- RPG battle simulator prototypes (WIP) (include/halfive/h5rpg_proto.h)
 
-WIP: Work in progress
-SBL: Stable
-UNS: Unstable
-RRS: Rolling release stable
-RRU: Rolling release unstable
+WIP: Work in progress, unstable/unfinished
+UWP: Work in progress, usable
+SWP: Work in progress, stable
 
 
 List of specifications and corresponding MIME types:
@@ -61,11 +59,11 @@ If you read all specifications in the docs, you should be able to:
 
 
 Bonus projects in this repo:
-	- Custom Version Control System                    (SBL) (src/h5vcs/)
-	- Custom web client for controlling the server     (UNS) (src/web-control/)
-	- Preprocessor for H5VM assembly                   (RRS) (src/core/h5vm/asmpp.sh)
-	- Generate an RSS feed from a directory            (SBL) (docs/news/genfeed.sh)
-	- Generate a traffic page from an nginx log file   (SBL) (docs/trafficgen.sh)
+	- Custom Version Control System                    (SWP) (src/h5vcs/)
+	- Custom web client for controlling the server     (UWP) (src/web-control/)
+	- Preprocessor for H5VM assembly                   (SWP) (src/core/h5vm/asmpp.sh)
+	- Generate an RSS feed from a directory            (SWP) (docs/news/genfeed.sh)
+	- Generate a traffic page from an nginx log file   (SWP) (docs/trafficgen.sh)
 
 --- Licensing ---
 The whole project is released under the COIL license (SPDX: COIL-1.0). Please see each folder/file for individual licensing information.
