@@ -27,6 +27,9 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
+#include <halfive/h5req.h>
+#include <halfive/h5vi.h>
+
 /*Available interfaces: MACRO
 SDL2 Graphics: H5VI_GSERV_IMPL_SDL2
 SDL2 Audio: H5VI_AUDIOSERV_IMPL_SDL2
@@ -55,9 +58,6 @@ quit,pause,b1,b2,b3,b4,b5,b6,b7,b8,m1,m2,up,down,left,right,axis1,axis2,axis3,ax
 comma-separated booleans (0 or 1) replacing from 'quit' until 'right'
 comma separated 8-bit uints (0-255) replacing from 'axis1' until 'axis4'
 */
-
-#include <halfive/h5req.h>
-#include <halfive/h5vi.h>
 
 unsigned H5VI_Init(H5VI_Reference *handle, size_t h, size_t w);
 unsigned H5VI_Destroy(H5VI_Reference *handle);

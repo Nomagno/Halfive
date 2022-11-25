@@ -1,7 +1,3 @@
-#include <halfive/h5req.h>
-#include <halfive/h5rat.h>
-#include <halfive/h5math.h>
-
 /*
 Copyright Nomagno 2022
 
@@ -30,6 +26,10 @@ COPYRIGHT OR OTHER LEGAL PRIVILEGE BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
 LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
+
+#include <halfive/h5req.h>
+#include <halfive/h5rat.h>
+#include <halfive/h5math.h>
 
 h5point_uint H5Math_uint_PointAddPoint(h5point_uint a, h5point_uint b){
 	return (h5point_uint){

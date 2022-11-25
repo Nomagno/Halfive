@@ -1,12 +1,3 @@
-#include <halfive/h5req.h>
-#include <halfive/h5vm/h5vm.h>
-#include <halfive/h5vm/h5elq.h>
-#include <halfive/h5stdlib.h>
-
-#ifdef H5ELQ_DEBUG
-#include <stdio.h> /*Debug*/
-#endif
-
 /*
 Copyright Nomagno 2021, 2022
 
@@ -35,6 +26,15 @@ COPYRIGHT OR OTHER LEGAL PRIVILEGE BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
 LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
+
+#include <halfive/h5req.h>
+#include <halfive/h5vm/h5vm.h>
+#include <halfive/h5vm/h5elq.h>
+#include <halfive/h5stdlib.h>
+
+#ifdef H5ELQ_DEBUG
+#include <stdio.h> /*Debug*/
+#endif
 
 #define ISUPPERCASEHEXDIGIT(x)\
 (x == '0' || x == '1' || x == '2' || x == '3' || x == '4' ||\

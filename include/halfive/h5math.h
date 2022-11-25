@@ -1,9 +1,3 @@
-#ifndef H5MATH_H
-#define H5MATH_H
-
-#include <halfive/h5req.h>
-#include <halfive/h5rat.h>
-
 /*
 Copyright Nomagno 2022
 
@@ -32,6 +26,12 @@ COPYRIGHT OR OTHER LEGAL PRIVILEGE BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
 LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
+
+#ifndef H5MATH_H
+#define H5MATH_H
+
+#include <halfive/h5req.h>
+#include <halfive/h5rat.h>
 
 #define H5MATH_MAKESIGNED(type, name) typedef struct { _Bool sign; type num; } name
 

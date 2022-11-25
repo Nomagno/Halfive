@@ -1,7 +1,3 @@
-#ifndef H5ELQ_H
-#define H5ELQ_H
-#include <halfive/h5req.h>
-#include <halfive/h5vm/h5vm.h>
 /*
 Copyright Nomagno 2021, 2022
 
@@ -30,6 +26,11 @@ COPYRIGHT OR OTHER LEGAL PRIVILEGE BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
 LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
+
+#ifndef H5ELQ_H
+#define H5ELQ_H
+#include <halfive/h5req.h>
+#include <halfive/h5vm/h5vm.h>
 
 enum H5Elq_Type {
 	ELQ_EMPTY = 0,
