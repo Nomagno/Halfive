@@ -32,6 +32,9 @@ WORK.*/
 
 #include <halfive/h5req.h>
 
+#define POS_SIGN (0)
+#define NEG_SIGN (1)
+
 typedef struct {
 	_Bool sign;
 	h5uint num;
@@ -87,6 +90,10 @@ h5uint H5Rat_uint_toInt(H5Rat_uint a);
 h5ulong H5Rat_ulong_toInt(H5Rat_ulong a);
 h5umax H5Rat_umax_toInt(H5Rat_umax a);
 
+h5sint H5Rat_sint_toInt(H5Rat_uint a);
+h5slong H5Rat_slong_toInt(H5Rat_ulong a);
+h5smax H5Rat_smax_toInt(H5Rat_umax a);
+
 H5Rat_umax H5Rat_UtoM(H5Rat_uint a);
 H5Rat_umax H5Rat_LtoM(H5Rat_ulong a);
 
@@ -135,9 +142,14 @@ H5Rat_uint H5Rat_MtoU(H5Rat_umax a);
 	#define H5_RProd_L H5Rat_ulong_Product
 	#define H5_RProd_M H5Rat_umax_Product
 
+	#define H5_RSInt_U H5Rat_sint_toInt
+	#define H5_RSInt_L H5Rat_slong_toInt
+	#define H5_RSInt_M H5Rat_smax_toInt
+
 	#define H5_RInt_U H5Rat_uint_toInt
 	#define H5_RInt_L H5Rat_ulong_toInt
 	#define H5_RInt_M H5Rat_umax_toInt
+
 
 	#ifdef FLOATS_SUPPORTED
 		#define H5_RFloat_U H5Rat_uint_toFloat

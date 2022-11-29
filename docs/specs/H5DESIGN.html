@@ -1,33 +1,15 @@
-<head>
-<link rel="icon" href="halfive_favicon.png" type="image/icon type">
-<style type="text/css">
-body{
-line-height:1.6;
-font-size:18px;
-color:#444;
-padding:0
-10px}
-h1,h2,h3{
-line-height:1.2
-}
-</style>
-	<title>Halfive Design</title>
-	<meta name="description" content="The Universal Racing Game"">
-</head>
-
 <h1>Halfive Design notes</h1>
 <h4>SPDX identifier: COIL-1.0</h4>
 <h4>Copyright Nomagno 2022</h4>
 <hr />
 <h3>Missing suitable (re)implementations</h3>
-<p>The h5rpg.h header, for simulating turn-based combat, is awaiting an implementation. It is meant to be an easter egg (SIMPLE)</p>
-<p>The h5doc.h header, for processing the H5DOC format, is awaiting a reimplementation to make its internal data structures child-linked rather than parent-linked (SIMPLE)</p>
+<p>The h5rpg/h5rpg.h header, for simulating turn-based combat, is awaiting an implementation. It is meant to be an easter egg (SIMPLE)</p>
 <p>The h5t.h and h5net.h headers, to tokenize Halfive Track and Halfive Network .h5doc files, respectively, are awaiting an implementation (TEDIOUS).</p>
-<p>The h5phy.h header, for simulating physics, is awaiting an implementation that uses fixed-timestep semi-explicit Euler integration to remain framerate-independent, as well as a redesign that includes the possibility of custom objects that aren&#x2019;t just cars, and of well-defined actions that may be mapped to real code or to a H5VM instance. (HARD)</p>
 <h3>Missing suitable interfaces and implementations</h3>
+<p>Rendering facilities, physics, collision detection, configuration, UI, etc. (HARD!)</p>
+<p>The h5ecs.h header, to create, delete, update, and manage <em>E</em>ntities, <em>C</em>omponents, and <em>S</em>ystems, is awaiting an implementation (TRICKY)</p>
 <p>The h5vi.h header needs a big library with auxiliary software rendering functions such as blitting, bitmap text rendering, arbirary shapes, line rendering, quadratic bezier curve rendering, etcetera: h5render.h (TEDIOUS)</p>
-<p>The Halfive Pixel format needs a library with utilities for converting to/from the BMP image format, at the very least: h5pix.h (HARD)</p>
-<p>A new comprehensive, higher-level implementation for user interface, track rendering, network code handling, balancing, content, etcetera, that exists on top of all other low-level modules, is needed: halfive_engine.h (HARD)</p>
+<p>The Halfive Pixel format needs a library with utilities for converting to/from the BMP image format, at the very least: h5pix.h (MEDIUM DIFFICULTY)</p>
 <hr />
 <h3>General design notes about the game</h3>
 <h4>Halfive is meant to be a racing game engine as well as a game that isn&#x2019;t inherently constrained to any type of gameplay, however not making a flagship physics engine implementation and base game to go with it would be simply disingenous.</h4>

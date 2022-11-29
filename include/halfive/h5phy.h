@@ -38,12 +38,23 @@ WORK.*/
 #include <halfive/h5rat.h>
 #include <halfive/h5math.h>
 
-#ifdef H5PHY_VM_SIMULATION
+#ifdef H5PHY_VM_SIMULATE
 #include <halfive/h5vm/h5asm.h>
 #include <halfive/h5vm/h5vm.h>
 #endif
 
-/*[h5vi graphics + audio] <& [Monolithic Object Scheduler (H5PHY MOS, handles physics)] (<-> [Network Play Module (H5PHY NETPM)]) <- [h5t track data, h5vi input, h5vm instances]*/
+/*
+!!!!!!!!!!!
+Heavily outdated, will be replaced by a framework that uses a custom
+Entity Component System (ECS) library: h5ecs.h
+!!!!!!!!!!!
+*/
+
+/*
+Old notes:
+[h5vi graphics + audio] <- [Monolithic Object Scheduler (H5PHY MOS, handles physics)]
+(<-> [Network Play Module]) <- [h5t track data, h5vi input, h5vm instances]
+*/
 
 /*Size without VM: 160 B*/
 /*Size with    VM: 737 KiB*/
@@ -95,7 +106,7 @@ typedef struct {
 	/*Simulated properties of the car (MODIFYING THESE CAN LEAD TO
     FUNKY RESULTS, HOWEVER THERE IS NOTHING INHERENTLY WRONG WITH IT)*/
 
-#ifdef H5PHY_VM_SIMULATION
+#ifdef H5PHY_VM_SIMULATE
 	H5VM_DefaultMemSetup vmmem;
 	H5VM_GeneralMemory computer; /*More or less 140KBs of storage with default settings*/
 	h5uchar status_lights;       /*16 lights,  each two contiguous bits is a light, 4-color. Mapped 0x1010 to 0x1013*/

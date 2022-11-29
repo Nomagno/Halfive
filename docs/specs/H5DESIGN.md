@@ -5,25 +5,22 @@
 
 ***
 ### Missing suitable (re)implementations
-The h5rpg.h header, for simulating turn-based combat, is awaiting an implementation. It is meant to be an easter egg (SIMPLE)
+The h5rpg/h5rpg.h header, for simulating turn-based combat, is awaiting an implementation. It is meant to be an easter egg (SIMPLE)
 
-The h5doc.h header, for processing the H5DOC format, is awaiting a reimplementation to make its internal data structures child-linked rather than parent-linked (SIMPLE)
 
 The h5t.h and h5net.h headers, to tokenize Halfive Track and Halfive Network .h5doc files, respectively, are awaiting an implementation (TEDIOUS).
 
-The h5phy.h header, for simulating physics, is awaiting an implementation that uses fixed-timestep semi-explicit Euler integration to remain framerate-independent, 
-as well as a redesign that includes the possibility of custom objects that aren't just cars, and of well-defined actions that may be mapped to real code or to a H5VM instance. (HARD)
-
-
 ### Missing suitable interfaces and implementations
+
+Rendering facilities, physics, collision detection, configuration, UI, etc. (HARD!)
+
+The h5ecs.h header, to create, delete, update, and manage *E*ntities, *C*omponents, and *S*ystems, is awaiting an implementation (TRICKY)
 
 The h5vi.h header needs a big library with auxiliary software rendering functions such as blitting,
 bitmap text rendering, arbirary shapes, line rendering, quadratic bezier curve rendering, etcetera:  h5render.h (TEDIOUS)
 
-The Halfive Pixel format needs a library with utilities for converting to/from the BMP image format, at the very least: h5pix.h (HARD)
+The Halfive Pixel format needs a library with utilities for converting to/from the BMP image format, at the very least: h5pix.h (MEDIUM DIFFICULTY)
 
-A new comprehensive, higher-level implementation for user interface, track rendering, network code
-handling, balancing, content, etcetera, that exists on top of all other low-level modules, is needed: halfive_engine.h (HARD)
 
 ***
 ### General design notes about the game
