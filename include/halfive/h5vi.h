@@ -31,21 +31,10 @@ WORK.*/
 #define H5VI_H
 
 #include <halfive/h5req.h>
+#include <halfive/h5render.h>
 
 /*Halfive VIsual interface*/
 
-/*Pixels are RGBA 16-bit 5551 format:
-00000 00000 00000 0
-RED   GREEN BLUE  ALPHA
-*/
-
-
-/*Pixel buffer*/
-typedef struct {
-	size_t width;
-	size_t height;
-	h5uint *pix;
-} H5VI_PixelData;
 
 /*Direction keys,
 8 general-purpose buttons,
@@ -116,28 +105,28 @@ extern unsigned H5VI_Init(H5VI_Reference *buf, size_t h, size_t w);
 and input, following the advice of the foo_enabled booleans, and modify those if
 can't enable graphics, sound, or input*/
 
-extern unsigned H5VI_Destroy(H5VI_Reference *ref);
+extern unsigned H5VI_destroy(H5VI_Reference *ref);
 /*Exit gracefully*/
 
-extern unsigned H5VI_GetBuffer_Size(size_t *h, size_t *w,
+extern unsigned H5VI_getBufferSize(size_t *h, size_t *w,
 				    const char *spritename);
 /*Get size of sprite in HWPIX format*/
 
-extern unsigned H5VI_GetBuffer_Data(const char *spritename,
-				    H5VI_PixelData *inbuf);
+extern unsigned H5VI_getBufferData(const char *spritename,
+				    H5Render_PixelData *inbuf);
 /*Ger sprite in HWPIX format copied*/
 
-extern unsigned H5VI_SetBuffer(H5VI_Reference *handle,
-			       const H5VI_PixelData *inbuf);
+extern unsigned H5VI_setBuffer(H5VI_Reference *handle,
+			       const H5Render_PixelData *inbuf);
 /*Set display to buffer*/
 
-extern unsigned H5VI_PlaySound(H5VI_Reference *handle,
+extern unsigned H5VI_playSound(H5VI_Reference *handle,
 			       const H5VI_SoundData *sound);
 /*Play in a nonblocking manner (within reason).
 The length of the sound will get adjusted if it
 is more than that of the sound itself.
 */
 
-extern unsigned H5VI_GetInput(H5VI_Reference *handle, H5VI_InputData *keys);
+extern unsigned H5VI_getInput(H5VI_Reference *handle, H5VI_InputData *keys);
 /*Get current user input*/
 #endif

@@ -1,5 +1,5 @@
 /*
-Copyright Nomagno 2021, 2022
+Copyright Nomagno 2022
 
 Redistributions, modified or unmodified, in whole or in part, must retain
 applicable notices of copyright or other legal privilege, these conditions, and
@@ -27,50 +27,20 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
-/* To calculate point [t] of the Bezier curve:
- A(1-t)(1-t) + B(1-t)(2t) + C(t)(t)
-*/
-
-#ifndef H5T_H
-#define H5T_H
+#ifndef H5RENDER_H
+#define H5RENDER_H
 
 #include <halfive/h5req.h>
 #include <halfive/h5math.h>
 
-enum H5T_TimeEnum { H5T_TimeDay, H5T_TimeNight };
-enum H5T_SpeedEnum { H5T_NormalBoost, H5T_Boost, H5T_AntiBoost };
-enum H5T_FinishEnum { H5T_NoFinish, H5T_FinishLine, H5T_Checkpoint };
-enum H5T_RailEnum { H5T_NoRails, H5T_RailMetal, H5T_RailElectric };
-enum H5T_BiomeEnum { H5T_BiomeSnow, H5T_BiomeLava, H5T_BiomeLake,
-                     	H5T_BiomeDesert, H5T_BiomeForest, H5T_BiomeRosegarden };
-enum H5T_ColorEnum { H5T_ColorWhite, H5T_ColorRed, H5T_ColorBlue,
-                     	H5T_ColorYellow, H5T_ColorGreen, H5T_ColorPink };
+/*Pixels are RGBA 16-bit 5551 format*/
 
-struct H5T_Biome {
-	enum H5T_ColorEnum color;
-	enum H5T_BiomeEnum biome;
-};
-
-struct H5T_Segment {
-	h5bezier_ulong inner_shape;
-	h5bezier_ulong outer_shape;
-
-	enum H5T_SpeedEnum speed;
-	enum H5T_FinishEnum racing_line;
-	enum H5T_RailEnum guardrails;
-};
-
-/*Memory footprint worst-case scenario: 256 bytes*/
+/*Pixel buffer*/
 typedef struct {
-	char name[20];
+	size_t width;
+	size_t height;
+	h5uint *pix;
+} H5Render_PixelData;
 
-	struct H5T_Biome biome;
-	enum H5T_TimeEnum time;
-	h5uchar max_players;
 
-	h5uint segment_number;
-	struct H5T_Segment segments[40];
-} H5T_Circuit;
-
-extern unsigned H5T_parse(const char *instring, H5T_Circuit *outstruct);
 #endif

@@ -109,13 +109,13 @@ typedef struct {
 } H5Elq_Stack;
 #undef STACKMEM
 
-void H5Elq_Push(H5Elq_Stack *stack, H5Elq_Node *val){
+void H5Elq_push(H5Elq_Stack *stack, H5Elq_Node *val){
 	stack->index += 1;
 	stack->data[stack->index] = val;
 	return;
 }
 
-H5Elq_Node *H5Elq_Pop(H5Elq_Stack *stack){
+H5Elq_Node *H5Elq_pop(H5Elq_Stack *stack){
 	H5Elq_Node *retval = stack->data[stack->index];
 	stack->index -= 1;
 	return retval;
@@ -129,7 +129,7 @@ s/[[:space:]]*[[:space:]]/ /g;
 s/^ //g;
 s/ )/)/g;'
 */
-H5Elq_Node *H5Elq_Parse(char *in, H5Elq_NodeHeap *nodeheap){
+H5Elq_Node *H5Elq_parse(char *in, H5Elq_NodeHeap *nodeheap){
 	H5Elq_Stack forkstack = {0};
 	H5Elq_Node *root = H5Elq_appendNode(NULL, _DIR_LEFT,
 	                   (H5Elq_Node){ .type = ELQ_EMPTY }, nodeheap);
@@ -147,14 +147,14 @@ H5Elq_Node *H5Elq_Parse(char *in, H5Elq_NodeHeap *nodeheap){
 		case ' ':
 		case '(':
 			if(lastchar == '(' || lastchar == ' '){
-				H5Elq_Push(&forkstack, currnode->parent);
+				H5Elq_push(&forkstack, currnode->parent);
 			}
 			currnode = H5Elq_appendNode(currnode, _DIR_LEFT,
 			           (H5Elq_Node){ .type = ELQ_EMPTY }, nodeheap);
 			break;
 		case ')':
 			currnode->type = ELQ_NIL;
-			currnode = H5Elq_appendNode(H5Elq_Pop(&forkstack), _DIR_RIGHT,
+			currnode = H5Elq_appendNode(H5Elq_pop(&forkstack), _DIR_RIGHT,
 			           (H5Elq_Node){ .type = ELQ_EMPTY }, nodeheap);
 			break;
 		default:
@@ -207,7 +207,7 @@ H5Elq_Node *H5Elq_Parse(char *in, H5Elq_NodeHeap *nodeheap){
 #undef _DIR_LEFT
 #undef _DIR_RIGHT
 
-void H5Elq_GenerateCode(const H5Elq_Node *ast, H5VM_GeneralMemory *program){
+void H5Elq_generateCode(const H5Elq_Node *ast, H5VM_GeneralMemory *program){
 	/*To be implemented*/
 }
 
@@ -218,7 +218,7 @@ int main(void){
 	fgets(in, sizeof(in), stdin);
 
 	H5Elq_NodeHeap nodeheap = {0};
-	H5Elq_Node *root = H5Elq_Parse(in, &nodeheap);
+	H5Elq_Node *root = H5Elq_parse(in, &nodeheap);
 
 	for(unsigned i = 0; i < 32; i++){
 		printf("INDEX %u: %X, %s, %u, %p, PARENT: %p\n", i,

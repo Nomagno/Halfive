@@ -151,5 +151,5 @@ typedef struct {
 	h5uchar turn_number;
 } Match;
 
-extern unsigned H5RPG_BattleSim(Match *match);
+extern unsigned H5RPG_battleSim(Match *match);
 #endif

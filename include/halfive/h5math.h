@@ -102,25 +102,25 @@ typedef struct {
 } h5bezier_sint;
 
 
-h5point_uint H5Math_uint_PointAddPoint(h5point_uint a, h5point_uint b); /*Composite point addition*/
-h5point_ulong H5Math_ulong_PointAddPoint(h5point_ulong a, h5point_ulong b); /*Composite point addition*/
-h5point_umax H5Math_umax_PointAddPoint(h5point_umax a, h5point_umax b); /*Composite point addition*/
+h5point_uint H5Math_uint_pointAddPoint(h5point_uint a, h5point_uint b); /*Composite point addition*/
+h5point_ulong H5Math_ulong_pointAddPoint(h5point_ulong a, h5point_ulong b); /*Composite point addition*/
+h5point_umax H5Math_umax_pointAddPoint(h5point_umax a, h5point_umax b); /*Composite point addition*/
 
-h5point_sint H5Math_sint_PointAddPoint(h5point_sint a, h5point_sint b); /*Composite signed point addition*/
-h5point_slong H5Math_slong_PointAddPoint(h5point_slong a, h5point_slong b); /*Composite signed point addition*/
-h5point_smax H5Math_smax_PointAddPoint(h5point_smax a, h5point_smax b); /*Composite signed point addition*/
+h5point_sint H5Math_sint_pointAddPoint(h5point_sint a, h5point_sint b); /*Composite signed point addition*/
+h5point_slong H5Math_slong_pointAddPoint(h5point_slong a, h5point_slong b); /*Composite signed point addition*/
+h5point_smax H5Math_smax_pointAddPoint(h5point_smax a, h5point_smax b); /*Composite signed point addition*/
 
-h5point_uint H5Math_uint_PointSubPoint(h5point_uint a, h5point_uint b); /*Composite point substraction*/
-h5point_ulong H5Math_ulong_PointSubPoint(h5point_ulong a, h5point_ulong b); /*Composite point substraction*/
-h5point_umax H5Math_umax_PointSubPoint(h5point_umax a, h5point_umax b); /*Composite point substraction*/
+h5point_uint H5Math_uint_pointSubPoint(h5point_uint a, h5point_uint b); /*Composite point substraction*/
+h5point_ulong H5Math_ulong_pointSubPoint(h5point_ulong a, h5point_ulong b); /*Composite point substraction*/
+h5point_umax H5Math_umax_pointSubPoint(h5point_umax a, h5point_umax b); /*Composite point substraction*/
 
-h5point_sint H5Math_sint_PointSubPoint(h5point_sint a, h5point_sint b); /*Composite signed point substraction*/
-h5point_slong H5Math_slong_PointSubPoint(h5point_slong a, h5point_slong b); /*Composite signed point substraction*/
-h5point_smax H5Math_smax_PointSubPoint(h5point_smax a, h5point_smax b); /*Composite signed point substraction*/
+h5point_sint H5Math_sint_pointSubPoint(h5point_sint a, h5point_sint b); /*Composite signed point substraction*/
+h5point_slong H5Math_slong_pointSubPoint(h5point_slong a, h5point_slong b); /*Composite signed point substraction*/
+h5point_smax H5Math_smax_pointSubPoint(h5point_smax a, h5point_smax b); /*Composite signed point substraction*/
 
-h5uint H5Math_uint_IntegerSquareRoot(h5uint a); /*Integer square root of h5uint*/
-h5ulong H5Math_ulong_IntegerSquareRoot(h5ulong a); /*Integer square root of h5ulong*/
-h5umax H5Math_umax_IntegerSquareRoot(h5umax a); /*Integer square root of h5umax*/
+h5uint H5Math_uint_integerSquareRoot(h5uint a); /*Integer square root of h5uint*/
+h5ulong H5Math_ulong_integerSquareRoot(h5ulong a); /*Integer square root of h5ulong*/
+h5umax H5Math_umax_integerSquareRoot(h5umax a); /*Integer square root of h5umax*/
 
 
 #define ABS(n) ((n < 0) ? (-n) : (n))
@@ -128,19 +128,19 @@ h5umax H5Math_umax_IntegerSquareRoot(h5umax a); /*Integer square root of h5umax*
 #define FLOOR(n) ((h5smax)(n))
 
 #ifdef FLOATS_SUPPORTED
-	h5point_uint H5Math_uint_PointMultScalar(h5point_uint a, h5float k); /*Multiply h5point_uint by scalar [k]*/
-	h5point_ulong H5Math_ulong_PointMultScalar(h5point_ulong a, h5float k); /*Multiply h5point_ulong by scalar [k]*/
-	h5point_umax H5Math_umax_PointMultScalar(h5point_umax a, h5float k); /*Multiply h5point_umax by scalar [k]*/
+	h5point_uint H5Math_uint_pointMultScalar(h5point_uint a, h5float k); /*Multiply h5point_uint by scalar [k]*/
+	h5point_ulong H5Math_ulong_pointMultScalar(h5point_ulong a, h5float k); /*Multiply h5point_ulong by scalar [k]*/
+	h5point_umax H5Math_umax_pointMultScalar(h5point_umax a, h5float k); /*Multiply h5point_umax by scalar [k]*/
 
-	h5point_sint H5Math_sint_PointMultScalar(h5point_sint a, h5float k); /*Multiply h5point_sint by scalar [k]*/
-	h5point_slong H5Math_slong_PointMultScalar(h5point_slong a, h5float k); /*Multiply h5point_slong by scalar [k]*/
-	h5point_smax H5Math_smax_PointMultScalar(h5point_smax a, h5float k); /*Multiply h5point_smax by scalar [k]*/
+	h5point_sint H5Math_sint_pointMultScalar(h5point_sint a, h5float k); /*Multiply h5point_sint by scalar [k]*/
+	h5point_slong H5Math_slong_pointMultScalar(h5point_slong a, h5float k); /*Multiply h5point_slong by scalar [k]*/
+	h5point_smax H5Math_smax_pointMultScalar(h5point_smax a, h5float k); /*Multiply h5point_smax by scalar [k]*/
 
 	/*Number of iterations to do with Newton's method, 5 by default*/
 	#ifndef H5MATH_SQRT_ITER
 		#define H5MATH_SQRT_ITER 5
 	#endif
-	h5float H5Math_SquareRoot(h5float a); /*Floating point square root*/
+	h5float H5Math_squareRoot(h5float a); /*Floating point square root*/
 
 	/*Calculate point [t] of bezier curve, where  [t] is a number between zero and one*/
 	h5point_uint H5Math_uint_getBezierPoint(h5bezier_uint curve, h5float t);

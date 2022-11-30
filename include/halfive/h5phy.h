@@ -146,11 +146,11 @@ typedef struct {
 	H5T_Circuit track;
 } H5_World;
 
-extern unsigned H5_Init(const char *trck, H5_World *stage);
-extern unsigned H5_Sim(H5_World *stage, h5uint delta /*Time since last frame, in milliseconds*/);
-extern unsigned H5_TransformServer(const H5_World *stage,
+extern unsigned H5_init(const char *trck, H5_World *stage);
+extern unsigned H5_sim(H5_World *stage, h5uint delta /*Time since last frame, in milliseconds*/);
+extern unsigned H5_transformServer(const H5_World *stage,
 				   H5NET_ServerPacket *serv,
 				   enum H5NET_ModeEnum mode); /*Convert H5_World to a packet ready to send to clients*/
-extern unsigned H5_TransformClient(H5_World *stage,
+extern unsigned H5_transformClient(H5_World *stage,
 				   const H5NET_ClientPacket *cli); /*Mix client packet information with current H5_World*/
 #endif

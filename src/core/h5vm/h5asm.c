@@ -31,7 +31,7 @@ WORK.*/
 #include <halfive/h5vm/h5asm.h>
 #include <halfive/h5stdlib.h>
 
-h5uint H5ASM_Parse(char *linestr, H5VM_InstructionSet *inst, h5uint opnds[3]);
+h5uint H5ASM_parse(char *linestr, H5VM_InstructionSet *inst, h5uint opnds[3]);
 H5VM_InstructionSet _isinst(char *instr);
 h5uint _isxupdigit(h5uchar inchar);
 H5VM_InstructionSet _isinst(char *instr);
@@ -64,7 +64,7 @@ int main(int argc, char **argv)
 
 	H5VM_DefaultMemSetup mem = {0};
 	H5VM_ReadWriteInfo rwinf = {0};
-	H5VM_GeneralMemory prog = H5VM_Init(&code, &mem);
+	H5VM_GeneralMemory prog = H5VM_init(&code, &mem);
 	fread(mem.driv, 1, sizeof(mem.driv), drivefile);
 
 	int return_code = 0;
@@ -89,7 +89,7 @@ int main(int argc, char **argv)
 		rwinf.write_zf, rwinf.write_cf, rwinf.adrw, *prog.data[rwinf.adrw], rwinf.adrr,
 		*prog.data[rwinf.adrr]);
 #endif
-		return_code = H5VM_Execute(&prog, &rwinf);
+		return_code = H5VM_execute(&prog, &rwinf);
 
 		if ((rwinf.adrw == 0xFFFC) && (rwinf.wrote_adrw)) {
 #ifdef H5ASM_VERBOSE
@@ -132,7 +132,7 @@ int main(int argc, char **argv)
 }
 #endif
 
-h5uint H5ASM_Parse(char *linestr, H5VM_InstructionSet *inst, h5uint opnds[3])
+h5uint H5ASM_parse(char *linestr, H5VM_InstructionSet *inst, h5uint opnds[3])
 {
 	char *token = h5strtok(
 	    linestr, " "); /*linestr should not be const strictly speaking,

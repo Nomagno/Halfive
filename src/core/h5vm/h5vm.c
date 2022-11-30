@@ -118,11 +118,11 @@ bbbbbbbb      bbbbbbbb
 
 /*Unknown address*/
 
-H5VM_GeneralMemory H5VM_Init(H5VM_CodeMemory *code, H5VM_DefaultMemSetup *rawmem);
-unsigned H5VM_Execute(H5VM_GeneralMemory *program, H5VM_ReadWriteInfo *rwinf);
+H5VM_GeneralMemory H5VM_init(H5VM_CodeMemory *code, H5VM_DefaultMemSetup *rawmem);
+unsigned H5VM_execute(H5VM_GeneralMemory *program, H5VM_ReadWriteInfo *rwinf);
 
 
-H5VM_GeneralMemory H5VM_Init(H5VM_CodeMemory *code, H5VM_DefaultMemSetup *rawmem) {
+H5VM_GeneralMemory H5VM_init(H5VM_CodeMemory *code, H5VM_DefaultMemSetup *rawmem) {
 	H5VM_GeneralMemory returnval = {(H5VM_InstructionSet)0};
 	returnval.code = *code;
 	rawmem->co_high = (IS_LITTLE_ENDIAN) ? ((h5uchar *)&returnval.co)
@@ -162,7 +162,7 @@ H5VM_GeneralMemory H5VM_Init(H5VM_CodeMemory *code, H5VM_DefaultMemSetup *rawmem
 1 - ERROR - Unmmapped memory
 2 - ERROR - Write to read-only address
 3 - ERROR - Wrong usage/malformed instruction*/
-unsigned H5VM_Execute(H5VM_GeneralMemory *program, H5VM_ReadWriteInfo *rwinf) {
+unsigned H5VM_execute(H5VM_GeneralMemory *program, H5VM_ReadWriteInfo *rwinf) {
 	*rwinf = (H5VM_ReadWriteInfo){0};
 
 	unsigned return_code = 0;

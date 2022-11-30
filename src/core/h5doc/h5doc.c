@@ -40,7 +40,7 @@ struct H5DOC_Stack {
 	                      deep please redesign your document format)*/
 };
 
-void H5DOC_Push(struct H5DOC_Stack *stack, size_t data) {
+void H5DOC_push(struct H5DOC_Stack *stack, size_t data) {
 	if (stack->stackptr == SIZE_MAX) {
 		stack->stackptr = 0;
 	} else if (stack->stackptr < ((sizeof stack->parents) - 1)) {
@@ -50,7 +50,7 @@ void H5DOC_Push(struct H5DOC_Stack *stack, size_t data) {
 	return;
 }
 
-size_t H5DOC_Pop(struct H5DOC_Stack *stack) {
+size_t H5DOC_pop(struct H5DOC_Stack *stack) {
 	if (stack->stackptr != 0) {
 		stack->stackptr--;
 		return stack->parents[stack->stackptr];
@@ -60,7 +60,7 @@ size_t H5DOC_Pop(struct H5DOC_Stack *stack) {
 	}
 }
 
-unsigned H5DOC_IncreaseChildnum(struct H5DOC_Stack *stack, unsigned tok_size, H5DOC_Token *toks){
+unsigned H5DOC_increaseChildnum(struct H5DOC_Stack *stack, unsigned tok_size, H5DOC_Token *toks){
 	if (stack->stackptr != SIZE_MAX) {
 		for (size_t i = stack->stackptr; 1; i--){
 			if (stack->parents[i] < tok_size){
@@ -77,13 +77,12 @@ unsigned H5DOC_IncreaseChildnum(struct H5DOC_Stack *stack, unsigned tok_size, H5
 
 }
 
-unsigned H5DOC_Parse(const char *input, unsigned tok_size, H5DOC_Token *toks) {
+unsigned H5DOC_parse(const char *input, unsigned tok_size, H5DOC_Token *toks) {
 	struct H5DOC_Stack stack = (struct H5DOC_Stack){SIZE_MAX, {0}};
 	int previndent = -1;
 	int currindent = 0;
 	_Bool endreached = 0;
 	H5DOC_Type prevtype = H5DOC_SEC;
-	int returnval = 0;
 
 	size_t i = 0, /*String iterator*/
 	       j = 0; /*Token iterator*/
@@ -108,19 +107,19 @@ unsigned H5DOC_Parse(const char *input, unsigned tok_size, H5DOC_Token *toks) {
 
 		case 0x5F: /*Underscore, at the start of the token it means its a table*/
 			if (currindent > previndent) { /*If indentation is strictly greater, push self as next child*/
-				returnval = H5DOC_IncreaseChildnum(&stack, tok_size, toks);
-				H5DOC_Push(&stack, j);
+				H5DOC_increaseChildnum(&stack, tok_size, toks);
+				H5DOC_push(&stack, j);
 			} else if (currindent < previndent) {
 				for (int i = 0; i < (previndent - currindent); i++){
-					H5DOC_Pop(&stack); /*Indentation is smaller, so pop until last known parent is
+					H5DOC_pop(&stack); /*Indentation is smaller, so pop until last known parent is
 					                     reached, then push self*/
 				}
-				returnval = H5DOC_IncreaseChildnum(&stack, tok_size, toks);
-				H5DOC_Push(&stack, j);
+				H5DOC_increaseChildnum(&stack, tok_size, toks);
+				H5DOC_push(&stack, j);
 			} else if (currindent == previndent) {
-				H5DOC_Pop(&stack); /*Indentation is same, so pop once, then push self*/
-				returnval = H5DOC_IncreaseChildnum(&stack, tok_size, toks);
-				H5DOC_Push(&stack, j);
+				H5DOC_pop(&stack); /*Indentation is same, so pop once, then push self*/
+				H5DOC_increaseChildnum(&stack, tok_size, toks);
+				H5DOC_push(&stack, j);
 			}
 			previndent = currindent;
 
@@ -147,23 +146,23 @@ unsigned H5DOC_Parse(const char *input, unsigned tok_size, H5DOC_Token *toks) {
 				prevtype = H5DOC_KEY;
 
 				if (currindent > previndent) { /*If indentation is strictly greater, push self as next child*/
-					returnval = H5DOC_IncreaseChildnum(&stack, tok_size, toks);
-					H5DOC_Push(&stack, j);
+					H5DOC_increaseChildnum(&stack, tok_size, toks);
+					H5DOC_push(&stack, j);
 				} else if (currindent < previndent) {
 					for (int i = 0; i < (previndent - currindent); i++){
-						H5DOC_Pop(&stack); /*Indentation is smaller, so pop until last known parent is
+						H5DOC_pop(&stack); /*Indentation is smaller, so pop until last known parent is
 						                     reached, then push self*/
 					}
-					returnval = H5DOC_IncreaseChildnum(&stack, tok_size, toks);
-					H5DOC_Push(&stack, j);
+					H5DOC_increaseChildnum(&stack, tok_size, toks);
+					H5DOC_push(&stack, j);
 				} else if (currindent == previndent) {
-					H5DOC_Pop(&stack); /*Indentation is same, so pop once, then push self*/
-					returnval = H5DOC_IncreaseChildnum(&stack, tok_size, toks);
-					H5DOC_Push(&stack, j);
+					H5DOC_pop(&stack); /*Indentation is same, so pop once, then push self*/
+					H5DOC_increaseChildnum(&stack, tok_size, toks);
+					H5DOC_push(&stack, j);
 				}
 
 			} else if (prevtype == H5DOC_KEY) { /*Last one was a key*/
-				returnval = H5DOC_IncreaseChildnum(&stack, tok_size, toks); /*Increase key parent count*/
+				H5DOC_increaseChildnum(&stack, tok_size, toks); /*Increase key parent count*/
 				toks[j].type = H5DOC_VAL;
 				prevtype = H5DOC_VAL;
 			}

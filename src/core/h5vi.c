@@ -59,9 +59,9 @@ comma-separated booleans (0 or 1) replacing from 'quit' until 'right'
 comma separated 8-bit uints (0-255) replacing from 'axis1' until 'axis4'
 */
 
-unsigned H5VI_Init(H5VI_Reference *handle, size_t h, size_t w);
-unsigned H5VI_Destroy(H5VI_Reference *handle);
-unsigned H5VI_PlaySound(H5VI_Reference *handle,
+unsigned H5VI_init(H5VI_Reference *handle, size_t h, size_t w);
+unsigned H5VI_destroy(H5VI_Reference *handle);
+unsigned H5VI_playSound(H5VI_Reference *handle,
 			const H5VI_SoundData *insound);
 
 #if defined(H5VI_GSERV_IMPL_SDL2)
@@ -92,7 +92,7 @@ struct h5vi_sdl_track {
 
 struct h5vi_sdl_track globalref;
 
-unsigned H5VI_Init(H5VI_Reference *ref, size_t h, size_t w)
+unsigned H5VI_init(H5VI_Reference *ref, size_t h, size_t w)
 {
 
 #if defined(H5VI_AUDIOSERV_IMPL_SDL2)
@@ -128,7 +128,7 @@ unsigned H5VI_Init(H5VI_Reference *ref, size_t h, size_t w)
 	return 0;
 }
 
-unsigned H5VI_Destroy(H5VI_Reference *ref)
+unsigned H5VI_destroy(H5VI_Reference *ref)
 {
 	SDL_DestroyWindow(((struct h5vi_sdl_track *)ref->data)->globwindow);
 #ifdef H5VI_AUDIOSERV_IMPL_SDL2
@@ -138,7 +138,7 @@ unsigned H5VI_Destroy(H5VI_Reference *ref)
 	return 0;
 }
 
-unsigned H5VI_SetBuffer(H5VI_Reference *ref, const H5VI_PixelData *inbuf)
+unsigned H5VI_setBuffer(H5VI_Reference *ref, const H5Render_PixelData *inbuf)
 {
 	SDL_Surface *surfptr = ((struct h5vi_sdl_track *)ref->data)->globsurf;
 	SDL_LockSurface(surfptr);
@@ -152,7 +152,7 @@ unsigned H5VI_SetBuffer(H5VI_Reference *ref, const H5VI_PixelData *inbuf)
 	return 0;
 }
 
-unsigned H5VI_GetBuffer_Size(size_t *h, size_t *w, const char *spritename)
+unsigned H5VI_getBufferSize(size_t *h, size_t *w, const char *spritename)
 {
 	SDL_Surface *surfptr = SDL_LoadBMP(spritename);
 	*h = surfptr->h;
@@ -161,7 +161,7 @@ unsigned H5VI_GetBuffer_Size(size_t *h, size_t *w, const char *spritename)
 	return 0;
 }
 
-unsigned H5VI_GetBuffer_Data(const char *spritename, H5VI_PixelData *inbuf)
+unsigned H5VI_getBufferData(const char *spritename, H5Render_PixelData *inbuf)
 {
 	SDL_Surface *surfptr = SDL_LoadBMP(spritename);
 	SDL_ConvertPixels(inbuf->width, inbuf->height, surfptr->format->format,
@@ -177,7 +177,7 @@ unsigned H5VI_GetBuffer_Data(const char *spritename, H5VI_PixelData *inbuf)
 
 #ifdef H5VI_AUDIOSERV_IMPL_SDL2
 /*For sound media caching*/
-unsigned H5VI_PlaySound(H5VI_Reference *handle,
+unsigned H5VI_playSound(H5VI_Reference *handle,
 			const H5VI_SoundData *insound)
 {
 	h5uchar *buf;
@@ -192,13 +192,13 @@ unsigned H5VI_PlaySound(H5VI_Reference *handle,
 }
 #else
 /*No sound support, stub*/
-unsigned H5VI_PlaySound(H5VI_Reference *stream, const H5VI_SoundData *insound) { return 0; }
+unsigned H5VI_playSound(H5VI_Reference *stream, const H5VI_SoundData *insound) { return 0; }
 #endif
 
 #ifdef H5VI_STDINPUT_IMPL_PORTABLE
 #include <stdio.h>
 #include <halfive/h5stdlib.h>
-unsigned H5VI_GetInput(H5VI_Reference *handle, H5VI_InputData *keys)
+unsigned H5VI_getInput(H5VI_Reference *handle, H5VI_InputData *keys)
 {
 	int i = 0;
 	char str[60];
@@ -221,11 +221,11 @@ unsigned H5VI_GetInput(H5VI_Reference *handle, H5VI_InputData *keys)
 }
 #else
 /*No input support, stub*/
-unsigned H5VI_GetInput(H5VI_Reference *handle, H5VI_InputData *keys) { return 0; }
+unsigned H5VI_getInput(H5VI_Reference *handle, H5VI_InputData *keys) { return 0; }
 #endif
 
 /*EXAMPLE:*/
-#ifndef H5VI_TEST
+#ifdef H5VI_TEST
 #define WCONSTANT 1080
 #define FRAMERATE 60
 int main(void)
@@ -235,18 +235,18 @@ int main(void)
 
 	size_t bmpsize_1;
 	size_t bmpsize_2;
-	H5VI_GetBuffer_Size(&bmpsize_1, &bmpsize_2,
+	H5VI_getBufferSize(&bmpsize_1, &bmpsize_2,
 			    "path/to/test/image.bmp");
 
-	H5VI_PixelData mybuf_green = {WCONSTANT, WCONSTANT,
+	H5Render_PixelData mybuf_green = {WCONSTANT, WCONSTANT,
 				      .pix = &array_one[0][0]};
 
-	if (H5VI_Init(&myref, WCONSTANT, WCONSTANT)) {
-		H5VI_Destroy(&myref);
+	if (H5VI_init(&myref, WCONSTANT, WCONSTANT)) {
+		H5VI_destroy(&myref);
 		return 1;
 	}
 
-	H5VI_PlaySound(&myref, &(const H5VI_SoundData){.volume = 127,
+	H5VI_playSound(&myref, &(const H5VI_SoundData){.volume = 127,
 				   .name = "path/to/test/sound.wav"});
 
 	for (unsigned i = 0; i < FRAMERATE * 8; i++) {
@@ -258,10 +258,10 @@ int main(void)
 				? (mybuf_green.pix[j] | 0xF260)
 				: (mybuf_green.pix[j] + 0x0FF0 + i);
 		}
-		H5VI_SetBuffer(&myref, &mybuf_green);
+		H5VI_setBuffer(&myref, &mybuf_green);
 	}
 
-	H5VI_Destroy(&myref);
+	H5VI_destroy(&myref);
 	return 0;
 }
 #endif

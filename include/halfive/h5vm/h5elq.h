@@ -83,6 +83,6 @@ typedef struct {
 } H5Elq_NodeHeap;
 #undef POOLMEM
 
-H5Elq_Node *H5Elq_Parse(char *in, H5Elq_NodeHeap *nodeheap);
-void H5Elq_GenerateCode(const H5Elq_Node *ast, H5VM_GeneralMemory *program);
+H5Elq_Node *H5Elq_parse(char *in, H5Elq_NodeHeap *nodeheap);
+void H5Elq_generateCode(const H5Elq_Node *ast, H5VM_GeneralMemory *program);
 #endif

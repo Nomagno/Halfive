@@ -9,5 +9,5 @@ typedef struct {
 	void *data;
 } H5CR_Frame;
 
-void H5CR_Reset(void *data);
+void H5CR_reset(void *data);
 #endif

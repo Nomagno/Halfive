@@ -184,10 +184,10 @@ typedef struct {
 /*Halfive VM interface*/
 
 /*Generate the whole VM from code and the default memory setup*/
-extern H5VM_GeneralMemory H5VM_Init(H5VM_CodeMemory *code,
+extern H5VM_GeneralMemory H5VM_init(H5VM_CodeMemory *code,
 				    H5VM_DefaultMemSetup *rawmem);
 
 /*Execute one instruction from the program*/
-extern unsigned H5VM_Execute(H5VM_GeneralMemory *program,
+extern unsigned H5VM_execute(H5VM_GeneralMemory *program,
 			     H5VM_ReadWriteInfo *rwinf);
 #endif
