@@ -17,7 +17,7 @@ H5VM binary drives are identified by the MIME type `application/h5drive`
 The Halfive virtual machine, henceforth referred to H5VM, is a standardized, but not fully defined, execution engine for code. This code may be interpreted directly from the assembly format, executed directly from the binary format, or executed in any other equivalent way.
 
 #### The H5VM Instruction notation
-The instruction set for the virtual machine is composed of precisely 16 instructions, whose functioning is documented with the following notation: `inst ARG1 ARG2`, where ARGx may be noted as either Vx, Rx, or ID. There are three types of arguments: literals, pointers, and addresses. Literals are prefixed by equal `=XXXX`, pointers by and `&XXXX`, and addresses are not `XXXX`. All are always written down in hexadecimal base when not talking about the binary format. Arguments of type Vx take literals, pointers and addresses, those of type Rx take only addresses and pointers, and the ones denoted ID take only literals. POINTERS AND LITERALS SHALL NEVER BE COMBINED IN AN INSTRUCTION'S ARGUMENTS
+The instruction set for the virtual machine is composed of precisely 16 instructions, whose functioning is documented with the following notation: `inst ARG1 ARG2`, where ARGx may be noted as either Vx, Rx, or ID. There are three types of arguments: literals, pointers, and addresses. Literals are prefixed by equal `=XXXX`, pointers by and `*XXXX`, and addresses are not `XXXX`. All are always written down in hexadecimal base when not talking about the binary format. Arguments of type Vx take literals, pointers and addresses, those of type Rx take only addresses and pointers, and the ones denoted ID take only literals. POINTERS AND LITERALS SHALL NEVER BE COMBINED IN AN INSTRUCTION'S ARGUMENTS
 
 ***
 ### H5VM Memory layout (Code memory and data memory)
@@ -79,7 +79,7 @@ There are currently SIXTEEN (16) instructions, each numbered with the decimal nu
 
 - In operands marked value Vx, if an address is specified, the instruction SHALL read the value of that address. If a literal is specified, the instruction SHALL perform no address reading and use that literal.
 
-- If a pointer is specified, the instruction shall read the value of the address pointed two by THAT ADDRESS AND THE NEXT ONE (e.g. &2 denotes the contents of memory address 0x02 and 0x03, TREATED AS A SINGLE 16-BIT INTEGER).
+- If a pointer is specified, the instruction shall read the value of the address pointed two by THAT ADDRESS AND THE NEXT ONE (e.g. *2 denotes the contents of memory address 0x02 and 0x03, TREATED AS A SINGLE 16-BIT INTEGER).
 
 - In operands marked register Rx, literals are an ERROR, addresses are ALLOWED, pointers are ALLOWED.
 

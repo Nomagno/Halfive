@@ -25,7 +25,7 @@ line-height:1.2
 <hr />
 <p>The Halfive virtual machine, henceforth referred to H5VM, is a standardized, but not fully defined, execution engine for code. This code may be interpreted directly from the assembly format, executed directly from the binary format, or executed in any other equivalent way.</p>
 <h4>The H5VM Instruction notation</h4>
-<p>The instruction set for the virtual machine is composed of precisely 16 instructions, whose functioning is documented with the following notation: <code>inst ARG1 ARG2</code>, where ARGx may be noted as either Vx, Rx, or ID. There are three types of arguments: literals, pointers, and addresses. Literals are prefixed by equal <code>=XXXX</code>, pointers by and <code>&amp;XXXX</code>, and addresses are not <code>XXXX</code>. All are always written down in hexadecimal base when not talking about the binary format. Arguments of type Vx take literals, pointers and addresses, those of type Rx take only addresses and pointers, and the ones denoted ID take only literals. POINTERS AND LITERALS SHALL NEVER BE COMBINED IN AN INSTRUCTION&#x2019;S ARGUMENTS</p>
+<p>The instruction set for the virtual machine is composed of precisely 16 instructions, whose functioning is documented with the following notation: <code>inst ARG1 ARG2</code>, where ARGx may be noted as either Vx, Rx, or ID. There are three types of arguments: literals, pointers, and addresses. Literals are prefixed by equal <code>=XXXX</code>, pointers by and <code>*XXXX</code>, and addresses are not <code>XXXX</code>. All are always written down in hexadecimal base when not talking about the binary format. Arguments of type Vx take literals, pointers and addresses, those of type Rx take only addresses and pointers, and the ones denoted ID take only literals. POINTERS AND LITERALS SHALL NEVER BE COMBINED IN AN INSTRUCTION&#x2019;S ARGUMENTS</p>
 <hr />
 <h3>H5VM Memory layout (Code memory and data memory)</h3>
 <h4>IMPORTANT NOTE: ALL MEMORY IN CODE AND DATA MEMBERS HAS TO BE INITIALIZED TO 0 (ZERO)!</h4>
@@ -67,7 +67,7 @@ line-height:1.2
 <ul>
 <li><p>Each instruction takes the number of register, value, or ID arguments specified, and only that number (it is an ERROR to specify MORE or LESS).</p></li>
 <li><p>In operands marked value Vx, if an address is specified, the instruction SHALL read the value of that address. If a literal is specified, the instruction SHALL perform no address reading and use that literal.</p></li>
-<li><p>If a pointer is specified, the instruction shall read the value of the address pointed two by THAT ADDRESS AND THE NEXT ONE (e.g.&#xA0;&amp;2 denotes the contents of memory address 0x02 and 0x03, TREATED AS A SINGLE 16-BIT INTEGER).</p></li>
+<li><p>If a pointer is specified, the instruction shall read the value of the address pointed two by THAT ADDRESS AND THE NEXT ONE (e.g.&#xA0;*2 denotes the contents of memory address 0x02 and 0x03, TREATED AS A SINGLE 16-BIT INTEGER).</p></li>
 <li><p>In operands marked register Rx, literals are an ERROR, addresses are ALLOWED, pointers are ALLOWED.</p></li>
 <li><p>In idenfitications ID, addresses or pointers are an ERROR.</p></li>
 <li><p>LITERALS AND POINTERS SHALL NEVER BE SPECIFIED TOGETHER IN THE SAME OPERAND LIST</p></li>

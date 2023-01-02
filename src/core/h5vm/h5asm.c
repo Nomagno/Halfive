@@ -161,7 +161,7 @@ h5uint H5ASM_parse(char *linestr, H5VM_InstructionSet *inst, h5uint opnds[3])
 	    opnds[2] = (opnds[2] | (1 << (1 - i)));
 
 	    i += 1;
-	} else if (token[0] == '&') {
+	} else if (token[0] == '*') {
 	    token += 1;
 	    opnds[i] = (h5uint)h5strtoul(token, NULL, 16);
 	    opnds[2] = (opnds[2] | 8);

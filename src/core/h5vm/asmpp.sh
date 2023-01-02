@@ -91,10 +91,10 @@ asmpp(){
 	for i in $rep; do
 		p1=$(printstr_n "$i" |
 		     cut -d',' -f1 |
-		     sed 's/|/ /g; s/\&/\\&/g')
+		     sed 's/|/ /g; s/\*/\\*/g')
 		p2=$(printstr_n "$i" |
 		     cut -d',' -f2 |
-		     sed 's/|/ /g; s/\&/\\&/g')
+		     sed 's/|/ /g; s/\*/\\*/g')
 
 		# For each line in $rep, scan the entire file and replace the macro name for its macro meaning
 		f=$(printstr "$f " |
