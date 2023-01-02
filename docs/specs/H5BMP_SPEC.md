@@ -17,7 +17,7 @@ Following the width and height, (width times height) two-byte pixels follow, whe
 ```
 RRRRR GGGGG BBBBB A
 ```
-- Where R marks the value of the color red 0-31
-- Where G marks the value of the color green 0-31
-- Where B marks the value of the color blue 0-31
+- Where R marks the value of the colour red 0-31
+- Where G marks the value of the colour green 0-31
+- Where B marks the value of the colour blue 0-31
 - Where A indicates whether the pixel is transparent (0) or opaque (1)

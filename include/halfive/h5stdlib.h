@@ -39,27 +39,27 @@ typedef unsigned suint;
 typedef unsigned long sulong;
 
 #if !defined(H5LIBC_HOSTED)
-	#define h5strtoul _h5libcstrtoul
-	#define h5strcmp  _h5libcstrcmp
-	#define h5strtok  _h5libcstrtok
-	#define h5memcpy  _h5libcmemcpy
-	#define h5strncpy  _h5libcstrncpy
-	#define h5memset  _h5libcmemset
+#define h5strtoul _h5libcstrtoul
+#define h5strcmp _h5libcstrcmp
+#define h5strtok _h5libcstrtok
+#define h5memcpy _h5libcmemcpy
+#define h5strncpy _h5libcstrncpy
+#define h5memset _h5libcmemset
 
-	#define h5malloc  _ERROR_UNIMPLEMENTED
-	#define h5realloc _ERROR_UNIMPLEMENTED
-	#define h5free    _ERROR_UNIMPLEMENTED
+#define h5malloc _ERROR_UNIMPLEMENTED
+#define h5realloc _ERROR_UNIMPLEMENTED
+#define h5free _ERROR_UNIMPLEMENTED
 #else
-	#define h5strtoul strtoul
-	#define h5strcmp  strcmp
-	#define h5strtok  strtok
-	#define h5memcpy  memcpy
-	#define h5strncpy  strncpy
-	#define h5memset  memset
+#define h5strtoul strtoul
+#define h5strcmp strcmp
+#define h5strtok strtok
+#define h5memcpy memcpy
+#define h5strncpy strncpy
+#define h5memset memset
 
-	#define h5malloc  malloc
-	#define h5realloc realloc
-	#define h5free    free
+#define h5malloc malloc
+#define h5realloc realloc
+#define h5free free
 #endif
 
 extern sulong _h5libcstrtoul(char *, char **, int);

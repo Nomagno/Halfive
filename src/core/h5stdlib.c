@@ -25,138 +25,135 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 sulong _h5libcstrtoul(char *nptr, char **endptr, int base)
 {
-	char *p;
-	sulong n, nn, m;
-	int c, ovfl, neg, v, ndig;
+    char *p;
+    sulong n, nn, m;
+    int c, ovfl, neg, v, ndig;
 
-	p = nptr;
-	neg = 0;
-	n = 0;
-	ndig = 0;
-	ovfl = 0;
+    p = nptr;
+    neg = 0;
+    n = 0;
+    ndig = 0;
+    ovfl = 0;
 
-	/*
-	 * White space
-	 */
-	for (;; p++) {
-		switch (*p) {
-		case ' ':
-		case '\t':
-		case '\n':
-		case '\f':
-		case '\r':
-		case '\v':
-			continue;
-		}
-		break;
+    /*
+     * White space
+     */
+    for (;; p++) {
+	switch (*p) {
+	case ' ':
+	case '\t':
+	case '\n':
+	case '\f':
+	case '\r':
+	case '\v':
+	    continue;
 	}
+	break;
+    }
 
-	/*
-	 * Sign
-	 */
-	if (*p == '-' || *p == '+')
-		if (*p++ == '-')
-			neg = 1;
+    /*
+     * Sign
+     */
+    if (*p == '-' || *p == '+')
+	if (*p++ == '-')
+	    neg = 1;
 
-	/*
-	 * Base
-	 */
-	if (base == 0) {
-		if (*p != '0')
-			base = 10;
-		else {
-			base = 8;
-			if (p[1] == 'x' || p[1] == 'X')
-				base = 16;
-		}
+    /*
+     * Base
+     */
+    if (base == 0) {
+	if (*p != '0')
+	    base = 10;
+	else {
+	    base = 8;
+	    if (p[1] == 'x' || p[1] == 'X')
+		base = 16;
 	}
-	if (base < 2 || 36 < base)
-		goto Return;
-	if (base == 16 && *p == '0') {
-		if (p[1] == 'x' || p[1] == 'X')
-			if (('0' <= p[2] && p[2] <= '9') ||
-			    ('a' <= p[2] && p[2] <= 'f') ||
-			    ('A' <= p[2] && p[2] <= 'F'))
-				p += 2;
-	}
-	/*
-	 * Non-empty sequence of digits
-	 */
-	n = 0;
-	m = ULONG_MAX / base;
-	for (;; p++, ndig++) {
-		c = *p;
-		v = base;
-		if ('0' <= c && c <= '9')
-			v = c - '0';
-		else if ('a' <= c && c <= 'z')
-			v = c - 'a' + 10;
-		else if ('A' <= c && c <= 'Z')
-			v = c - 'A' + 10;
-		if (v >= base)
-			break;
-		if (n > m)
-			ovfl = 1;
-		nn = n * base + v;
-		if (nn < n)
-			ovfl = 1;
-		n = nn;
-	}
+    }
+    if (base < 2 || 36 < base)
+	goto Return;
+    if (base == 16 && *p == '0') {
+	if (p[1] == 'x' || p[1] == 'X')
+	    if (('0' <= p[2] && p[2] <= '9') || ('a' <= p[2] && p[2] <= 'f') ||
+		('A' <= p[2] && p[2] <= 'F'))
+		p += 2;
+    }
+    /*
+     * Non-empty sequence of digits
+     */
+    n = 0;
+    m = ULONG_MAX / base;
+    for (;; p++, ndig++) {
+	c = *p;
+	v = base;
+	if ('0' <= c && c <= '9')
+	    v = c - '0';
+	else if ('a' <= c && c <= 'z')
+	    v = c - 'a' + 10;
+	else if ('A' <= c && c <= 'Z')
+	    v = c - 'A' + 10;
+	if (v >= base)
+	    break;
+	if (n > m)
+	    ovfl = 1;
+	nn = n * base + v;
+	if (nn < n)
+	    ovfl = 1;
+	n = nn;
+    }
 
 Return:
-	if (ndig == 0)
-		p = nptr;
-	if (endptr)
-		*endptr = p;
-	if (ovfl)
-		return ULONG_MAX;
-	if (neg)
-		return -n;
-	return n;
+    if (ndig == 0)
+	p = nptr;
+    if (endptr)
+	*endptr = p;
+    if (ovfl)
+	return ULONG_MAX;
+    if (neg)
+	return -n;
+    return n;
 }
 
 int _h5libcstrcmp(char *s1, char *s2)
 {
-	unsigned c1, c2;
+    unsigned c1, c2;
 
-	for (;;) {
-		c1 = *s1++;
-		c2 = *s2++;
-		if (c1 != c2) {
-			if (c1 > c2)
-				return 1;
-			return -1;
-		}
-		if (c1 == 0)
-			return 0;
+    for (;;) {
+	c1 = *s1++;
+	c2 = *s2++;
+	if (c1 != c2) {
+	    if (c1 > c2)
+		return 1;
+	    return -1;
 	}
+	if (c1 == 0)
+	    return 0;
+    }
 }
 
 char *_h5libcstrtok(char *s, char *b)
 {
-	static char *under_rock;
-	char map[N] = {0}, *os;
+    static char *under_rock;
+    char map[N] = {0}, *os;
 
-	while (*b)
-		map[*(suchar *)b++] = 1;
-	if (s == 0)
-		s = under_rock;
-	while (map[*(suchar *)s++])
-		;
-	if (*--s == 0)
-		return 0;
-	os = s;
-	while (map[*(suchar *)s] == 0)
-		if (*s++ == 0) {
-			under_rock = s - 1;
-			return os;
-		}
-	*s++ = 0;
-	under_rock = s;
-	return os;
+    while (*b)
+	map[*(suchar *)b++] = 1;
+    if (s == 0)
+	s = under_rock;
+    while (map[*(suchar *)s++])
+	;
+    if (*--s == 0)
+	return 0;
+    os = s;
+    while (map[*(suchar *)s] == 0)
+	if (*s++ == 0) {
+	    under_rock = s - 1;
+	    return os;
+	}
+    *s++ = 0;
+    under_rock = s;
+    return os;
 }
-
-
 
 /*
 Copyright Nomagno 2022
@@ -187,25 +184,30 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
-void *_h5libcmemcpy(void *dest, const void *src, size_t n) {
-	unsigned char *d = (unsigned char *)dest;
-	const unsigned char *s = (const unsigned char *)src;
-	for (size_t i = 0; i < n; i++)
-		d[i] = s[i];
-	return dest;
+void *_h5libcmemcpy(void *dest, const void *src, size_t n)
+{
+    unsigned char *d = (unsigned char *)dest;
+    const unsigned char *s = (const unsigned char *)src;
+    for (size_t i = 0; i < n; i++)
+	d[i] = s[i];
+    return dest;
 }
 
-char *_h5libcstrncpy(char *dest, const char *src, size_t n) {
-	for (size_t i = 0; (i < n) || (src[i] != '\0'); i++) {
-		if(i < n) dest[i] = src[i];
-		else      dest[i] = '\0';
-	}
-	return dest;
+char *_h5libcstrncpy(char *dest, const char *src, size_t n)
+{
+    for (size_t i = 0; (i < n) || (src[i] != '\0'); i++) {
+	if (i < n)
+	    dest[i] = src[i];
+	else
+	    dest[i] = '\0';
+    }
+    return dest;
 }
 
-void *_h5libcmemset(void *str, int val, size_t n) {
-	unsigned char *s = (unsigned char *)str;
-	for (size_t i = 0; i < n; i++)
-		s[i] = val;
-	return str;
+void *_h5libcmemset(void *str, int val, size_t n)
+{
+    unsigned char *s = (unsigned char *)str;
+    for (size_t i = 0; i < n; i++)
+	s[i] = val;
+    return str;
 }

@@ -53,7 +53,7 @@ The name must be an eight character alphanumerical string that is not '_DEFAULT'
 
 `biome = snow/lava/lake/desert/forest/rosegarden`
 
-An additional "color - while/red/blue/yellow/green/pink" parameter will be generated from the biome.
+An additional "colour - while/red/blue/yellow/green/pink" parameter will be generated from the biome.
 
 `max_players (NUMBER)`
 

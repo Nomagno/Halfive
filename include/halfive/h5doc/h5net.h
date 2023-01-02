@@ -30,8 +30,8 @@ WORK.*/
 #ifndef H5NET_H
 #define H5NET_H
 
-#include <halfive/h5req.h>
 #include <halfive/h5math.h>
+#include <halfive/h5req.h>
 #define MAXCHAR_H5NET 9
 
 enum H5NET_Type1Enum { o, u, x, s, z, e, c, y };
@@ -39,30 +39,30 @@ enum H5NET_Type2Enum { f, b, k, i };
 enum H5NET_Type3Enum { a, m, t, h };
 enum H5NET_ModeEnum { r, l };
 struct H5NET_ServerData {
-	enum H5NET_Type1Enum flags_1; /*If it is -1, SHOULD BE LEFT EMPTY*/
-	enum H5NET_Type2Enum flags_2; /*If it is -1, SHOULD BE LEFT EMPTY*/
-	enum H5NET_Type3Enum flags_3; /*If it is -1, SHOULD BE LEFT EMPTY*/
-	h5point_ulong position;
-	h5uint leaderboard;
+    enum H5NET_Type1Enum flags_1; /*If it is -1, SHOULD BE LEFT EMPTY*/
+    enum H5NET_Type2Enum flags_2; /*If it is -1, SHOULD BE LEFT EMPTY*/
+    enum H5NET_Type3Enum flags_3; /*If it is -1, SHOULD BE LEFT EMPTY*/
+    h5point_ulong position;
+    h5uint leaderboard;
 };
 
 struct H5NET_ClientData {
-	h5uchar thruster_1, thruster_2, buttons;
+    h5uchar thruster_1, thruster_2, buttons;
 };
 
 /*Memory footprint worst-case scenario: 256Bs*/
 typedef struct {
-	char trackname[MAXCHAR_H5NET], gamemode[MAXCHAR_H5NET],
-	    extension[MAXCHAR_H5NET];
+    char trackname[MAXCHAR_H5NET], gamemode[MAXCHAR_H5NET],
+	extension[MAXCHAR_H5NET];
 
-	struct H5NET_ServerData data[RACENUM];
+    struct H5NET_ServerData data[RACENUM];
 } H5NET_ServerPacket;
 
 /*Memory footprint worst-case scenario: 128Bs*/
 typedef struct {
-	char extension[MAXCHAR_H5NET];
-	enum H5NET_ModeEnum mode;
-	struct H5NET_ClientData data[RACENUM];
+    char extension[MAXCHAR_H5NET];
+    enum H5NET_ModeEnum mode;
+    struct H5NET_ClientData data[RACENUM];
 } H5NET_ClientPacket;
 
 extern unsigned H5NET_ClientParse(const char *input,

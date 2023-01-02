@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 #ifdef __cplusplus
-	#define _Bool bool
+#define _Bool bool
 #endif
 
 /*Floats are supported on this system*/
@@ -18,30 +18,26 @@
 /*VM Simulation is supported on this system*/
 #define H5PHY_VM_SIMULATE
 
-#if (!defined(UINT8_MAX)) || (!defined(UINT16_MAX)) ||\
-    (!defined(UINT32_MAX))|| (!defined(UINTMAX_MAX))||\
-    (!defined(INT8_MAX))  || (!defined(INT16_MAX))  ||\
-    (!defined(INT32_MAX)) || (!defined(INTMAX_MAX)) ||\
-    (!defined(SIZE_MAX))  || (!defined(SSIZE_MAX))
-#error error: \
+#if (!defined(UINT8_MAX)) || (!defined(UINT16_MAX)) ||                         \
+    (!defined(UINT32_MAX)) || (!defined(UINTMAX_MAX)) ||                       \
+    (!defined(INT8_MAX)) || (!defined(INT16_MAX)) || (!defined(INT32_MAX)) ||  \
+    (!defined(INTMAX_MAX)) || (!defined(SIZE_MAX)) || (!defined(SSIZE_MAX))
+#error error : \
 One of the following types is missing; \
 uint8_t, uint16_t, uint32_t, uintmax_t, \
 int8_t, int16_t, int32_t, intmax_t, \
 size_t, ssize_t
 #endif
 
-
-
 #ifdef FLOATS_SUPPORTED
-	#include <float.h>
-	#define H5FLT_MAX FLT_MAX
-	#define H5FLT_MIN FLT_MIN
-	typedef float h5float;
-	#define TLR 0.1f /*Default tolerance for comparisons*/
-	#define _FLT_CMP(a, b, tolerance) (abs(a - b) <= tolerance)
-	#define H5FLT_CMP(a, b) _FLT_CMP(a, b, TLR)
+#include <float.h>
+#define H5FLT_MAX FLT_MAX
+#define H5FLT_MIN FLT_MIN
+typedef float h5float;
+#define TLR 0.1f /*Default tolerance for comparisons*/
+#define _FLT_CMP(a, b, tolerance) (ABS(a - b) <= tolerance)
+#define H5FLT_CMP(a, b) _FLT_CMP(a, b, TLR)
 #endif
-
 
 #define H5UCHAR_MAX UINT8_MAX
 typedef uint8_t h5uchar;
@@ -54,7 +50,6 @@ typedef uint32_t h5ulong;
 
 #define H5UMAX_MAX UINTMAX_MAX
 typedef uintmax_t h5umax;
-
 
 #define H5SCHAR_MAX INT8_MAX
 #define H5SCHAR_MIN INT8_MIN
@@ -72,12 +67,11 @@ typedef int32_t h5slong;
 #define H5SMAX_MIN INTMAX_MIN
 typedef intmax_t h5smax;
 
-
 #ifdef __cplusplus
-	static int H5Req_const_one = 1;
-	#define IS_LITTLE_ENDIAN (*(h5uchar *)&H5Req_const_one)
+static int H5Req_const_one = 1;
+#define IS_LITTLE_ENDIAN (*(h5uchar *)&H5Req_const_one)
 #else
-	#define IS_LITTLE_ENDIAN (*(h5uchar *)&(h5uint){1})
+#define IS_LITTLE_ENDIAN (*(h5uchar *)&(h5uint){1})
 #endif
 
 #endif

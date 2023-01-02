@@ -30,17 +30,71 @@ WORK.*/
 #ifndef H5RENDER_H
 #define H5RENDER_H
 
-#include <halfive/h5req.h>
 #include <halfive/h5math.h>
+#include <halfive/h5req.h>
 
 /*Pixels are RGBA 16-bit 5551 format*/
+#define RGB(r, g, b)                                                           \
+    ((CAP(r, 0x20) << 11) | (CAP(g, 0x20) << 6) | (CAP(b, 0x20) << 1))
+#define RGBA(r, g, b, a)                                                       \
+    ((CAP(r, 0x20) << 11) | (CAP(g, 0x20) << 6) | (CAP(b, 0x20) << 1) | !!(a))
+#define ALPHA_ON(n) (n | 0x0001)
+#define ALPHA_OFF(n) (n & (~0x0001))
+#define ALPHA_TOGGLE(n) (n ^ 0x0001)
 
 /*Pixel buffer*/
+#define MATRIX_GET(var, x, y) (var).data[((y * (var).width) + x)]
+
+#define POINT_U(x, y)                                                          \
+    (h5point_uint)                                                             \
+    {                                                                          \
+	x, y                                                                   \
+    }
+#define POINT_UL(x, y)                                                         \
+    (h5point_ulong)                                                            \
+    {                                                                          \
+	x, y                                                                   \
+    }
+#define POINT_UM(x, y)                                                         \
+    (h5point_umax)                                                             \
+    {                                                                          \
+	x, y                                                                   \
+    }
+#define POINT_I(x, y)                                                          \
+    (h5point_sint)                                                             \
+    {                                                                          \
+	x, y                                                                   \
+    }
+#define POINT_L(x, y)                                                          \
+    (h5point_slong)                                                            \
+    {                                                                          \
+	x, y                                                                   \
+    }
+#define POINT_M(x, y)                                                          \
+    (h5point_smax)                                                             \
+    {                                                                          \
+	x, y                                                                   \
+    }
+
 typedef struct {
-	size_t width;
-	size_t height;
-	h5uint *pix;
+    size_t height;
+    size_t width;
+    h5uint *data;
 } H5Render_PixelData;
+void H5Render_fill(H5Render_PixelData surf, h5uint colour);
 
+void H5Render_slong_getLinePoints(h5point_slong p1, h5point_slong p2,
+				  h5uint length, h5point_slong *ret, size_t n);
+int H5Render_ulong_getRasterInfo(h5point_ulong p1, h5point_ulong p2,
+				 h5ulong edges[][2], size_t n);
+void H5Render_ulong_drawLine(H5Render_PixelData surf, h5point_ulong p1,
+			     h5point_ulong p2, h5uint colour);
+void H5Render_ulong_drawPolygon(H5Render_PixelData surf, h5point_ulong *points,
+				size_t n, h5uint colour);
 
+void H5Render_ulong_drawTriangle(H5Render_PixelData surf, h5point_ulong p1,
+				 h5point_ulong p2, h5point_ulong p3,
+				 h5uint colour, h5uint size);
+void H5Render_ulong_drawLineSize(H5Render_PixelData surf, h5point_ulong p1,
+				 h5point_ulong p2, h5uint colour, h5uint size);
 #endif

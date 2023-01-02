@@ -30,11 +30,10 @@ WORK.*/
 #ifndef H5VI_H
 #define H5VI_H
 
-#include <halfive/h5req.h>
 #include <halfive/h5render.h>
+#include <halfive/h5req.h>
 
 /*Halfive VIsual interface*/
-
 
 /*Direction keys,
 8 general-purpose buttons,
@@ -42,78 +41,80 @@ WORK.*/
 quit button,
 pause button*/
 enum H5VI_KeyEnum {
-	H5Key_up = 0,
-	H5Key_down = 1,
-	H5Key_left = 2,
-	H5Key_right = 3,
-	H5Key_b1 = 4,
-	H5Key_b2 = 5,
-	H5Key_b3 = 6,
-	H5Key_b4 = 7,
-	H5Key_b5 = 8,
-	H5Key_b6 = 9,
-	H5Key_b7 = 10,
-	H5Key_b8 = 11,
-	H5Key_m1 = 12,
-	H5Key_m2 = 13,
-	H5Key_quit = 14,
-	H5Key_pause = 15
+    H5Key_up = 0,
+    H5Key_down = 1,
+    H5Key_left = 2,
+    H5Key_right = 3,
+    H5Key_b1 = 4,
+    H5Key_b2 = 5,
+    H5Key_b3 = 6,
+    H5Key_b4 = 7,
+    H5Key_b5 = 8,
+    H5Key_b6 = 9,
+    H5Key_b7 = 10,
+    H5Key_b8 = 11,
+    H5Key_m1 = 12,
+    H5Key_m2 = 13,
+    H5Key_quit = 14,
+    H5Key_pause = 15
 };
 
 typedef struct {
-	_Bool keys[16];  /*See enum for what each pos means*/
-	h5uchar axis[4]; /*Max 4 axis*/
-	h5uint cursor_x; /*Cursor/mouse pointer X*/
-	h5uint cursor_y; /*Cursor/mouse pointer Y*/
+    _Bool keys[16];  /*See enum for what each pos means*/
+    h5uchar axis[4]; /*Max 4 axis*/
+    h5uint cursor_x; /*Cursor/mouse pointer X*/
+    h5uint cursor_y; /*Cursor/mouse pointer Y*/
 } H5VI_InputData;
 
 typedef struct {
-	_Bool do_block; /*Set to true to disable playing multiple sounds at once*/
-	h5uchar volume; /*Relative volume, 0 = mute, 255 = maximum volume, default = 127*/
+    _Bool do_block; /*Set to true to disable playing multiple sounds at once*/
+    h5uchar volume; /*Relative volume, 0 = mute, 255 = maximum volume, default =
+		       127*/
 
-	h5ulong length_milli; /*Length, must not exceed length of the sound, 0 = autodetect sound length*/
+    h5ulong length_milli; /*Length, must not exceed length of the sound, 0 =
+			     autodetect sound length*/
 
-	_Bool do_loop; /*Set to true to loop at the loop point*/
-	h5ulong loop_point_milli; /*At which point in the audio loop?*/
+    _Bool do_loop;            /*Set to true to loop at the loop point*/
+    h5ulong loop_point_milli; /*At which point in the audio loop?*/
 
-	char name[128]; /*Name*/
+    char name[128]; /*Name*/
 } H5VI_SoundData;
 
 typedef struct {
-	/*
-	Platform string examples:
-	X11, WAYLAND, WIN32,
-	MACOS, ANDROID, SDL
-	*/
-	char platform[16];
+    /*
+    Platform string examples:
+    X11, WAYLAND, WIN32,
+    MACOS, ANDROID, SDL
+    */
+    char platform[16];
 
-	_Bool graphics_enabled; /*might be */
-	_Bool sound_enabled;    /*might be */
-	_Bool input_enabled;    /*might be */
+    _Bool graphics_enabled; /*might be */
+    _Bool sound_enabled;    /*might be */
+    _Bool input_enabled;    /*might be */
 
-	void *data;
-	/*Opaque handle to identify at
-	the very least the display,
-	but also possibly the sound
-	and input devices. It SHOULD
-	NOT be dereferenced by the user.
-	*/
+    void *data;
+    /*Opaque handle to identify at
+    the very least the display,
+    but also possibly the sound
+    and input devices. It SHOULD
+    NOT be dereferenced by the user.
+    */
 } H5VI_Reference;
 
 extern unsigned H5VI_Init(H5VI_Reference *buf, size_t h, size_t w);
-/*Initialize display (following width w and height h, error if not possible), sound,
-and input, following the advice of the foo_enabled booleans, and modify those if
-can't enable graphics, sound, or input*/
+/*Initialize display (following width w and height h, error if not possible),
+sound, and input, following the advice of the foo_enabled booleans, and modify
+those if can't enable graphics, sound, or input*/
 
 extern unsigned H5VI_destroy(H5VI_Reference *ref);
 /*Exit gracefully*/
 
 extern unsigned H5VI_getBufferSize(size_t *h, size_t *w,
-				    const char *spritename);
+				   const char *spritename);
 /*Get size of sprite in HWPIX format*/
 
 extern unsigned H5VI_getBufferData(const char *spritename,
-				    H5Render_PixelData *inbuf);
+				   H5Render_PixelData *inbuf);
 /*Ger sprite in HWPIX format copied*/
 
 extern unsigned H5VI_setBuffer(H5VI_Reference *handle,
