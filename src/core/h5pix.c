@@ -68,7 +68,6 @@ int H5Pix_getPAM_Contents(char *filename, H5Render_PixelData buf){
 	fread(data, 1, h*w*4, file);
 	fclose(file);
 
-	printf("%X\n", data[0]);
 	for (h5ulong i = 0; i < h; i++) {
 	for (h5ulong j = 0; j < w; j++) {
 		buf.data[i*h+j] = ((data[((i*h+j)*4)] >> 3) << 11) | (((data[((i*h+j)*4)+1] >> 3)) << 6) |
