@@ -156,7 +156,7 @@ char *_h5libcstrtok(char *s, char *b)
 }
 
 /*
-Copyright Nomagno 2022
+Copyright Nomagno 2022, 2023
 
 Redistributions, modified or unmodified, in whole or in part, must retain
 applicable notices of copyright or other legal privilege, these conditions, and

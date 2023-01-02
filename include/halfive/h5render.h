@@ -1,5 +1,5 @@
 /*
-Copyright Nomagno 2022
+Copyright Nomagno 2022, 2023
 
 Redistributions, modified or unmodified, in whole or in part, must retain
 applicable notices of copyright or other legal privilege, these conditions, and
@@ -26,6 +26,8 @@ COPYRIGHT OR OTHER LEGAL PRIVILEGE BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
 LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
+
+/*Halfive Rendering utilities*/
 
 #ifndef H5RENDER_H
 #define H5RENDER_H
@@ -94,7 +96,7 @@ void H5Render_ulong_drawPolygon(H5Render_PixelData surf, h5point_ulong *points,
 
 void H5Render_ulong_drawTriangle(H5Render_PixelData surf, h5point_ulong p1,
 				 h5point_ulong p2, h5point_ulong p3,
-				 h5uint colour, h5uint size);
+				 h5uint colour);
 void H5Render_ulong_drawLineSize(H5Render_PixelData surf, h5point_ulong p1,
 				 h5point_ulong p2, h5uint colour, h5uint size);
 #endif

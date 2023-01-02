@@ -1,4 +1,4 @@
-#Copyright Nomagno 2021, 2022
+#Copyright Nomagno 2021, 2022, 2023
 
 #Redistributions, modified or unmodified, in whole or in part, must retain
 #applicable notices of copyright or other legal privilege, these conditions, and
@@ -52,8 +52,8 @@ clean:
 warn:
 	echo "This program makes extensive used of C preprocessor macros. You may use the variable PARAMS=\"-DMYVAR1 -DMYVAR2\" like so to set them"
 
-libhalfive.a : h5stdlib.o h5asm.o h5vm.o h5doc.o h5math.o h5rat.o
-	ar rcs libhalfive.a h5stdlib.o h5asm.o h5vm.o h5doc.o h5math.o h5rat.o
+libhalfive.a : h5stdlib.o h5asm.o h5vm.o h5doc.o h5math.o h5rat.o h5render.o h5pix.o
+	ar rcs libhalfive.a h5stdlib.o h5asm.o h5vm.o h5doc.o h5math.o h5rat.o h5render.o h5pix.o
 
 h5assembler : h5assembler.o h5vm.o h5stdlib.o
 	cc $(PARAMS) -o h5assembler h5assembler.o h5vm.o h5stdlib.o
@@ -66,6 +66,10 @@ h5assembler_debug.o : h5vm.o
 	cc $(PARAMS) -I$(INCLROOT) -DH5ASSEMBLY -DH5ASM_VERBOSE -c -o h5assembler_debug.o h5vm/h5asm.c
 
 
+h5pix.o : h5render.o h5math.o
+	cc $(PARAMS) -I$(INCLROOT) -c -o h5pix.o h5pix.c h5render.o h5math.o
+h5render.o : h5math.o
+	cc $(PARAMS) -I$(INCLROOT) -c -o h5render.o h5render.c h5math.o
 h5asm.o : h5vm.o
 	cc $(PARAMS) -I$(INCLROOT) -c -o h5asm.o h5vm/h5asm.c
 h5vm.o : h5stdlib.o

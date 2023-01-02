@@ -1,7 +1,7 @@
 # Halfive Track (Encoding) Specification
 
 #### SPDX identifier: COIL-1.0
-#### Copyright Nomagno 2021, 2022
+#### Copyright Nomagno 2021, 2022, 2023
 #### Please read the H5DOC format specification before this one.
 NOTE: Arguments between parentheses are variable and should be replaced according to their respective explanations.
 

@@ -1,5 +1,5 @@
 /*
-Copyright Nomagno 2021, 2022
+Copyright Nomagno 2021, 2022, 2023
 
 Redistributions, modified or unmodified, in whole or in part, must retain
 applicable notices of copyright or other legal privilege, these conditions, and
@@ -27,9 +27,7 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
-/* To calculate point [t] of the Bezier curve:
- A(1-t)(1-t) + B(1-t)(2t) + C(t)(t)
-*/
+/*Halfive Track format utilities*/
 
 #ifndef H5T_H
 #define H5T_H

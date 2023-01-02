@@ -1,5 +1,5 @@
 /*
-Copyright Nomagno 2021, 2022, 2023
+Copyright 2023
 
 Redistributions, modified or unmodified, in whole or in part, must retain
 applicable notices of copyright or other legal privilege, these conditions, and
@@ -27,22 +27,26 @@ LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
-/*Halfive Document tokenizer interface*/
+/*Halfive Pixel utilities interface*/
 
-#ifndef H5DOC_H
-#define H5DOC_H
+#ifndef H5PIX_H
+#define H5PIX_H
 
-#include <halfive/h5req.h>
+#include <halfive/h5render.h>
 
-typedef enum { H5DOC_SEC = 0, H5DOC_KEY = 1, H5DOC_VAL = 2 } H5DOC_Type;
-
-typedef struct {
-    H5DOC_Type type;
-    size_t string_start, string_end;
-    unsigned childnum;
-} H5DOC_Token;
-
-extern unsigned H5DOC_parse(const char *const input, unsigned size,
-			    H5DOC_Token *toks);
-
+/*
+Import from .pam files following the format:
+--------
+P7
+HEIGHT h
+WIDTH w
+DEPTH 255
+MAXVAL 255
+TUPLTYPE RGB_ALPHA
+ENDHDR
+--------
+Followed by a single image's raw data (substitute h and w with the height and width in ASCII decimal)
+*/
+int H5Pix_getPAM_Size(char *filename, unsigned *height, unsigned *width);
+int H5Pix_getPAM_Contents(char *filename, H5Render_PixelData buf);
 #endif

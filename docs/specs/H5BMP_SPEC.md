@@ -1,6 +1,6 @@
 # Halfive Bitmap Specification
 #### SPDX identifier: COIL-1.0
-#### Copyright Nomagno 2021, 2022
+#### Copyright Nomagno 2021, 2022, 2023
 
 It is recommended to use the ".h5bmp" extension for H5BMP bitmaps (where applicable).
 H5BMP is identified by the MIME type `application/h5bmp`

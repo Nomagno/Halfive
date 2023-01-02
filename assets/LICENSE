@@ -1,5 +1,4 @@
-/*
-Copyright Nomagno 2021, 2022, 2023
+Copyright Nomagno 2022, 2023
 
 Redistributions, modified or unmodified, in whole or in part, must retain
 applicable notices of copyright or other legal privilege, these conditions, and
@@ -25,24 +24,4 @@ AND NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS, ASSEMBLERS, OR HOLDERS OF
 COPYRIGHT OR OTHER LEGAL PRIVILEGE BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
 LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
-WORK.*/
-
-/*Halfive Document tokenizer interface*/
-
-#ifndef H5DOC_H
-#define H5DOC_H
-
-#include <halfive/h5req.h>
-
-typedef enum { H5DOC_SEC = 0, H5DOC_KEY = 1, H5DOC_VAL = 2 } H5DOC_Type;
-
-typedef struct {
-    H5DOC_Type type;
-    size_t string_start, string_end;
-    unsigned childnum;
-} H5DOC_Token;
-
-extern unsigned H5DOC_parse(const char *const input, unsigned size,
-			    H5DOC_Token *toks);
-
-#endif
+WORK.

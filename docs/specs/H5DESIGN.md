@@ -1,7 +1,7 @@
 # Halfive Design notes
 
 #### SPDX identifier: COIL-1.0
-#### Copyright Nomagno 2022
+#### Copyright Nomagno 2022, 2023
 
 ***
 ### Missing suitable (re)implementations

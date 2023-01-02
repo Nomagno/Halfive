@@ -1,5 +1,5 @@
 /*
-Copyright Nomagno 2022
+Copyright Nomagno 2022, 2023
 
 Redistributions, modified or unmodified, in whole or in part, must retain
 applicable notices of copyright or other legal privilege, these conditions, and
@@ -26,6 +26,8 @@ COPYRIGHT OR OTHER LEGAL PRIVILEGE BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
 LIABILITY, WHETHER IN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM, OUT
 OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
+
+/*H5RPG archetypes for monsters and characters*/
 
 #ifndef H5RPGPROTO_H
 #define H5RPGPROTO_H
