@@ -10,8 +10,8 @@ H5BMP is identified by the MIME type `application/h5bmp`
 ***
 #### The H5BMP format:
 It is identified by the null-terminated ASCII string 'H5BMP\0'. These six bytes shall appear at the start of every bitmap.
-After the identifier string, two bytes shall follow and mark the bitmap width, and right after two bytes shall indicate the bitmap width.
-Following the width and height, (width times height) two-byte pixels follow, where each string of (width) pixels represents a row, starting from the top left of the image.
+After the identifier string, two bytes shall follow and mark the bitmap height, and right after two bytes shall indicate the bitmap width.
+Following the height and width, (width times height) two-byte pixels follow, where each string of (width) pixels represents a row, starting from the top left of the image.
 
 #### The pixel format (RGBA 5551) in binary:
 ```

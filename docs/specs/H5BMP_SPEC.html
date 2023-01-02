@@ -22,7 +22,7 @@ line-height:1.2
 <h3>H5BMP is a simple storage format for bitmaps</h3>
 <hr />
 <h4>The H5BMP format:</h4>
-<p>It is identified by the null-terminated ASCII string &#x2018;H5BMP\0&#x2019;. These six bytes shall appear at the start of every bitmap. After the identifier string, two bytes shall follow and mark the bitmap width, and right after two bytes shall indicate the bitmap width. Following the width and height, (width times height) two-byte pixels follow, where each string of (width) pixels represents a row, starting from the top left of the image.</p>
+<p>It is identified by the null-terminated ASCII string &#x2018;H5BMP\0&#x2019;. These six bytes shall appear at the start of every bitmap. After the identifier string, two bytes shall follow and mark the bitmap height, and right after two bytes shall indicate the bitmap width. Following the height and width, (width times height) two-byte pixels follow, where each string of (width) pixels represents a row, starting from the top left of the image.</p>
 <h4>The pixel format (RGBA 5551) in binary:</h4>
 <pre><code>RRRRR GGGGG BBBBB A</code></pre>
 <ul>
