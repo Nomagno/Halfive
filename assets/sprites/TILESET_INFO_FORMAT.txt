@@ -1,0 +1,35 @@
+SPDX Identifier: COIL-1.0
+Copyright Nomagno 2023
+
+The .info tileset info format:
+
+MULTIPLETILES
+TILE_HEIGHT - height of a single tile
+TILE_WIDTH  - width of a single tile
+HEIGHT      - height of the tileset in tiles
+WIDTH       - width of the tileset in tiles
+PADDING     - how many pixels are used as padding between tiles (image edges excluded)
+
+After this, the labelling of all tiles follows.
+Each row starts on a separate with a tag for the kind of tiles it contains.
+This may be one of:
+	- SYMBOL
+	- SPRITE
+	- IMAGE
+	- Something else entirely, but preferrably uppercase
+Each line then contains the plaintext names every symbol in the row, in order.
+
+
+A .info file that only contains one tile can have the following format:
+
+SINGLETILE
+TAG name
+
+Where TAG is the tag of the symbol (see above), and name is its name.
+
+Finally, a sole line ends every .info tileset info file:
+
+ENDINFO
+
+Everything after this is considered a comment.
+A .info file must have the same name as the corresponding .pam tileset (5x5.pam -> 5x5.info)

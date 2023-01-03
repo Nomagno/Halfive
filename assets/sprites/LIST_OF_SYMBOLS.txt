@@ -1,0 +1,6 @@
+a b c d e f g h i j k l m n o p q r s t u v w x y z
+zero one two three four five six seven eight nine
+hash semicolon equal asterisk underscore comma exclamation question
+bracket_left bracket_right paren_left paren_right lesser greater
+special1 special2 special3 special4 special5 special6 special7 special8
+red green blue black white space

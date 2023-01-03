@@ -1,0 +1,11 @@
+MULTIPLETILES
+TILE_HEIGHT 5
+TILE_WIDTH 5
+HEIGHT 4
+WIDTH 8
+PADDING 1
+SYMBOL a b c d e f g h
+SYMBOL i j k l m n o p
+SYMBOL q r s t u v w x
+SYMBOL y z hash semicolon equal asterisk underscore comma
+ENDINFO
