@@ -32,8 +32,9 @@ WORK.*/
 #ifndef H5VI_H
 #define H5VI_H
 
-#include <halfive/h5render.h>
 #include <halfive/h5req.h>
+#include <halfive/h5render.h>
+#include <halfive/h5pix.h>
 
 /*Halfive VIsual interface*/
 
@@ -110,14 +111,6 @@ those if can't enable graphics, sound, or input*/
 
 extern unsigned H5VI_destroy(H5VI_Reference *ref);
 /*Exit gracefully*/
-
-extern unsigned H5VI_getBufferSize(size_t *h, size_t *w,
-				   const char *spritename);
-/*Get size of sprite in HWPIX format*/
-
-extern unsigned H5VI_getBufferData(const char *spritename,
-				   H5Render_PixelData *inbuf);
-/*Ger sprite in HWPIX format copied*/
 
 extern unsigned H5VI_setBuffer(H5VI_Reference *handle,
 			       const H5Render_PixelData *inbuf);

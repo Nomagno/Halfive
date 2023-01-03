@@ -47,6 +47,6 @@ ENDHDR
 --------
 Followed by a single image's raw data (substitute h and w with the height and width in ASCII decimal)
 */
-int H5Pix_getPAM_Size(char *filename, unsigned *height, unsigned *width);
-int H5Pix_getPAM_Contents(char *filename, H5Render_PixelData buf);
+int H5Pix_getPAM_Size(const char *filename, unsigned *height, unsigned *width);
+int H5Pix_getPAM_Contents(const char *filename, H5Render_PixelData buf);
 #endif

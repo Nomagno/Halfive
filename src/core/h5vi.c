@@ -28,6 +28,8 @@ OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
 #include <halfive/h5req.h>
+#include <halfive/h5render.h>
+#include <halfive/h5pix.h>
 #include <halfive/h5vi.h>
 
 /*Available interfaces: MACRO
@@ -148,25 +150,6 @@ unsigned H5VI_setBuffer(H5VI_Reference *ref, const H5Render_PixelData *inbuf)
     SDL_UpdateWindowSurface(((struct h5vi_sdl_track *)ref->data)->globwindow);
     return 0;
 }
-
-unsigned H5VI_getBufferSize(size_t *h, size_t *w, const char *spritename)
-{
-    SDL_Surface *surfptr = SDL_LoadBMP(spritename);
-    *h = surfptr->h;
-    *w = surfptr->w;
-    SDL_FreeSurface(surfptr);
-    return 0;
-}
-
-unsigned H5VI_getBufferData(const char *spritename, H5Render_PixelData *inbuf)
-{
-    SDL_Surface *surfptr = SDL_LoadBMP(spritename);
-    SDL_ConvertPixels(inbuf->width, inbuf->height, surfptr->format->format,
-		      surfptr->pixels, surfptr->pitch, SDL_PIXELFORMAT_RGBA5551,
-		      inbuf->data, 2 * (inbuf->width));
-    SDL_FreeSurface(surfptr);
-    return 0;
-}
 #else
 #include <stdlib.h>
 #define H5LIBC_HOSTED
@@ -250,6 +233,62 @@ unsigned H5VI_getInput(H5VI_Reference *handle, H5VI_InputData *keys)
 }
 #endif
 
+#ifdef H5VI_IMAGE_VIEWER
+#include <unistd.h>
+#include <time.h>
+#include <stdio.h>
+
+
+int main(int argc, char **argv){
+	if(argc < 3) {
+		printf("ERROR: Need an filename and a scale factor\n");
+		return 1;
+	}
+	unsigned h, w;
+	H5Pix_getPAM_Size(argv[1], &h, &w);
+	h5uint smallbuf[h][w];
+    for (h5ulong y = 0; y < h; y++) {
+	for (h5ulong x = 0; x < w; x++) {
+	smallbuf[y][x] = 0xFFFF; /*background color is white*/
+	}
+    }
+    H5Render_PixelData smallsprite = { h, w, &smallbuf[0][0] };
+	H5Pix_getPAM_Contents(argv[1], smallsprite);
+
+	char *endptr = NULL;
+	unsigned scale = strtoul(argv[2], &endptr, 10);
+	h5uint buf[h*scale][w*scale];
+    H5Render_PixelData sprite = { h*scale, w*scale, &buf[0][0] };
+	H5Render_scale(smallsprite, sprite, scale);
+
+	H5VI_Reference myref;
+	if (H5VI_init(&myref, h*scale, w*scale)) {
+	printf("ERROR: failed to initialize H5VI screen");
+	H5VI_destroy(&myref);
+	return 1;
+	}
+	H5VI_setBuffer(&myref, &sprite);
+
+
+	while (1) {
+		char a[10] = {0};
+		fgets(a, sizeof(a), stdin);
+		switch(a[0]){
+		case 'q':
+			goto exit;
+			break;
+		case 'r':
+			nanosleep(&(struct timespec){3, 0}, NULL);
+			break;
+		}
+		H5VI_setBuffer(&myref, &sprite);
+	}
+	exit:
+		H5VI_destroy(&myref);
+		return 0;
+}
+#endif
+
 #ifdef H5VI_TEST
 #include <halfive/h5stdlib.h>
 #include <stdio.h>
@@ -260,23 +299,23 @@ unsigned H5VI_getInput(H5VI_Reference *handle, H5VI_InputData *keys)
 #define HCONSTANT 900
 int main(void)
 {
-    H5VI_Reference myref;
-    h5uint array_one[HCONSTANT][WCONSTANT] = {0};
-    for (h5ulong y = 0; y < HCONSTANT; y++) {
+	H5VI_Reference myref;
+	h5uint array_one[HCONSTANT][WCONSTANT] = {0};
+	for (h5ulong y = 0; y < HCONSTANT; y++) {
 	for (h5ulong x = 0; x < WCONSTANT; x++) {
-	    array_one[y][x] = 0xFFFF; /*WHITE*/
+	array_one[y][x] = 0xFFFF; /*WHITE*/
 	}
-    }
+	}
 
-    H5Render_PixelData mybuf = {HCONSTANT, WCONSTANT, .data = &array_one[0][0]};
-    if (H5VI_init(&myref, HCONSTANT, WCONSTANT)) {
+	H5Render_PixelData mybuf = {HCONSTANT, WCONSTANT, .data = &array_one[0][0]};
+	if (H5VI_init(&myref, HCONSTANT, WCONSTANT)) {
 	H5VI_destroy(&myref);
 	return 1;
     }
 
-    H5VI_setBuffer(&myref, &mybuf);
-    unsigned animation_length = 10000;
-    while (1) {
+	H5VI_setBuffer(&myref, &mybuf);
+	unsigned animation_length = 10000;
+	while (1) {
 	_Bool exit = 0;
 	H5VI_setBuffer(&myref, &mybuf);
 	char a[20] = {0};

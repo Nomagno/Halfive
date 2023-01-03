@@ -41,6 +41,7 @@ INCLROOT="../../include/"
 PARAMS="-DH5VERSION=0 -DH5PHY_VM_SIMULATION -DH5VI_GSERV_IMPL_SDL2 -DH5VI_AUDIOSERV_IMPL_SDL2 -DH5VI_STDINPUT_IMPL_PORTABLE"
 
 main: warn libhalfive.a
+pamview: warn pamviewer
 h5asm: warn h5assembler
 h5asm_debug: warn h5assembler_debug
 remain: clean main
@@ -48,13 +49,15 @@ reh5asm: clean h5assembler
 reh5asm_debug: clean h5assembler_debug
 
 clean:
-	rm -f *.o *.a h5assembler h5assembler_debug
+	rm -f *.o *.a h5assembler h5assembler_debug pamview
 warn:
 	echo "This program makes extensive used of C preprocessor macros. You may use the variable PARAMS=\"-DMYVAR1 -DMYVAR2\" like so to set them"
 
 libhalfive.a : h5stdlib.o h5asm.o h5vm.o h5doc.o h5math.o h5rat.o h5render.o h5pix.o
 	ar rcs libhalfive.a h5stdlib.o h5asm.o h5vm.o h5doc.o h5math.o h5rat.o h5render.o h5pix.o
 
+pamviewer : h5pix.o h5render.o h5math.o
+	cc $(PARAMS) -I$(INCLROOT) -DH5VI_GSERV_IMPL_SDL2 -DH5VI_IMAGE_VIEWER -o pamview h5vi.c h5pix.o h5render.o h5math.o -lSDL2
 h5assembler : h5assembler.o h5vm.o h5stdlib.o
 	cc $(PARAMS) -o h5assembler h5assembler.o h5vm.o h5stdlib.o
 h5assembler.o : h5vm.o

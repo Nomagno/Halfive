@@ -85,6 +85,8 @@ typedef struct {
 } H5Render_PixelData;
 void H5Render_fill(H5Render_PixelData surf, h5uint colour);
 
+void H5Render_scale(H5Render_PixelData insurf, H5Render_PixelData outsurf, unsigned scale_factor);
+
 void H5Render_slong_getLinePoints(h5point_slong p1, h5point_slong p2,
 				  h5uint length, h5point_slong *ret, size_t n);
 int H5Render_ulong_getRasterInfo(h5point_ulong p1, h5point_ulong p2,
