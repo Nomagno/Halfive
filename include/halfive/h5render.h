@@ -45,7 +45,8 @@ WORK.*/
 #define ALPHA_TOGGLE(n) (n ^ 0x0001)
 
 /*Pixel buffer*/
-#define MATRIX_GET(var, x, y) (var).data[((y * (var).width) + x)]
+#define MATRIX_GET(var, x, y) (var).data[(((y) * (var).width) + (x))]
+#define MATRIX_INDEX(var, w, x, y) var[(((y) * (w)) + (x))]
 
 #define POINT_U(x, y)                                                          \
     (h5point_uint)                                                             \

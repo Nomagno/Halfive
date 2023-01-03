@@ -47,7 +47,7 @@ void H5Render_scale(H5Render_PixelData insurf, H5Render_PixelData outsurf, unsig
 	for (unsigned long j = 0; j < insurf.width; j++) {
 	for (unsigned long k1 = 0; k1 < scale_factor; k1++) {
 	for (unsigned long k2 = 0; k2 < scale_factor; k2++) {
-	outsurf.data[(((i*scale_factor)+k1)*outsurf.width)+(j*scale_factor+k2)] = insurf.data[i*insurf.width+j];
+	MATRIX_GET(outsurf, j*scale_factor+k2, i*scale_factor+k1) = MATRIX_GET(insurf, j, i);
 	}
 	}
 	}
