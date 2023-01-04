@@ -84,9 +84,34 @@ typedef struct {
     size_t width;
     h5uint *data;
 } H5Render_PixelData;
+
+typedef enum {
+	tile_None=0,
+	tile_Symbol,
+	tile_Sprite,
+	tile_Image
+} TileCategory;
+
+typedef struct {
+	size_t tile_height; /*In pixels*/
+	size_t tile_width;  /*In pixels*/
+	size_t height;      /*In tiles */
+	size_t width;       /*In tiles */
+	unsigned padding;   /*How many pixels are used as padding between tiles*/
+	H5Render_PixelData buffer;
+	TileCategory *tags; /*Array of size [height], indicates                */
+	                    /*the category tag of each row of tiles            */
+	char (*names)[32];  /*2D string array of size [height*width],          */
+	                    /*indicates the machine readable name of each tile*/
+} H5Render_Tileset;
+
+
 void H5Render_fill(H5Render_PixelData surf, h5uint colour);
 
 void H5Render_scale(H5Render_PixelData insurf, H5Render_PixelData outsurf, unsigned scale_factor);
+
+void H5Render_getTile(H5Render_Tileset *tileset, H5Render_PixelData outsurf,
+                      size_t row, size_t column);
 
 void H5Render_slong_getLinePoints(h5point_slong p1, h5point_slong p2,
 				  h5uint length, h5point_slong *ret, size_t n);

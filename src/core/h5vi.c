@@ -61,10 +61,6 @@ comma-separated booleans (0 or 1) replacing from 'quit' until 'right'
 comma separated 8-bit uints (0-255) replacing from 'axis1' until 'axis4'
 */
 
-unsigned H5VI_init(H5VI_Reference *handle, size_t h, size_t w);
-unsigned H5VI_destroy(H5VI_Reference *handle);
-unsigned H5VI_playSound(H5VI_Reference *handle, const H5VI_SoundData *insound);
-
 #if defined(H5VI_GSERV_IMPL_SDL2)
 #include <SDL2/SDL.h>
 #endif
@@ -234,17 +230,21 @@ unsigned H5VI_getInput(H5VI_Reference *handle, H5VI_InputData *keys)
 #endif
 
 #ifdef H5VI_IMAGE_VIEWER
-#include <unistd.h>
 #include <time.h>
 #include <stdio.h>
+#include <stdlib.h>
 
+#ifndef H5VI_GSERV_IMPL_SDL2
+#define H5VI_GSERV_IMPL_SDL2
+#endif
 
+#include <halfive/h5vi.h>
 int main(int argc, char **argv){
-	if(argc < 3) {
-		printf("ERROR: Need an filename and a scale factor\n");
+	if(argc < 2) {
+		printf("USAGE: pamview file [scale] [tileset file] [tileY,tileX]\n");
 		return 1;
 	}
-	unsigned h, w;
+	size_t h, w;
 	H5Pix_getPAM_Size(argv[1], &h, &w);
 	h5uint smallbuf[h][w];
     for (h5ulong y = 0; y < h; y++) {
@@ -255,20 +255,48 @@ int main(int argc, char **argv){
     H5Render_PixelData smallsprite = { h, w, &smallbuf[0][0] };
 	H5Pix_getPAM_Contents(argv[1], smallsprite);
 
+	size_t tileset_h, tileset_w;
+	if (argc > 3) {
+		H5Pix_getINFO_TilesetSize(argv[3], &tileset_h, &tileset_w);
+		char names[tileset_h][tileset_w][32];
+		for (size_t i = 0; i < tileset_h; i++){
+		for (size_t j = 0; j < tileset_w; j++){
+		for (size_t k = 0; k < 32; k++){
+		names[i][j][k] = 0;
+		}
+		}
+		}
+		TileCategory tags[tileset_h];
+		H5Render_Tileset tiles = { .tile_height = 0, .tile_width = 0,
+		                           .height = tileset_h, .width = tileset_w,
+		                           .padding = 0, .buffer = smallsprite,
+		                           .tags = &tags[0], .names = &names[0][0]};
+		H5Pix_getINFO_TilesetContents(argv[3], &tiles);
+		for (size_t i = 0; i < tileset_h; i++){
+		printf("\nROW %zu TYPE: %s\n", i, (tiles.tags[i] == tile_Symbol) ? "SYMBOL" : 
+		                                        ((tiles.tags[i] == tile_Sprite) ? "TILE_SPRITE" :
+		                                                 ((tiles.tags[i] == tile_Image) ? "IMAGE" :
+		                                                     "UNKNOWN"))
+		);
+		for (size_t j = 0; j < tileset_w; j++){
+		printf("Y: %zu - X: %zu - %s\n", i, j, MATRIX_INDEX(tiles.names, tiles.width, j, i));
+		}
+		}
+	}
+
 	char *endptr = NULL;
-	unsigned scale = strtoul(argv[2], &endptr, 10);
+	unsigned scale = (argc > 2) ? strtoul(argv[2], &endptr, 10) : 1;
 	h5uint buf[h*scale][w*scale];
     H5Render_PixelData sprite = { h*scale, w*scale, &buf[0][0] };
 	H5Render_scale(smallsprite, sprite, scale);
 
 	H5VI_Reference myref;
 	if (H5VI_init(&myref, h*scale, w*scale)) {
-	printf("ERROR: failed to initialize H5VI screen");
-	H5VI_destroy(&myref);
-	return 1;
+		printf("ERROR: failed to initialize H5VI screen");
+		H5VI_destroy(&myref);
+		return 1;
 	}
 	H5VI_setBuffer(&myref, &sprite);
-
 
 	while (1) {
 		char a[10] = {0};
@@ -307,7 +335,8 @@ int main(void)
 	}
 	}
 
-	H5Render_PixelData mybuf = {HCONSTANT, WCONSTANT, .data = &array_one[0][0]};
+	H5Render_PixelData mybuf = {HCONSTANT, WCONSTANT,
+	                            .data = &array_one[0][0]};
 	if (H5VI_init(&myref, HCONSTANT, WCONSTANT)) {
 	H5VI_destroy(&myref);
 	return 1;
@@ -318,7 +347,7 @@ int main(void)
 	while (1) {
 	_Bool exit = 0;
 	H5VI_setBuffer(&myref, &mybuf);
-	char a[20] = {0};
+	char a[128] = {0};
 	fgets(a, sizeof(a), stdin);
 	switch (a[0]) {
 	case 'q': /*Quit the program*/
@@ -339,6 +368,11 @@ int main(void)
 				       3, 0xF223);
 	    H5VI_setBuffer(&myref, &mybuf);
 	    break;
+	case '-':
+	    nanosleep(&(struct timespec){3, 0}, NULL);
+	    H5VI_setBuffer(&myref, &mybuf);
+	    nanosleep(&(struct timespec){1, 0}, NULL);
+	    	    
 	}
 	if (exit)
 	    break;

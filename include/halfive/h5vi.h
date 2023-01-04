@@ -104,7 +104,7 @@ typedef struct {
     */
 } H5VI_Reference;
 
-extern unsigned H5VI_Init(H5VI_Reference *buf, size_t h, size_t w);
+extern unsigned H5VI_init(H5VI_Reference *buf, size_t h, size_t w);
 /*Initialize display (following width w and height h, error if not possible),
 sound, and input, following the advice of the foo_enabled booleans, and modify
 those if can't enable graphics, sound, or input*/
