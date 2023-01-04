@@ -144,8 +144,7 @@ int main(int argc, char **argv)
 h5uint H5ASM_parse(char *linestr, H5VM_InstructionSet *inst, h5uint opnds[3])
 {
     char *token = h5strtok(
-	linestr, " "); /*linestr should not be const strictly speaking,
-			 but strtok behaves properly in this situation.*/
+	linestr, " "); /*linestr can not be const because it's modified by strtok*/
     H5VM_InstructionSet myinst;
     int i = 0;
     while ((token != NULL) && (i < 2)) {

@@ -159,7 +159,7 @@ s/[[:space:]]*[[:space:]]/ /g;
 s/^ //g;
 s/ )/)/g;'
 */
-H5Elq_Node *H5Elq_parse(char *in, H5Elq_NodeHeap *nodeheap)
+H5Elq_Node *H5Elq_parse(const char *in, H5Elq_NodeHeap *nodeheap)
 {
     H5Elq_Stack forkstack = {0};
     H5Elq_Node *root = H5Elq_appendNode(
