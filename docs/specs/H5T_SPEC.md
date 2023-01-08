@@ -6,7 +6,7 @@
 NOTE: Arguments between parentheses are variable and should be replaced according to their respective explanations.
 
 It is recommended to use the ".h5t" extension for H5T documents (where applicable).
-H5T is identified by the MIME type `text/h5t`
+H5T is identified by the MIME type `text/x-h5t`
 
 ### H5T is a format for storing racing game tracks
 ***

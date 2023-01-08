@@ -5,7 +5,7 @@
 H5NET is designed to work in any transport layer that is capable of handling packet payloads of up to 400 bytes, with *any* amount of packet loss and connection instability. As such, it performs no verification of player identity, but it is fairly trivial to extend it to do such a thing. It *should* be impossible to write a compliant, sane packet that exceeds 400 ASCII characters/bytes in length, however there is plenty of room to expand until the more realistic 1000+ bytes that most protocols can handle, which leaves rooms for extensions to touch this specification.
 
 It is recommended to use the ".h5net" extension for H5NET documents (where applicable).
-H5NET is identified by the MIME type `text/h5net`
+H5NET is identified by the MIME type `text/x-h5net`
 
 ### H5NET is a specification for racing game communication
 ***

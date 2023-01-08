@@ -4,13 +4,13 @@
 #### Copyright Nomagno 2021, 2022, 2023
 
 It is recommended to use the ".h5asm" extension for H5VM assembly documents (where applicable).
-H5VM assembly is identified by the MIME type `text/h5asm`
+H5VM assembly is identified by the MIME type `text/x-h5asm`
 
 It is recommended to use the ".h5bin" extension for H5VM binary executables (where applicable).
-H5VM binary drives are identified by the MIME type `application/h5bin`
+H5VM binary drives are identified by the MIME type `application/x-h5bin`
 
 It is recommended to use the ".h5drive" extension for H5VM read-only drives (where applicable).
-H5VM binary drives are identified by the MIME type `application/h5drive`
+H5VM binary drives are identified by the MIME type `application/x-h5drive`
 
 ### The Halfive virtual machine
 ***

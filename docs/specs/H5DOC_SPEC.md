@@ -3,7 +3,7 @@
 #### Copyright Nomagno 2021, 2022, 2023
 
 It is recommended to use the ".h5doc" extension for H5DOC documents (where applicable).
-H5DOC is identified by the MIME type `text/h5doc`
+H5DOC is identified by the MIME type `text/x-h5doc`
 
 ### H5DOC is a simple storage format for slightly nested data
 

@@ -3,7 +3,7 @@
 #### Copyright Nomagno 2021, 2022, 2023
 
 It is recommended to use the ".h5bmp" extension for H5BMP bitmaps (where applicable).
-H5BMP is identified by the MIME type `application/h5bmp`
+H5BMP is identified by the MIME type `application/x-h5bmp`
 
 ### H5BMP is a simple storage format for bitmaps
 

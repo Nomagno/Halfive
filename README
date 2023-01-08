@@ -32,23 +32,23 @@ SWP: Work in progress, stable
 List of specifications and corresponding MIME types:
 	Encoding formats:
 		Halfive Document (H5DOC)
-			- text/h5doc
+			- text/x-h5doc
 		Halfive Bitmap Format (H5BMP)
-			- application/h5bmp
+			- application/x-h5bmp
 		[ARCHIVED] Halfive Sound Format (H5SND)
 			- sound/flac
 	Domain-specific data formats:
 		Halfive Network (H5NET)
-			- text/h5net
+			- text/x-h5net
 		Halfive Track (H5T)
-			- text/h5t
+			- text/x-h5t
 	General-purpose tools:
 		Halfive Virtual Machine (H5VM)
-			- text/h5asm
-			- application/h5bin
-			- application/h5drive
+			- text/x-h5asm
+			- application/x-h5bin
+			- application/x-h5drive
 		Halfive Eloquent Lisp (H5Elq)
-			- text/h5elq
+			- text/x-h5elq
 
 If you read all specifications in the docs, you should be able to:
  - Use H5T   as a basic format for circuits
@@ -64,6 +64,7 @@ Bonus projects in this repo:
 	- Preprocessor for H5VM assembly                   (SWP) (src/core/h5vm/asmpp.sh)
 	- Generate an RSS feed from a directory            (SWP) (docs/news/genfeed.sh)
 	- Generate a traffic page from an nginx log file   (SWP) (docs/trafficgen.sh)
+	- Viewer for PAM files and tilesets (run 'make pamview' in src/core/, requires SDL2 headers) (SWP) (src/core/h5vi.c, part inside #ifdef H5VI_IMAGE_VIEWER)
 
 --- Licensing ---
 The whole project is released under the COIL license (SPDX: COIL-1.0). Please see each folder/file for individual licensing information.

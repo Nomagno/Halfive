@@ -3,7 +3,7 @@
 #### Copyright Nomagno 2022, 2023
 
 It is recommended to use the ".h5elq" extension for Eloquent code files (where applicable).
-Eloquent is identified by the MIME type `text/h5elq`
+Eloquent is identified by the MIME type `text/x-h5elq`
 
 ### Eloquent is a minimalistic Lisp dialect to abstract over H5VM programs
 
