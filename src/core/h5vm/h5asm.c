@@ -28,8 +28,9 @@ OF, OR IN CONNECTION WITH THE WORK OR THE USE OF OR OTHER DEALINGS IN THE
 WORK.*/
 
 #include <halfive/h5req.h>
-#include <halfive/h5stdlib.h>
+#include <halfive/h5vm/h5vm.h>
 #include <halfive/h5vm/h5asm.h>
+#include <halfive/h5stdlib.h>
 
 h5uint H5ASM_parse(char *linestr, H5VM_InstructionSet *inst, h5uint opnds[3]);
 H5VM_InstructionSet _isinst(char *instr);
@@ -41,191 +42,187 @@ H5VM_InstructionSet _isinst(char *instr);
 #include <stdio.h>
 int main(int argc, char **argv)
 {
+	FILE *codefile;
+	FILE *drivefile;
 
-    FILE *codefile;
-    FILE *drivefile;
+	if (argc == 1) codefile = stdin;
 
-    if (argc == 1)
-	codefile = stdin;
-
-    if (argc >= 2 && h5strcmp(argv[1], "-") == 0) {
-	codefile = stdin;
-    } else if (argc >= 2) {
-	codefile = fopen(argv[1], "r");
-    }
-
-    if (argc < 3) {
-	drivefile = fopen("/dev/null", "r");
-    } else {
-	drivefile = fopen(argv[2], "r");
-    }
-    char arr[30];
-
-    H5VM_CodeMemory code = {(H5VM_InstructionSet)0};
-    int i = 0;
-    while (fscanf(codefile, "%[^\n] ", arr) != EOF) {
-	H5ASM_Parse(arr, &code.inst[i], code.opnd[i]);
-	i += 1;
-    }
-
-    H5VM_DefaultMemSetup mem = {0};
-    H5VM_ReadWriteInfo rwinf = {0};
-    H5VM_GeneralMemory prog = H5VM_init(&code, &mem);
-    fread(mem.driv, 1, sizeof(mem.driv), drivefile);
-
-    int return_code = 0;
-    h5uint prevcode = 0;
-    while ((!prog.hf) && (!return_code)) {
-	prevcode = prog.co;
-	if ((prog.code.opnd[prog.co][0] ==
-	     0xFFFD) || /*Preemtive/non-polling-but-ontime input, cheats
-			  a bit by essentially peeking at the operands*/
-	    (prog.code.opnd[prog.co][1] == 0xFFFD)) {
-	    putchar('>');
-	    unsigned readin;
-	    scanf("%X", &readin);
-	    mem.in = readin;
+	if (argc >= 2 && h5streq(argv[1], "-")) {
+		codefile = stdin;
+	} else if (argc >= 2) {
+		codefile = fopen(argv[1], "r");
 	}
 
-	h5uint prevco = prog.co;
+	if (argc < 3) {
+		drivefile = fopen("/dev/null", "r");
+	} else {
+		drivefile = fopen(argv[2], "r");
+	}
+	char arr[30];
+
+	H5VM_CodeMemory code = {(H5VM_InstructionSet)0};
+	int i				 = 0;
+	while (fscanf(codefile, "%[^\n] ", arr) != EOF) {
+		H5ASM_Parse(arr, &code.inst[i], code.opnd[i]);
+		i += 1;
+	}
+
+	H5VM_DefaultMemSetup mem = {0};
+	H5VM_ReadWriteInfo rwinf = {0};
+	H5VM_GeneralMemory prog	 = H5VM_init(&code, &mem);
+	fread(mem.driv, 1, sizeof(mem.driv), drivefile);
+
+	int return_code = 0;
+	h5uint prevcode = 0;
+	while ((!prog.hf) && (!return_code)) {
+		prevcode = prog.co;
+		if ((prog.code.opnd[prog.co][0] ==
+				0xFFFD) || /*Preemtive/non-polling-but-ontime input, cheats
+					 a bit by essentially peeking at the operands*/
+			(prog.code.opnd[prog.co][1] == 0xFFFD)) {
+			putchar('>');
+			unsigned readin;
+			scanf("%X", &readin);
+			mem.in = readin;
+		}
+
+		h5uint prevco = prog.co;
 
 #ifdef H5ASM_VERBOSE
-	printf(
-	    "BEFORE: PC %4u -- %u, %u, %u, %u, %u, %u, %4X (%2X), %4X (%2X)\n",
-	    prog.co, rwinf.was_err, rwinf.wrote_adrw, rwinf.read_adrw,
-	    rwinf.read_adrr, rwinf.write_zf, rwinf.write_cf, rwinf.adrw,
-	    *prog.data[rwinf.adrw], rwinf.adrr, *prog.data[rwinf.adrr]);
+		printf(
+			"BEFORE: PC %4u -- %u, %u, %u, %u, %u, %u, %4X (%2X), %4X (%2X)\n",
+			prog.co, rwinf.was_err, rwinf.wrote_adrw, rwinf.read_adrw,
+			rwinf.read_adrr, rwinf.write_zf, rwinf.write_cf, rwinf.adrw,
+			*prog.data[rwinf.adrw], rwinf.adrr, *prog.data[rwinf.adrr]);
 #endif
-	return_code = H5VM_execute(&prog, &rwinf);
+		return_code = H5VM_execute(&prog, &rwinf);
 
-	if ((rwinf.adrw == 0xFFFC) && (rwinf.wrote_adrw)) {
+		if ((rwinf.adrw == 0xFFFC) && (rwinf.wrote_adrw)) {
 #ifdef H5ASM_VERBOSE
-	    printf("OUTPUT at PC %4u: %X\n", prevco, mem.ou);
+			printf("OUTPUT at PC %4u: %X\n", prevco, mem.ou);
 #else
-	    printf("OU: %X\n", mem.ou);
+			printf("OU: %X\n", mem.ou);
 #endif
-	}
+		}
 
 #ifdef H5ASM_VERBOSE
-	printf(
-	    "AFTER:  PC %4u -- %u, %u, %u, %u, %u, %u, %4X (%2X), %4X (%2X)\n",
-	    prog.co, rwinf.was_err, rwinf.wrote_adrw, rwinf.read_adrw,
-	    rwinf.read_adrr, rwinf.write_zf, rwinf.write_cf, rwinf.adrw,
-	    *prog.data[rwinf.adrw], rwinf.adrr, *prog.data[rwinf.adrr]);
-	putchar('\n');
+		printf(
+			"AFTER:  PC %4u -- %u, %u, %u, %u, %u, %u, %4X (%2X), %4X (%2X)\n",
+			prog.co, rwinf.was_err, rwinf.wrote_adrw, rwinf.read_adrw,
+			rwinf.read_adrr, rwinf.write_zf, rwinf.write_cf, rwinf.adrw,
+			*prog.data[rwinf.adrw], rwinf.adrr, *prog.data[rwinf.adrr]);
+		putchar('\n');
 #endif
-    }
-
-    fclose(codefile);
-    fclose(drivefile);
-    if (prog.hf)
-	printf("HALT\n");
-    else {
-	switch (return_code) {
-	case 1:
-	    printf("ERROR AT INST 0x%X: READ/WRITE UNMAPPED MEM\n", prog.co);
-	    break;
-	case 2:
-	    printf("ERROR AT INST 0x%X: WRITE TO READ-ONLY MEM\n", prog.co);
-	    break;
-	case 3:
-	    printf("ERROR AT INST 0x%X: WRONG ADDRESSING MODE\n", prog.co);
-	    break;
-	default:
-	    printf("ERROR AT INST 0x%X: UNKNOWN ERROR %u\n", prog.co,
-		   return_code);
-	    break;
 	}
-    }
-    return return_code;
+
+	fclose(codefile);
+	fclose(drivefile);
+	if (prog.hf) printf("HALT\n");
+	else {
+		switch (return_code) {
+		case 1:
+			printf("ERROR AT INST 0x%X: READ/WRITE UNMAPPED MEM\n", prog.co);
+			break;
+		case 2:
+			printf("ERROR AT INST 0x%X: WRITE TO READ-ONLY MEM\n", prog.co);
+			break;
+		case 3:
+			printf("ERROR AT INST 0x%X: WRONG ADDRESSING MODE\n", prog.co);
+			break;
+		default:
+			printf(
+				"ERROR AT INST 0x%X: UNKNOWN ERROR %u\n", prog.co, return_code);
+			break;
+		}
+	}
+	return return_code;
 }
 #endif
 
 h5uint H5ASM_parse(char *linestr, H5VM_InstructionSet *inst, h5uint opnds[3])
 {
-    char *token = h5strtok(
-	linestr, " "); /*linestr can not be const because it's modified by strtok*/
-    H5VM_InstructionSet myinst;
-    int i = 0;
-    while ((token != NULL) && (i < 2)) {
-	if ((myinst = _isinst(token)) != 16) {
-	    *inst = myinst;
-	} else if (_isxupdigit(token[0])) {
-	    opnds[i] = (h5uint)h5strtoul(token, NULL, 16);
-	    i += 1;
-	} else if (token[0] == '=') {
-	    token += 1;
-	    opnds[i] = (h5uint)h5strtoul(token, NULL, 16);
+	char *token = h5strtok(linestr,
+		" "); /*linestr can not be const because it's modified by strtok*/
+	H5VM_InstructionSet myinst;
+	int i = 0;
+	while ((token != NULL) && (i < 2)) {
+		if ((myinst = _isinst(token)) != 16) {
+			*inst = myinst;
+		} else if (_isxupdigit(token[0])) {
+			opnds[i] = (h5uint)h5strtoul(token, NULL, 16);
+			i += 1;
+		} else if (token[0] == '=') {
+			token += 1;
+			opnds[i] = (h5uint)h5strtoul(token, NULL, 16);
 
-	    opnds[2] = (opnds[2] | (1 << (1 - i)));
+			opnds[2] = (opnds[2] | (1 << (1 - i)));
 
-	    i += 1;
-	} else if (token[0] == '*') {
-	    token += 1;
-	    opnds[i] = (h5uint)h5strtoul(token, NULL, 16);
-	    opnds[2] = (opnds[2] | 8);
-	    opnds[2] = (opnds[2] | (1 << (1 - i)));
+			i += 1;
+		} else if (token[0] == '*') {
+			token += 1;
+			opnds[i] = (h5uint)h5strtoul(token, NULL, 16);
+			opnds[2] = (opnds[2] | 8);
+			opnds[2] = (opnds[2] | (1 << (1 - i)));
 
-	    i += 1;
-	} else {
-	    return 2; /*CATASTROPHIC ERROR*/
+			i += 1;
+		} else {
+			return 2; /*CATASTROPHIC ERROR*/
+		}
+		token = h5strtok(NULL, " ");
 	}
-	token = h5strtok(NULL, " ");
-    }
-    return 0;
+	return 0;
 }
 
 h5uint _isxupdigit(h5uchar inchar)
 {
-    if ((inchar == 'A') || (inchar == 'a') || (inchar == 'B') ||
-	(inchar == 'b') || (inchar == 'C') || (inchar == 'c') ||
-	(inchar == 'D') || (inchar == 'd') || (inchar == 'E') ||
-	(inchar == 'e') || (inchar == 'F') || (inchar == 'f') ||
-	(inchar == '0') || (inchar == '1') || (inchar == '2') ||
-	(inchar == '3') || (inchar == '4') || (inchar == '5') ||
-	(inchar == '6') || (inchar == '7') || (inchar == '8') ||
-	(inchar == '9'))
-	return 1;
-    else
-	return 0;
+	if ((inchar == 'A') || (inchar == 'a') || (inchar == 'B') ||
+		(inchar == 'b') || (inchar == 'C') || (inchar == 'c') ||
+		(inchar == 'D') || (inchar == 'd') || (inchar == 'E') ||
+		(inchar == 'e') || (inchar == 'F') || (inchar == 'f') ||
+		(inchar == '0') || (inchar == '1') || (inchar == '2') ||
+		(inchar == '3') || (inchar == '4') || (inchar == '5') ||
+		(inchar == '6') || (inchar == '7') || (inchar == '8') ||
+		(inchar == '9'))
+		return 1;
+	else
+		return 0;
 }
 
 H5VM_InstructionSet _isinst(char *instr)
 {
-    if (h5strcmp(instr, "halt") == 0)
-	return Inst_halt;
-    else if (h5strcmp(instr, "nop") == 0)
-	return Inst_nop;
-    else if (h5strcmp(instr, "jmp") == 0)
-	return Inst_jmp;
-    else if (h5strcmp(instr, "skpz") == 0)
-	return Inst_skpz;
-    else if (h5strcmp(instr, "skmz") == 0)
-	return Inst_skmz;
+	if (h5streq(instr, "halt")) return Inst_halt;
+	else if (h5streq(instr, "nop"))
+		return Inst_nop;
+	else if (h5streq(instr, "jmp"))
+		return Inst_jmp;
+	else if (h5streq(instr, "skpz"))
+		return Inst_skpz;
+	else if (h5streq(instr, "skmz"))
+		return Inst_skmz;
 
-    else if (h5strcmp(instr, "set") == 0)
-	return Inst_set;
-    else if (h5strcmp(instr, "add") == 0)
-	return Inst_add;
-    else if (h5strcmp(instr, "sub") == 0)
-	return Inst_sub;
-    else if (h5strcmp(instr, "and") == 0)
-	return Inst_and;
-    else if (h5strcmp(instr, "or") == 0)
-	return Inst_or;
-    else if (h5strcmp(instr, "xor") == 0)
-	return Inst_xor;
-    else if (h5strcmp(instr, "shift") == 0)
-	return Inst_shift;
-    else if (h5strcmp(instr, "cmp") == 0)
-	return Inst_cmp;
+	else if (h5streq(instr, "set"))
+		return Inst_set;
+	else if (h5streq(instr, "add"))
+		return Inst_add;
+	else if (h5streq(instr, "sub"))
+		return Inst_sub;
+	else if (h5streq(instr, "and"))
+		return Inst_and;
+	else if (h5streq(instr, "or"))
+		return Inst_or;
+	else if (h5streq(instr, "xor"))
+		return Inst_xor;
+	else if (h5streq(instr, "shift"))
+		return Inst_shift;
+	else if (h5streq(instr, "cmp"))
+		return Inst_cmp;
 
-    else if (h5strcmp(instr, "func") == 0)
-	return Inst_func;
-    else if (h5strcmp(instr, "ret") == 0)
-	return Inst_ret;
-    else if (h5strcmp(instr, "call") == 0)
-	return Inst_call;
-    else
-	return (H5VM_InstructionSet)16;
+	else if (h5streq(instr, "func"))
+		return Inst_func;
+	else if (h5streq(instr, "ret"))
+		return Inst_ret;
+	else if (h5streq(instr, "call"))
+		return Inst_call;
+	else
+		return (H5VM_InstructionSet)16;
 }

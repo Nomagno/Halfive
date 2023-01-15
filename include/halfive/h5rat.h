@@ -38,21 +38,21 @@ WORK.*/
 #define NEG_SIGN (1)
 
 typedef struct {
-    _Bool sign;
-    h5uint num;
-    h5uint denom;
+	_Bool sign;
+	h5uint num;
+	h5uint denom;
 } H5Rat_uint;
 
 typedef struct {
-    _Bool sign;
-    h5ulong num;
-    h5ulong denom;
+	_Bool sign;
+	h5ulong num;
+	h5ulong denom;
 } H5Rat_ulong;
 
 typedef struct {
-    _Bool sign;
-    h5umax num;
-    h5umax denom;
+	_Bool sign;
+	h5umax num;
+	h5umax denom;
 } H5Rat_umax;
 
 h5uint H5Rat_uint_gcd(h5uint a, h5uint b);

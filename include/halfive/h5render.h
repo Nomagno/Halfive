@@ -32,61 +32,43 @@ WORK.*/
 #ifndef H5RENDER_H
 #define H5RENDER_H
 
-#include <halfive/h5math.h>
 #include <halfive/h5req.h>
+#include <halfive/h5math.h>
 
 /*Pixels are RGBA 16-bit 5551 format*/
-#define RGB(r, g, b)                                                           \
-    ((CAP(r, 0x20) << 11) | (CAP(g, 0x20) << 6) | (CAP(b, 0x20) << 1))
-#define RGBA(r, g, b, a)                                                       \
-    ((CAP(r, 0x20) << 11) | (CAP(g, 0x20) << 6) | (CAP(b, 0x20) << 1) | !!(a))
-#define ALPHA_ON(n) (n | 0x0001)
-#define ALPHA_OFF(n) (n & (~0x0001))
+#define RGB(r, g, b) \
+	((CAP(r, 0x20) << 11) | (CAP(g, 0x20) << 6) | (CAP(b, 0x20) << 1))
+#define RGBA(r, g, b, a) \
+	((CAP(r, 0x20) << 11) | (CAP(g, 0x20) << 6) | (CAP(b, 0x20) << 1) | !!(a))
+#define ALPHA_ON(n)		(n | 0x0001)
+#define ALPHA_OFF(n)	(n & (~0x0001))
 #define ALPHA_TOGGLE(n) (n ^ 0x0001)
 
 /*Pixel buffer*/
-#define MATRIX_GET(var, x, y) (var).data[(((y) * (var).width) + (x))]
+#define MATRIX_GET(var, x, y)	   (var).data[(((y) * (var).width) + (x))]
 #define MATRIX_INDEX(var, w, x, y) var[(((y) * (w)) + (x))]
 
-#define POINT_U(x, y)                                                          \
-    (h5point_uint)                                                             \
-    {                                                                          \
-	x, y                                                                   \
-    }
-#define POINT_UL(x, y)                                                         \
-    (h5point_ulong)                                                            \
-    {                                                                          \
-	x, y                                                                   \
-    }
-#define POINT_UM(x, y)                                                         \
-    (h5point_umax)                                                             \
-    {                                                                          \
-	x, y                                                                   \
-    }
-#define POINT_I(x, y)                                                          \
-    (h5point_sint)                                                             \
-    {                                                                          \
-	x, y                                                                   \
-    }
-#define POINT_L(x, y)                                                          \
-    (h5point_slong)                                                            \
-    {                                                                          \
-	x, y                                                                   \
-    }
-#define POINT_M(x, y)                                                          \
-    (h5point_smax)                                                             \
-    {                                                                          \
-	x, y                                                                   \
-    }
+#define POINT_U(x, y) \
+	(h5point_uint) { x, y }
+#define POINT_UL(x, y) \
+	(h5point_ulong) { x, y }
+#define POINT_UM(x, y) \
+	(h5point_umax) { x, y }
+#define POINT_I(x, y) \
+	(h5point_sint) { x, y }
+#define POINT_L(x, y) \
+	(h5point_slong) { x, y }
+#define POINT_M(x, y) \
+	(h5point_smax) { x, y }
 
 typedef struct {
-    size_t height;
-    size_t width;
-    h5uint *data;
+	size_t height;
+	size_t width;
+	h5uint *data;
 } H5Render_PixelData;
 
 typedef enum {
-	tile_None=0,
+	tile_None = 0,
 	tile_Symbol,
 	tile_Sprite,
 	tile_Image
@@ -94,37 +76,36 @@ typedef enum {
 
 typedef struct {
 	size_t tile_height; /*In pixels*/
-	size_t tile_width;  /*In pixels*/
-	size_t height;      /*In tiles */
-	size_t width;       /*In tiles */
-	unsigned padding;   /*How many pixels are used as padding between tiles*/
+	size_t tile_width;	/*In pixels*/
+	size_t height;		/*In tiles */
+	size_t width;		/*In tiles */
+	unsigned padding;	/*How many pixels are used as padding between tiles*/
 	H5Render_PixelData buffer;
 	TileCategory *tags; /*Array of size [height], indicates                */
-	                    /*the category tag of each row of tiles            */
-	char (*names)[32];  /*2D string array of size [height*width],          */
-	                    /*indicates the machine readable name of each tile*/
+						/*the category tag of each row of tiles            */
+	char (*names)[32];	/*2D string array of size [height*width],          */
+						/*indicates the machine readable name of each tile*/
 } H5Render_Tileset;
-
 
 void H5Render_fill(H5Render_PixelData surf, h5uint colour);
 
-void H5Render_scale(H5Render_PixelData insurf, H5Render_PixelData outsurf, unsigned scale_factor);
+void H5Render_scale(H5Render_PixelData insurf, H5Render_PixelData outsurf,
+	unsigned scale_factor);
 
 void H5Render_getTile(H5Render_Tileset *tileset, H5Render_PixelData outsurf,
-                      size_t row, size_t column);
+	size_t row, size_t column);
 
 void H5Render_slong_getLinePoints(h5point_slong p1, h5point_slong p2,
-				  h5uint length, h5point_slong *ret, size_t n);
-int H5Render_ulong_getRasterInfo(h5point_ulong p1, h5point_ulong p2,
-				 h5ulong edges[][2], size_t n);
-void H5Render_ulong_drawLine(H5Render_PixelData surf, h5point_ulong p1,
-			     h5point_ulong p2, h5uint colour);
-void H5Render_ulong_drawPolygon(H5Render_PixelData surf, h5point_ulong *points,
-				size_t n, h5uint colour);
+	h5uint length, h5point_slong *ret, size_t n);
+int H5Render_ulong_getRasterInfo(
+	h5point_ulong p1, h5point_ulong p2, h5ulong edges[][2], size_t n);
+void H5Render_ulong_drawLine(
+	H5Render_PixelData surf, h5point_ulong p1, h5point_ulong p2, h5uint colour);
+void H5Render_ulong_drawPolygon(
+	H5Render_PixelData surf, h5point_ulong *points, size_t n, h5uint colour);
 
 void H5Render_ulong_drawTriangle(H5Render_PixelData surf, h5point_ulong p1,
-				 h5point_ulong p2, h5point_ulong p3,
-				 h5uint colour);
+	h5point_ulong p2, h5point_ulong p3, h5uint colour);
 void H5Render_ulong_drawLineSize(H5Render_PixelData surf, h5point_ulong p1,
-				 h5point_ulong p2, h5uint colour, h5uint size);
+	h5point_ulong p2, h5uint colour, h5uint size);
 #endif

@@ -32,54 +32,54 @@ WORK.*/
 #ifndef H5T_H
 #define H5T_H
 
-#include <halfive/h5math.h>
 #include <halfive/h5req.h>
+#include <halfive/h5math.h>
 
 enum H5T_TimeEnum { H5T_TimeDay, H5T_TimeNight };
 enum H5T_SpeedEnum { H5T_NormalBoost, H5T_Boost, H5T_AntiBoost };
 enum H5T_FinishEnum { H5T_NoFinish, H5T_FinishLine, H5T_Checkpoint };
 enum H5T_RailEnum { H5T_NoRails, H5T_RailMetal, H5T_RailElectric };
 enum H5T_BiomeEnum {
-    H5T_BiomeSnow,
-    H5T_BiomeLava,
-    H5T_BiomeLake,
-    H5T_BiomeDesert,
-    H5T_BiomeForest,
-    H5T_BiomeRosegarden
+	H5T_BiomeSnow,
+	H5T_BiomeLava,
+	H5T_BiomeLake,
+	H5T_BiomeDesert,
+	H5T_BiomeForest,
+	H5T_BiomeRosegarden
 };
 enum H5T_ColourEnum {
-    H5T_ColourWhite,
-    H5T_ColourRed,
-    H5T_ColourBlue,
-    H5T_ColourYellow,
-    H5T_ColourGreen,
-    H5T_ColourPink
+	H5T_ColourWhite,
+	H5T_ColourRed,
+	H5T_ColourBlue,
+	H5T_ColourYellow,
+	H5T_ColourGreen,
+	H5T_ColourPink
 };
 
 struct H5T_Biome {
-    enum H5T_ColourEnum colour;
-    enum H5T_BiomeEnum biome;
+	enum H5T_ColourEnum colour;
+	enum H5T_BiomeEnum biome;
 };
 
 struct H5T_Segment {
-    h5bezier_ulong inner_shape;
-    h5bezier_ulong outer_shape;
+	h5bezier_ulong inner_shape;
+	h5bezier_ulong outer_shape;
 
-    enum H5T_SpeedEnum speed;
-    enum H5T_FinishEnum racing_line;
-    enum H5T_RailEnum guardrails;
+	enum H5T_SpeedEnum speed;
+	enum H5T_FinishEnum racing_line;
+	enum H5T_RailEnum guardrails;
 };
 
 /*Memory footprint worst-case scenario: 256 bytes*/
 typedef struct {
-    char name[20];
+	char name[20];
 
-    struct H5T_Biome biome;
-    enum H5T_TimeEnum time;
-    h5uchar max_players;
+	struct H5T_Biome biome;
+	enum H5T_TimeEnum time;
+	h5uchar max_players;
 
-    h5uint segment_number;
-    struct H5T_Segment segments[40];
+	h5uint segment_number;
+	struct H5T_Segment segments[40];
 } H5T_Circuit;
 
 extern unsigned H5T_parse(const char *instring, H5T_Circuit *outstruct);

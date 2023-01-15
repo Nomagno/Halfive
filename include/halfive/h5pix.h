@@ -46,12 +46,14 @@ MAXVAL 255
 TUPLTYPE RGB_ALPHA
 ENDHDR
 --------
-Followed by a single image's raw data (substitute h and w with the height and width in ASCII decimal)
+Followed by a single image's raw data (substitute h and w with the height and
+width in ASCII decimal)
 */
 int H5Pix_getPAM_Size(const char *filename, size_t *height, size_t *width);
 int H5Pix_getPAM_Contents(const char *filename, H5Render_PixelData buf);
 
-
-int H5Pix_getINFO_TilesetSize(const char *filename, size_t *height, size_t *width);
-int H5Pix_getINFO_TilesetContents(const char *filename, H5Render_Tileset *out_tileset);
+int H5Pix_getINFO_TilesetSize(
+	const char *filename, size_t *height, size_t *width);
+int H5Pix_getINFO_TilesetContents(
+	const char *filename, H5Render_Tileset *out_tileset);
 #endif

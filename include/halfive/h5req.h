@@ -18,10 +18,10 @@
 /*VM Simulation is supported on this system*/
 #define H5PHY_VM_SIMULATE
 
-#if (!defined(UINT8_MAX)) || (!defined(UINT16_MAX)) ||                         \
-    (!defined(UINT32_MAX)) || (!defined(UINTMAX_MAX)) ||                       \
-    (!defined(INT8_MAX)) || (!defined(INT16_MAX)) || (!defined(INT32_MAX)) ||  \
-    (!defined(INTMAX_MAX)) || (!defined(SIZE_MAX)) || (!defined(SSIZE_MAX))
+#if (!defined(UINT8_MAX)) || (!defined(UINT16_MAX)) ||                        \
+	(!defined(UINT32_MAX)) || (!defined(UINTMAX_MAX)) ||                      \
+	(!defined(INT8_MAX)) || (!defined(INT16_MAX)) || (!defined(INT32_MAX)) || \
+	(!defined(INTMAX_MAX)) || (!defined(SIZE_MAX)) || (!defined(SSIZE_MAX))
 #error error : \
 One of the following types is missing; \
 uint8_t, uint16_t, uint32_t, uintmax_t, \
@@ -34,9 +34,9 @@ size_t, ssize_t
 #define H5FLT_MAX FLT_MAX
 #define H5FLT_MIN FLT_MIN
 typedef float h5float;
-#define TLR 0.1f /*Default tolerance for comparisons*/
+#define TLR						  0.1f /*Default tolerance for comparisons*/
 #define _FLT_CMP(a, b, tolerance) (ABS(a - b) <= tolerance)
-#define H5FLT_CMP(a, b) _FLT_CMP(a, b, TLR)
+#define H5FLT_CMP(a, b)			  _FLT_CMP(a, b, TLR)
 #endif
 
 #define H5UCHAR_MAX UINT8_MAX
