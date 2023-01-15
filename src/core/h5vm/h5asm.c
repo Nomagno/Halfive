@@ -45,7 +45,8 @@ int main(int argc, char **argv)
 	FILE *codefile;
 	FILE *drivefile;
 
-	if (argc == 1) codefile = stdin;
+	if (argc == 1)
+		codefile = stdin;
 
 	if (argc >= 2 && h5streq(argv[1], "-")) {
 		codefile = stdin;
@@ -117,7 +118,8 @@ int main(int argc, char **argv)
 
 	fclose(codefile);
 	fclose(drivefile);
-	if (prog.hf) printf("HALT\n");
+	if (prog.hf)
+		printf("HALT\n");
 	else {
 		switch (return_code) {
 		case 1:
@@ -190,7 +192,8 @@ h5uint _isxupdigit(h5uchar inchar)
 
 H5VM_InstructionSet _isinst(char *instr)
 {
-	if (h5streq(instr, "halt")) return Inst_halt;
+	if (h5streq(instr, "halt"))
+		return Inst_halt;
 	else if (h5streq(instr, "nop"))
 		return Inst_nop;
 	else if (h5streq(instr, "jmp"))

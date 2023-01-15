@@ -226,7 +226,8 @@ h5point_smax H5Math_smax_getBezierPoint(h5bezier_smax curve, float t)
 
 h5slong h5_abs(h5slong a)
 {
-	if (a < 0) return -a;
+	if (a < 0)
+		return -a;
 	else
 		return a;
 }

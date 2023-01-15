@@ -193,11 +193,17 @@ unsigned H5VM_execute(H5VM_GeneralMemory *program, H5VM_ReadWriteInfo *rwinf)
 			  place, so it's an error code*/
 
 	switch (program->code.inst[_PROG_CO]) {
-	case Inst_halt: program->hf = 1; break;
-	case Inst_nop: _PROG_CO += 1; break;
-	case Inst_jmp: goto _jmp;
+	case Inst_halt:
+		program->hf = 1;
+		break;
+	case Inst_nop:
+		_PROG_CO += 1;
+		break;
+	case Inst_jmp:
+		goto _jmp;
 	case Inst_skpz:
-		if (*(DATA[_ZF]) == 0) _PROG_CO += CURR_OP[0];
+		if (*(DATA[_ZF]) == 0)
+			_PROG_CO += CURR_OP[0];
 		_PROG_CO += 1;
 		break;
 	case Inst_skmz:

@@ -45,7 +45,8 @@ sulong _h5libcstrtoul(char *nptr, char **endptr, int base)
 		case '\n':
 		case '\f':
 		case '\r':
-		case '\v': continue;
+		case '\v':
+			continue;
 		}
 		break;
 	}
@@ -54,19 +55,23 @@ sulong _h5libcstrtoul(char *nptr, char **endptr, int base)
 	 * Sign
 	 */
 	if (*p == '-' || *p == '+')
-		if (*p++ == '-') neg = 1;
+		if (*p++ == '-')
+			neg = 1;
 
 	/*
 	 * Base
 	 */
 	if (base == 0) {
-		if (*p != '0') base = 10;
+		if (*p != '0')
+			base = 10;
 		else {
 			base = 8;
-			if (p[1] == 'x' || p[1] == 'X') base = 16;
+			if (p[1] == 'x' || p[1] == 'X')
+				base = 16;
 		}
 	}
-	if (base < 2 || 36 < base) goto Return;
+	if (base < 2 || 36 < base)
+		goto Return;
 	if (base == 16 && *p == '0') {
 		if (p[1] == 'x' || p[1] == 'X')
 			if (('0' <= p[2] && p[2] <= '9') || ('a' <= p[2] && p[2] <= 'f') ||
@@ -81,23 +86,31 @@ sulong _h5libcstrtoul(char *nptr, char **endptr, int base)
 	for (;; p++, ndig++) {
 		c = *p;
 		v = base;
-		if ('0' <= c && c <= '9') v = c - '0';
+		if ('0' <= c && c <= '9')
+			v = c - '0';
 		else if ('a' <= c && c <= 'z')
 			v = c - 'a' + 10;
 		else if ('A' <= c && c <= 'Z')
 			v = c - 'A' + 10;
-		if (v >= base) break;
-		if (n > m) ovfl = 1;
+		if (v >= base)
+			break;
+		if (n > m)
+			ovfl = 1;
 		nn = n * base + v;
-		if (nn < n) ovfl = 1;
+		if (nn < n)
+			ovfl = 1;
 		n = nn;
 	}
 
 Return:
-	if (ndig == 0) p = nptr;
-	if (endptr) *endptr = p;
-	if (ovfl) return ULONG_MAX;
-	if (neg) return -n;
+	if (ndig == 0)
+		p = nptr;
+	if (endptr)
+		*endptr = p;
+	if (ovfl)
+		return ULONG_MAX;
+	if (neg)
+		return -n;
 	return n;
 }
 
@@ -109,10 +122,12 @@ int _h5libcstrcmp(char *s1, char *s2)
 		c1 = *s1++;
 		c2 = *s2++;
 		if (c1 != c2) {
-			if (c1 > c2) return 1;
+			if (c1 > c2)
+				return 1;
 			return -1;
 		}
-		if (c1 == 0) return 0;
+		if (c1 == 0)
+			return 0;
 	}
 }
 
@@ -123,10 +138,12 @@ char *_h5libcstrtok(char *s, char *b)
 
 	while (*b)
 		map[*(suchar *)b++] = 1;
-	if (s == 0) s = under_rock;
+	if (s == 0)
+		s = under_rock;
 	while (map[*(suchar *)s++])
 		;
-	if (*--s == 0) return 0;
+	if (*--s == 0)
+		return 0;
 	os = s;
 	while (map[*(suchar *)s] == 0)
 		if (*s++ == 0) {
@@ -179,7 +196,8 @@ void *_h5libcmemcpy(void *dest, const void *src, size_t n)
 char *_h5libcstrncpy(char *dest, const char *src, size_t n)
 {
 	for (size_t i = 0; (i < n) || (src[i] != '\0'); i++) {
-		if (i < n) dest[i] = src[i];
+		if (i < n)
+			dest[i] = src[i];
 		else
 			dest[i] = '\0';
 	}

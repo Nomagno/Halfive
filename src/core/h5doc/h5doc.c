@@ -72,7 +72,8 @@ unsigned H5DOC_increaseChildnum(
 			} else {
 				return 1; /*Out of bounds*/
 			}
-			if (i == 0) return 0; /*Successful*/
+			if (i == 0)
+				return 0; /*Successful*/
 		}
 	} else {
 		return 0; /*Stackptr is uninitialized*/
@@ -200,9 +201,12 @@ unsigned H5DOC_parse(const char *input, unsigned tok_size, H5DOC_Token *toks)
 			break;
 		}
 		i++;
-		if (endreached) { break; }
+		if (endreached) {
+			break;
+		}
 	}
-	if (endreached) return j; /*Number of tokens read*/
+	if (endreached)
+		return j; /*Number of tokens read*/
 	else
 		return 0; /*Insufficient space*/
 }

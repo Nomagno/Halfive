@@ -93,7 +93,9 @@ unsigned H5VI_init(H5VI_Reference *ref, size_t h, size_t w)
 {
 #if defined(H5VI_AUDIOSERV_IMPL_SDL2)
 	int initerror = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-	if (initerror) { return 1; }
+	if (initerror) {
+		return 1;
+	}
 	const SDL_AudioSpec dessound = {.freq = 32000,
 		.format							  = AUDIO_U16LSB,
 		.channels						  = 1,
@@ -107,7 +109,9 @@ unsigned H5VI_init(H5VI_Reference *ref, size_t h, size_t w)
 	SDL_PauseAudioDevice(globalref.globstream, 0);
 #else
 	int initerror = SDL_Init(SDL_INIT_VIDEO);
-	if (initerror) { return 1; }
+	if (initerror) {
+		return 1;
+	}
 #endif
 
 	globalref.globwindow = SDL_CreateWindow("Halfive Visual Engine",
@@ -303,8 +307,12 @@ int main(int argc, char **argv)
 		char a[10] = {0};
 		fgets(a, sizeof(a), stdin);
 		switch (a[0]) {
-		case 'q': goto exit; break;
-		case 'r': nanosleep(&(struct timespec){3, 0}, NULL); break;
+		case 'q':
+			goto exit;
+			break;
+		case 'r':
+			nanosleep(&(struct timespec){3, 0}, NULL);
+			break;
 		}
 		H5VI_setBuffer(&myref, &sprite);
 	}
@@ -345,7 +353,9 @@ int main(void)
 		char a[128] = {0};
 		fgets(a, sizeof(a), stdin);
 		switch (a[0]) {
-		case 'q': /*Quit the program*/ exit = 1; break;
+		case 'q': /*Quit the program*/
+			exit = 1;
+			break;
 		case 'r': /*Reload screen in 3 seconds*/
 			nanosleep(&(struct timespec){3, 0}, NULL);
 			break;
@@ -372,7 +382,8 @@ int main(void)
 			H5VI_setBuffer(&myref, &mybuf);
 			nanosleep(&(struct timespec){1, 0}, NULL);
 		}
-		if (exit) break;
+		if (exit)
+			break;
 	}
 
 	H5VI_destroy(&myref);

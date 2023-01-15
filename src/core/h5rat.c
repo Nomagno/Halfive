@@ -56,7 +56,8 @@ h5uint H5Rat_uint_gcd(h5uint a, h5uint b)
 {
 	h5uint tmp;
 	while (b != 0) {
-		if (b > a) H5Rat_uint_xorSwap(&a, &b);
+		if (b > a)
+			H5Rat_uint_xorSwap(&a, &b);
 		else
 			tmp = b, b = a % b, a = tmp;
 	}
@@ -66,7 +67,8 @@ h5ulong H5Rat_ulong_gcd(h5ulong a, h5ulong b)
 {
 	h5ulong tmp;
 	while (b != 0) {
-		if (b > a) H5Rat_ulong_xorSwap(&a, &b);
+		if (b > a)
+			H5Rat_ulong_xorSwap(&a, &b);
 		else
 			tmp = b, b = a % b, a = tmp;
 	}
@@ -76,7 +78,8 @@ h5umax H5Rat_umax_gcd(h5umax a, h5umax b)
 {
 	h5umax tmp;
 	while (b != 0) {
-		if (b > a) H5Rat_umax_xorSwap(&a, &b);
+		if (b > a)
+			H5Rat_umax_xorSwap(&a, &b);
 		else
 			tmp = b, b = a % b, a = tmp;
 	}

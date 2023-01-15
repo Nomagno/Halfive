@@ -78,15 +78,18 @@ void H5Render_ulong_drawLine(
 
 	while (1) {
 		MATRIX_GET(surf, p1.x, p1.y) = colour;
-		if ((p1.x == p2.x) && (p1.y == p2.y)) break;
+		if ((p1.x == p2.x) && (p1.y == p2.y))
+			break;
 		h5slong e2 = 2 * error;
 		if (e2 >= diffy) {
-			if (p1.x == p2.x) break;
+			if (p1.x == p2.x)
+				break;
 			error += diffy;
 			p1.x += signx;
 		}
 		if (e2 <= diffx) {
-			if (p1.y == p2.y) break;
+			if (p1.y == p2.y)
+				break;
 			error += diffx;
 			p1.y += signy;
 		}
@@ -105,18 +108,22 @@ int H5Render_ulong_getRasterInfo(
 
 	size_t i;
 	for (i = 0; i < n; i++) {
-		if (p1.x < edges[p1.y][0]) edges[p1.y][0] = p1.x;
+		if (p1.x < edges[p1.y][0])
+			edges[p1.y][0] = p1.x;
 		if ((edges[p1.y][1] == H5ULONG_MAX) || p1.x > edges[p1.y][1])
 			edges[p1.y][1] = p1.x;
-		if ((p1.x == p2.x) && (p1.y == p2.y)) break;
+		if ((p1.x == p2.x) && (p1.y == p2.y))
+			break;
 		h5slong e2 = 2 * error;
 		if (e2 >= diffy) {
-			if (p1.x == p2.x) break;
+			if (p1.x == p2.x)
+				break;
 			error += diffy;
 			p1.x += signx;
 		}
 		if (e2 <= diffx) {
-			if (p1.y == p2.y) break;
+			if (p1.y == p2.y)
+				break;
 			error += diffx;
 			p1.y += signy;
 		}
@@ -136,15 +143,18 @@ void H5Render_slong_getLinePoints(h5point_slong p1, h5point_slong p2,
 
 	for (h5uint i = 0; i < length && i < n; i++) {
 		ret[i] = (h5point_slong){p1.x, p1.y};
-		if ((p1.x == p2.x) && (p1.y == p2.y)) break;
+		if ((p1.x == p2.x) && (p1.y == p2.y))
+			break;
 		h5slong e2 = 2 * error;
 		if (e2 >= diffy) {
-			if (p1.x == p2.x) break;
+			if (p1.x == p2.x)
+				break;
 			error += diffy;
 			p1.x += signx;
 		}
 		if (e2 <= diffx) {
-			if (p1.y == p2.y) break;
+			if (p1.y == p2.y)
+				break;
 			error += diffx;
 			p1.y += signy;
 		}

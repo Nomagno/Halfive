@@ -102,8 +102,12 @@ H5Elq_Node *H5Elq_appendNode(
 {
 	heap->mempool[heap->poolindex] = child;
 	if (parent != NULL) {
-		if (direction) { parent->right = &heap->mempool[heap->poolindex]; }
-		if (!direction) { parent->left = &heap->mempool[heap->poolindex]; }
+		if (direction) {
+			parent->right = &heap->mempool[heap->poolindex];
+		}
+		if (!direction) {
+			parent->left = &heap->mempool[heap->poolindex];
+		}
 		heap->mempool[heap->poolindex].parent = parent;
 	} else {
 		heap->mempool[heap->poolindex].parent = NULL;
@@ -282,10 +286,17 @@ int main(void)
 				(root->parent == root->left || root->parent == root->right),
 			(void *)root->parent, (void *)root->left, (void *)root->right);
 		switch (c) {
-		case 'P': root = root->parent; break;
-		case 'L': root = root->left; break;
-		case 'R': root = root->right; break;
-		default: break;
+		case 'P':
+			root = root->parent;
+			break;
+		case 'L':
+			root = root->left;
+			break;
+		case 'R':
+			root = root->right;
+			break;
+		default:
+			break;
 		}
 	}
 }
