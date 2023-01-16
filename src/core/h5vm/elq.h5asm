@@ -121,8 +121,8 @@
 ;                                 (RIGHT FIELD: proper NIL-terminated list)
 
 
-; Save program counter, FOUR instructions:
-#d SAVEPC,set FFFB ?W __ set FFFA !W __ add ?W =1 __ nop
+; Save program counter, FOUR instructions, last acts as a NOP:
+#d SAVEPC,set FFFB ?W __ set FFFA !W __ add ?W =1 __ set 0 0
 
 ; ADDRESS ZERO MUST ALWAYS CONTAIN ZERO, IN THIS CONVENTION
 #d ZERO,0

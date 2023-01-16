@@ -194,8 +194,6 @@ H5VM_InstructionSet _isinst(char *instr)
 {
 	if (h5streq(instr, "halt"))
 		return Inst_halt;
-	else if (h5streq(instr, "nop"))
-		return Inst_nop;
 	else if (h5streq(instr, "jmp"))
 		return Inst_jmp;
 	else if (h5streq(instr, "skpz"))
@@ -226,6 +224,8 @@ H5VM_InstructionSet _isinst(char *instr)
 		return Inst_ret;
 	else if (h5streq(instr, "call"))
 		return Inst_call;
+	else if (h5streq(instr, "frame"))
+		return Inst_frame;
 	else
 		return (H5VM_InstructionSet)16;
 }

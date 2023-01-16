@@ -124,6 +124,7 @@ bbbbbbbb      bbbbbbbb
 /*GUARANTEED TO BE CONTIGUOUS*/
 #define _MEMMAX	 (MEMUNIT * GMEMSIZE - 1)		/*0x3FFF*/
 #define _DRIVMAX (MEMUNIT * DRIVSIZE + _MEMMAX) /*0xBFFF*/
+#define _STACKMAX (MEMUNIT * STACKSIZE + _DRIVMAX) /*0xCFFF*/
 
 /*Unknown address*/
 
@@ -147,6 +148,8 @@ H5VM_GeneralMemory H5VM_init(
 		} else if (i <= _DRIVMAX) {
 			returnval.data[i] = &(rawmem->driv[i - _DRIVMAX - 1]);
 			returnval.mask[i] = 1; /*Read-only*/
+		} else if (i <= _STACKMAX) {
+			returnval.data[i] = &(rawmem->stack[i - _STACKMAX - 1]);
 		} else if (i == _ZF) {
 			returnval.data[i] = &(rawmem->zf);
 		} else if (i == _CF) {
@@ -189,15 +192,10 @@ unsigned H5VM_execute(H5VM_GeneralMemory *program, H5VM_ReadWriteInfo *rwinf)
 	h5uint tmpchar1	 = 0;
 	h5uint tmpchar2	 = 0;
 
-	h5uint subval = 0; /*For 'func' instruction. This can't be a safe 'ret'
-			  place, so it's an error code*/
 
 	switch (program->code.inst[_PROG_CO]) {
 	case Inst_halt:
 		program->hf = 1;
-		break;
-	case Inst_nop:
-		_PROG_CO += 1;
 		break;
 	case Inst_jmp:
 		goto _jmp;
@@ -214,10 +212,15 @@ unsigned H5VM_execute(H5VM_GeneralMemory *program, H5VM_ReadWriteInfo *rwinf)
 			_PROG_CO += 1;
 		break;
 	case Inst_set:
-		GETVAR(getnum_orig, CURR_OP, SECOND_OPERAND, 1);
-		setnum_dest = CURR_OP[0];
-		dest_type	= GETTYPE(CURR_OP, 1);
-		goto _set;
+		if ((CURR_OP[0] == CURR_OP[1]) && (GETTYPE(CURR_OP, 1) == GETTYPE(CURR_OP, 2))) {
+			break; /*This is obviously a soft-nop*/
+		}
+		else {
+			GETVAR(getnum_orig, CURR_OP, SECOND_OPERAND, 1);
+			setnum_dest = CURR_OP[0];
+			dest_type	= GETTYPE(CURR_OP, 1);
+			goto _set;
+		}
 		break;
 	case Inst_add:
 		GETVAR(tmpchar1, CURR_OP, FIRST_OPERAND, 0);
@@ -286,34 +289,38 @@ unsigned H5VM_execute(H5VM_GeneralMemory *program, H5VM_ReadWriteInfo *rwinf)
 		goto _set;
 		break;
 
-	case Inst_func:;
-		program->func_co[CURR_OP[0]] =
-			_PROG_CO; /*Write down this instruction's position*/
-		for (h5uint i = 0; i < (sizeof(program->code.inst) - (_PROG_CO + 1));
-			 i++) { /*Look for closest 'ret' */
-			if (program->code.inst[_PROG_CO + 1 + i] == Inst_ret) {
-				subval = _PROG_CO + 1 + i;
-				break;
-			}
-		}
-		if (subval) {
-			program->skip_co[CURR_OP[0]] = subval;
-			_PROG_CO					 = subval + 1;
-			_RETURN;
-		} /*Write down ret position, skip subroutine*/
-		else {
-			return_code = 3;
-			_RETURN;
-		} /*No matching 'ret'!*/
+	case Inst_func:
+//		; program->func_co[CURR_OP[0]] =
+//			_PROG_CO; /*Write down this instruction's position*/
+//		h5uint subval = 0; /*For 'func' instruction. This can't be a safe 'ret'
+//			 	 place, so it's an error code*/
+//		for (h5uint i = 0; i < (sizeof(program->code.inst) - (_PROG_CO + 1));
+//			 i++) { /*Look for closest 'ret' */
+//			if (program->code.inst[_PROG_CO + 1 + i] == Inst_ret) {
+//				subval = _PROG_CO + 1 + i;
+//				break;
+//			}
+//		}
+//		if (subval) {
+//			program->skip_co[CURR_OP[0]] = subval;
+//			_PROG_CO					 = subval + 1;
+//			_RETURN;
+//		} /*Write down ret position, skip subroutine*/
+//		else {
+//			return_code = 3;
+//			_RETURN;
+//		} /*No matching 'ret'!*/
 		break;
 	case Inst_ret:
-		_PROG_CO = program->return_co[CURR_OP[0]]; /*Return to caller*/
-		_RETURN;
+//		_PROG_CO = program->return_co[CURR_OP[0]]; /*Return to caller*/
+//		_RETURN;
 		break;
 	case Inst_call:
-		program->return_co[CURR_OP[0]] = _PROG_CO + 1; /*Note next instruction*/
-		_PROG_CO = program->func_co[CURR_OP[0]] + 1;   /*Jump to subroutine*/
-		_RETURN;
+//		program->return_co[CURR_OP[0]] = _PROG_CO + 1; /*Note next instruction*/
+//		_PROG_CO = program->func_co[CURR_OP[0]] + 1;   /*Jump to subroutine*/
+//		_RETURN;
+		break;
+	case Inst_frame:
 		break;
 	}
 	_RETURN;

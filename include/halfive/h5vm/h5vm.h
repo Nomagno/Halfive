@@ -44,9 +44,10 @@ WORK.*/
 	4 /*Size in MEMUNIT instruction chunks of the code \
 	 memory*/
 
-/*These two are guaranteed to be contiguous*/
+/*These three are guaranteed to be contiguous*/
 #define GMEMSIZE 4 /*Size in MEMUNIT byte chunks*/
 #define DRIVSIZE 8 /*Size in MEMUNIT byte chunks*/
+#define STACKSIZE 1 /*Size in MEMUNIT byte chunks*/
 
 #define FMEMSIZE 64 /*Size in bytes of the subroutine memory*/
 
@@ -75,7 +76,7 @@ into address ONE, halt
 
 ASSEMBLY FORMAT:
 	It codes almost directly to the binary format. The available instructions
-are: {halt, nop, skpz, skmz, jmp, set, add, sub, not, and, xor, or, shift, func,
+are: {halt, frame, skpz, skmz, jmp, set, add, sub, not, and, xor, or, shift, func,
 ret, call} The syntax is the following: instruction ARGx ARGx \n Where ARGx is
 an address/pointer (Rx), a literal (ID), or any of these (Vx). Instructions are
 terminated by newline '\n'
@@ -89,41 +90,98 @@ type of its arguments
 
 typedef enum {
 	/*THE INSTRUCTION COUNTING SHALL START AT 0, NOT 1*/
-	/*IMPORTANT NOTE: LITERALS ARE ONLY ALLOWED IN REGISTER ARGUMENTS
-	   DOCUMENTED AS VALUES 'Vx', NOT IN REGISTERS 'Rx'*/
+	/*IMPORTANT NOTE:
+		Vx -> Literal, address or pointer, the value is what matters
+		Rx -> Address or pointer, the address is what matters except when valueof(Rx) is used
+		Lx -> Literal*/
 	Inst_halt = 0, /* ; halt*/
-	Inst_nop  = 1, /* ; do nothing*/
-	Inst_jmp  = 2, /* V1; hand execution to instruction at code addressed V1.
-		 SPECIAL  EXCEPTION: Take 16-bit literals, addresses are treated
-		 as  16-bit literals, and pointers are treated as addresses with
-		 a 16-bit value*/
-	Inst_skpz = 3, /* LITERAL; if ZF == 0, add LITERAL+1 to program counter,
-			  else do nothing*/
-	Inst_skmz = 4, /* LITERAL; if ZF == 0, substract LITERAL-1 to program
-			  counter, else do nothing*/
-	/*SET trough to SHIFT: put result of doing
-	stuff with Vn values into Rn address*/
-	Inst_set = 5, /* R1 V2; set address R1 to value V2*/
-	Inst_add = 6, /* R1 V2; addition, carry goes to carry flag*/
-	Inst_sub = 7, /* R1 V2; substraction, carry flag set if result is negative*/
-	Inst_and = 8, /* R1 V2; binary and*/
-	Inst_or	 = 9, /* R1 V2; binary or*/
-	Inst_xor = 10,	 /* R1 V2; binary exclusive or*/
-	Inst_shift = 11, /* R1 V2; If V2 is 0-7, bitshift R1 LEFT by V2 bits. Else
-		 if V2 is 8-F, bitshift R1 RIGHT by (V2-8) bits. Else do
-		 nothing. Put the result into R1*/
-	Inst_cmp = 12,	 /* V1 V2; if V1 is bigger than V2, sets the carry flag to 0
-		and    the zero flag to 1 if V1 is smaller than V2, sets the
-		carry    flag to 1 and the zero flag to 0 if V1 is equal to
-		V2, sets    the carry flag to 0 and the zero flag to 0*/
-	/* FUNC, RET, CALL: Stackless subroutines*/
-	Inst_func = 13, /* ID; Marks the start of a subroutine with the literal
-		  identifier ID.*/
-	Inst_ret = 14,	/*ID; Marks the end of subroutine ID. It JMPs to the
-		   instruction after the corresponding CALL instruction.*/
-	Inst_call = 15, /* ID; JMP to the start of execution (post-FUNC) of
-		  subroutine ID*/
+	Inst_jmp  = 1, /* V1;
+		 - Set program counter to V1
+		 - SPECIAL EXCEPTION: Takes 16-bit literals, addresses are treated
+		   as 16-bit literals, and pointers are treated as addresses with
+		   a 16-bit value.*/
+	Inst_skpz = 2, /* L1; SKip Plus if Zero
+		 - If ZF == 0, add L1+1 to program counter.
+		 - same SPECIAL EXCEPTION as JMP instruction.*/
+	Inst_skmz = 3, /* L1; SKip Minus if Zero
+		 - If ZF == 0, substract L1-1 from program counter.
+		 - same SPECIAL EXCEPTION as JMP instruction.*/
+	Inst_set = 4, /* R1 V2;
+		  - Copy V2 to R1.*/
+	Inst_add = 5, /* R1 V2;
+	 	 - Perform addition between valueof(R1) and V2.
+	 	 - Put the result into R1.
+	 	 - If the addition results in overflow, set _ZF to 1.
+	 	 - Otherwise, set _ZF to 0.*/
+	Inst_sub = 6, /* R1 V2;
+	 	 - Perform substraction between valueof(R1) and V2.
+	 	 - Put the result into R1.
+	 	 - If the substraction results in underflow, set _ZF to 1.
+	 	 - Otherwise, set _ZF to 0.*/
+	Inst_and = 7, /* R1 V2;
+	 	 - Perform binary AND between valueof(R1) and V2.
+	 	 - Put the result into R1.*/
+	Inst_or	 = 8, /* R1 V2;
+	 	 - Perform binary OR between valueof(R1) and V2.
+	 	 - Put the result into R1.*/
+	Inst_xor = 9, /* R1 V2;
+	 	 - Perform binary XOR between valueof(R1) and V2.
+	 	 - Put the result into R1.*/
+	Inst_shift = 10, /* R1 V2;
+		 - If V2 is 0-7, bitshift valueof(R1) LEFT  by V2 bits.
+		 - If V2 is 8-F, bitshift valueof(R1) RIGHT by (V2-8) bits
+		 - If V2 is greater than F, do nothing
+		 - Put the result into R1*/
+	Inst_cmp = 11,  /* V1 V2;
+		 - If V1 is bigger than V2,  sets _CF to 0 and _ZF to 1
+		 - If V1 is smaller than V2, sets _CF to 1 and _ZF to 0
+		 - If V1 is equal to V2, sets _CF to 0 and _ZF 0*/
+	/* FUNC, RET, CALL, FRAME: Subroutine instructions*/
+	/* The second argument to all four instructions is the "info byte"*/
+	Inst_func = 12, /* L1 L2;
+		  - Registers the start of a subroutine with the literal identifier L1.
+		  - It is registered at (High nibble of L2*4096)+L1
+		  - L1 must not be greater than 255*/
+	Inst_ret = 13,	/*L1 L2;
+		  - Marks the end of subroutine L1.
+		  - When reached, the current stack frame is deleted.
+		  - Afterwards, the program counter moves to the return address.*/
+	Inst_call = 14, /* L1 L2;
+		 - Move program counter to the start (after the func instruction) of subroutine L1.
+		 - Creates a new stack frame in the stack at (High nibble of L2*4096).
+		 - The stack frame has size (Low nibble of L2*2).
+		 - The first two bytes of the stack are the return address.
+		 - The return address is the instruction after this one.*/
+	Inst_frame = 15 /* V1 L2;
+		- Get current stack frame information
+		- (High nibble of L2*4096) is the start address of the stack.
+		- (Low  nibble of (L2+1)*2)    is the size in bytes of each stack frame.
+		- The address of the current stack frame is deposited as a 16-bit number
+		  to the addresses V1 and V1+1. If there is currently no stack frame, what is
+		  deposited is instead the number 1*/
 } H5VM_InstructionSet;
+/*Callstack layout for info byte CF:
+C000, C001: Stack pointer
+C002, C003: Return address of first frame
+C004, C005: Variable 1 of first frame
+C006, C007: Variable 2 of first frame
+C008, C009: Variable 3 of first frame
+C00A, C00B: Variable 4 of first frame
+C00C, C00D: Variable 5 of first frame
+C00E, C00F: Variable 6 of first frame
+C010, C011: Variable 7 of first frame
+C012, C013: Variable 8 of first frame
+C014, C015: Variable 9 of first frame
+C016, C017: Variable A of first frame
+C018, C019: Variable B of first frame
+C01A, C01B: Variable C of first frame
+C01C, C01D: Variable D of first frame
+C01E, C01F: Variable E of first frame
+C020, C021: Variable F of first frame
+C022, C023: Return address of second frame
+...
+*/
+
 
 /*Execution memory*/
 typedef struct {
@@ -143,25 +201,21 @@ typedef struct {
 100KBs*/
 typedef struct {
 	H5VM_CodeMemory code;			  /*Code memory*/
-	h5uchar *data[MEMUNIT * MEMSIZE]; /*Data memory, default setup:*/
-	/*GEN mem (RW), 0x0000 to 0x3FFF, RECOMMENDED TO EXIST*/
-	/*DRIVE (persistent, R-only) mem, 0x4000 to 0xBFFF, RECOMMENDED TO
-	 * EXIST*/
-	/*Zero flag (RW), 0xFFFF, OBLIGATORY*/
-	/*Carry flag (RW), 0xFFFE, OBLIGATORY*/
-	/*Input register (R-only), 0xFFFD, OBLIGATORY*/
-	/*Output register, 0xFFFC, OBLIGATORY*/
+	h5uchar *data[MEMUNIT * MEMSIZE]; /*Data memory, default setup:
+	- GEN mem (RW), 0x0000 to 0x3FFF, RECOMMENDED TO EXIST
+	- DRIVE mem (R-only), 0x4000 to 0xBFFF, RECOMMENDED TO EXIST
+	- CALLSTACK mem (RW), 0xC000 to 0xCFFF, RECOMMENDED TO EXIST
+	- Zero flag (RW), 0xFFFF, OBLIGATORY
+	- Carry flag (RW), 0xFFFE, OBLIGATORY
+	- Input register (R-only), 0xFFFD, OBLIGATORY
+	- Output register, 0xFFFC, OBLIGATORY*/
 
 	/*If 0, data index is RW, if 1 it is read only*/
 	_Bool mask[MEMUNIT * MEMSIZE];
-	h5uint func_co[FMEMSIZE]; /*For storing counter values corresponding to the
-				 FUNC instruction of each subroutine ID*/
-	h5uint return_co[FMEMSIZE]; /*For storing counter values corresponding to
-				   the execution environment of the branch that
-				   executes CALLS, for each subroutine ID*/
-	h5uint skip_co[FMEMSIZE];	/*Counter values FUNC has to skip to*/
+
 	/*Halt flag, 1 if it has halted.*/
 	_Bool hf;
+
 	/*Program counter (R-only), 0xFFFB (low) and 0xFFFA (high), OBLIGATORY*/
 	h5uint co;
 } H5VM_GeneralMemory;
@@ -170,6 +224,7 @@ typedef struct {
 typedef struct {
 	h5uchar gmem[MEMSIZE * GMEMSIZE];
 	h5uchar driv[MEMSIZE * DRIVSIZE];
+	h5uchar stack[MEMSIZE * STACKSIZE];
 	h5uchar zf;
 	h5uchar cf;
 	h5uchar in;
