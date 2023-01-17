@@ -122,9 +122,9 @@ bbbbbbbb      bbbbbbbb
 #define _ERROR_ADDR (MEMUNIT * MEMSIZE - 15) /*0xFFF0*/
 
 /*GUARANTEED TO BE CONTIGUOUS*/
-#define _MEMMAX	 (MEMUNIT * GMEMSIZE - 1)		/*0x3FFF*/
-#define _DRIVMAX (MEMUNIT * DRIVSIZE + _MEMMAX) /*0xBFFF*/
-#define _STACKMAX (MEMUNIT * STACKSIZE + _DRIVMAX) /*0xCFFF*/
+#define _GMEMMAX	 (MEMUNIT*GMEMSIZE - 1)		/*0x3FFF*/
+#define _DRIVMAX (MEMUNIT*DRIVSIZE + _GMEMMAX) /*0xBFFF*/
+#define _STACKMAX (MEMUNIT*STACKSIZE + _DRIVMAX) /*0xCFFF*/
 
 /*Unknown address*/
 
@@ -143,13 +143,13 @@ H5VM_GeneralMemory H5VM_init(
 										 : ((h5uchar *)&returnval.co);
 
 	for (h5ulong i = 0; i < (MEMUNIT * MEMSIZE); i++) {
-		if (i <= _MEMMAX) {
+		if (i <= _GMEMMAX) {
 			returnval.data[i] = &(rawmem->gmem[i]);
 		} else if (i <= _DRIVMAX) {
-			returnval.data[i] = &(rawmem->driv[i - _DRIVMAX - 1]);
+			returnval.data[i] = &(rawmem->driv[i - _GMEMMAX - 1]);
 			returnval.mask[i] = 1; /*Read-only*/
 		} else if (i <= _STACKMAX) {
-			returnval.data[i] = &(rawmem->stack[i - _STACKMAX - 1]);
+			returnval.data[i] = &(rawmem->stack[i - _DRIVMAX - 1]);
 		} else if (i == _ZF) {
 			returnval.data[i] = &(rawmem->zf);
 		} else if (i == _CF) {
@@ -175,7 +175,8 @@ H5VM_GeneralMemory H5VM_init(
 0 - Successful
 1 - ERROR - Unmmapped memory
 2 - ERROR - Write to read-only address
-3 - ERROR - Wrong usage/malformed instruction*/
+3 - ERROR - Wrong usage/malformed instruction
+4 - ERROR - Unmapped memory - CALLSTACK OVERFLOW*/
 unsigned H5VM_execute(H5VM_GeneralMemory *program, H5VM_ReadWriteInfo *rwinf)
 {
 	*rwinf = (H5VM_ReadWriteInfo){0};
@@ -191,7 +192,6 @@ unsigned H5VM_execute(H5VM_GeneralMemory *program, H5VM_ReadWriteInfo *rwinf)
 	h5uchar set_zf	 = 0; /*0 - don't touch; 1 - set to 1; 2 - set to zero;*/
 	h5uint tmpchar1	 = 0;
 	h5uint tmpchar2	 = 0;
-
 
 	switch (program->code.inst[_PROG_CO]) {
 	case Inst_halt:
@@ -290,38 +290,92 @@ unsigned H5VM_execute(H5VM_GeneralMemory *program, H5VM_ReadWriteInfo *rwinf)
 		break;
 
 	case Inst_func:
-//		; program->func_co[CURR_OP[0]] =
-//			_PROG_CO; /*Write down this instruction's position*/
-//		h5uint subval = 0; /*For 'func' instruction. This can't be a safe 'ret'
-//			 	 place, so it's an error code*/
-//		for (h5uint i = 0; i < (sizeof(program->code.inst) - (_PROG_CO + 1));
-//			 i++) { /*Look for closest 'ret' */
-//			if (program->code.inst[_PROG_CO + 1 + i] == Inst_ret) {
-//				subval = _PROG_CO + 1 + i;
-//				break;
-//			}
-//		}
-//		if (subval) {
-//			program->skip_co[CURR_OP[0]] = subval;
-//			_PROG_CO					 = subval + 1;
-//			_RETURN;
-//		} /*Write down ret position, skip subroutine*/
-//		else {
-//			return_code = 3;
-//			_RETURN;
-//		} /*No matching 'ret'!*/
+		program->func_co[CURR_OP[0]] = _PROG_CO; /*Annotate function start*/
+		h5uint subval = 0; /*Zero can't be a safe 'ret' place*/
+		for (h5uint i = 0; i < (sizeof(program->code.inst) - (_PROG_CO + 1)); i++) { /*Look for closest 'ret' */
+			if (program->code.inst[_PROG_CO + 1 + i] == Inst_ret) {
+				subval = _PROG_CO + 1 + i;
+				break;
+			}
+		}
+		if (subval) {
+			_PROG_CO  = subval + 1;
+			_RETURN;
+		} /*Skip subroutine*/
+		else {
+			return_code = 3;
+			_PROG_CO += 1;
+			_RETURN;
+		} /*ERROR: No matching 'ret'!*/
 		break;
-	case Inst_ret:
-//		_PROG_CO = program->return_co[CURR_OP[0]]; /*Return to caller*/
-//		_RETURN;
+	case Inst_ret: {
+		/*Must move stack pointer backwards*/
+		h5uchar oldval_high = *DATA[(CURR_OP[1] >> 4)*MEMUNIT];
+		h5uchar oldval_low = *DATA[(CURR_OP[1] >> 4)*MEMUNIT+1];
+		*DATA[(CURR_OP[1] >> 4)*MEMUNIT+1] -= ((CURR_OP[1] & 0x0F)+1)*2;
+		h5uchar newval_low = *DATA[(CURR_OP[1] >> 4)*MEMUNIT+1];
+		if (newval_low > oldval_low){ /*Underflow*/
+			*DATA[(CURR_OP[1] >> 4)*MEMUNIT] -= 1;
+		}
+		//h5uchar newval_high = *DATA[(CURR_OP[1] >> 4)*MEMUNIT];
+		//printf("---- RETURN at PC %u: %X %X %X\n", _PROG_CO, newval_high, newval_low, CURR_OP[1]);
+		_PROG_CO = GETPTR(*DATA, ((oldval_high << 8) | oldval_low))+1; /*Go to return address+1*/
+		_RETURN;
 		break;
-	case Inst_call:
-//		program->return_co[CURR_OP[0]] = _PROG_CO + 1; /*Note next instruction*/
-//		_PROG_CO = program->func_co[CURR_OP[0]] + 1;   /*Jump to subroutine*/
-//		_RETURN;
+	}
+	case Inst_call: {
+		h5uchar oldval_high = *DATA[(CURR_OP[1] >> 4)*MEMUNIT];
+		h5uchar oldval_low = *DATA[(CURR_OP[1] >> 4)*MEMUNIT+1];
+		h5uchar newval_high;
+		h5uchar newval_low;
+		if ((oldval_high == 0) && (oldval_low == 0) && ((CURR_OP[1] >> 4) != 0)) {
+			/*Initialize stack pointer*/
+			*DATA[(CURR_OP[1] >> 4)*MEMUNIT] = ((CURR_OP[1] >> 4) << 4);
+			*DATA[(CURR_OP[1] >> 4)*MEMUNIT+1] = 2;
+			newval_high = *DATA[(CURR_OP[1] >> 4)*MEMUNIT];
+			newval_low = *DATA[(CURR_OP[1] >> 4)*MEMUNIT+1];
+ 		} else {
+			/*Increase stack pointer */
+ 			*DATA[(CURR_OP[1] >> 4)*MEMUNIT+1] += ((CURR_OP[1] & 0x0F)+1)*2;
+			newval_low = *DATA[(CURR_OP[1] >> 4)*MEMUNIT+1];
+			if (newval_low < oldval_low){ /*Overflow*/
+				*DATA[(CURR_OP[1] >> 4)*MEMUNIT] += 1;
+			}
+			newval_high = *DATA[(CURR_OP[1] >> 4)*MEMUNIT];
+		}
+		//printf("---- CALL   at PC %u: %X %X %X\n", _PROG_CO, newval_high, newval_low, CURR_OP[1]);
+		if (DATA[((newval_high << 8) | newval_low)] == NULL) {
+			return_code = 4; /*Callstack overflow*/
+			_RETURN;
+		}
+		*DATA[((newval_high << 8) | newval_low)] = _PROG_CO >> 8;
+		*DATA[((newval_high << 8) | newval_low)+1] = _PROG_CO & 0xFF; /*Annotate return address*/
+		_PROG_CO = program->func_co[CURR_OP[0]]+1; /*Go to function start+1*/
+		_RETURN;
 		break;
-	case Inst_frame:
+	}
+	case Inst_frame: {
+		h5uchar val_high = *DATA[(CURR_OP[1] >> 4)*MEMUNIT];
+		h5uchar val_low = *DATA[(CURR_OP[1] >> 4)*MEMUNIT+1];
+		if (GETTYPE(CURR_OP, 1) == adr) {
+			*DATA[CURR_OP[0]]   = val_high;
+			*DATA[CURR_OP[0]+1] = val_low;
+			rwinf->adrw = CURR_OP[0];
+			rwinf->wrote_adrw  = 1;
+		} else if (ISPTR(CURR_OP[2], 1)){
+			*DATA[GETPTR(*DATA, CURR_OP[0])] = val_high;
+			*DATA[GETPTR(*DATA, CURR_OP[0])+1] = val_low;
+			rwinf->adrw = GETPTR(*DATA, CURR_OP[0]);
+			rwinf->wrote_adrw  = 1;
+		} else {
+			return_code = 3; /*ERROR: Register type argument can't be a literal!*/
+			_PROG_CO += 1;
+			_RETURN;
+		}
+		_PROG_CO += 1;
+		_RETURN;
 		break;
+	}
 	}
 	_RETURN;
 
@@ -343,14 +397,17 @@ _set:
 		if (dest_type == lit) {
 			return_code = 3; /*ERROR: Wrong usage! Can't set a literal, that's
 					nonsensical*/
+			_PROG_CO += 1;
 			_RETURN;
 		} else if (dest_type == adr) {
 			if (DATA[setnum_dest] == NULL) {
 				return_code =
 					1; /*ERROR: Trying to read/write unmapped memory!*/
+				_PROG_CO += 1;
 				_RETURN;
 			} else if (MASK[setnum_dest] == 1) {
 				return_code = 2; /*ERROR: Write to read-only address!*/
+				_PROG_CO += 1;
 				_RETURN;
 			};
 			*DATA[setnum_dest] = getnum_orig;
@@ -362,8 +419,8 @@ _set:
 				rwinf->adrw						  = GETPTR(*DATA, setnum_dest);
 				rwinf->wrote_adrw				  = 1;
 			} else {
-				return_code =
-					1; /*ERROR: Trying to read/write unmapped memory!*/
+				return_code = 1; /*ERROR: Trying to read/write unmapped memory!*/
+				_PROG_CO += 1;
 				_RETURN;
 			};
 		}

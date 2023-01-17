@@ -64,7 +64,7 @@ int main(int argc, char **argv)
 	H5VM_CodeMemory code = {(H5VM_InstructionSet)0};
 	int i				 = 0;
 	while (fscanf(codefile, "%[^\n] ", arr) != EOF) {
-		H5ASM_Parse(arr, &code.inst[i], code.opnd[i]);
+		H5ASM_parse(arr, &code.inst[i], code.opnd[i]);
 		i += 1;
 	}
 
@@ -75,7 +75,7 @@ int main(int argc, char **argv)
 
 	int return_code = 0;
 	h5uint prevcode = 0;
-	while ((!prog.hf) && (!return_code)) {
+	while (1) {
 		prevcode = prog.co;
 		if ((prog.code.opnd[prog.co][0] ==
 				0xFFFD) || /*Preemtive/non-polling-but-ontime input, cheats
@@ -114,29 +114,39 @@ int main(int argc, char **argv)
 			*prog.data[rwinf.adrw], rwinf.adrr, *prog.data[rwinf.adrr]);
 		putchar('\n');
 #endif
-	}
 
-	fclose(codefile);
-	fclose(drivefile);
-	if (prog.hf)
-		printf("HALT\n");
-	else {
+		if (prog.hf) {
+			printf("\n----\nHALT\n----\n");
+			break;
+		}
 		switch (return_code) {
+		case 0:
+			break;
 		case 1:
-			printf("ERROR AT INST 0x%X: READ/WRITE UNMAPPED MEM\n", prog.co);
+			printf("NONFATAL ERROR AT INST 0x%X: READ/WRITE UNMAPPED MEM\n", prog.co);
 			break;
 		case 2:
-			printf("ERROR AT INST 0x%X: WRITE TO READ-ONLY MEM\n", prog.co);
+			printf("NONFATAL ERROR AT INST 0x%X: WRITE TO READ-ONLY MEM\n", prog.co);
 			break;
 		case 3:
-			printf("ERROR AT INST 0x%X: WRONG ADDRESSING MODE\n", prog.co);
+			printf("NONFATAL ERROR AT INST 0x%X: WRONG ADDRESSING MODE\n", prog.co);
+			break;
+		case 4:
+			printf("FATAL ERROR AT INST 0x%X: CALLSTACK OVERFLOW\n", prog.co);
 			break;
 		default:
 			printf(
 				"ERROR AT INST 0x%X: UNKNOWN ERROR %u\n", prog.co, return_code);
 			break;
 		}
+		if (return_code >= 4) {
+			break;
+		}
 	}
+
+	fclose(codefile);
+	fclose(drivefile);
+
 	return return_code;
 }
 #endif
