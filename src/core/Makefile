@@ -42,9 +42,9 @@ FLAGS="-fsanitize=address,undefined"
 PARAMS="-DH5VERSION=0 -DH5PHY_VM_SIMULATION -DH5VI_GSERV_IMPL_SDL2 -DH5VI_AUDIOSERV_IMPL_SDL2 -DH5VI_STDINPUT_IMPL_PORTABLE"
 
 main: warn libhalfive.a
-pamview: warn pamviewer
-h5asm: warn h5assembler
-h5asm_debug: warn h5assembler_debug
+pamview_bin: warn pamviewer
+h5asm_bin: warn h5assembler
+h5asm_debug_bin: warn h5assembler_debug
 remain: clean main
 reh5asm: clean h5assembler
 reh5asm_debug: clean h5assembler_debug
