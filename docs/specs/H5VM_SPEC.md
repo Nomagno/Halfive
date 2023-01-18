@@ -18,13 +18,13 @@ Following Harvard architecture principles, H5VM loads code and data separately i
 
 The code member is read-only.
 
-The data member has addresses (memory cells indexed from 0 to 0xFFFF) that are either read/write (RW), read-only (RO), or unmapped (UM). These three properties are referred to as the 'permission' of an address.
+The data member has addresses (8-bit unsigned memory cells indexed from 0 to 0xFFFF) that are either read/write (RW), read-only (RO), or unmapped (UM). These three properties are referred to as the 'permission' of an address.
 
 - The following addresses must be present in the data member with the indicated codename (for later use in this document), index, and permissions:
 	- Zero flag (`_ZF`) (0xFFFF) (RW)
 	- Carry flag (`_CF`) (0xFFFE) (RW)
 	- Input register (`_IN`) (0xFFFD) (RO): Reads to the input register may prompt the user for numbers
-	- Output register (`_OU`) (0xFFFD) (RW): Writes to the output register may display the numbers to the user
+	- Output register (`_OU`) (0xFFFD) (RW): Writes to the output register may display the numbers to the user. Reads always yield the value zero
 	- Program counter register low byte (`_PCL`) (0xFFFB) (RO): must contain the low byte of the program counter at ALL TIMES
 	- Program counter register high byte (`_PCH`) (0xFFFA) (RO): must contain the high byte of the program counter at ALL TIMES
 	- Error address (`_ERR`) (0xFFF9) (UN)
@@ -38,7 +38,8 @@ The data member has addresses (memory cells indexed from 0 to 0xFFFF) that are e
 	- If the lowest bit is zero, the second operand is an of type ADDRESS, else it is of type `[OPTYPE]`.
 	- If the second lowest bit is zero, the first operand is of type ADDRESS, else it is of type `[OPTYPE]`.
 	- The third lowest bit is irrelevant.
-	- If highest bit is zero, subsitute `[OPTYPE]` above with LITERAL. If it is one, subsitute it with POINTER.
+	- If highest bit is zero, subsitute `[OPTYPE]` above with CONSTANT. If it is one, subsitute it with DERREFERENCE.
+	- DERREFERENCES hold a 16-bit memory address as big-endian at the address of the operand, and the next address. This is the address that is operated on by the instruction. See the opcodes explanation bullet point and example
 - The opcode indicates the operation to be done, see the explanation of opcodes below.
 - The two operands will be interpreted depending on the opcode.
 - The program counter is the index of the instruction being currently executed, if one was to assign an index to each instruction. To modify it means to change which instruction executes next. It can only be modified through the opcodes `jmp`, `skpz`, `skmz`, `func`, `ret`, `call`.
@@ -63,8 +64,8 @@ PROPER ASSEMBLY:
 - Each operand's value is represented in raw, uppercase hexadecimal
 - Operands are to be directly preceded by:
 	- No symbol if they are of type ADDRESS
-	- The equal symbol `=` if they are of type LITERAL
-	- The asterisk symbol `*` if they are of type POINTER
+	- The equal symbol `=` if they are of type CONSTANT
+	- The asterisk symbol `*` if they are of type DERREFERENCE
 - The opcode, the first and second operands are separated by a symbol space '` `'
 
 EXAMPLE:
@@ -77,7 +78,7 @@ halt
 
 #### Opcodes
 - There are currently SIXTEEN (16) opcodes, each numbered with the decimal number for use in the opcode nibble.
-- By 'address of a pointer' or 'value of a pointer', what is meant is that what will be read is the value of the address pointed two by THAT ADDRESS AND THE NEXT ONE (e.g. *2 denotes the contents of memory address 0x02 and 0x03) TREATED AS A SINGLE 16-BIT NUMBER. THAT NUMBER will be the address that is written to/read from. This is better ilustrated with an example:
+- By address of/value of a DERREFERENCE, what is meant is that what will be read is the value of the address pointed to by THAT ADDRESS AND THE NEXT ONE (e.g. *2 denotes the contents of memory address 0x02 and 0x03) TREATED AS A SINGLE 16-BIT NUMBER (big-endian). THAT NUMBER will be the address that is written to/read from. This is better ilustrated with an example:
 ```
 set 0 =20
 set 1 =02
@@ -86,24 +87,24 @@ halt
 ```
 - After this program is ran, address 0x2002 will have the value 0x30
 - Notation explanation:
-	- Vx: Type of operand can be literal, address or pointer
-	- Rx: Type of operand can be address or pointer
-	- Lx: Type of operand can only be literal
-	- Except where mentioned, the value of a literal is taken as the lowest 8 bits of the operand
+	- Vx: Type of operand can be constant, address or derreference
+	- Rx: Type of operand can be address or derreference
+	- Cx: Type of operand can only be constant
+	- Except where mentioned, the value of a constant is taken as the lowest 8 bits of the operand
 
 0. halt - Stop program execution immediately and permanently
 
 1. jmp `V1` - Jump
 	- Change program counter to the value of `V1`
-	- SPECIAL EXCEPTION: Takes 16-bit literals. Addresses are treated the same as literals. Pointers are treated as addresses where the highest 8 bits are the value of the address corresponding to the operand, and the lowest 8 bits are the value of (address of the operand)+1
+	- SPECIAL EXCEPTION: Takes 16-bit constants. Addresses are treated the same as constants. Derreferences are treated as program counter values where the highest 8 bits are the value of the address corresponding to the operand, and the lowest 8 bits are the value of (address of the operand)+1
 
-2. skpz `L1` - Skip plus if zero
-	- If _ZF has the value 0, add `L1`+1 to program counter.
-	- SPECIAL EXCEPTION: Takes 16-bit literals.
+2. skpz `C1` - Skip plus if zero
+	- If _ZF has the value 0, add `C1`+1 to program counter.
+	- SPECIAL EXCEPTION: Takes 16-bit constants.
 
-3. skmz `L1` - Skip minus if zero
-	- If _ZF has the value 0, substract (`L1`+1) from program counter.
-	- SPECIAL EXCEPTION: Takes 16-bit literals.
+3. skmz `C1` - Skip minus if zero
+	- If _ZF has the value 0, substract (`C1`+1) from program counter.
+	- SPECIAL EXCEPTION: Takes 16-bit constants.
 
 4. set `R1 V2` - Copy the value of `V2` to the address of `R1`.
 
@@ -148,24 +149,24 @@ halt
 	- If the operation results in underflow, set _CF to 1.
 	- Otherwise, set _CF to 0.
 
-12. func `L1 L2`
-	- Writes down (preferrably in a place not normally addressable) the program counter as (start of subroutine `L1`).
+12. func `C1`
+	- Writes down (preferrably in a place not normally addressable) the program counter as (start of subroutine `C1`).
 	- Moves the program counter to directly after the closest `ret` instruction.
 
-13. ret `L1 L2`
-	- Marks the end of subroutine `L1`.
+13. ret `C1 C2`
+	- Marks the end of subroutine `C1`.
 	- When reached, the current stack frame is deleted.
 	- Afterwards, the program counter is set to the return address.
 
-14. call `L1 L2`
-	- Move program counter to (start of subroutine `L1`)+1.
-	- Creates a new stack frame by increasing the stack pointer at (High nibble of `L2`)`*`4096.
-	- The stack frame has size (Low nibble of `L2`)`*`2+2.
+14. call `C1 C2`
+	- Move program counter to (start of subroutine `C1`)+1.
+	- Creates a new stack frame by increasing the stack pointer at (High nibble of `C2`)`*`4096.
+	- The stack frame has size (Low nibble of `C2`)`*`2+2.
 	- The first two bytes of the stack frame are the return address.
 	- The return address is written down as the program counter corresponding to the instruction after this one.
 
-15. frame `V1 L2`
+15. frame `V1 C2`
 	- Get current stack frame information
-	- (High nibble of `L2*4096`) is the start address of the stack.
-	- (Low  nibble of `L2`)`*`2+2   is the size in bytes of each stack frame.
+	- (High nibble of `C2*4096`) is the start address of the stack.
+	- (Low  nibble of `C2`)`*`2+2   is the size in bytes of each stack frame.
 	- The address of the current stack frame is deposited as a 16-bit number to the addresses `V1` and `V1+1`.
