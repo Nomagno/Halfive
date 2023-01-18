@@ -38,7 +38,7 @@
 
 INCLROOT="../../include/"
 
-FLAGS="-fsanitize=address,undefined"
+#FLAGS="-fsanitize=address,undefined"
 PARAMS="-DH5VERSION=0 -DH5PHY_VM_SIMULATION -DH5VI_GSERV_IMPL_SDL2 -DH5VI_AUDIOSERV_IMPL_SDL2 -DH5VI_STDINPUT_IMPL_PORTABLE"
 
 main: warn libhalfive.a
