@@ -74,4 +74,7 @@ static int H5Req_const_one = 1;
 #define IS_LITTLE_ENDIAN (*(h5uchar *)&(h5uint){1})
 #endif
 
+#define ELEMNUM(a) (sizeof(a)/sizeof(a[0]))
+#define $(a) &((char[]){ #a }[0])
+
 #endif

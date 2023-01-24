@@ -239,3 +239,46 @@ H5VM_InstructionSet _isinst(char *instr)
 	else
 		return (H5VM_InstructionSet)16;
 }
+
+unsigned H5ASM_run(char **str, size_t stringnum, H5VM_GeneralMemory *mem, h5uint *addresses, h5uchar *mappings, size_t mapping_size) {
+	unsigned return_co;
+
+	for (size_t j = 0; j < mapping_size; j++) {
+		if ((mem->data[addresses[j]]) == NULL)
+			return 10;
+		*(mem->data[addresses[j]]) = mappings[j];
+	}
+
+	for (size_t i = 0; i < stringnum; i++) {
+		H5ASM_parse(str[i], &(mem->code.inst[mem->co+i]), mem->code.opnd[mem->co+i]);
+	}
+	while(!mem->hf) {
+		return_co = H5VM_execute(mem, &(H5VM_ReadWriteInfo){0});
+		if (return_co <= 3) {}
+		else return return_co; /*Fatal return code*/
+	}
+	mem->hf = 0; /*unterminate VM*/
+	for (size_t j = 0; j < mapping_size; j++) {
+		if ((mem->data[addresses[j]]) == NULL)
+			return 10;
+		mappings[j] = *(mem->data[addresses[j]]);
+	}
+
+	return 0;
+}
+
+/*
+#include <stdio.h>
+
+int main(void){
+	H5VM_DefaultMemSetup defmem = {0};
+	H5VM_GeneralMemory context = H5VM_init(&(H5VM_CodeMemory){0}, &defmem);
+	h5uchar array[1] = {0};
+	char str[40] = {0};
+	
+	while(fgets(str, ELEMNUM(str), stdin) != NULL){
+		ASM((h5uint[]){ 0x0000 }, array, str);
+		printf("%X\n", array[0]);
+	}
+}
+*/
