@@ -213,6 +213,8 @@ unsigned H5VM_execute(H5VM_GeneralMemory *program, H5VM_ReadWriteInfo *rwinf)
 		break;
 	case Inst_set:
 		if ((CURR_OP[0] == CURR_OP[1]) && (GETTYPE(CURR_OP, 1) == GETTYPE(CURR_OP, 2))) {
+			_PROG_CO += 1;
+			_RETURN;
 			break; /*This is obviously a soft-nop*/
 		}
 		else {

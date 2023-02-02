@@ -273,12 +273,14 @@ unsigned H5ASM_run(char **str, size_t stringnum, H5VM_GeneralMemory *mem, h5uint
 int main(void){
 	H5VM_DefaultMemSetup defmem = {0};
 	H5VM_GeneralMemory context = H5VM_init(&(H5VM_CodeMemory){0}, &defmem);
-	h5uchar array[1] = {0};
+	h5uchar intlisr[] = {0xDE, 0xAD, 0xBE, 0xEF}; // Integers mapped to the VM
+	h5uint adrlist[] = { 0, 1, 2, 3 }; // Addresses to be mapped in the VM
 	char str[40] = {0};
 	
 	while(fgets(str, ELEMNUM(str), stdin) != NULL){
-		ASM((h5uint[]){ 0x0000 }, array, str);
-		printf("%X\n", array[0]);
+		ASM(adrlist, intlist, str); // Read a line of assembly, then execute it
+		printf("%X,%X,%X,%X\n", intlist[0], intlist[1], intlist[2], intlist[3]);
+		// the elements of intlist[] are now mapped to the VM addresses in adrlist[]
 	}
 }
 */
