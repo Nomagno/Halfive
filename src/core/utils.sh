@@ -88,3 +88,9 @@ genkey(){
 	 LC_CTYPE=C dd bs=1 count="$2" 2>/dev/null) < "$1"
 	echo
 }
+
+h5run(){
+	sh asmpp.sh "$1" > tmp.h5asm
+	h5asm tmp.h5asm
+	rm tmp.h5asm
+}

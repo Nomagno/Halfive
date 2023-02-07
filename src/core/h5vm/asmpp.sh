@@ -132,7 +132,7 @@ asmpp(){
 	# Replace __ with newline, eliminate indentation and whitespace padding + numbering
 	f=$(printstr_n "$f" |
 	    sed 's/__/\n/g; /^[[:space:]]*$/d;' |
-	    sed 's/^[ \t]*//g' | cut -d':' -f2)
+	    sed 's/^[ \t]*//g; s/ *$//g;' | cut -d':' -f2)
 	printstr_n "$f"
 
 }
