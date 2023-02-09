@@ -80,15 +80,15 @@ void *_h5libcmemset(void *str, int val, size_t n);
 		x == '6' || x == '7' || x == '8' || x == '9')
 
 #define H5_IS_HEX_DIGIT_UPPER(x)                                      \
-	(ISDECDIGIT(x) || x == 'A' || x == 'B' || x == 'C' || x == 'D' || \
+	(H5_IS_DEC_DIGIT(x) || x == 'A' || x == 'B' || x == 'C' || x == 'D' || \
 		x == 'E' || x == 'F')
 
 #define H5_IS_HEX_DIGIT_LOWER(x)                                      \
-	(ISDECDIGIT(x) || x == 'a' || x == 'b' || x == 'c' || x == 'd' || \
+	(H5_IS_DEC_DIGIT(x) || x == 'a' || x == 'b' || x == 'c' || x == 'd' || \
 		x == 'e' || x == 'f')
 
 #define H5_IS_HEX_DIGIT(x)                                            \
-	(ISDECDIGIT(x) || x == 'A' || x == 'B' || x == 'C' || x == 'D' || \
+	(H5_IS_DEC_DIGIT(x) || x == 'A' || x == 'B' || x == 'C' || x == 'D' || \
 		x == 'E' || x == 'F' || x == 'a' || x == 'b' || x == 'c' ||   \
 		x == 'd' || x == 'e' || x == 'f')
 

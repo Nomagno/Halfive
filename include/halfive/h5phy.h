@@ -123,7 +123,7 @@ FUNKY RESULTS, HOWEVER THERE IS NOTHING INHERENTLY WRONG WITH IT)*/
 	h5uint leaderboard_global; /*Current global leaderboard position*/
 	h5ulong prev_speed, speed; /*Kilometers per hour*/
 	h5ulong prev_accel, accel; /*Kilometers per hour squared*/
-	h5point_ulong prev_pos,
+	VEC2(h5ulong) prev_pos,
 		pos; /*Position, x and y, unsigned 32-bit (in millimiters)*/
 	h5uchar prev_rideheight,
 		rideheight; /*Ride height, in mm, lower means more stable and faster,

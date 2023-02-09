@@ -51,15 +51,15 @@ WORK.*/
 #define POINT_U(x, y) \
 	(h5point_uint) { x, y }
 #define POINT_UL(x, y) \
-	(h5point_ulong) { x, y }
+	(VEC2(h5ulong)) { x, y }
 #define POINT_UM(x, y) \
 	(h5point_umax) { x, y }
 #define POINT_I(x, y) \
-	(h5point_sint) { x, y }
+	(VEC2(h5sint)) { x, y }
 #define POINT_L(x, y) \
-	(h5point_slong) { x, y }
+	(VEC2(h5slong)) { x, y }
 #define POINT_M(x, y) \
-	(h5point_smax) { x, y }
+	(VEC2(h5smax)) { x, y }
 
 typedef struct {
 	size_t height;
@@ -95,17 +95,17 @@ void H5Render_scale(H5Render_PixelData insurf, H5Render_PixelData outsurf,
 void H5Render_getTile(H5Render_Tileset *tileset, H5Render_PixelData outsurf,
 	size_t row, size_t column);
 
-void H5Render_slong_getLinePoints(h5point_slong p1, h5point_slong p2,
-	h5uint length, h5point_slong *ret, size_t n);
+void H5Render_slong_getLinePoints(VEC2(h5slong) p1, VEC2(h5slong) p2,
+	h5uint length, VEC2(h5slong) *ret, size_t n);
 int H5Render_ulong_getRasterInfo(
-	h5point_ulong p1, h5point_ulong p2, h5ulong edges[][2], size_t n);
+	VEC2(h5ulong) p1, VEC2(h5ulong) p2, h5ulong edges[][2], size_t n);
 void H5Render_ulong_drawLine(
-	H5Render_PixelData surf, h5point_ulong p1, h5point_ulong p2, h5uint colour);
+	H5Render_PixelData surf, VEC2(h5ulong) p1, VEC2(h5ulong) p2, h5uint colour);
 void H5Render_ulong_drawPolygon(
-	H5Render_PixelData surf, h5point_ulong *points, size_t n, h5uint colour);
+	H5Render_PixelData surf, VEC2(h5ulong) *points, size_t n, h5uint colour);
 
-void H5Render_ulong_drawTriangle(H5Render_PixelData surf, h5point_ulong p1,
-	h5point_ulong p2, h5point_ulong p3, h5uint colour);
-void H5Render_ulong_drawLineSize(H5Render_PixelData surf, h5point_ulong p1,
-	h5point_ulong p2, h5uint colour, h5uint size);
+void H5Render_ulong_drawTriangle(H5Render_PixelData surf, VEC2(h5ulong) p1,
+	VEC2(h5ulong) p2, VEC2(h5ulong) p3, h5uint colour);
+void H5Render_ulong_drawLineSize(H5Render_PixelData surf, VEC2(h5ulong) p1,
+	VEC2(h5ulong) p2, h5uint colour, h5uint size);
 #endif

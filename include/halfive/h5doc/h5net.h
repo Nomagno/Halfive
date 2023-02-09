@@ -45,7 +45,7 @@ struct H5NET_ServerData {
 	enum H5NET_Type1Enum flags_1; /*If it is -1, SHOULD BE LEFT EMPTY*/
 	enum H5NET_Type2Enum flags_2; /*If it is -1, SHOULD BE LEFT EMPTY*/
 	enum H5NET_Type3Enum flags_3; /*If it is -1, SHOULD BE LEFT EMPTY*/
-	h5point_ulong position;
+	VEC2(h5ulong) position;
 	h5uint leaderboard;
 };
 

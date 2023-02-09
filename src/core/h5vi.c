@@ -145,7 +145,6 @@ unsigned H5VI_setBuffer(H5VI_Reference *ref, const H5Render_PixelData *inbuf)
 }
 #else
 #include <stdlib.h>
-#define H5LIBC_HOSTED
 #include <halfive/h5stdlib.h>
 
 struct h5vi_gen_track {
@@ -159,7 +158,7 @@ unsigned H5VI_init(H5VI_Reference *ref, size_t h, size_t w)
 {
 	globalref.pixels.height = h;
 	globalref.pixels.width	= w;
-	globalref.pixels.data	= h5malloc(h * w * sizeof(h5uint));
+/*	globalref.pixels.data	= h5malloc(h * w * sizeof(h5uint));*/
 	ref->data				= (void *)&globalref;
 
 	return 0;
@@ -167,7 +166,7 @@ unsigned H5VI_init(H5VI_Reference *ref, size_t h, size_t w)
 
 unsigned H5VI_destroy(H5VI_Reference *ref)
 {
-	h5free((((struct h5vi_gen_track *)ref->data)->pixels).data);
+/*	h5free((((struct h5vi_gen_track *)ref->data)->pixels).data);*/
 	return 0;
 }
 

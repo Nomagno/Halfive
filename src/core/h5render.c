@@ -66,7 +66,7 @@ void H5Render_scale(H5Render_PixelData insurf, H5Render_PixelData outsurf,
 }
 /*Bresenham's line drawing algorithm*/
 void H5Render_ulong_drawLine(
-	H5Render_PixelData surf, h5point_ulong p1, h5point_ulong p2, h5uint colour)
+	H5Render_PixelData surf, VEC2(h5ulong) p1, VEC2(h5ulong) p2, h5uint colour)
 {
 	h5slong diffx = (h5_abs(p2.x - p1.x));
 	h5slong diffy = -(h5_abs(p2.y - p1.y));
@@ -96,7 +96,7 @@ void H5Render_ulong_drawLine(
 	}
 }
 int H5Render_ulong_getRasterInfo(
-	h5point_ulong p1, h5point_ulong p2, h5ulong edges[][2], size_t n)
+	VEC2(h5ulong) p1, VEC2(h5ulong) p2, h5ulong edges[][2], size_t n)
 {
 	h5slong diffx = (h5_abs(p2.x - p1.x));
 	h5slong diffy = -(h5_abs(p2.y - p1.y));
@@ -130,8 +130,8 @@ int H5Render_ulong_getRasterInfo(
 	}
 	return (i >= n) ? 1 : 0;
 }
-void H5Render_slong_getLinePoints(h5point_slong p1, h5point_slong p2,
-	h5uint length, h5point_slong *ret, size_t n)
+void H5Render_slong_getLinePoints(VEC2(h5slong) p1, VEC2(h5slong) p2,
+	h5uint length, VEC2(h5slong) *ret, size_t n)
 {
 	h5slong diffx = (h5_abs(p2.x - p1.x));
 	h5slong diffy = -(h5_abs(p2.y - p1.y));
@@ -142,7 +142,7 @@ void H5Render_slong_getLinePoints(h5point_slong p1, h5point_slong p2,
 	h5slong signy = (p1.y < p2.y) ? 1 : -1;
 
 	for (h5uint i = 0; i < length && i < n; i++) {
-		ret[i] = (h5point_slong){p1.x, p1.y};
+		ret[i] = (VEC2(h5slong)){p1.x, p1.y};
 		if ((p1.x == p2.x) && (p1.y == p2.y))
 			break;
 		h5slong e2 = 2 * error;
@@ -162,7 +162,7 @@ void H5Render_slong_getLinePoints(h5point_slong p1, h5point_slong p2,
 }
 
 void H5Render_ulong_drawPolygon(
-	H5Render_PixelData surf, h5point_ulong *points, size_t n, h5uint colour)
+	H5Render_PixelData surf, VEC2(h5ulong) *points, size_t n, h5uint colour)
 {
 	h5ulong edges[surf.height][2];
 	for (h5ulong i = 0; i < surf.height; i++) {
@@ -188,15 +188,15 @@ void H5Render_ulong_drawPolygon(
 	}
 }
 
-void H5Render_ulong_drawTriangle(H5Render_PixelData surf, h5point_ulong p1,
-	h5point_ulong p2, h5point_ulong p3, h5uint colour)
+void H5Render_ulong_drawTriangle(H5Render_PixelData surf, VEC2(h5ulong) p1,
+	VEC2(h5ulong) p2, VEC2(h5ulong) p3, h5uint colour)
 {
-	H5Render_ulong_drawPolygon(surf, (h5point_ulong[]){p1, p2, p3}, 3, colour);
+	H5Render_ulong_drawPolygon(surf, (VEC2(h5ulong)[]){p1, p2, p3}, 3, colour);
 }
 
-void H5Render_ulong_drawRectangle(H5Render_PixelData surf, h5point_ulong p1,
-	h5point_ulong p2, h5point_ulong p3, h5point_ulong p4, h5uint colour)
+void H5Render_ulong_drawRectangle(H5Render_PixelData surf, VEC2(h5ulong) p1,
+	VEC2(h5ulong) p2, VEC2(h5ulong) p3, VEC2(h5ulong) p4, h5uint colour)
 {
 	H5Render_ulong_drawPolygon(
-		surf, (h5point_ulong[]){p1, p2, p3, p4}, 4, colour);
+		surf, (VEC2(h5ulong)[]){p1, p2, p3, p4}, 4, colour);
 }

@@ -57,8 +57,8 @@ warn:
 libhalfive.a : h5stdlib.o h5asm.o h5vm.o h5doc.o h5math.o h5rat.o h5render.o h5pix.o
 	ar rcs libhalfive.a h5stdlib.o h5asm.o h5vm.o h5doc.o h5math.o h5rat.o h5render.o h5pix.o
 
-pamviewer : h5pix.o h5render.o h5math.o
-	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -DH5VI_GSERV_IMPL_SDL2 -DH5VI_IMAGE_VIEWER -o pamview h5vi.c h5pix.o h5render.o h5math.o -lSDL2
+pamviewer : h5pix.o h5render.o h5math.o h5stdlib.o
+	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -DH5VI_GSERV_IMPL_SDL2 -DH5VI_IMAGE_VIEWER -o pamview h5vi.c h5pix.o h5render.o h5math.o h5stdlib.o -lSDL2
 h5assembler : h5assembler.o h5vm.o h5stdlib.o
 	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -o h5asm h5assembler.o h5vm.o h5stdlib.o
 h5assembler.o : h5vm.o
