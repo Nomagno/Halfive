@@ -27,7 +27,7 @@ The data member has addresses (8-bit unsigned memory cells indexed from 0 to 0xF
 	- Output register (`_OU`) (0xFFFD) (RW): Writes to the output register may display the numbers to the user. Reads always yield the value zero
 	- Program counter register low byte (`_PCL`) (0xFFFB) (RO): must contain the low byte of the program counter at ALL TIMES
 	- Program counter register high byte (`_PCH`) (0xFFFA) (RO): must contain the high byte of the program counter at ALL TIMES
-	- Error address (`_ERR`) (0xFFF9) (UN)
+	- Error address (`_ERR`) (0xFFF9) (UM)
 	- General purpose memory (`_GMEM`) (from 0 until 0x3FFF) (RW): General-purpose writable addresses
 	- Read-only drive (`_DRIV`) (from 0x4000 until 0xBFFF) (RO): Read-only addresses, intended to be loaded as static data at the beggining of execution
 
@@ -112,6 +112,7 @@ halt
 	- Perform addition between the value of `R1` and `V2`.
 	- Put the result into the address of `R1`.
 	- If the value 0 was written to the address of `R1`, set _ZF to 0.
+	- Otherwise, set _ZF to 1.
 	- If the operation results in overflow, set _CF to 1.
 	- Otherwise, set _CF to 0.
 
@@ -119,6 +120,7 @@ halt
 	- Perform substraction between the value of `R1` and `V2`.
 	- Put the result into the address of `R1`.
 	- If the value 0 was written to the address of `R1`, set _ZF to 0.
+	- Otherwise, set _ZF to 1.
 	- If the operation results in overflow, set _CF to 1.
 	- Otherwise, set _CF to 0.
 
@@ -126,16 +128,19 @@ halt
 	- Perform binary AND with the value of `R1` and `V2`.
 	- Put the result into the address of `R1`.
 	- If the value 0 was written to the address of `R1`, set _ZF to 0.
+	- Otherwise, set _ZF to 1.
 
 8. or `R1 V2` - Inclusive Or
 	- Perform inclusive OR with the value of `R1` and `V2`.
 	- Put the result into the address of `R1`.
 	- If the value 0 was written to the address of `R1`, set _ZF to 0.
+	- Otherwise, set _ZF to 1.
 
 9. xor `R1 V2` - Exclusive Or
 	- Perform exclusive OR with the value of `R1` and `V2`.
 	- Put the result into the address of `R1`.
 	- If the value 0 was written to the address of `R1`, set _ZF to 0.
+	- Otherwise, set _ZF to 1.
 
 10. shift `R1 V2` - Bitshift
 	- If the value of `V2` is 0-7, bitshift the value of `R1` LEFT  by `V2` bits.
@@ -143,9 +148,12 @@ halt
 	- If the value of `V2` is greater than F, the value of `R1` remains unchanged.
 	- Put the result into the address of `R1`.
 	- If the value 0 was written to the address of `R1`, set _ZF to 0.
+	- Otherwise, set _ZF to 1.
 
 11. cmp `V1 V2` - Comparison
 	- Perform substraction between the value of `V1` and `V2`.
+	- If the value 0 was written to the address of `R1`, set _ZF to 0.
+	- Otherwise, set _ZF to 1.
 	- If the operation results in underflow, set _CF to 1.
 	- Otherwise, set _CF to 0.
 

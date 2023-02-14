@@ -55,7 +55,7 @@ must contain the low byte of the program counter at ALL TIMES</li>
 <li>Program counter register high byte (<code>_PCH</code>) (0xFFFA)
 (RO): must contain the high byte of the program counter at ALL
 TIMES</li>
-<li>Error address (<code>_ERR</code>) (0xFFF9) (UN)</li>
+<li>Error address (<code>_ERR</code>) (0xFFF9) (UM)</li>
 <li>General purpose memory (<code>_GMEM</code>) (from 0 until 0x3FFF)
 (RW): General-purpose writable addresses</li>
 <li>Read-only drive (<code>_DRIV</code>) (from 0x4000 until 0xBFFF)
@@ -188,6 +188,7 @@ address of <code>R1</code>.</p></li>
 <li>Put the result into the address of <code>R1</code>.</li>
 <li>If the value 0 was written to the address of <code>R1</code>, set
 _ZF to 0.</li>
+<li>Otherwise, set _ZF to 1.</li>
 <li>If the operation results in overflow, set _CF to 1.</li>
 <li>Otherwise, set _CF to 0.</li>
 </ul></li>
@@ -198,6 +199,7 @@ _ZF to 0.</li>
 <li>Put the result into the address of <code>R1</code>.</li>
 <li>If the value 0 was written to the address of <code>R1</code>, set
 _ZF to 0.</li>
+<li>Otherwise, set _ZF to 1.</li>
 <li>If the operation results in overflow, set _CF to 1.</li>
 <li>Otherwise, set _CF to 0.</li>
 </ul></li>
@@ -208,6 +210,7 @@ _ZF to 0.</li>
 <li>Put the result into the address of <code>R1</code>.</li>
 <li>If the value 0 was written to the address of <code>R1</code>, set
 _ZF to 0.</li>
+<li>Otherwise, set _ZF to 1.</li>
 </ul></li>
 <li><p>or <code>R1 V2</code> - Inclusive Or</p>
 <ul>
@@ -216,6 +219,7 @@ _ZF to 0.</li>
 <li>Put the result into the address of <code>R1</code>.</li>
 <li>If the value 0 was written to the address of <code>R1</code>, set
 _ZF to 0.</li>
+<li>Otherwise, set _ZF to 1.</li>
 </ul></li>
 <li><p>xor <code>R1 V2</code> - Exclusive Or</p>
 <ul>
@@ -224,6 +228,7 @@ _ZF to 0.</li>
 <li>Put the result into the address of <code>R1</code>.</li>
 <li>If the value 0 was written to the address of <code>R1</code>, set
 _ZF to 0.</li>
+<li>Otherwise, set _ZF to 1.</li>
 </ul></li>
 <li><p>shift <code>R1 V2</code> - Bitshift</p>
 <ul>
@@ -236,11 +241,15 @@ _ZF to 0.</li>
 <li>Put the result into the address of <code>R1</code>.</li>
 <li>If the value 0 was written to the address of <code>R1</code>, set
 _ZF to 0.</li>
+<li>Otherwise, set _ZF to 1.</li>
 </ul></li>
 <li><p>cmp <code>V1 V2</code> - Comparison</p>
 <ul>
 <li>Perform substraction between the value of <code>V1</code> and
 <code>V2</code>.</li>
+<li>If the value 0 was written to the address of <code>R1</code>, set
+_ZF to 0.</li>
+<li>Otherwise, set _ZF to 1.</li>
 <li>If the operation results in underflow, set _CF to 1.</li>
 <li>Otherwise, set _CF to 0.</li>
 </ul></li>
