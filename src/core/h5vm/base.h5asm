@@ -40,12 +40,12 @@
 ; Every instance of macro is replaced with meaning, starting expansion with the ones defined later
 
 ; LABEL
-; <LABELNAME>
+; >LABELNAME>
 ; Must appear at the beggining of a line containing a
 ; regular instruction after the preprocessing stage.
-; All references in the code to >LABELNAME< get replaced
+; All references in the code to <LABELNAME< get replaced
 ; with the difference of the instruction index to instruction
-; index <LABELNAME> appeared in. Used for absolute jumping
+; index >LABELNAME> appeared in. Used for absolute jumping
 ; with skpz and skmz
 
 ; To preprocess your code so it can
@@ -114,13 +114,14 @@
 ; Takes pointer to start of memory to print at pointer 0
 ; And number of times to print at address 2
 #d _PRINT,=0
+a a <PRINT_LOOP<
 func _PRINT @ ; Start of subroutine print
-	<PRINT_LOOP> set _OU *0 ; Print out value at pointer 0
+	>PRINT_LOOP> set _OU *0 ; Print out value at pointer 0
 	add 1 =1 ; Increment pointer low byte
 	add 0 _CF ; Increment pointer high byte
 	sub 2 =1 ; Decrement loop counter
 	INV_ZF ; Invert zero flag
-	skmz >PRINT_LOOP< ; Jump back to start of loop if address 2 is 0
+	skmz <PRINT_LOOP< ; Jump back to start of loop if address 2 is 0
 ret _PRINT @ ; End of subroutine print
 
 set 4 =D

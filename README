@@ -61,7 +61,7 @@ If you read all specifications in the docs, you should be able to:
 Bonus projects in this repo:
 	- Custom Version Control System                    (SWP) (src/h5vcs/)
 	- Custom web client for controlling the server     (UWP) (src/web-control/)
-	- Preprocessor for H5VM assembly                   (SWP) (src/core/h5vm/asmpp.sh)
+	- Preprocessor for H5VM assembly                   (SWP) (src/core/h5vm/pp.sh)
 	- Generate an RSS feed from a directory            (SWP) (docs/news/genfeed.sh)
 	- Generate a traffic page from an nginx log file   (SWP) (docs/trafficgen.sh)
 	- Viewer for PAM files and tilesets (run 'make pamview' in src/core/, requires SDL2 headers) (SWP) (src/core/h5vi.c, part inside #ifdef H5VI_IMAGE_VIEWER)
