@@ -1,3 +1,5 @@
+# SECOND STAGE
+
 function abs(n){ return (n < 0)?(-n):n; }
 BEGIN { FS=" "; state=0; L=0; }
 (state == 0) { LABELS[$1]=$2; if($1 == "----"){ state=1; next; } }
