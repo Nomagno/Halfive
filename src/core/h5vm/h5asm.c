@@ -273,7 +273,7 @@ unsigned H5ASM_run(char **str, size_t stringnum, H5VM_GeneralMemory *mem, h5uint
 int main(void){
 	H5VM_DefaultMemSetup defmem = {0};
 	H5VM_GeneralMemory context = H5VM_init(&(H5VM_CodeMemory){0}, &defmem);
-	h5uchar intlisr[] = {0xDE, 0xAD, 0xBE, 0xEF}; // Integers mapped to the VM
+	h5uchar intlist[] = {0xDE, 0xAD, 0xBE, 0xEF}; // Integers mapped to the VM
 	h5uint adrlist[] = { 0, 1, 2, 3 }; // Addresses to be mapped in the VM
 	char str[40] = {0};
 	
