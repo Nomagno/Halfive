@@ -19,7 +19,6 @@ It has a lot of portable C utility interfaces, such as:
 	- Lisp dialect for the VM         (WIP) (include/halfive/h5vm/h5elq.h)
 	- Rational numbers                (SWP) (include/halfive/h5rat.h)
 	- Other mathematical tools        (UWP) (include/halfive/h5math.h)
-	- Physics engine                  (WIP) (include/halfive/h5phy.h)
 	- Graphics/Sound/input glue code  (UWP) (include/halfive/h5vi.h)
 	- RPG battle simulator            (WIP) (include/halfive/h5rpg.h)
 	- RPG battle simulator prototypes (WIP) (include/halfive/h5rpg_proto.h)
@@ -38,7 +37,7 @@ List of specifications and corresponding MIME types:
 		[ARCHIVED] Halfive Sound Format (H5SND)
 			- sound/flac
 	Domain-specific data formats:
-		Halfive Network (H5NET)
+		[ARCHIVED] Halfive Network (H5NET)
 			- text/x-h5net
 		Halfive Track (H5T)
 			- text/x-h5t
