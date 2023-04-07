@@ -70,8 +70,7 @@
 ; Output register
 #d _OU,FFFC
 ; Program counter low and high
-#d _PCL,FFFB
-#d _PCH,FFFA
+#d _PC,FFFB
 ; Purposefully unmapped memory
 #d _ERR,FFF0
 
@@ -106,36 +105,71 @@
 #d INV_ZF,skpz =2 __ set _ZF =0 __ skpz =1 __ set _ZF =1
 
 ; Constant for info on callstack
-#d @,=CF
+#d @,=C00F
 
-; EXAMPLE PROGRAM, PRINT 'DEADBEEF'
 
 ; Subroutine _PRINT, ID =0
 ; Takes pointer to start of memory to print at pointer 0
-; And number of times to print at address 2
+; And number of times to print at address 1
 #d _PRINT,=0
-a a <PRINT_LOOP<
 func _PRINT @ ; Start of subroutine print
 	>PRINT_LOOP> set _OU *0 ; Print out value at pointer 0
-	add 1 =1 ; Increment pointer low byte
-	add 0 _CF ; Increment pointer high byte
-	sub 2 =1 ; Decrement loop counter
-	INV_ZF ; Invert zero flag
-	skmz <PRINT_LOOP< ; Jump back to start of loop if address 2 is 0
+		add 0 =1 ; Increment pointer
+		sub 1 =1 ; Decrement loop counter
+		INV_ZF ; Invert zero flag
+	skmz <PRINT_LOOP< ; Jump back to start of loop if addr. 1 != 0
 ret _PRINT @ ; End of subroutine print
 
-set 4 =D
-set 5 =E
-set 6 =A
-set 7 =D
-set 8 =B
-set 9 =E
-set A =E
-set B =F ; DEADBEEF
+; EXAMPLE PROGRAM, PRINT 'DEADBEEF'
+	;set 4 =D
+	;set 5 =E
+	;set 6 =A
+	;set 7 =D
+	;set 8 =B
+	;set 9 =E
+	;set A =E
+	;set B =F ; DEADBEEF
+	;set 0 =0004 ; Set start address of string to print
+	;set 1 =8 ; Size of print range
+	;call _PRINT @ ; Call to subroutine print
+	;halt ; Halt
+; END OF EXAMPLE PROGRAM
 
-set 0 =00
-set 1 =04 ; Start address of print range
-set 2 =8 ; Size of print range
-call _PRINT @ ; Call to subroutine print
+; Subroutine _MULT, ID =1
+; Takes first operand at address 0
+; And second operand at address 1
+; Then deposits result of multiplication at address 2
+#d _MULT,=1
+func _MULT @ ; Start of subroutine mult
+	>MULT_LOOP> add 2 0 ; Add first operand
+		sub 1 =1 ; Decrement loop counter
+		INV_ZF ; Invert zero flag
+	skmz <MULT_LOOP< ; Jump back to start of loop if addr. 1 != 0
+ret _MULT @ ; End of subroutine mult
 
+; Subroutine _MULT_REC, ID =2
+; Takes first operand at address 0
+; And second operand at address 1
+; Then deposits result of multiplication at address 2
+#d _MULT_REC,=1
+func _MULT_REC @ ; Start of recursive subroutine mult
+	add 2 0 ; Add first operant
+	sub 1 =1 ; Decrement loop counter
+	skpz =1 ; If zero, skip recursive call
+	call _MULT_REC @ ; Loop
+ret _MULT_REC @ ; End of recursive subroutine mult
+
+; EXAMPLE PROGRAM, MULTIPLY 0x9 and 0x2
+;	set 0 =9 ; Set first operand
+;	set 1 =5 ; Set second operand
+;	call _MULT @ ; Call to subroutine mult
+;	set _OU 2 ; Expected result is 0x2D
+;
+;	set 2 =0 ; Reset output address
+;	set 0 =9 ; Set first operand
+;	set 1 =5 ; Set second operand
+;	call _MULT_RECURSIVE @ ; Call to recursive subroutine mult
+;	set _OU 2 ; Expected result is 0x2D
+;
+;	halt ; Halt
 ; END OF EXAMPLE PROGRAM

@@ -34,11 +34,11 @@ WORK.*/
 #include <halfive/h5req.h>
 #include <halfive/h5vm/h5vm.h>
 h5uint H5ASM_parse(char *linestr, H5VM_InstructionSet *inst, h5uint opnds[3]);
-unsigned H5ASM_run(char **str, size_t stringnum, H5VM_GeneralMemory *mem, h5uint *addresses, h5uchar *mappings, size_t mapping_size);
+unsigned H5ASM_run(char **str, size_t stringnum, H5VM_GeneralMemory *mem, h5uint *addresses, h5uint *mappings, size_t mapping_size);
 
 #define STRARR(...) (char *[]){__VA_ARGS__}, ELEMNUM((char *[]){__VA_ARGS__})
 
 #define ASM(a, b, ...) H5ASM_run(STRARR(__VA_ARGS__), &context, a, b, ELEMNUM(b))
-/*Use as ASM(arrayofints, arraytomap, $(machine code), ... to execute all instructions (comma-separated) from the third argument, mapping the list of addresses from the first argument to the elements of the array in the second argument*/
+/*Use as ASM(arrayofints, arraytomap, $(machine code), ...) to execute all instructions (comma-separated) from the third argument, mapping the list of addresses from the first argument to the elements of the array in the second argument*/
 
 #endif

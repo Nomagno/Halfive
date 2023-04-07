@@ -28,4 +28,5 @@ includepp "$1"           |
 	awk -f pp_1.awk      |
 	sed 's/__/\n/g'      |
 	sed 's/^[ \t]*//g'   |
-	awk -f pp_2.awk
+	awk -f pp_2.awk      |
+	awk -f pp_3.awk

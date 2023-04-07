@@ -35,7 +35,6 @@ WORK.*/
 h5uint H5ASM_parse(char *linestr, H5VM_InstructionSet *inst, h5uint opnds[3]);
 H5VM_InstructionSet _isinst(char *instr);
 h5uint _isxupdigit(h5uchar inchar);
-H5VM_InstructionSet _isinst(char *instr);
 
 /*Define H5ASSEMBLY to enable assembling*/
 #ifdef H5ASSEMBLY
@@ -74,9 +73,7 @@ int main(int argc, char **argv)
 	fread(mem.driv, 1, sizeof(mem.driv), drivefile);
 
 	int return_code = 0;
-	h5uint prevcode = 0;
 	while (1) {
-		prevcode = prog.co;
 		if ((prog.code.opnd[prog.co][0] ==
 				0xFFFD) || /*Preemtive/non-polling-but-ontime input, cheats
 					 a bit by essentially peeking at the operands*/
@@ -87,9 +84,8 @@ int main(int argc, char **argv)
 			mem.in = readin;
 		}
 
-		h5uint prevco = prog.co;
-
 #ifdef H5ASM_VERBOSE
+		h5uint prevco = prog.co;
 		printf(
 			"BEFORE: PC %4u -- %u, %u, %u, %u, %u, %u, %4X (%2X), %4X (%2X)\n",
 			prog.co, rwinf.was_err, rwinf.wrote_adrw, rwinf.read_adrw,
@@ -240,7 +236,7 @@ H5VM_InstructionSet _isinst(char *instr)
 		return (H5VM_InstructionSet)16;
 }
 
-unsigned H5ASM_run(char **str, size_t stringnum, H5VM_GeneralMemory *mem, h5uint *addresses, h5uchar *mappings, size_t mapping_size) {
+unsigned H5ASM_run(char **str, size_t stringnum, H5VM_GeneralMemory *mem, h5uint *addresses, h5uint *mappings, size_t mapping_size) {
 	unsigned return_co;
 
 	for (size_t j = 0; j < mapping_size; j++) {
@@ -273,7 +269,7 @@ unsigned H5ASM_run(char **str, size_t stringnum, H5VM_GeneralMemory *mem, h5uint
 int main(void){
 	H5VM_DefaultMemSetup defmem = {0};
 	H5VM_GeneralMemory context = H5VM_init(&(H5VM_CodeMemory){0}, &defmem);
-	h5uchar intlist[] = {0xDE, 0xAD, 0xBE, 0xEF}; // Integers mapped to the VM
+	h5uint intlist[] = {0xDE, 0xAD, 0xBE, 0xEF}; // Integers mapped to the VM
 	h5uint adrlist[] = { 0, 1, 2, 3 }; // Addresses to be mapped in the VM
 	char str[40] = {0};
 	

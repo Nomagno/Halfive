@@ -34,7 +34,7 @@ separately into two different &#x2018;members&#x2019;. The machine code is loade
 the code member, while the data member contains almost all information
 that is manipulated during the program execution itself.</p>
 <p>The code member is read-only.</p>
-<p>The data member has addresses (8-bit unsigned memory cells indexed
+<p>The data member has addresses (16-bit unsigned memory cells indexed
 from 0 to 0xFFFF) that are either read/write (RW), read-only (RO), or
 unmapped (UM). These three properties are referred to as the
 &#x2018;permission&#x2019; of an address.</p>
@@ -47,15 +47,12 @@ permissions:
 <li>Carry flag (<code>_CF</code>) (0xFFFE) (RW)</li>
 <li>Input register (<code>_IN</code>) (0xFFFD) (RO): Reads to the input
 register may prompt the user for numbers</li>
-<li>Output register (<code>_OU</code>) (0xFFFD) (RW): Writes to the
+<li>Output register (<code>_OU</code>) (0xFFFC) (RW): Writes to the
 output register may display the numbers to the user. Reads always yield
 the value zero</li>
-<li>Program counter register low byte (<code>_PCL</code>) (0xFFFB) (RO):
-must contain the low byte of the program counter at ALL TIMES</li>
-<li>Program counter register high byte (<code>_PCH</code>) (0xFFFA)
-(RO): must contain the high byte of the program counter at ALL
-TIMES</li>
-<li>Error address (<code>_ERR</code>) (0xFFF9) (UM)</li>
+<li>Program counter register (<code>_PCH</code>) (0xFFFA) (RO): The
+program counter value at ALL TIMES</li>
+<li>Error address (<code>_ERR</code>) (0xFFF0) (UM)</li>
 <li>General purpose memory (<code>_GMEM</code>) (from 0 until 0x3FFF)
 (RW): General-purpose writable addresses</li>
 <li>Read-only drive (<code>_DRIV</code>) (from 0x4000 until 0xBFFF)
@@ -66,9 +63,9 @@ beggining of execution</li>
 <h4>Machine code format:</h4>
 <ul>
 <li>A program is a sequence of instructions.</li>
-<li>Each instruction is 5 bytes in length, and has 4 parts stored
-sequentially: the type nibble (4 bits), the opcode (4 bits), the first
-operand (16 bits), and the second operand (16 bits)</li>
+<li>Each instruction is 5 octets in length (40 bits), and has 4 parts
+stored sequentially: the type nibble (4 bits), the opcode (4 bits), the
+first operand (16 bits), and the second operand (16 bits)</li>
 <li>The type nibble indicates the type of the operands:
 <ul>
 <li>If the lowest bit is zero, the second operand is an of type ADDRESS,
@@ -78,10 +75,9 @@ ADDRESS, else it is of type <code>[OPTYPE]</code>.</li>
 <li>The third lowest bit is irrelevant.</li>
 <li>If highest bit is zero, subsitute <code>[OPTYPE]</code> above with
 CONSTANT. If it is one, subsitute it with DERREFERENCE.</li>
-<li>DERREFERENCES hold a 16-bit memory address as big-endian at the
-address of the operand, and the next address. This is the address that
-is operated on by the instruction. See the opcodes explanation bullet
-point and example</li>
+<li>DERREFERENCES hold a 16-bit memory address that is accessed, and the
+value of that memory address is the memory cell the instruction operares
+on.</li>
 </ul></li>
 <li>The opcode indicates the operation to be done, see the explanation
 of opcodes below.</li>
@@ -133,18 +129,16 @@ halt</code></pre>
 <li>There are currently SIXTEEN (16) opcodes, each numbered with the
 decimal number for use in the opcode nibble.</li>
 <li>By address of/value of a DERREFERENCE, what is meant is that what
-will be read is the value of the address pointed to by THAT ADDRESS AND
-THE NEXT ONE (e.g.&#xA0;*2 denotes the contents of memory address 0x02 and
-0x03) TREATED AS A SINGLE 16-BIT NUMBER (big-endian). THAT NUMBER will
-be the address that is written to/read from. This is better ilustrated
-with an example:</li>
+will be read is the value of the address pointed to by THAT ADDRESS
+(e.g.&#xA0;*2 denotes the contents of memory address 0x0002 TREATED AS AN
+ADDRESS.. THAT will be the address that is written to/read from). This
+is better ilustrated with an example:</li>
 </ul>
-<pre><code>set 0 =20
-set 1 =02
+<pre><code>set 0 =0020
 set *0 =30
 halt</code></pre>
 <ul>
-<li>After this program is ran, address 0x2002 will have the value
+<li>After this program is ran, address 0x0020 will have the value
 0x30</li>
 <li>Notation explanation:
 <ul>
@@ -161,23 +155,19 @@ permanently</p></li>
 <li><p>jmp <code>V1</code> - Jump</p>
 <ul>
 <li>Change program counter to the value of <code>V1</code></li>
-<li>SPECIAL EXCEPTION: Takes 16-bit constants. Addresses are treated the
-same as constants. Derreferences are treated as program counter values
-where the highest 8 bits are the value of the address corresponding to
-the operand, and the lowest 8 bits are the value of (address of the
-operand)+1</li>
+<li>Addresses are treated the same as constants. Derreferences are
+treated as pointers to the address containing the program counter to
+set.</li>
 </ul></li>
 <li><p>skpz <code>C1</code> - Skip plus if zero</p>
 <ul>
 <li>If _ZF has the value 0, add <code>C1</code>+1 to program
 counter.</li>
-<li>SPECIAL EXCEPTION: Takes 16-bit constants.</li>
 </ul></li>
 <li><p>skmz <code>C1</code> - Skip minus if zero</p>
 <ul>
 <li>If _ZF has the value 0, substract (<code>C1</code>+1) from program
 counter.</li>
-<li>SPECIAL EXCEPTION: Takes 16-bit constants.</li>
 </ul></li>
 <li><p>set <code>R1 V2</code> - Copy the value of <code>V2</code> to the
 address of <code>R1</code>.</p></li>
@@ -232,11 +222,11 @@ _ZF to 0.</li>
 </ul></li>
 <li><p>shift <code>R1 V2</code> - Bitshift</p>
 <ul>
-<li>If the value of <code>V2</code> is 0-7, bitshift the value of
+<li>If the value of <code>V2</code> is 0x00-0x0F, bitshift the value of
 <code>R1</code> LEFT by <code>V2</code> bits.</li>
-<li>If the value of <code>V2</code> is 8-F, bitshift the value of
-<code>R1</code> RIGHT by (<code>V2-8</code>) bits.</li>
-<li>If the value of <code>V2</code> is greater than F, the value of
+<li>If the value of <code>V2</code> is 0x10-0x1F, bitshift the value of
+<code>R1</code> RIGHT by (<code>V2-0x10</code>) bits.</li>
+<li>If the value of <code>V2</code> is greater than 0x1F, the value of
 <code>R1</code> remains unchanged.</li>
 <li>Put the result into the address of <code>R1</code>.</li>
 <li>If the value 0 was written to the address of <code>R1</code>, set
@@ -271,21 +261,21 @@ program counter as (start of subroutine <code>C1</code>).</li>
 <li>Move program counter to (start of subroutine
 <code>C1</code>)+1.</li>
 <li>Creates a new stack frame by increasing the stack pointer at (High
-nibble of <code>C2</code>)<code>*</code>4096.</li>
-<li>The stack frame has size (Low nibble of
-<code>C2</code>)<code>*</code>2+2.</li>
-<li>The first two bytes of the stack frame are the return address.</li>
+octet of <code>C2</code>)<code>*</code>256.</li>
+<li>The stack frame has size (Low octet of <code>C2</code> + 1) in
+memory cells.</li>
+<li>The first memory cell of the stack frame is the return address.</li>
 <li>The return address is written down as the program counter
 corresponding to the instruction after this one.</li>
 </ul></li>
-<li><p>frame <code>V1 C2</code></p>
+<li><p>frame <code>R1 C2</code></p>
 <ul>
 <li>Get current stack frame information</li>
-<li>(High nibble of <code>C2*4096</code>) is the start address of the
-stack.</li>
-<li>(Low nibble of <code>C2</code>)<code>*</code>2+2 is the size in
-bytes of each stack frame.</li>
+<li>(High octet of <code>C2</code>)<code>*</code>256 is the start
+address of the stack.</li>
+<li>(Low octet of <code>C2</code> + 1) is the size in memory cells of
+each stack frame.</li>
 <li>The address of the current stack frame is deposited as a 16-bit
-number to the addresses <code>V1</code> and <code>V1+1</code>.</li>
+number to the address <code>R1</code>.</li>
 </ul></li>
 </ol>

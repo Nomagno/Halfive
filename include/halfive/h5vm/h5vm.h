@@ -30,12 +30,14 @@ WORK.*/
 /*Halfive Virtual Machine implementation*/
 /*IMPORTANT: READ THE H5VM SPEC*/
 
+/*H5VM words are 16-bits long*/
+
 #ifndef H5VM_H
 #define H5VM_H
 #include <halfive/h5req.h>
 
 #define MEMUNIT 0x1000 /*Minimal byte chunks*/
-#define MEMSIZE 16	   /*Size in MEMUNIT byte chunks*/
+#define MEMSIZE 16	   /*Size in MEMUNIT word chunks*/
 
 /* THERE MUST BE AT LEAST ENOUGH SPACE FOR THE 16 SPECIAL REGISTERS: */
 /* (MEMUNIT * (MEMSIZE - GMEMSIZE - DRIVSIZE)) >= 16*/
@@ -45,15 +47,15 @@ WORK.*/
 	 memory*/
 
 /*These three are guaranteed to be contiguous*/
-#define GMEMSIZE 4 /*Size in MEMUNIT byte chunks*/
-#define DRIVSIZE 8 /*Size in MEMUNIT byte chunks*/
-#define STACKSIZE 1 /*Size in MEMUNIT byte chunks*/
+#define GMEMSIZE 4 /*Size in MEMUNIT word chunks*/
+#define DRIVSIZE 8 /*Size in MEMUNIT word chunks*/
+#define STACKSIZE 1 /*Size in MEMUNIT word chunks*/
 
-#define FMEMSIZE 64 /*Size in bytes of the subroutine memory*/
+#define FMEMSIZE 64 /*Size in words of the subroutine memory*/
 
 /*Halfive Virtual Machine
 
-(AT THE BOTTOM OF THIS BIG COMMENT BLOCK YOU HAVE THE ACTUAL CODE)
+(AT THE BOTTOM OF THIS BIG COMMENT BLOCK YOU HAVE THE ACTUAL DEFINITIONS)
 
 Instructions are terminated by newline, and the number of arguments shown in
 comments is REQUIRED
@@ -67,12 +69,14 @@ second address, third bit is padding, high bit indicates they are literals and
 NOT pointers), then 4 bits for the instructions themselves (check the listed
 values) then two 16-bit 'arguments' (0-2), and repeat.
 
-EXAMPLE:
 BINARY: 0001 0101 000000000000001 000000000011111 0000 0000 0000000000000000 0000000000000000
-DECIMAL:   1    5               1              31    0    0                0                0
+HEX:    0x01 0x05            0x01            0x1F 0x00 0x00             0x00             0x00
+DECIMAL:   1    5               1              31 0       0                0                0
 ASSEMBLY:     add               1             =1F      halt
-ENGLISH: add the contents of address ONE and the number 1F, put the result back
-into address ONE, halt
+ENGLISH: add the contents of address ONE and the constant 0x1F, put the result in address ONE; stop execution
+PROPER ASSEMBLY:
+	add 1 =1F
+	halt
 
 ASSEMBLY FORMAT:
 	It codes almost directly to the binary format. The available instructions
@@ -93,15 +97,13 @@ type of its arguments
 
 1. jmp `V1` - Jump
 	- Change program counter to the value of `V1`
-	- SPECIAL EXCEPTION: Takes 16-bit literals. Addresses are treated the same as literals. Pointers are treated as addresses where the highest 8 bits are the value of the address corresponding to the operand, and the lowest 8 bits are the value of (address of the operand)+1
+	- Addresses are treated the same as constants. Derreferences are treated as pointers to the address containing the program counter to set.
 
-2. skpz `L1` - Skip plus if zero
-	- If _ZF has the value 0, add `L1`+1 to program counter.
-	- SPECIAL EXCEPTION: Takes 16-bit literals.
+2. skpz `C1` - Skip plus if zero
+	- If _ZF has the value 0, add `C1`+1 to program counter.
 
-3. skmz `L1` - Skip minus if zero
-	- If _ZF has the value 0, substract (`L1`+1) from program counter.
-	- SPECIAL EXCEPTION: Takes 16-bit literals.
+3. skmz `C1` - Skip minus if zero
+	- If _ZF has the value 0, substract (`C1`+1) from program counter.
 
 4. set `R1 V2` - Copy the value of `V2` to the address of `R1`.
 
@@ -109,6 +111,7 @@ type of its arguments
 	- Perform addition between the value of `R1` and `V2`.
 	- Put the result into the address of `R1`.
 	- If the value 0 was written to the address of `R1`, set _ZF to 0.
+	- Otherwise, set _ZF to 1.
 	- If the operation results in overflow, set _CF to 1.
 	- Otherwise, set _CF to 0.
 
@@ -116,6 +119,7 @@ type of its arguments
 	- Perform substraction between the value of `R1` and `V2`.
 	- Put the result into the address of `R1`.
 	- If the value 0 was written to the address of `R1`, set _ZF to 0.
+	- Otherwise, set _ZF to 1.
 	- If the operation results in overflow, set _CF to 1.
 	- Otherwise, set _CF to 0.
 
@@ -123,16 +127,19 @@ type of its arguments
 	- Perform binary AND with the value of `R1` and `V2`.
 	- Put the result into the address of `R1`.
 	- If the value 0 was written to the address of `R1`, set _ZF to 0.
+	- Otherwise, set _ZF to 1.
 
 8. or `R1 V2` - Inclusive Or
 	- Perform inclusive OR with the value of `R1` and `V2`.
 	- Put the result into the address of `R1`.
 	- If the value 0 was written to the address of `R1`, set _ZF to 0.
+	- Otherwise, set _ZF to 1.
 
 9. xor `R1 V2` - Exclusive Or
 	- Perform exclusive OR with the value of `R1` and `V2`.
 	- Put the result into the address of `R1`.
 	- If the value 0 was written to the address of `R1`, set _ZF to 0.
+	- Otherwise, set _ZF to 1.
 
 10. shift `R1 V2` - Bitshift
 	- If the value of `V2` is 0-7, bitshift the value of `R1` LEFT  by `V2` bits.
@@ -140,33 +147,36 @@ type of its arguments
 	- If the value of `V2` is greater than F, the value of `R1` remains unchanged.
 	- Put the result into the address of `R1`.
 	- If the value 0 was written to the address of `R1`, set _ZF to 0.
+	- Otherwise, set _ZF to 1.
 
 11. cmp `V1 V2` - Comparison
 	- Perform substraction between the value of `V1` and `V2`.
+	- If the value 0 was written to the address of `R1`, set _ZF to 0.
+	- Otherwise, set _ZF to 1.
 	- If the operation results in underflow, set _CF to 1.
 	- Otherwise, set _CF to 0.
 
-12. func `L1 L2`
-	- Writes down (preferrably in a place not normally addressable) the program counter as (start of subroutine `L1`).
+12. func `C1`
+	- Writes down (preferrably in a place not normally addressable) the program counter as (start of subroutine `C1`).
 	- Moves the program counter to directly after the closest `ret` instruction.
 
-13. ret `L1 L2`
-	- Marks the end of subroutine `L1`.
+13. ret `C1 C2`
+	- Marks the end of subroutine `C1`.
 	- When reached, the current stack frame is deleted.
 	- Afterwards, the program counter is set to the return address.
 
-14. call `L1 L2`
-	- Move program counter to (start of subroutine `L1`)+1.
-	- Creates a new stack frame by increasing the stack pointer at (High nibble of `L2`)`*`4096.
-	- The stack frame has size (Low nibble of `L2`)`*`2+2.
-	- The first two bytes of the stack frame are the return address.
+14. call `C1 C2`
+	- Move program counter to (start of subroutine `C1`)+1.
+	- Creates a new stack frame by increasing the stack pointer at (High octet of `C2`)`*`256.
+	- The stack frame has size (Low octet of `C2` +  1) in memory cells.
+	- The first memory cell of the stack frame is the return address.
 	- The return address is written down as the program counter corresponding to the instruction after this one.
 
-15. frame `V1 L2`
+15. frame `R1 C2`
 	- Get current stack frame information
-	- (High nibble of `L2*4096`) is the start address of the stack.
-	- (Low  nibble of `L2`)`*`2+2   is the size in bytes of each stack frame.
-	- The address of the current stack frame is deposited as a 16-bit number to the addresses `V1` and `V1+1`.
+	- (High octet of `C2`)`*`256 is the start address of the stack.
+	- (Low  octet of `C2` + 1) is the size in memory cells of each stack frame.
+	- The address of the current stack frame is deposited as a 16-bit number to the address `R1`.
 */
 typedef enum {
 	Inst_halt = 0,
@@ -187,25 +197,27 @@ typedef enum {
 	Inst_frame = 15
 } H5VM_InstructionSet;
 
-/*Callstack layout for example info byte CF:
-C000, C001: Stack pointer
-C002, C003: Return address of first frame
-C004, C005: Variable 1 of first frame
-C006, C007: Variable 2 of first frame
-C008, C009: Variable 3 of first frame
-C00A, C00B: Variable 4 of first frame
-C00C, C00D: Variable 5 of first frame
-C00E, C00F: Variable 6 of first frame
-C010, C011: Variable 7 of first frame
-C012, C013: Variable 8 of first frame
-C014, C015: Variable 9 of first frame
-C016, C017: Variable A of first frame
-C018, C019: Variable B of first frame
-C01A, C01B: Variable C of first frame
-C01C, C01D: Variable D of first frame
-C01E, C01F: Variable E of first frame
-C020, C021: Variable F of first frame
-C022, C023: Return address of second frame
+/*Callstack layout for example info byte C00F:
+C000: Stack pointer
+
+C001: Return address of first frame
+C002: Variable 1 of first frame
+C003: Variable 2 of first frame
+C004: Variable 3 of first frame
+C005: Variable 4 of first frame
+C006: Variable 5 of first frame
+C007: Variable 6 of first frame
+C008: Variable 7 of first frame
+C009: Variable 8 of first frame
+C00A: Variable 9 of first frame
+C00B: Variable 10 of first frame
+C00C: Variable 11 of first frame
+C00D: Variable 12 of first frame
+C00E: Variable 13 of first frame
+C00F: Variable 14 of first frame
+C010: Variable 15 of first frame
+
+C011: Return address of second frame
 ...
 */
 
@@ -225,10 +237,10 @@ typedef struct {
 } H5VM_CodeMemory;
 
 /*Approximate size on disk for MEMUNIT = 0x1000, MEMSIZE = 16:
-100KBs*/
+200KBs*/
 typedef struct {
 	H5VM_CodeMemory code;			  /*Code memory*/
-	h5uchar *data[MEMUNIT * MEMSIZE]; /*Data memory, default setup:
+	h5uint *data[MEMUNIT * MEMSIZE]; /*Data memory, default setup:
 	- GEN mem (RW), 0x0000 to 0x3FFF, RECOMMENDED TO EXIST
 	- DRIVE mem (R-only), 0x4000 to 0xBFFF, RECOMMENDED TO EXIST
 	- CALLSTACK mem (RW), 0xC000 to 0xCFFF, RECOMMENDED TO EXIST
@@ -251,15 +263,14 @@ typedef struct {
 
 /*Default memory setup*/
 typedef struct {
-	h5uchar gmem[MEMUNIT * GMEMSIZE];
-	h5uchar driv[MEMUNIT * DRIVSIZE];
-	h5uchar stack[MEMUNIT * STACKSIZE];
-	h5uchar zf;
-	h5uchar cf;
-	h5uchar in;
-	h5uchar ou;
-	h5uchar *co_high;
-	h5uchar *co_low;
+	h5uint gmem[MEMUNIT * GMEMSIZE];
+	h5uint driv[MEMUNIT * DRIVSIZE];
+	h5uint stack[MEMUNIT * STACKSIZE];
+	h5uint zf;
+	h5uint cf;
+	h5uint in;
+	h5uint ou;
+	h5uint *prog_co_adr;
 } H5VM_DefaultMemSetup;
 
 typedef struct {

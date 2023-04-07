@@ -71,11 +71,11 @@ bbbbbbbb      bbbbbbbb
 |             -------------- Least Significant Byte of the address pointed to
 |--------------------------- Most Significant Byte  of the address pointed to
 */
-#define GETPTR(memory, address) ((memory[address] << 8) | (memory[address + 1]))
+#define GETPTR(memory, address) (memory[address])
 
 /*Check no null pointers will be dereferenced*/
 #define PTR_VALID(memory, address)                               \
-	((memory[address] != NULL && memory[address + 1] != NULL) && \
+	((memory[address] != NULL) && \
 		(memory[GETPTR(*memory, address)] != NULL))
 
 #define GETVAR(out, operands, operand_position, rvar)                        \
@@ -113,16 +113,15 @@ bbbbbbbb      bbbbbbbb
 /*DEFAULTS IN COMMENTS*/
 /*MEMUNIT: 4096*/
 /*MEMSIZE: 16*/
-#define _ZF			(MEMUNIT * MEMSIZE - 1)	 /*0xFFFF*/
-#define _CF			(MEMUNIT * MEMSIZE - 2)	 /*0xFFFE*/
-#define _IN			(MEMUNIT * MEMSIZE - 3)	 /*0xFFFD*/
-#define _OU			(MEMUNIT * MEMSIZE - 4)	 /*0xFFFC*/
-#define _PC_HIGH	(MEMUNIT * MEMSIZE - 5)	 /*0xFFFB*/
-#define _PC_LOW		(MEMUNIT * MEMSIZE - 6)	 /*0xFFFA*/
+#define _ZF	        (MEMUNIT * MEMSIZE - 1)	 /*0xFFFF*/
+#define _CF	        (MEMUNIT * MEMSIZE - 2)	 /*0xFFFE*/
+#define _IN	        (MEMUNIT * MEMSIZE - 3)	 /*0xFFFD*/
+#define _OU	        (MEMUNIT * MEMSIZE - 4)	 /*0xFFFC*/
+#define _PC_ADR     (MEMUNIT * MEMSIZE - 5)	 /*0xFFFB*/
 #define _ERROR_ADDR (MEMUNIT * MEMSIZE - 15) /*0xFFF0*/
 
 /*GUARANTEED TO BE CONTIGUOUS*/
-#define _GMEMMAX	 (MEMUNIT*GMEMSIZE - 1)		/*0x3FFF*/
+#define _GMEMMAX (MEMUNIT*GMEMSIZE - 1)		/*0x3FFF*/
 #define _DRIVMAX (MEMUNIT*DRIVSIZE + _GMEMMAX) /*0xBFFF*/
 #define _STACKMAX (MEMUNIT*STACKSIZE + _DRIVMAX) /*0xCFFF*/
 
@@ -136,11 +135,8 @@ H5VM_GeneralMemory H5VM_init(
 	H5VM_CodeMemory *code, H5VM_DefaultMemSetup *rawmem)
 {
 	H5VM_GeneralMemory returnval = {(H5VM_InstructionSet)0};
-	returnval.code				 = *code;
-	rawmem->co_high = (IS_LITTLE_ENDIAN) ? ((h5uchar *)&returnval.co)
-										 : ((h5uchar *)&returnval.co + 1);
-	rawmem->co_low	= (IS_LITTLE_ENDIAN) ? ((h5uchar *)&returnval.co + 1)
-										 : ((h5uchar *)&returnval.co);
+	returnval.code = *code;
+	rawmem->prog_co_adr = &returnval.co;
 
 	for (h5ulong i = 0; i < (MEMUNIT * MEMSIZE); i++) {
 		if (i <= _GMEMMAX) {
@@ -159,11 +155,8 @@ H5VM_GeneralMemory H5VM_init(
 			returnval.mask[i] = 1; /*Read-only*/
 		} else if (i == _OU) {
 			returnval.data[i] = &(rawmem->ou);
-		} else if (i == _PC_HIGH) {
-			returnval.data[i] = rawmem->co_high;
-			returnval.mask[i] = 1; /*Read-only*/
-		} else if (i == _PC_LOW) {
-			returnval.data[i] = rawmem->co_low;
+		} else if (i == _PC_ADR) {
+			returnval.data[i] = rawmem->prog_co_adr;
 			returnval.mask[i] = 1; /*Read-only*/
 		}
 	}
@@ -183,15 +176,15 @@ unsigned H5VM_execute(H5VM_GeneralMemory *program, H5VM_ReadWriteInfo *rwinf)
 
 	unsigned return_code = 0;
 
-	h5uchar getnum_orig	  = 0;
-	h5uint setnum_dest	  = 0;
+	h5uint getnum_orig    = 0;
+	h5uint setnum_dest    = 0;
 	enum optype dest_type = (enum optype)0;
 
 	_Bool donot_save = 0; /*0 - set main address; 1 - only set zf/cf*/
-	h5uchar set_cf	 = 0; /*0 - don't touch; 1 - set to 1; 2 - set to zero;*/
-	h5uchar set_zf	 = 0; /*0 - don't touch; 1 - set to 1; 2 - set to zero;*/
-	h5uint tmpchar1	 = 0;
-	h5uint tmpchar2	 = 0;
+	h5uint set_cf   = 0; /*0 - don't touch; 1 - set to 1; 2 - set to zero;*/
+	h5uint set_zf   = 0; /*0 - don't touch; 1 - set to 1; 2 - set to zero;*/
+	h5uint tmpint1   = 0;
+	h5uint tmpint2   = 0;
 
 	switch (program->code.inst[_PROG_CO]) {
 	case Inst_halt:
@@ -200,8 +193,9 @@ unsigned H5VM_execute(H5VM_GeneralMemory *program, H5VM_ReadWriteInfo *rwinf)
 	case Inst_jmp:
 		goto _jmp;
 	case Inst_skpz:
-		if (*(DATA[_ZF]) == 0)
+		if (*(DATA[_ZF]) == 0) {
 			_PROG_CO += CURR_OP[0];
+		}
 		_PROG_CO += 1;
 		break;
 	case Inst_skmz:
@@ -225,68 +219,68 @@ unsigned H5VM_execute(H5VM_GeneralMemory *program, H5VM_ReadWriteInfo *rwinf)
 		}
 		break;
 	case Inst_add:
-		GETVAR(tmpchar1, CURR_OP, FIRST_OPERAND, 0);
-		GETVAR(tmpchar2, CURR_OP, SECOND_OPERAND, 1);
+		GETVAR(tmpint1, CURR_OP, FIRST_OPERAND, 0);
+		GETVAR(tmpint2, CURR_OP, SECOND_OPERAND, 1);
 		setnum_dest = CURR_OP[0];
 		dest_type	= GETTYPE(CURR_OP, 1);
-		getnum_orig = tmpchar1 + tmpchar2;
-		set_cf = ((getnum_orig < tmpchar1) || (getnum_orig < tmpchar2)) ? 1 : 2;
+		getnum_orig = tmpint1 + tmpint2;
+		set_cf = ((getnum_orig < tmpint1) || (getnum_orig < tmpint2)) ? 1 : 2;
 		set_zf = (getnum_orig == 0) ? 2 : 1;
 		goto _set;
 		break;
 	case Inst_sub:
-		GETVAR(tmpchar1, CURR_OP, FIRST_OPERAND, 0);
-		GETVAR(tmpchar2, CURR_OP, SECOND_OPERAND, 1);
+		GETVAR(tmpint1, CURR_OP, FIRST_OPERAND, 0);
+		GETVAR(tmpint2, CURR_OP, SECOND_OPERAND, 1);
 		setnum_dest = CURR_OP[0];
 		dest_type	= GETTYPE(CURR_OP, 1);
-		getnum_orig = tmpchar1 - tmpchar2;
-		set_cf		= (getnum_orig < tmpchar2) ? 1 : 2;
+		getnum_orig = tmpint1 - tmpint2;
+		set_cf		= (getnum_orig < tmpint2) ? 1 : 2;
 		set_zf		= (getnum_orig == 0) ? 2 : 1;
 		goto _set;
 		break;
 	case Inst_cmp:
-		GETVAR(tmpchar1, CURR_OP, FIRST_OPERAND, 0);
-		GETVAR(tmpchar2, CURR_OP, SECOND_OPERAND, 1);
-		getnum_orig = tmpchar1 - tmpchar2;
-		set_cf		= (getnum_orig > tmpchar1) ? 1 : 2;
+		GETVAR(tmpint1, CURR_OP, FIRST_OPERAND, 0);
+		GETVAR(tmpint2, CURR_OP, SECOND_OPERAND, 1);
+		getnum_orig = tmpint1 - tmpint2;
+		set_cf		= (getnum_orig > tmpint1) ? 1 : 2;
 		set_zf		= (getnum_orig == 0) ? 2 : 1;
 		donot_save	= 1;
 		goto _set;
 		break;
 	case Inst_and:
-		GETVAR(tmpchar1, CURR_OP, FIRST_OPERAND, 0);
-		GETVAR(tmpchar2, CURR_OP, SECOND_OPERAND, 1);
+		GETVAR(tmpint1, CURR_OP, FIRST_OPERAND, 0);
+		GETVAR(tmpint2, CURR_OP, SECOND_OPERAND, 1);
 		setnum_dest = CURR_OP[0];
 		dest_type	= GETTYPE(CURR_OP, 1);
-		getnum_orig = tmpchar1 & tmpchar2;
+		getnum_orig = tmpint1 & tmpint2;
 		set_zf		= (getnum_orig == 0) ? 2 : 1;
 		goto _set;
 		break;
 	case Inst_xor:
-		GETVAR(tmpchar1, CURR_OP, FIRST_OPERAND, 0);
-		GETVAR(tmpchar2, CURR_OP, SECOND_OPERAND, 1);
+		GETVAR(tmpint1, CURR_OP, FIRST_OPERAND, 0);
+		GETVAR(tmpint2, CURR_OP, SECOND_OPERAND, 1);
 		setnum_dest = CURR_OP[0];
 		dest_type	= GETTYPE(CURR_OP, 1);
-		getnum_orig = tmpchar1 ^ tmpchar2;
+		getnum_orig = tmpint1 ^ tmpint2;
 		set_zf		= (getnum_orig == 0) ? 2 : 1;
 		goto _set;
 		break;
 	case Inst_or:
-		GETVAR(tmpchar1, CURR_OP, FIRST_OPERAND, 0);
-		GETVAR(tmpchar2, CURR_OP, SECOND_OPERAND, 1);
+		GETVAR(tmpint1, CURR_OP, FIRST_OPERAND, 0);
+		GETVAR(tmpint2, CURR_OP, SECOND_OPERAND, 1);
 		setnum_dest = CURR_OP[0];
 		dest_type	= GETTYPE(CURR_OP, 1);
-		getnum_orig = tmpchar1 | tmpchar2;
+		getnum_orig = tmpint1 | tmpint2;
 		set_zf		= (getnum_orig == 0) ? 2 : 1;
 		goto _set;
 		break;
 	case Inst_shift:
-		GETVAR(tmpchar1, CURR_OP, FIRST_OPERAND, 0);
-		GETVAR(tmpchar2, CURR_OP, SECOND_OPERAND, 1);
+		GETVAR(tmpint1, CURR_OP, FIRST_OPERAND, 0);
+		GETVAR(tmpint2, CURR_OP, SECOND_OPERAND, 1);
 		setnum_dest = CURR_OP[0];
 		dest_type	= GETTYPE(CURR_OP, 1);
-		getnum_orig = (tmpchar2 < 8) ? (tmpchar1 << tmpchar2)
-									 : (tmpchar1 >> (tmpchar2 - 8));
+		getnum_orig = (tmpint2 < 0x10) ? (tmpint1 << tmpint2)
+									 : (tmpint1 >> (tmpint2 - 0x10));
 		set_zf		= (getnum_orig == 0) ? 2 : 1;
 		goto _set;
 		break;
@@ -311,71 +305,39 @@ unsigned H5VM_execute(H5VM_GeneralMemory *program, H5VM_ReadWriteInfo *rwinf)
 		} /*ERROR: No matching 'ret'!*/
 		break;
 	case Inst_ret: {
-		/*Must move stack pointer backwards*/
-		h5uchar oldval_high = *DATA[(CURR_OP[1] >> 4)*MEMUNIT];
-		h5uchar oldval_low = *DATA[(CURR_OP[1] >> 4)*MEMUNIT+1];
-		*DATA[(CURR_OP[1] >> 4)*MEMUNIT+1] -= ((CURR_OP[1] & 0x0F)+1)*2;
-		h5uchar newval_low = *DATA[(CURR_OP[1] >> 4)*MEMUNIT+1];
-		if (newval_low > oldval_low){ /*Underflow*/
-			*DATA[(CURR_OP[1] >> 4)*MEMUNIT] -= 1;
-		}
-		//h5uchar newval_high = *DATA[(CURR_OP[1] >> 4)*MEMUNIT];
-		//printf("---- RETURN at PC %u: %X %X %X\n", _PROG_CO, newval_high, newval_low, CURR_OP[1]);
-		_PROG_CO = GETPTR(*DATA, ((oldval_high << 8) | oldval_low))+1; /*Go to return address+1*/
+		h5uint oldval = *DATA[*DATA[(CURR_OP[1] >> 8)*256]]; /*Return address is stored where the stack pointer points*/
+		*DATA[(CURR_OP[1] >> 8)*256] -= (CURR_OP[1] & 0x00FF) + 1; /*Must move stack pointer backwards*/
+		_PROG_CO = oldval + 1; /*Go to return address+1*/
 		_RETURN;
 		break;
 	}
 	case Inst_call: {
-		h5uchar oldval_high = *DATA[(CURR_OP[1] >> 4)*MEMUNIT];
-		h5uchar oldval_low = *DATA[(CURR_OP[1] >> 4)*MEMUNIT+1];
-		h5uchar newval_high;
-		h5uchar newval_low;
-		if ((oldval_high == 0) && (oldval_low == 0) && ((CURR_OP[1] >> 4) != 0)) {
+		h5uint oldval = *DATA[(CURR_OP[1] >> 8)*256];
+		h5uint newval;
+		if (oldval == 0) {
 			/*Initialize stack pointer*/
-			*DATA[(CURR_OP[1] >> 4)*MEMUNIT] = ((CURR_OP[1] >> 4) << 4);
-			*DATA[(CURR_OP[1] >> 4)*MEMUNIT+1] = 2;
-			newval_high = *DATA[(CURR_OP[1] >> 4)*MEMUNIT];
-			newval_low = *DATA[(CURR_OP[1] >> 4)*MEMUNIT+1];
+			*DATA[(CURR_OP[1] >> 8)*256] = (CURR_OP[1] >> 8)*256 + 1; /* +1 because first frame*/
+			newval = *DATA[(CURR_OP[1] >> 8)*256];
  		} else {
 			/*Increase stack pointer */
- 			*DATA[(CURR_OP[1] >> 4)*MEMUNIT+1] += ((CURR_OP[1] & 0x0F)+1)*2;
-			newval_low = *DATA[(CURR_OP[1] >> 4)*MEMUNIT+1];
-			if (newval_low < oldval_low){ /*Overflow*/
-				*DATA[(CURR_OP[1] >> 4)*MEMUNIT] += 1;
-			}
-			newval_high = *DATA[(CURR_OP[1] >> 4)*MEMUNIT];
+			*DATA[(CURR_OP[1] >> 8)*256] += (CURR_OP[1] & 0x00FF) + 1;
+			newval = *DATA[(CURR_OP[1] >> 8)*256];
 		}
-		//printf("---- CALL   at PC %u: %X %X %X\n", _PROG_CO, newval_high, newval_low, CURR_OP[1]);
-		if (DATA[((newval_high << 8) | newval_low)] == NULL) {
+		if (DATA[newval] == NULL) {
 			return_code = 4; /*Callstack overflow*/
 			_RETURN;
 		}
-		*DATA[((newval_high << 8) | newval_low)] = _PROG_CO >> 8;
-		*DATA[((newval_high << 8) | newval_low)+1] = _PROG_CO & 0xFF; /*Annotate return address*/
+		*DATA[newval] = _PROG_CO; /*Annotate return address*/
 		_PROG_CO = program->func_co[CURR_OP[0]]+1; /*Go to function start+1*/
 		_RETURN;
 		break;
 	}
 	case Inst_frame: {
-		h5uchar val_high = *DATA[(CURR_OP[1] >> 4)*MEMUNIT];
-		h5uchar val_low = *DATA[(CURR_OP[1] >> 4)*MEMUNIT+1];
-		if (GETTYPE(CURR_OP, 1) == adr) {
-			*DATA[CURR_OP[0]]   = val_high;
-			*DATA[CURR_OP[0]+1] = val_low;
-			rwinf->adrw = CURR_OP[0];
-			rwinf->wrote_adrw  = 1;
-		} else if (ISPTR(CURR_OP[2], 1)){
-			*DATA[GETPTR(*DATA, CURR_OP[0])] = val_high;
-			*DATA[GETPTR(*DATA, CURR_OP[0])+1] = val_low;
-			rwinf->adrw = GETPTR(*DATA, CURR_OP[0]);
-			rwinf->wrote_adrw  = 1;
-		} else {
-			return_code = 3; /*ERROR: Register type argument can't be a literal!*/
-			_PROG_CO += 1;
-			_RETURN;
-		}
-		_PROG_CO += 1;
-		_RETURN;
+		h5uint val = *DATA[(CURR_OP[1] >> 8)*256];
+		setnum_dest = CURR_OP[0];
+		dest_type	= GETTYPE(CURR_OP, 1);
+		getnum_orig = val;
+		goto _set;
 		break;
 	}
 	}
