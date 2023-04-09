@@ -121,50 +121,84 @@ func _PRINT @ ; Start of subroutine print
 ret _PRINT @ ; End of subroutine print
 
 ; EXAMPLE PROGRAM, PRINT 'DEADBEEF'
-	;set 4 =D
-	;set 5 =E
-	;set 6 =A
-	;set 7 =D
-	;set 8 =B
-	;set 9 =E
-	;set A =E
-	;set B =F ; DEADBEEF
-	;set 0 =0004 ; Set start address of string to print
-	;set 1 =8 ; Size of print range
-	;call _PRINT @ ; Call to subroutine print
-	;halt ; Halt
+;	set 4 =D
+;	set 5 =E
+;	set 6 =A
+;	set 7 =D
+;	set 8 =B
+;	set 9 =E
+;	set A =E
+;	set B =F ; DEADBEEF
+;	set 0 =0004 ; Set start address of string to print
+;	set 1 =8 ; Size of print range
+;	call _PRINT @ ; Call to subroutine print
+;	halt ; Halt
 ; END OF EXAMPLE PROGRAM
 
 ; Subroutine _MULT, ID =1
+; [THIS IS THE FASTEST VERSION]
 ; Takes first operand at address 0
 ; And second operand at address 1
 ; Then deposits result of multiplication at address 2
 #d _MULT,=1
-func _MULT @ ; Start of subroutine mult
-	>MULT_LOOP> add 2 0 ; Add first operand
-		sub 1 =1 ; Decrement loop counter
-		INV_ZF ; Invert zero flag
-	skmz <MULT_LOOP< ; Jump back to start of loop if addr. 1 != 0
-ret _MULT @ ; End of subroutine mult
+func _MULT @
+	set 2 =0 ; Reset result storage
+	set 5 =0 ; Address 5 is the loop counter
+	>MULT_FAST_LOOP> set 3 1 ; Copy second operand to address 3
+		set 4 =0F   ;
+		sub 4 5     ;
+		shift 3 4   ;
+		shift 3 =1F ; These 4 instructions get the bit at the [i]th position
+		set 6 =0 ; Reset address 6
+		cmp 3 =1
+		INV_ZF
+		skpz <MULT_FAST_IF< ; IF the [i]th bit of the second operand is 1, then
+			set 6 0 ; Set address 6 to the first operand (binary product)
+			shift 6 5 ; Shift it left by [i] bits to get the partial product
+			add 2 6 ; Add the partial product to the result
+		>MULT_FAST_IF> add 5 =1 ; Increment the loop counter
+		cmp 5 =10 ; Compare the loop counter with 0x10, value where it shall quit
+		INV_ZF
+	skmz <MULT_FAST_LOOP< ; If the loop counter isn't 0xF yet, loop
+ret _MULT @
 
-; Subroutine _MULT_REC, ID =2
+; Subroutine _MULT_ITER, ID =2
 ; Takes first operand at address 0
 ; And second operand at address 1
 ; Then deposits result of multiplication at address 2
-#d _MULT_REC,=1
-func _MULT_REC @ ; Start of recursive subroutine mult
-	add 2 0 ; Add first operant
-	sub 1 =1 ; Decrement loop counter
-	skpz =1 ; If zero, skip recursive call
-	call _MULT_REC @ ; Loop
-ret _MULT_REC @ ; End of recursive subroutine mult
+;#d _MULT,=2
+;func _MULT_ITER @ ; Start of iterative subroutine mult
+;	set 2 =0 ; Clear result storage
+;	>MULT_ITER_LOOP> add 2 0 ; Add first operand
+;		sub 1 =1 ; Decrement loop counter
+;		INV_ZF ; Invert zero flag
+;	skmz <MULT_ITER_LOOP< ; Jump back to start of loop if addr. 1 != 0
+;ret _MULT_ITER @ ; End of iterative subroutine mult
 
-; EXAMPLE PROGRAM, MULTIPLY 0x9 and 0x2
+; Subroutine _MULT_REC, ID =3
+; Takes first operand at address 0
+; And second operand at address 1
+; Then deposits result of multiplication at address 2
+;#d _MULT_REC,=3
+;func _MULT_REC @ ; Start of recursive subroutine mult
+;	add 2 0 ; Add first operand
+;	sub 1 =1 ; Decrement loop counter
+;	skpz =1 ; If zero, skip recursive call
+;		call _MULT_REC @ ; Loop
+;ret _MULT_REC @ ; End of recursive subroutine mult
+
+; EXAMPLE PROGRAM, MULTIPLY 0x9 and 0x5
+;	set 0 =F1FF ; Set first operand
+;	set 1 =FFF2 ; Set second operand
+;	call _MULT @ ; Call to iterative subroutine mult
+;	set _OU 2 ; Expected result is 0x2D
+
+;	set 2 =0 ; Reset output address
 ;	set 0 =9 ; Set first operand
 ;	set 1 =5 ; Set second operand
-;	call _MULT @ ; Call to subroutine mult
+;	call _MULT_ITER @ ; Call to iterative subroutine mult
 ;	set _OU 2 ; Expected result is 0x2D
-;
+
 ;	set 2 =0 ; Reset output address
 ;	set 0 =9 ; Set first operand
 ;	set 1 =5 ; Set second operand
