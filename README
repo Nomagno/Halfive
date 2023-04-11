@@ -66,4 +66,4 @@ Bonus projects in this repo:
 	- Viewer for PAM files and tilesets (run 'make pamview' in src/core/, requires SDL2 headers) (SWP) (src/core/h5vi.c, part inside #ifdef H5VI_IMAGE_VIEWER)
 
 --- Licensing ---
-The whole project is released under the COIL license (SPDX: COIL-1.0). Please see each folder/file for individual licensing information.
+The whole project is released under the MIT license (SPDX: MIT). Please see each folder/file for individual licensing information.

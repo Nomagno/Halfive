@@ -1,5 +1,5 @@
 # Halfive Eloquent Lisp
-#### SPDX identifier: COIL-1.0
+#### SPDX identifier: MIT
 #### Copyright Nomagno 2022, 2023
 
 It is recommended to use the ".h5elq" extension for Eloquent code files (where applicable).

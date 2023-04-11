@@ -1,6 +1,6 @@
 # Halfive Virtual Machine Specification
 
-#### SPDX identifier: COIL-1.0
+#### SPDX identifier: MIT
 #### Copyright Nomagno 2021, 2022, 2023
 
 H5VM assembly is identified by the MIME type `text/x-h5asm`, extension ".h5asm"

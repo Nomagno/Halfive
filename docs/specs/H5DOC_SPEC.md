@@ -1,5 +1,5 @@
 # Halfive Document Specification (The encoding format of H5T and H5NET)
-#### SPDX identifier: COIL-1.0
+#### SPDX identifier: MIT
 #### Copyright Nomagno 2021, 2022, 2023
 
 It is recommended to use the ".h5doc" extension for H5DOC documents (where applicable).

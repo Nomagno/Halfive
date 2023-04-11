@@ -1,5 +1,5 @@
 # Halfive Sound Specification
-#### SPDX identifier: COIL-1.0
+#### SPDX identifier: MIT
 #### Copyright Nomagno 2022, 2023
 
 H5SND is a subset of the FLAC format.

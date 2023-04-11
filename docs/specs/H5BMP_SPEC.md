@@ -1,5 +1,5 @@
 # Halfive Bitmap Specification
-#### SPDX identifier: COIL-1.0
+#### SPDX identifier: MIT
 #### Copyright Nomagno 2021, 2022, 2023
 
 It is recommended to use the ".h5bmp" extension for H5BMP bitmaps (where applicable).
