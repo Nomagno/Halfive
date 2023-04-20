@@ -37,24 +37,22 @@ IN THE SOFTWARE.
 2 mouse buttons,
 quit button,
 pause button*/
-enum H5VI_KeyEnum {
-	H5Key_up	= 0,
-	H5Key_down	= 1,
-	H5Key_left	= 2,
-	H5Key_right = 3,
-	H5Key_b1	= 4,
-	H5Key_b2	= 5,
-	H5Key_b3	= 6,
-	H5Key_b4	= 7,
-	H5Key_b5	= 8,
-	H5Key_b6	= 9,
-	H5Key_b7	= 10,
-	H5Key_b8	= 11,
-	H5Key_m1	= 12,
-	H5Key_m2	= 13,
-	H5Key_quit	= 14,
-	H5Key_pause = 15
-};
+#define H5KEY_UP 0
+#define H5KEY_DOWN 1
+#define H5KEY_LEFT 2
+#define H5KEY_RIGHT 3
+#define H5KEY_B1 4
+#define H5KEY_B2 5
+#define H5KEY_B3 6
+#define H5KEY_B4 7
+#define H5KEY_B5 8
+#define H5KEY_B6 9
+#define H5KEY_B7 10
+#define H5KEY_B8 11
+#define H5KEY_M1 12
+#define H5KEY_M2 13
+#define H5KEY_QUIT 14
+#define H5KEY_PAUSE 15
 
 typedef struct {
 	_Bool keys[16];	 /*See enum for what each pos means*/

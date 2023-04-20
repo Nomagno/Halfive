@@ -55,6 +55,9 @@ comma-separated booleans (0 or 1) replacing from 'quit' until 'right'
 comma separated 8-bit uints (0-255) replacing from 'axis1' until 'axis4'
 */
 
+#define H5VI_GSERV_IMPL_SDL2
+#define H5VI_STDINPUT_IMPL_SDL2
+
 #if defined(H5VI_GSERV_IMPL_SDL2)
 #include <SDL2/SDL.h>
 #endif
@@ -188,7 +191,55 @@ unsigned H5VI_playSound(H5VI_Reference *stream, const H5VI_SoundData *insound)
 }
 #endif
 
-#ifndef H5VI_STDINPUT_IMPL_PORTABLE
+#ifdef H5VI_STDINPUT_IMPL_SDL2
+
+#define H5IN_UP SDL_SCANCODE_UP
+#define H5IN_DOWN SDL_SCANCODE_DOWN
+#define H5IN_LEFT SDL_SCANCODE_LEFT
+#define H5IN_RIGHT SDL_SCANCODE_RIGHT
+#define H5IN_B1 SDL_SCANCODE_A
+#define H5IN_B2 SDL_SCANCODE_S
+#define H5IN_B3 SDL_SCANCODE_D
+#define H5IN_B4 SDL_SCANCODE_F
+#define H5IN_B5 SDL_SCANCODE_Z
+#define H5IN_B6 SDL_SCANCODE_X
+#define H5IN_B7 SDL_SCANCODE_C
+#define H5IN_B8 SDL_SCANCODE_V
+#define H5IN_M1 SDL_SCANCODE_O
+#define H5IN_M2 SDL_SCANCODE_P
+#define H5IN_QUIT SDL_SCANCODE_1
+#define H5IN_PAUSE SDL_SCANCODE_2
+
+unsigned H5VI_getInput(H5VI_Reference *handle, H5VI_InputData *keys) {
+	const uint8_t *keyArray = SDL_GetKeyboardState(NULL);
+	int tmp_button_mask, tmp_x, tmp_y;
+	tmp_button_mask = SDL_GetMouseState(&tmp_x, &tmp_y);
+
+	H5VI_InputData returnval = { {0}, {0}, 0, 0};
+	returnval.keys[H5KEY_UP] = keyArray[H5IN_UP];
+	returnval.keys[H5KEY_DOWN] = keyArray[H5IN_DOWN];
+	returnval.keys[H5KEY_LEFT] = keyArray[H5IN_LEFT];
+	returnval.keys[H5KEY_RIGHT] = keyArray[H5IN_RIGHT];
+	returnval.keys[H5KEY_B1] = keyArray[H5IN_B1];
+	returnval.keys[H5KEY_B2] = keyArray[H5IN_B2];
+	returnval.keys[H5KEY_B3] = keyArray[H5IN_B3];
+	returnval.keys[H5KEY_B4] = keyArray[H5IN_B4];
+	returnval.keys[H5KEY_B5] = keyArray[H5IN_B5];
+	returnval.keys[H5KEY_B6] = keyArray[H5IN_B6];
+	returnval.keys[H5KEY_B7] = keyArray[H5IN_B7];
+	returnval.keys[H5KEY_B8] = keyArray[H5IN_B8];
+	returnval.keys[H5KEY_QUIT] = keyArray[H5IN_QUIT];
+	returnval.keys[H5KEY_PAUSE] = keyArray[H5IN_PAUSE];
+
+	returnval.keys[H5KEY_M1] = tmp_button_mask & SDL_BUTTON(1);
+	returnval.keys[H5KEY_M2] = tmp_button_mask & SDL_BUTTON(1);
+	returnval.cursor_x = tmp_x;
+	returnval.cursor_x = tmp_y;
+	
+	*keys = returnval;
+	return 0;
+}
+#elif defined(H5VI_STDINPUT_IMPL_PORTABLE)
 #include <halfive/h5stdlib.h>
 #include <stdio.h>
 unsigned H5VI_getInput(H5VI_Reference *handle, H5VI_InputData *keys)
@@ -358,7 +409,7 @@ int main(void)
 			nanosleep(&(struct timespec){1, 0}, NULL);
 			for (int i = 0; i < 50; i++) {
 				H5Render_ulong_drawPolygon(mybuf,
-					(h5point_ulong[]){POINT_UL(50 + i * 4, 50 + i * 2),
+					(VEC2(h5ulong)[]){POINT_UL(50 + i * 4, 50 + i * 2),
 						POINT_UL(150 + i * 4, 50 + i * 2),
 						POINT_UL(190 + i * 4, 190 + i * 2),
 						POINT_UL(100 + i * 4, 240 + i * 2),

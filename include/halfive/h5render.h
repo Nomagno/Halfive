@@ -43,11 +43,11 @@ IN THE SOFTWARE.
 #define MATRIX_INDEX(var, w, x, y) var[(((y) * (w)) + (x))]
 
 #define POINT_U(x, y) \
-	(h5point_uint) { x, y }
+	(VEC2(h5uint)) { x, y }
 #define POINT_UL(x, y) \
 	(VEC2(h5ulong)) { x, y }
 #define POINT_UM(x, y) \
-	(h5point_umax) { x, y }
+	(VEC2(h5umax)) { x, y }
 #define POINT_I(x, y) \
 	(VEC2(h5sint)) { x, y }
 #define POINT_L(x, y) \
