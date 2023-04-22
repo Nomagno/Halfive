@@ -37,12 +37,16 @@ void H5Render_fill(H5Render_PixelData surf, h5uint colour)
 }
 
 void H5Render_scale(H5Render_PixelData insurf, H5Render_PixelData outsurf,
-	unsigned scale_factor)
+	unsigned scale_factor, _Bool respect_transparency)
 {
 	if (scale_factor == 1) {
 		for (unsigned long i = 0; i < insurf.height; i++) {
 			for (unsigned long j = 0; j < insurf.width; j++) {
-				MATRIX_GET(outsurf, j, i) = MATRIX_GET(insurf, j, i);
+				if (respect_transparency && !(MATRIX_GET(insurf, j, i) & 1)) {
+					;
+				} else {
+					MATRIX_GET(outsurf, j, i) = MATRIX_GET(insurf, j, i);
+				}
 			}
 		}
 	} else {
@@ -50,8 +54,12 @@ void H5Render_scale(H5Render_PixelData insurf, H5Render_PixelData outsurf,
 			for (unsigned long j = 0; j < insurf.width; j++) {
 				for (unsigned long k1 = 0; k1 < scale_factor; k1++) {
 					for (unsigned long k2 = 0; k2 < scale_factor; k2++) {
-						MATRIX_GET(outsurf, j * scale_factor + k2,
-							i * scale_factor + k1) = MATRIX_GET(insurf, j, i);
+						if (MATRIX_GET(insurf, j, i) == 0) {
+							;
+						} else {
+							MATRIX_GET(outsurf, j * scale_factor + k2,
+								i * scale_factor + k1) = MATRIX_GET(insurf, j, i);
+						}
 					}
 				}
 			}

@@ -84,7 +84,7 @@ typedef struct {
 void H5Render_fill(H5Render_PixelData surf, h5uint colour);
 
 void H5Render_scale(H5Render_PixelData insurf, H5Render_PixelData outsurf,
-	unsigned scale_factor);
+	unsigned scale_factor, _Bool respect_transparency);
 
 void H5Render_getTile(H5Render_Tileset *tileset, H5Render_PixelData outsurf,
 	size_t row, size_t column);

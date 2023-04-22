@@ -1,0 +1,185 @@
+;Copyright Nomagno 2021, 2022, 2023
+;
+;Permission is hereby granted, free of charge, to any person obtaining
+;a copy of this software and associated documentation files (the "Software"),
+;to deal in the Software without restriction, including without limitation
+;the rights to use, copy, modify, merge, publish, distribute, sublicense,
+;and/or sell copies of the Software, and to permit persons to whom the
+;Software is furnished to do so, subject to the following conditions:
+
+;The above copyright notice and this permission notice (including the next
+;paragraph) shall be included in all copies or substantial portions of the
+;Software.
+;
+;THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+;IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+;FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+;THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+;LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+;FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+;IN THE SOFTWARE.
+
+
+; To be able to use the definitions here,
+; include at the start of your file:
+; #i /path/to/base.h5asm
+
+; INCLUDE
+; #i /path/to/file.h5asm
+; file.h5asm substituted in place of statement and preprocessed normally
+
+; MACRO
+; #d macro,meaning
+; Every instance of macro is replaced with meaning, starting expansion with the ones defined later
+
+; LABEL
+; >LABELNAME>
+; Must appear at the beggining of a line containing a
+; regular instruction after the preprocessing stage.
+; All references in the code to <LABELNAME< get replaced
+; with the difference of the instruction index to instruction
+; index >LABELNAME> appeared in. Used for absolute jumping
+; with skpz and skmz
+
+; To preprocess your code so it can
+; be accepted by the assembler, run:
+; sh asmpp.sh /path/to/yourcode.h5asm > preprocessed_file
+
+
+; Base library for Halfive assembly
+; Contains:
+;   Special register mnemonic macros
+;   Two utility pseudo-instructions
+;   Shorthand symbols for 16 first addresses
+
+; Specification-defined registers:
+
+; Zero flag
+#d _ZF,FFFF
+; Carry flag
+#d _CF,FFFE
+; Input register
+#d _IN,FFFD
+; Output register
+#d _OU,FFFC
+; Program counter low and high
+#d _PC,FFFB
+; Purposefully unmapped memory
+#d _ERR,FFF0
+
+;Shorthand addresses:
+#d !A,0
+#d ?A,1
+#d !B,2
+#d ?B,3
+#d !C,4
+#d ?C,5
+#d !D,6
+#d ?D,7
+#d !W,8
+#d ?W,9
+#d !X,A
+#d ?X,B
+#d !Y,C
+#d ?Y,D
+#d !Z,E
+#d ?Z,F
+
+
+; Pseudo-instructions:
+
+; Normalize zero flag, TWO instructions:
+; if it is nonzero set it to one
+#d NRM_ZF,skpz =1 __ set _ZF =1
+
+; Invert zero flag, FOUR instructions:
+; if it is nonzero set it to zero,
+; if it is zero set it to one
+#d INV_ZF,skpz =2 __ set _ZF =0 __ skpz =1 __ set _ZF =1
+
+; Constant for info on callstack
+#d @,=E00F
+
+
+; Subroutine _PRINT, ID =0
+; Takes pointer to start of memory to print at pointer 0
+; And number of times to print at address 1
+#d _PRINT,=0
+func _PRINT @ ; Start of subroutine print
+	>PRINT_LOOP> set _OU *0 ; Print out value at pointer 0
+		add 0 =1 ; Increment pointer
+		sub 1 =1 ; Decrement loop counter
+		INV_ZF ; Invert zero flag
+	skmz <PRINT_LOOP< ; Jump back to start of loop if addr. 1 != 0
+ret _PRINT @ ; End of subroutine print
+
+; EXAMPLE PROGRAM, PRINT 'DEADBEEF'
+;	set 4 =D
+;	set 5 =E
+;	set 6 =A
+;	set 7 =D
+;	set 8 =B
+;	set 9 =E
+;	set A =E
+;	set B =F ; DEADBEEF
+;	set 0 =0004 ; Set start address of string to print
+;	set 1 =8 ; Size of print range
+;	call _PRINT @ ; Call to subroutine print
+;	halt ; Halt
+; END OF EXAMPLE PROGRAM
+
+; Subroutine _MULT, ID =1
+; [THIS IS THE FASTEST VERSION]
+; Takes first operand at address 0
+; And second operand at address 1
+; Then deposits result of multiplication at address 2
+#d _MULT,=1
+func _MULT @
+	set 2 =0 ; Reset result storage
+	set 5 =0 ; Address 5 is the loop counter
+	>MULT_FAST_LOOP> set 3 1 ; Copy second operand to address 3
+		set 4 =0F   ;
+		sub 4 5     ;
+		shift 3 4   ;
+		shift 3 =1F ; These 4 instructions get the bit at the [i]th position
+		set 6 =0 ; Reset address 6
+		cmp 3 =1
+		INV_ZF
+		skpz <MULT_FAST_IF< ; IF the [i]th bit of the second operand is 1, then
+			set 6 0 ; Set address 6 to the first operand (binary product)
+			shift 6 5 ; Shift it left by [i] bits to get the partial product
+			add 2 6 ; Add the partial product to the result
+		>MULT_FAST_IF> add 5 =1 ; Increment the loop counter
+		cmp 5 =10 ; Compare the loop counter with 0x10, value where it shall quit
+		INV_ZF
+	skmz <MULT_FAST_LOOP< ; If the loop counter isn't 0xF yet, loop
+ret _MULT @
+
+; EXAMPLE PROGRAM, MULTIPLY 0x9 and 0x5
+;	set 0 =F1FF ; Set first operand
+;	set 1 =FFF2 ; Set second operand
+;	call _MULT @ ; Call to iterative subroutine mult
+;	set _OU 2 ; Expected result is 0x2D
+
+>H5GEAR_TEST_JUMPBACK> add D000 =0F51
+	add D001 =0001
+	add D002 =F010
+	add D003 =0F20
+	add D004 =00F0
+	add D005 =201F
+	add D006 =3001
+	add D007 =900F
+	add D008 =12BC
+	add D009 =DEAD
+	add D00A =BEEF
+	add D00B =1230
+	add D00C =0010
+	add D00D =0005
+	add D00E =0012
+	add D00F =552F
+	set D010 FFFD ; Visualize input register changes to first four pixels of second row
+
+	set _ZF =0
+	set D400 =1
+skmz <H5GEAR_TEST_JUMPBACK<
+set _OU =DEAD

@@ -26,28 +26,26 @@ IN THE SOFTWARE.
 #include <halfive/h5pix.h>
 #include <halfive/h5vi.h>
 
-/*Available interfaces: MACRO
+/*
+Available interfaces:
 SDL2 Graphics: H5VI_GSERV_IMPL_SDL2
 SDL2 Audio: H5VI_AUDIOSERV_IMPL_SDL2
-STDIN Read input: H5VI_STDINPUT_IMPL_PORTABLE
-*/
+SDL2 Input: H5VI_STDINPUT_IMPL_SDL2
+Portable Input (STDIN): H5VI_STDINPUT_IMPL_PORTABLE
 
-/*SDL2 is available for the following targets (Official or unofficial):
+SDL2 is available for the following targets (Official or unofficial):
 Linux, Android, FreeBSD, OpenBSD, NetBSD, MacOS, Windows,
 iOS, AmigaOS, Haiku, tvOS, RISC OS, 3DS, PS Vita, HorizonOS (Nintendo Switch),
-PS4... (Probably more)
-*/
+PS4, Emscriptem... (Probably more)
 
-/*X11 (Graphics server unimplemented) is available for the following targets:
+X11 (Graphics server unimplemented) is available for the following targets:
 Linux (Xorg, XWayland), FreeBSD (Xorg, XWayland), NetBSD (Xorg), Solaris/Illumos
 (Xorg), OpenBSD (Xenocara), Android (Termux-Xorg), MacOS (XFree86 fork), Windows
 (Cygwin X), Haiku, AmigaOS, RISC OS... (And a lot more)
-*/
 
-/*STDIN reading is available for the following platforms:
+Portable input is available for the following platforms:
 All platforms
-*/
-/*
+
 STDIN input key format (string):
 quit,pause,b1,b2,b3,b4,b5,b6,b7,b8,m1,m2,up,down,left,right,axis1,axis2,axis3,axis4
 
@@ -55,8 +53,15 @@ comma-separated booleans (0 or 1) replacing from 'quit' until 'right'
 comma separated 8-bit uints (0-255) replacing from 'axis1' until 'axis4'
 */
 
-#define H5VI_GSERV_IMPL_SDL2
-#define H5VI_STDINPUT_IMPL_SDL2
+
+#if !defined(H5VI_GSERV_IMPL_SDL2)
+#error Please define a graphics implementation (src/core/h5vi.c)
+#endif
+
+#if !defined(H5VI_STDINPUT_IMPL_SDL2) && !defined(H5VI_STDINPUT_IMPL_STDINPUT)
+#error Please define an input implementation (src/core/h5vi.c)
+#endif
+
 
 #if defined(H5VI_GSERV_IMPL_SDL2)
 #include <SDL2/SDL.h>
@@ -68,6 +73,7 @@ comma separated 8-bit uints (0-255) replacing from 'axis1' until 'axis4'
 
 #if defined(H5VI_GEN_SDL2)
 
+#include <SDL2/SDL.h>
 #include <SDL2/SDL.h>
 
 /*Implementation-specific global mutable state*/
@@ -205,12 +211,11 @@ unsigned H5VI_playSound(H5VI_Reference *stream, const H5VI_SoundData *insound)
 #define H5IN_B6 SDL_SCANCODE_X
 #define H5IN_B7 SDL_SCANCODE_C
 #define H5IN_B8 SDL_SCANCODE_V
-#define H5IN_M1 SDL_SCANCODE_O
-#define H5IN_M2 SDL_SCANCODE_P
 #define H5IN_QUIT SDL_SCANCODE_1
 #define H5IN_PAUSE SDL_SCANCODE_2
 
 unsigned H5VI_getInput(H5VI_Reference *handle, H5VI_InputData *keys) {
+	SDL_PumpEvents();
 	const uint8_t *keyArray = SDL_GetKeyboardState(NULL);
 	int tmp_button_mask, tmp_x, tmp_y;
 	tmp_button_mask = SDL_GetMouseState(&tmp_x, &tmp_y);
@@ -337,7 +342,7 @@ int main(int argc, char **argv)
 	unsigned scale = (argc > 2) ? strtoul(argv[2], &endptr, 10) : 1;
 	h5uint buf[h * scale][w * scale];
 	H5Render_PixelData sprite = {h * scale, w * scale, &buf[0][0]};
-	H5Render_scale(smallsprite, sprite, scale);
+	H5Render_scale(smallsprite, sprite, scale, 0);
 
 	H5VI_Reference myref;
 	if (H5VI_init(&myref, h * scale, w * scale)) {
