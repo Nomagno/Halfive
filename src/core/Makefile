@@ -33,26 +33,31 @@
 INCLROOT="../../include/"
 
 #FLAGS="-fsanitize=address,undefined"
-PARAMS="-DH5VERSION=0 -DH5PHY_VM_SIMULATION -DH5VI_GSERV_IMPL_SDL2 -DH5VI_AUDIOSERV_IMPL_SDL2 -DH5VI_STDINPUT_IMPL_PORTABLE"
+PARAMS="-DH5VERSION=0 -DH5PHY_VM_SIMULATION -DH5VI_GSERV_IMPL_SDL2 -DH5VI_STDINPUT_IMPL_SDL2"
 
 main: warn libhalfive.a
+gear_sdl2_bin: warn gear_sdl2
 pamview_bin: warn pamviewer
 h5asm_bin: warn h5assembler
 h5asm_debug_bin: warn h5assembler_debug
 remain: clean main
+regear_sdl2_bin: clean gear_sdl2
+repamview_bin: clean pamviewer
 reh5asm: clean h5assembler
 reh5asm_debug: clean h5assembler_debug
 
 clean:
-	rm -f *.o *.a h5asm h5asm_debug pamview
+	rm -f *.o *.a h5asm h5asm_debug pamview gear
 warn:
 	echo "This program makes extensive used of C preprocessor macros. You may use the variable PARAMS=\"-DMYVAR1 -DMYVAR2\" like so to set them"
 
 libhalfive.a : h5stdlib.o h5asm.o h5vm.o h5doc.o h5math.o h5rat.o h5render.o h5pix.o
 	ar rcs libhalfive.a h5stdlib.o h5asm.o h5vm.o h5doc.o h5math.o h5rat.o h5render.o h5pix.o
 
+gear_sdl2 : h5render.o h5stdlib.o h5vm_gear.o h5math.o h5asm_gear.o
+	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -DH5VI_GSERV_IMPL_SDL2 -DH5VI_STDINPUT_IMPL_SDL2 -o gear h5gear.c h5vi.c h5render.o h5math.o h5stdlib.o h5vm_gear.o h5asm_gear.o -lSDL2
 pamviewer : h5pix.o h5render.o h5math.o h5stdlib.o
-	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -DH5VI_GSERV_IMPL_SDL2 -DH5VI_IMAGE_VIEWER -o pamview h5vi.c h5pix.o h5render.o h5math.o h5stdlib.o -lSDL2
+	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -o pamview h5vi.c h5pix.o h5render.o h5math.o h5stdlib.o -lSDL2
 h5assembler : h5assembler.o h5vm.o h5stdlib.o
 	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -o h5asm h5assembler.o h5vm.o h5stdlib.o
 h5assembler.o : h5vm.o
@@ -68,8 +73,12 @@ h5pix.o : h5render.o h5math.o
 	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -c -o h5pix.o h5pix.c h5render.o h5math.o
 h5render.o : h5math.o
 	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -c -o h5render.o h5render.c h5math.o
+h5asm_gear.o : h5stdlib.o
+	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -c -o h5asm_gear.o h5vm/h5asm_gear.c
 h5asm.o : h5vm.o
 	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -c -o h5asm.o h5vm/h5asm.c
+h5vm_gear.o : h5stdlib.o
+	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -c -o h5vm_gear.o h5vm/h5vm_gear.c
 h5vm.o : h5stdlib.o
 	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -c -o h5vm.o h5vm/h5vm.c
 h5doc.o : h5stdlib.o

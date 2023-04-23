@@ -105,8 +105,9 @@ struct main_loop_data {
 	_Bool *quit;
 };
 
-int _main_loop(void *opaque_handle) {
-	struct main_loop_data data = *((struct main_loop_data *)opaque_handle);
+/*Taking a void* is done to accomodate emscripten. Screw emscriptem*/
+int _main_loop(struct main_loop_data *opaque_handle) {
+	struct main_loop_data data = *opaque_handle;
 	int return_code;
 	H5VI_InputData myinput = {0};
 	clock_t start_t, end_t;
@@ -132,20 +133,24 @@ int _main_loop(void *opaque_handle) {
 		*data.is_paused = 1; goto GO_BACK;
 	} else if (myinput.keys[H5KEY_PAUSE] == 1 && *data.is_paused == 1) {
 		printf("H5Vi: UNPAUSE\n");
-		*(data.frame_count_for_pause) = 0;
+		*data.frame_count_for_pause = 0;
 		*data.is_paused = 0; goto GO_BACK;
 	}
 
-	if (*(data.is_paused) == 1) {
+	if (*data.is_paused == 1) {
 		printf("H5Vi: PAUSED, you can either quit or unpause now\n");
 		goto GO_BACK;
 	}
 
-	while (data.mem->output[1024] == 0) /*"finish register", when !0 end frame*/ {		
-	return_code = H5VM_execute(data.prog, data.rwinf);
-	if ((data.rwinf->adrw == 0xFFFC) && (data.rwinf->wrote_adrw)) { printf("Gear: OU: %X\n", data.mem->ou); }
-	if (data.prog->hf) { printf("\nGear: ---- HALT ----\n"); *data.quit = 1; return 0; }
-	switch (return_code) {
+	/*This while loop executes the console's code
+	until the finish register is changed to
+	nonzero. This is taken to mean that its
+	done rendering the current frame.*/
+	while (data.mem->output[1024] == 0) { /*"finish register", when !0 end frame*/		
+		return_code = H5VM_execute(data.prog, data.rwinf);
+		if ((data.rwinf->adrw == 0xFFFC) && (data.rwinf->wrote_adrw)) { printf("Gear: OU: %X\n", data.mem->ou); }
+		if (data.prog->hf) { printf("\nGear: ---- HALT ----\n"); *data.quit = 1; return 0; }
+		switch (return_code) {
 		case 0: break;
 		case 1: printf("Gear: NONFATAL ERROR AT PC 0x%X: R/W UNMAPPED MEM\n", data.prog->co);
 			break;
@@ -157,12 +162,16 @@ int _main_loop(void *opaque_handle) {
 			*data.quit = 1; return return_code;
 		default: printf("Gear:    ERROR AT PC 0x%X: UNKNOWN ERROR %u\n",data.prog->co,return_code);
 			*data.quit = 1; return return_code;
+		}
 	}
-	}
-	data.mem->output[1024] = 0;
+	data.mem->output[1024] = 0; /*Reset the finish register*/
 
+	/*Convert the console's internal screen representation into the native one*/
 	H5Gear_toPixelData(&data.mem->output[0], &data.console_buffer);
 
+	/*Fill the main buffer with white, then
+	 scale the console's screen to the window size,
+	 then finally draw to the screen*/
 	H5Render_fill(data.screen_buffer, 0xFFFF);
 	H5Render_scale(data.console_buffer, data.screen_buffer, SCALE_FACTOR_64, 1);
 	H5VI_setBuffer(data.ref, &data.screen_buffer);
@@ -170,11 +179,12 @@ int _main_loop(void *opaque_handle) {
 GO_BACK:
 	end_t = clock(); /*Microseconds in XSI-compliant systems*/
 	time_t diff = ((end_t-start_t)*100); /*multiply to convert to nanoseconds*/
+	long int performance_percent = 100*(double)((double)data.frame_length/(double)(diff));
 	if (diff >= data.frame_length) {
-		printf("H5Vi: WARNING: Timing objective not met - Performance: %li%% \n", (long int)(100*(double)((double)data.frame_length/(double)(diff))));
+		printf("H5Vi: WARNING: Timing objective not met - Performance: %li%% \n", performance_percent);
 		*data.sleep_time = 1;
 	} else {
-		printf("H5Vi: Frame time: %li nanoseconds - Performance: %li%%\n", (*(data.is_paused)) ? 0 : diff, (*(data.is_paused)) ? 100 : ((long int)(100*(double)((double)data.frame_length/(double)(diff)))));
+		printf("H5Vi: Frame time: %li nanoseconds - Performance: %li%%\n", (*data.is_paused) ? 0 : diff, (*data.is_paused) ? 100 : performance_percent);
 		*data.sleep_time = data.frame_length - diff;
 	}
 }	
@@ -242,9 +252,9 @@ int main(int argc, char **argv) {
 	   you were to integrate Sheewol Gear in a cooperative
 	   multitasking environment*/
 	while (1) {
-		_Bool old_is_paused = *(loop_data.is_paused);
+		_Bool old_is_paused = *loop_data.is_paused;
 		_main_loop((void *)&loop_data);
-		if (old_is_paused != *(loop_data.is_paused)) { /*If pause state changed, sleep 500ms instead of usual amount*/
+		if (old_is_paused != *loop_data.is_paused) { /*If pause state changed, sleep 500ms instead of usual amount*/
 			nanosleep(&(struct timespec){0, 500000000 }, NULL);
 		} else {
 			nanosleep(&(struct timespec){0, *loop_data.sleep_time }, NULL);
