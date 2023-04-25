@@ -10,6 +10,8 @@
 #include <halfive/h5vm/h5vm_gear.h>
 #include <halfive/h5vm/h5asm_gear.h>
 
+#define USER_BACKGROUND 0xFFFF
+
 /*COLORS IN RGB888*/ /*COLORS IN RGBA5551*/
 #define H5C_C_NONE    0 /*NONE*/      /*0x0000*/
 #define H5C_C_RED     1 /*0xFF0033*/  /*0xF80D*/
@@ -28,7 +30,7 @@
 #define H5C_C_INDIGO  14 /*0x8E5EE9*/ /*0x8AF9*/
 #define H5C_C_CYAN    15 /*0x33CCFF*/ /*0x363F*/
 
-#define H5C_H_NONE    0x0000 /*NONE*/      /*0x0000*/
+#define H5C_H_NONE    USER_BACKGROUND /*NONE*/      /*0x0000*/
 #define H5C_H_RED     0xF80D /*0xFF0033*/  /*0xF80D*/
 #define H5C_H_YELLOW  0xFE01 /*0xFFCC00*/  /*0xFE01*/
 #define H5C_H_GREEN   0x7701 /*0x76EC08*/  /*0x7701*/
@@ -72,7 +74,6 @@ h5uint H5Gear_getColor(H5Gear_Nibble in) {
 }
 
 H5Gear_Nibble H5Gear_extractPixel(h5uint pixel, unsigned index) {
-//	printf("Extracted color: %i\n", pixel >> (16-((index+1)*4)) & 0xF);
 	return (H5Gear_Nibble){ .val = (pixel >> (16-((index+1)*4))) & 0xF };
 }
 
@@ -146,7 +147,7 @@ int _main_loop(struct main_loop_data *opaque_handle) {
 	until the finish register is changed to
 	nonzero. This is taken to mean that its
 	done rendering the current frame.*/
-	while (data.mem->output[1024] == 0) { /*"finish register", when !0 end frame*/		
+	while (data.mem->output[1024] == 0) {
 		return_code = H5VM_execute(data.prog, data.rwinf);
 		if ((data.rwinf->adrw == 0xFFFC) && (data.rwinf->wrote_adrw)) { printf("Gear: OU: %X\n", data.mem->ou); }
 		if (data.prog->hf) { printf("\nGear: ---- HALT ----\n"); *data.quit = 1; return 0; }
@@ -166,19 +167,22 @@ int _main_loop(struct main_loop_data *opaque_handle) {
 	}
 	data.mem->output[1024] = 0; /*Reset the finish register*/
 
-	/*Convert the console's internal screen representation into the native one*/
+	/*Convert the console's internal screen representation into the internal one*/
 	H5Gear_toPixelData(&data.mem->output[0], &data.console_buffer);
 
-	/*Fill the main buffer with white, then
-	 scale the console's screen to the window size,
-	 then finally draw to the screen*/
-	H5Render_fill(data.screen_buffer, 0xFFFF);
+	/*Scale the console's screen to the
+	  window size, then  draw to the screen*/
 	H5Render_scale(data.console_buffer, data.screen_buffer, SCALE_FACTOR_64, 1);
 	H5VI_setBuffer(data.ref, &data.screen_buffer);
+	/*TODO:
+	    This performs a conversion from RGBA5551 to the system's
+	    (8-bit channel) pixel representation. This is currently
+	    done with a lookup table, but it still is the CURRENT BOTTLENECK
+	*/
 
 GO_BACK:
 	end_t = clock(); /*Microseconds in XSI-compliant systems*/
-	time_t diff = ((end_t-start_t)*100); /*multiply to convert to nanoseconds*/
+	time_t diff = ((end_t-start_t)*1000); /*multiply to convert to nanoseconds*/
 	long int performance_percent = 100*(double)((double)data.frame_length/(double)(diff));
 	if (diff >= data.frame_length) {
 		printf("H5Vi: WARNING: Timing objective not met - Performance: %li%% \n", performance_percent);
@@ -188,6 +192,13 @@ GO_BACK:
 		*data.sleep_time = data.frame_length - diff;
 	}
 }	
+
+static h5uint array_screenbuf[64][64] = {0};
+static h5uint array_main_buf[HCONSTANT][WCONSTANT] = {0};
+static H5VM_DefaultMemSetup mem = {0};
+static H5VM_ReadWriteInfo rwinf = {0};
+static H5VM_CodeMemory code = {(H5VM_InstructionSet)0};
+static H5VM_GeneralMemory prog = {0};
 
 int main(int argc, char **argv) {
 	/*WARNING: PROGRAM DOESN'T WORK CORRECTLY IF 'CLOCKS_PER_SEC' IS NOT XSI-MANDATED 1000000*/
@@ -202,32 +213,20 @@ int main(int argc, char **argv) {
 	if (argc >= 4) { gromfile = fopen(argv[3], "r"); }
 		else { gromfile = fopen("/dev/null", "r"); }
 	char arr[30];
-	H5VM_CodeMemory code = {(H5VM_InstructionSet)0};
 	int i = 0;
 	while (fscanf(codefile, "%[^\n] ", arr) != EOF) {
 		H5ASM_parse(arr, &code.inst[i], code.opnd[i]); i++;
 	}
-	H5VM_DefaultMemSetup mem = {0};
-	H5VM_ReadWriteInfo rwinf = {0};
-	H5VM_GeneralMemory prog	 = H5VM_init(&code, &mem);
+	prog = H5VM_init(&code, &mem);
 	fread(mem.drom, 1, sizeof(mem.drom), dromfile);
 	fread(mem.grom, 1, sizeof(mem.grom), gromfile);
 
 	H5VI_Reference main_ref;
-	h5uint array_main_buf[HCONSTANT][WCONSTANT] = {0};
-	h5uint array_screenbuf[64][64] = {0};
-	for (h5ulong y = 0; y < HCONSTANT; y++) {
-		for (h5ulong x = 0; x < WCONSTANT; x++) {
-			array_main_buf[y][x] = 0xFFFF; /*WHITE*/
-		}
-	}
-	for (h5ulong y = 0; y < 64; y++) {
-		for (h5ulong x = 0; x < 64; x++) {
-			array_screenbuf[y][x] = 0xFFFF; /*WHITE*/
-		}
-	}
 	H5Render_PixelData screenbuf = {64, 64, .data = &array_screenbuf[0][0]};
 	H5Render_PixelData main_buf = {HCONSTANT, WCONSTANT, .data = &array_main_buf[0][0]};
+	H5Render_fill(screenbuf, 0xFFFF);
+	H5Render_fill(main_buf, 0xFFFF);
+
 	if (H5VI_init(&main_ref, HCONSTANT, WCONSTANT)) {
 		H5VI_destroy(&main_ref);
 		goto EXIT;

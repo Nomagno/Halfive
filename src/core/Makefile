@@ -32,7 +32,7 @@
 
 INCLROOT="../../include/"
 
-#FLAGS="-fsanitize=address,undefined"
+FLAGS=-Ofast
 PARAMS="-DH5VERSION=0 -DH5PHY_VM_SIMULATION -DH5VI_GSERV_IMPL_SDL2 -DH5VI_STDINPUT_IMPL_SDL2"
 
 main: warn libhalfive.a
@@ -46,6 +46,8 @@ repamview_bin: clean pamviewer
 reh5asm: clean h5assembler
 reh5asm_debug: clean h5assembler_debug
 
+cleand:
+	rm -f *.gcov *.gcno *.gcda
 clean:
 	rm -f *.o *.a h5asm h5asm_debug pamview gear
 warn:
@@ -59,33 +61,33 @@ gear_sdl2 : h5render.o h5stdlib.o h5vm_gear.o h5math.o h5asm_gear.o
 pamviewer : h5pix.o h5render.o h5math.o h5stdlib.o
 	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -o pamview h5vi.c h5pix.o h5render.o h5math.o h5stdlib.o -lSDL2
 h5assembler : h5assembler.o h5vm.o h5stdlib.o
-	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -o h5asm h5assembler.o h5vm.o h5stdlib.o
+	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -o h5asm h5assembler.o h5vm.o h5stdlib.o 
 h5assembler.o : h5vm.o
-	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -DH5ASSEMBLY -c -o h5assembler.o h5vm/h5asm.c
+	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -DH5ASSEMBLY -c -o h5assembler.o h5vm/h5asm.c 
 
 h5assembler_debug : h5assembler_debug.o h5vm.o h5stdlib.o
-	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -o h5asm_debug h5assembler_debug.o h5vm.o h5stdlib.o
+	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -o h5asm_debug h5assembler_debug.o h5vm.o h5stdlib.o 
 h5assembler_debug.o : h5vm.o
-	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -DH5ASSEMBLY -DH5ASM_VERBOSE -c -o h5assembler_debug.o h5vm/h5asm.c
+	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -DH5ASSEMBLY -DH5ASM_VERBOSE -c -o h5assembler_debug.o h5vm/h5asm.c 
 
 
 h5pix.o : h5render.o h5math.o
-	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -c -o h5pix.o h5pix.c h5render.o h5math.o
+	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -c -o h5pix.o h5pix.c h5render.o h5math.o 
 h5render.o : h5math.o
-	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -c -o h5render.o h5render.c h5math.o
+	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -c -o h5render.o h5render.c h5math.o 
 h5asm_gear.o : h5stdlib.o
-	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -c -o h5asm_gear.o h5vm/h5asm_gear.c
+	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -c -o h5asm_gear.o h5vm/h5asm_gear.c 
 h5asm.o : h5vm.o
-	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -c -o h5asm.o h5vm/h5asm.c
+	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -c -o h5asm.o h5vm/h5asm.c 
 h5vm_gear.o : h5stdlib.o
-	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -c -o h5vm_gear.o h5vm/h5vm_gear.c
+	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -c -o h5vm_gear.o h5vm/h5vm_gear.c 
 h5vm.o : h5stdlib.o
-	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -c -o h5vm.o h5vm/h5vm.c
+	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -c -o h5vm.o h5vm/h5vm.c 
 h5doc.o : h5stdlib.o
-	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -c -o h5doc.o h5doc/h5doc.c
+	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -c -o h5doc.o h5doc/h5doc.c 
 h5stdlib.o :
-	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -c -o h5stdlib.o h5stdlib.c
+	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -c -o h5stdlib.o h5stdlib.c 
 h5math.o :
-	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -c -o h5math.o h5math.c
+	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -c -o h5math.o h5math.c 
 h5rat.o :
-	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -c -o h5rat.o h5rat.c
+	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -c -o h5rat.o h5rat.c 

@@ -27,45 +27,57 @@ IN THE SOFTWARE.
 
 /*Pixels are RGBA 16-bit 5551 format*/
 
+
+#include <string.h>
 void H5Render_fill(H5Render_PixelData surf, h5uint colour)
 {
-	for (h5ulong x = 0; x < surf.width; x++) {
-		for (h5ulong y = 0; y < surf.height; y++) {
-			MATRIX_GET(surf, x, y) = colour; /*WHITE*/
+	/*memset's dramatically faster, useful for 0x0000 and 0xFFFF*/
+	if ((colour >> 8) == (colour & 0xFF)) {
+		memset(surf.data, (h5uchar)colour, surf.height*surf.width*sizeof(h5uint));
+	} else {
+		for (h5ulong i = 0; i < surf.width*surf.height; i++) {
+			surf.data[i] = colour;
 		}
 	}
 }
 
+typedef uintmax_t render_t;
 void H5Render_scale(H5Render_PixelData insurf, H5Render_PixelData outsurf,
 	unsigned scale_factor, _Bool respect_transparency)
 {
 	if (scale_factor == 1) {
-		for (unsigned long i = 0; i < insurf.height; i++) {
-			for (unsigned long j = 0; j < insurf.width; j++) {
-				if (respect_transparency && !(MATRIX_GET(insurf, j, i) & 1)) {
-					;
-				} else {
-					MATRIX_GET(outsurf, j, i) = MATRIX_GET(insurf, j, i);
-				}
+		for (render_t i = 0; i < insurf.height; i++) {
+			for (render_t j = 0; j < insurf.width; j++) {
+				_Bool tr = (respect_transparency && (MATRIX_GET(insurf, j, i) == 0));
+				MATRIX_GET(outsurf, j, i) = tr ? MATRIX_GET(outsurf, j, i) : MATRIX_GET(insurf, j, i);
 			}
 		}
 	} else {
-		for (unsigned long i = 0; i < insurf.height; i++) {
-			for (unsigned long j = 0; j < insurf.width; j++) {
-				for (unsigned long k1 = 0; k1 < scale_factor; k1++) {
-					for (unsigned long k2 = 0; k2 < scale_factor; k2++) {
-						if (MATRIX_GET(insurf, j, i) == 0) {
-							;
-						} else {
-							MATRIX_GET(outsurf, j * scale_factor + k2,
-								i * scale_factor + k1) = MATRIX_GET(insurf, j, i);
-						}
-					}
+		for (render_t i = 0; i < insurf.height; i++) {
+			const render_t y = i * scale_factor;
+			const render_t width = outsurf.width;
+			const render_t flat_index_y = width*y;
+			_Bool line_was_transparent = 1;
+			for (render_t j = 0; j < insurf.width; j++) {
+				const render_t x = j * scale_factor;
+				for (render_t k1 = 0; k1 < scale_factor; k1++) {
+					_Bool tr = (respect_transparency && (MATRIX_GET(insurf, j, i) == 0));
+					line_was_transparent &= tr ? 1 : 0;
+					MATRIX_GET(outsurf, x+k1, y) = tr ? MATRIX_GET(outsurf, x+k1, y) : MATRIX_GET(insurf, j, i);
+					MATRIX_GET(outsurf, x+k1, y) = MATRIX_GET(insurf, j, i);
 				}
+			}
+			if (!line_was_transparent) {
+				for (render_t k2 = 1; k2 < scale_factor; k2++) {
+					memcpy(&outsurf.data[width*(y+k2)], &outsurf.data[flat_index_y], width*sizeof(h5uint));
+				}
+			} else {
+				/*printf("Wow! a totally transparent line!\n");*/
 			}
 		}
 	}
 }
+
 /*Bresenham's line drawing algorithm*/
 void H5Render_ulong_drawLine(
 	H5Render_PixelData surf, VEC2(h5ulong) p1, VEC2(h5ulong) p2, h5uint colour)

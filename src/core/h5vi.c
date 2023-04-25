@@ -53,6 +53,8 @@ comma-separated booleans (0 or 1) replacing from 'quit' until 'right'
 comma separated 8-bit uints (0-255) replacing from 'axis1' until 'axis4'
 */
 
+#define H5VI_GSERV_IMPL_SDL2
+#define H5VI_STDINPUT_IMPL_SDL2
 
 #if !defined(H5VI_GSERV_IMPL_SDL2)
 #error Please define a graphics implementation (src/core/h5vi.c)
@@ -88,7 +90,21 @@ struct h5vi_sdl_track {
 	int globstream;
 #endif
 	H5VI_InputData input;
+	uint8_t globPixels[(1 << 15) << 1][3];
 };
+
+void generatePrecomputation_RGBA5551_to_RGBB888(uint8_t arr[(1 << 15)][3]) {
+	for (uint_fast32_t i = 0; i < (1 << 15); i++) {
+		arr[(i << 1)][0] = ((i >> 10) & 0x1F)*255/31;
+		arr[(i << 1) | 1][0] = ((i >> 10) & 0x1F)*255/31;
+
+		arr[(i << 1)][1] = ((i >> 5) & 0x1F)*255/31;
+		arr[(i << 1) | 1][1] = ((i >> 5) & 0x1F)*255/31;
+
+		arr[(i << 1)][2] = (i & 0x1F)*255/31;
+		arr[(i << 1) | 1][2] = (i & 0x1F)*255/31;
+	}
+}
 
 struct h5vi_sdl_track globalref;
 
@@ -116,7 +132,7 @@ unsigned H5VI_init(H5VI_Reference *ref, size_t h, size_t w)
 		return 1;
 	}
 #endif
-
+	generatePrecomputation_RGBA5551_to_RGBB888(globalref.globPixels);
 	globalref.globwindow = SDL_CreateWindow("Halfive Visual Engine",
 		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, 0);
 	globalref.globsurf	 = SDL_GetWindowSurface(globalref.globwindow);
@@ -138,6 +154,29 @@ unsigned H5VI_destroy(H5VI_Reference *ref)
 unsigned H5VI_setBuffer(H5VI_Reference *ref, const H5Render_PixelData *inbuf)
 {
 	SDL_Surface *surfptr = ((struct h5vi_sdl_track *)ref->data)->globsurf;
+
+	uint32_t format = surfptr->format->format;
+	if (format != SDL_PIXELFORMAT_RGB888 && format != SDL_PIXELFORMAT_RGBX8888 && format != SDL_PIXELFORMAT_RGBA8888) {
+		printf("FATAL: Pixel format of window isn't suppored: Format is %s - BytesPerPixel %i - RGBA Mask %X / %X / %X / %X\n",
+		       SDL_GetPixelFormatName(format), surfptr->format->BytesPerPixel, 
+		       surfptr->format->Rmask, surfptr->format->Gmask, surfptr->format->Bmask, surfptr->format->Amask);
+		return 1;
+	} else {
+		SDL_LockSurface(surfptr);
+
+		for (unsigned long i = 0; i < inbuf->width*inbuf->height; i++) {
+			unsigned char *pix = ((unsigned char *)(surfptr->pixels)) + i*4;
+			uint16_t indx = inbuf->data[i];
+			*(pix+2) = ((struct h5vi_sdl_track *)ref->data)->globPixels[indx][0];
+			*(pix+1) = ((struct h5vi_sdl_track *)ref->data)->globPixels[indx][1];
+			*(pix+0) = ((struct h5vi_sdl_track *)ref->data)->globPixels[indx][2];
+//			*(pix+4) = (*(pix+4) == 0) ? 255 : (*(pix+4));
+		}
+		SDL_UnlockSurface(surfptr);
+		SDL_UpdateWindowSurface(((struct h5vi_sdl_track *)ref->data)->globwindow);
+		return 0;
+	}
+	/*
 	SDL_LockSurface(surfptr);
 	SDL_ConvertPixels(inbuf->width, inbuf->height, SDL_PIXELFORMAT_RGBA5551,
 		inbuf->data, 2 * (inbuf->width), surfptr->format->format,
@@ -145,6 +184,7 @@ unsigned H5VI_setBuffer(H5VI_Reference *ref, const H5Render_PixelData *inbuf)
 	SDL_UnlockSurface(surfptr);
 	SDL_UpdateWindowSurface(((struct h5vi_sdl_track *)ref->data)->globwindow);
 	return 0;
+	*/
 }
 #else
 #include <stdlib.h>
@@ -240,7 +280,7 @@ unsigned H5VI_getInput(H5VI_Reference *handle, H5VI_InputData *keys) {
 	returnval.keys[H5KEY_M2] = tmp_button_mask & SDL_BUTTON(1);
 	returnval.cursor_x = tmp_x;
 	returnval.cursor_x = tmp_y;
-	
+
 	*keys = returnval;
 	return 0;
 }
