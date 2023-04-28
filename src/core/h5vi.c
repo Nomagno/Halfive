@@ -90,19 +90,24 @@ struct h5vi_sdl_track {
 	int globstream;
 #endif
 	H5VI_InputData input;
-	uint8_t globPixels[(1 << 15) << 1][3];
+	uint32_t globPixels[(1 << 15) << 1];
 };
 
-void generatePrecomputation_RGBA5551_to_RGBB888(uint8_t arr[(1 << 15)][3]) {
+void generatePrecomputation_RGBA5551_to_RGBB888(uint32_t arr[(1 << 15) << 1], uint8_t r_pos, uint8_t g_pos, uint8_t b_pos, uint8_t a_pos) {
 	for (uint_fast32_t i = 0; i < (1 << 15); i++) {
-		arr[(i << 1)][0] = ((i >> 10) & 0x1F)*255/31;
-		arr[(i << 1) | 1][0] = ((i >> 10) & 0x1F)*255/31;
+		arr[(i << 1) | 0] |= (((i >> 10) & 0x1F)*0xFF/0x1F) << (r_pos * 8);
+		arr[(i << 1) | 1] |= (((i >> 10) & 0x1F)*0xFF/0x1F) << (r_pos * 8);
 
-		arr[(i << 1)][1] = ((i >> 5) & 0x1F)*255/31;
-		arr[(i << 1) | 1][1] = ((i >> 5) & 0x1F)*255/31;
+		arr[(i << 1) | 0] |= (((i >> 5) & 0x1F)*0xFF/0x1F) << (g_pos * 8);
+		arr[(i << 1) | 1] |= (((i >> 5) & 0x1F)*0xFF/0x1F) << (g_pos * 8);
 
-		arr[(i << 1)][2] = (i & 0x1F)*255/31;
-		arr[(i << 1) | 1][2] = (i & 0x1F)*255/31;
+		arr[(i << 1) | 0] |= (((i >> 0) & 0x1F)*0xFF/0x1F) << (b_pos * 8);
+		arr[(i << 1) | 1] |= (((i >> 0) & 0x1F)*0xFF/0x1F) << (b_pos * 8);
+
+		if (a_pos != 0xFF) {
+			arr[(i << 1) | 0] |= 0xFF;
+			arr[(i << 1) | 1] |= 0xFF;
+		}
 	}
 }
 
@@ -132,10 +137,91 @@ unsigned H5VI_init(H5VI_Reference *ref, size_t h, size_t w)
 		return 1;
 	}
 #endif
-	generatePrecomputation_RGBA5551_to_RGBB888(globalref.globPixels);
+
 	globalref.globwindow = SDL_CreateWindow("Halfive Visual Engine",
 		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, 0);
 	globalref.globsurf	 = SDL_GetWindowSurface(globalref.globwindow);
+
+	SDL_PixelFormat *format = globalref.globsurf->format;
+	uint32_t formatEnum = globalref.globsurf->format->format;
+	if (format->BytesPerPixel != 4 || format->Rmask == 0) {
+		printf("FATAL: Pixel format of window isn't supported, must be 4 bytes long and non-palette-based: Name: %s - BitsPerPixel: %i, BytesPerPixel: %i - RGBA Mask %X / %X / %X / %X\n",
+		       SDL_GetPixelFormatName(formatEnum), format->BitsPerPixel, format->BytesPerPixel, 
+		       format->Rmask, format->Gmask, format->Bmask, format->Amask);
+		return 1;
+	}
+
+	uint8_t r_pos;
+	uint8_t g_pos;
+	uint8_t b_pos;
+	uint8_t a_pos;
+
+	switch(format->Rmask) {
+		case 0xFF000000:
+			r_pos = !IS_LITTLE_ENDIAN ? 0 : 3;
+			break;
+		case 0x00FF0000:
+			r_pos = !IS_LITTLE_ENDIAN ? 1 : 2;
+			break;
+		case 0x0000FF00:
+			r_pos = !IS_LITTLE_ENDIAN ? 2 : 1;
+			break;
+		case 0x000000FF:
+			r_pos = !IS_LITTLE_ENDIAN ? 3 : 0;
+			break;
+	}	
+
+	switch(format->Gmask) {
+		case 0xFF000000:
+			g_pos = !IS_LITTLE_ENDIAN ? 0 : 3;
+			break;
+		case 0x00FF0000:
+			g_pos = !IS_LITTLE_ENDIAN ? 1 : 2;
+			break;
+		case 0x0000FF00:
+			g_pos = !IS_LITTLE_ENDIAN ? 2 : 1;
+			break;
+		case 0x000000FF:
+			g_pos = !IS_LITTLE_ENDIAN ? 3 : 0;
+			break;
+	}	
+
+	switch(format->Bmask) {
+		case 0xFF000000:
+			b_pos = !IS_LITTLE_ENDIAN ? 0 : 3;
+			break;
+		case 0x00FF0000:
+			b_pos = !IS_LITTLE_ENDIAN ? 1 : 2;
+			break;
+		case 0x0000FF00:
+			b_pos = !IS_LITTLE_ENDIAN ? 2 : 1;
+			break;
+		case 0x000000FF:
+			b_pos = !IS_LITTLE_ENDIAN ? 3 : 0;
+			break;
+	}	
+
+	switch(format->Amask) {
+		case 0xFF000000:
+			a_pos = !IS_LITTLE_ENDIAN ? 0 : 3;
+			break;
+		case 0x00FF0000:
+			a_pos = !IS_LITTLE_ENDIAN ? 1 : 2;
+			break;
+		case 0x0000FF00:
+			a_pos = !IS_LITTLE_ENDIAN ? 2 : 1;
+			break;
+		case 0x000000FF:
+			a_pos = !IS_LITTLE_ENDIAN ? 3 : 0;
+			break;
+		case 0:
+			a_pos = 0xFF;
+			break;
+	}
+
+	printf("H5Vi: Precomputing pixel conversion...\n");
+	generatePrecomputation_RGBA5551_to_RGBB888(globalref.globPixels, r_pos, g_pos, b_pos, a_pos);
+
 	ref->data			 = (void *)&globalref;
 
 	return 0;
@@ -155,36 +241,16 @@ unsigned H5VI_setBuffer(H5VI_Reference *ref, const H5Render_PixelData *inbuf)
 {
 	SDL_Surface *surfptr = ((struct h5vi_sdl_track *)ref->data)->globsurf;
 
-	uint32_t format = surfptr->format->format;
-	if (format != SDL_PIXELFORMAT_RGB888 && format != SDL_PIXELFORMAT_RGBX8888 && format != SDL_PIXELFORMAT_RGBA8888) {
-		printf("FATAL: Pixel format of window isn't suppored: Format is %s - BytesPerPixel %i - RGBA Mask %X / %X / %X / %X\n",
-		       SDL_GetPixelFormatName(format), surfptr->format->BytesPerPixel, 
-		       surfptr->format->Rmask, surfptr->format->Gmask, surfptr->format->Bmask, surfptr->format->Amask);
-		return 1;
-	} else {
-		SDL_LockSurface(surfptr);
-
-		for (unsigned long i = 0; i < inbuf->width*inbuf->height; i++) {
-			unsigned char *pix = ((unsigned char *)(surfptr->pixels)) + i*4;
-			uint16_t indx = inbuf->data[i];
-			*(pix+2) = ((struct h5vi_sdl_track *)ref->data)->globPixels[indx][0];
-			*(pix+1) = ((struct h5vi_sdl_track *)ref->data)->globPixels[indx][1];
-			*(pix+0) = ((struct h5vi_sdl_track *)ref->data)->globPixels[indx][2];
-//			*(pix+4) = (*(pix+4) == 0) ? 255 : (*(pix+4));
-		}
-		SDL_UnlockSurface(surfptr);
-		SDL_UpdateWindowSurface(((struct h5vi_sdl_track *)ref->data)->globwindow);
-		return 0;
-	}
-	/*
 	SDL_LockSurface(surfptr);
-	SDL_ConvertPixels(inbuf->width, inbuf->height, SDL_PIXELFORMAT_RGBA5551,
-		inbuf->data, 2 * (inbuf->width), surfptr->format->format,
-		surfptr->pixels, surfptr->pitch);
+
+	for (unsigned long i = 0; i < inbuf->width*inbuf->height; i++) {
+		uint32_t *pix = ((uint32_t *)(surfptr->pixels)) + i;
+		uint16_t indx = inbuf->data[i];
+		*pix = ((struct h5vi_sdl_track *)ref->data)->globPixels[indx];
+	}
 	SDL_UnlockSurface(surfptr);
 	SDL_UpdateWindowSurface(((struct h5vi_sdl_track *)ref->data)->globwindow);
 	return 0;
-	*/
 }
 #else
 #include <stdlib.h>
