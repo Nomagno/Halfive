@@ -6,7 +6,6 @@
 #include <halfive/h5stdlib.h>
 #include <stdio.h>
 #include <time.h>
-#include <unistd.h>
 #include <halfive/h5vm/h5vm_gear.h>
 #include <halfive/h5vm/h5asm_gear.h>
 
@@ -174,10 +173,10 @@ int _main_loop(struct main_loop_data *opaque_handle) {
 	  window size, then  draw to the screen*/
 	H5Render_scale(data.console_buffer, data.screen_buffer, SCALE_FACTOR_64, 1);
 	H5VI_setBuffer(data.ref, &data.screen_buffer);
-	/*TODO:
+	/*WARNING:
 	    This performs a conversion from RGBA5551 to the system's
-	    (8-bit channel) pixel representation. This is currently
-	    done with a lookup table, but it still is the CURRENT BOTTLENECK
+	    pixel representation. It's done pretty efficiently with a 
+	    256KBs color lookup table, but it's still the bottleneck
 	*/
 
 GO_BACK:

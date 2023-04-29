@@ -21,6 +21,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 */
 
+#include <halfive/h5stdlib.h>
 #include <halfive/h5req.h>
 #include <halfive/h5render.h>
 #include <halfive/h5pix.h>
@@ -53,8 +54,8 @@ comma-separated booleans (0 or 1) replacing from 'quit' until 'right'
 comma separated 8-bit uints (0-255) replacing from 'axis1' until 'axis4'
 */
 
-#define H5VI_GSERV_IMPL_SDL2
-#define H5VI_STDINPUT_IMPL_SDL2
+//#define H5VI_GSERV_IMPL_SDL2
+//#define H5VI_STDINPUT_IMPL_SDL2
 
 #if !defined(H5VI_GSERV_IMPL_SDL2)
 #error Please define a graphics implementation (src/core/h5vi.c)
@@ -64,18 +65,12 @@ comma separated 8-bit uints (0-255) replacing from 'axis1' until 'axis4'
 #error Please define an input implementation (src/core/h5vi.c)
 #endif
 
-
-#if defined(H5VI_GSERV_IMPL_SDL2)
-#include <SDL2/SDL.h>
-#endif
-
 #if defined(H5VI_GSERV_IMPL_SDL2) || defined(H5VI_AUDIOSERV_IMPL_SDL2)
 #define H5VI_GEN_SDL2
 #endif
 
 #if defined(H5VI_GEN_SDL2)
 
-#include <SDL2/SDL.h>
 #include <SDL2/SDL.h>
 
 /*Implementation-specific global mutable state*/
@@ -253,8 +248,6 @@ unsigned H5VI_setBuffer(H5VI_Reference *ref, const H5Render_PixelData *inbuf)
 	return 0;
 }
 #else
-#include <stdlib.h>
-#include <halfive/h5stdlib.h>
 
 struct h5vi_gen_track {
 	H5Render_PixelData pixels;
@@ -351,7 +344,6 @@ unsigned H5VI_getInput(H5VI_Reference *handle, H5VI_InputData *keys) {
 	return 0;
 }
 #elif defined(H5VI_STDINPUT_IMPL_PORTABLE)
-#include <halfive/h5stdlib.h>
 #include <stdio.h>
 unsigned H5VI_getInput(H5VI_Reference *handle, H5VI_InputData *keys)
 {
@@ -382,15 +374,9 @@ unsigned H5VI_getInput(H5VI_Reference *handle, H5VI_InputData *keys)
 #endif
 
 #ifdef H5VI_IMAGE_VIEWER
-#include <time.h>
 #include <stdio.h>
-#include <stdlib.h>
+#include <time.h>
 
-#ifndef H5VI_GSERV_IMPL_SDL2
-#define H5VI_GSERV_IMPL_SDL2
-#endif
-
-#include <halfive/h5vi.h>
 int main(int argc, char **argv)
 {
 	if (argc < 2) {
@@ -445,7 +431,7 @@ int main(int argc, char **argv)
 	}
 
 	char *endptr   = NULL;
-	unsigned scale = (argc > 2) ? strtoul(argv[2], &endptr, 10) : 1;
+	unsigned scale = (argc > 2) ? h5strtoul(argv[2], &endptr, 10) : 1;
 	h5uint buf[h * scale][w * scale];
 	H5Render_PixelData sprite = {h * scale, w * scale, &buf[0][0]};
 	H5Render_scale(smallsprite, sprite, scale, 0);
@@ -478,10 +464,8 @@ exit:
 #endif
 
 #ifdef H5VI_TEST
-#include <halfive/h5stdlib.h>
 #include <stdio.h>
 #include <time.h>
-#include <unistd.h>
 
 #define WCONSTANT 500
 #define HCONSTANT 500
