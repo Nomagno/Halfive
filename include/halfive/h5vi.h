@@ -79,7 +79,7 @@ typedef struct {
 	/*
 	Platform string examples:
 	X11, WAYLAND, WIN32,
-	MACOS, ANDROID, SDL
+	MACOS, ANDROID, SDL2
 	*/
 	char platform[16];
 
@@ -99,7 +99,7 @@ typedef struct {
 extern unsigned H5VI_init(H5VI_Reference *buf, size_t h, size_t w);
 /*Initialize display (following width w and height h, error if not possible),
 sound, and input, following the advice of the foo_enabled booleans, and modify
-those if can't enable graphics, sound, or input*/
+those if can't enable graphics, sound, or input. Additionally, set the platform string*/
 
 extern unsigned H5VI_destroy(H5VI_Reference *ref);
 /*Exit gracefully*/

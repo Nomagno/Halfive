@@ -54,8 +54,10 @@ comma-separated booleans (0 or 1) replacing from 'quit' until 'right'
 comma separated 8-bit uints (0-255) replacing from 'axis1' until 'axis4'
 */
 
-//#define H5VI_GSERV_IMPL_SDL2
-//#define H5VI_STDINPUT_IMPL_SDL2
+/*
+#define H5VI_GSERV_IMPL_SDL2
+#define H5VI_STDINPUT_IMPL_SDL2
+*/
 
 #if !defined(H5VI_GSERV_IMPL_SDL2)
 #error Please define a graphics implementation (src/core/h5vi.c)
@@ -74,7 +76,7 @@ comma separated 8-bit uints (0-255) replacing from 'axis1' until 'axis4'
 #include <SDL2/SDL.h>
 
 /*Implementation-specific global mutable state*/
-struct h5vi_sdl_track {
+struct h5vi_sdl2_track {
 #if defined(H5VI_GSERV_IMPL_SDL2)
 	SDL_Surface *globsurf;
 	SDL_Surface *convsurf;
@@ -106,7 +108,7 @@ void generatePrecomputation_RGBA5551_to_RGBB888(uint32_t arr[(1 << 15) << 1], ui
 	}
 }
 
-struct h5vi_sdl_track globalref;
+struct h5vi_sdl2_track globalref;
 
 unsigned H5VI_init(H5VI_Reference *ref, size_t h, size_t w)
 {
@@ -133,6 +135,12 @@ unsigned H5VI_init(H5VI_Reference *ref, size_t h, size_t w)
 	}
 #endif
 
+	ref->platform[0] = 'S';
+	ref->platform[1] = 'D';
+	ref->platform[2] = 'L';
+	ref->platform[3] = '2';
+	ref->platform[4] =  0 ;
+	
 	globalref.globwindow = SDL_CreateWindow("Halfive Visual Engine",
 		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, 0);
 	globalref.globsurf	 = SDL_GetWindowSurface(globalref.globwindow);
