@@ -112,14 +112,17 @@ bbbbbbbb      bbbbbbbb
 #define _IN	        (MEMUNIT * MEMSIZE - 3)	 /*0xFFFD*/
 #define _OU	        (MEMUNIT * MEMSIZE - 4)	 /*0xFFFC*/
 #define _PC_ADR     (MEMUNIT * MEMSIZE - 5)	 /*0xFFFB*/
+#define _FF	        (MEMUNIT * MEMSIZE - 6)	 /*0xFFFA*/
 #define _ERROR_ADDR (MEMUNIT * MEMSIZE - 15) /*0xFFF0*/
 
 /*GUARANTEED TO BE CONTIGUOUS*/
-#define _RAMMAX (MEMUNIT*RAMSIZE - 1)		/*0x6FFF*/
-#define _DROMMAX (MEMUNIT*DROMSIZE + _RAMMAX) /*0x8FFF*/
-#define _GROMMAX (MEMUNIT*GROMSIZE + _DROMMAX) /*0xCFFF*/
-#define _OUTPUTMAX (MEMUNIT*OUTPUTSIZE + _GROMMAX) /*0xDFFF*/
-#define _STACKMAX (MEMUNIT*STACKSIZE + _OUTPUTMAX) /*0xEFFF*/
+#define _RWMMAX (MEMUNIT*RWMSIZE - 1)		/*0x6FFF*/
+#define _ROMMAX (MEMUNIT*ROMSIZE + _RWMMAX) /*0x8FFF*/
+#define _GROMMAX (MEMUNIT*GROMSIZE + _ROMMAX) /*0xCFFF*/
+#define _GOUTMAX (MEMUNIT*GOUTSIZE + _GROMMAX) /*0xDFFF*/
+#define _AROMMAX (MEMUNIT*AROMSIZE + _GOUTMAX) /*0xDFFF*/
+#define _AOUTMAX (MEMUNIT*AOUTSIZE + _AROMMAX) /*0xDFFF*/
+#define _STACKMAX (MEMUNIT*STACKSIZE + _AOUTMAX) /*0xEFFF*/
 
 /*Unknown address*/
 
@@ -135,18 +138,24 @@ H5VM_GeneralMemory H5VM_init(
 	rawmem->prog_co_adr = &returnval.co;
 
 	for (h5ulong i = 0; i < (MEMUNIT * MEMSIZE); i++) {
-		if (i <= _RAMMAX) {
-			returnval.data[i] = &(rawmem->ram[i]);
-		} else if (i <= _DROMMAX) {
-			returnval.data[i] = &(rawmem->drom[i - _RAMMAX - 1]);
+		if        (i <= _RWMMAX) {
+			returnval.data[i] = &(rawmem->rwm[i]);
+		} else if (i <= _ROMMAX) {
+			returnval.data[i] = &(rawmem->rom[i - _RWMMAX - 1]);
 			returnval.mask[i] = 1; /*Read-only*/
 		} else if (i <= _GROMMAX) {
-			returnval.data[i] = &(rawmem->grom[i - _DROMMAX - 1]);
+			returnval.data[i] = &(rawmem->grom[i - _ROMMAX - 1]);
 			returnval.mask[i] = 1; /*Read-only*/
-		} else if (i <= _OUTPUTMAX) {
-			returnval.data[i] = &(rawmem->output[i - _GROMMAX - 1]);
+		} else if (i <= _GOUTMAX) {
+			returnval.data[i] = &(rawmem->graphical_output[i - _GROMMAX - 1]);
+		} else if (i <= _AROMMAX) {
+			returnval.data[i] = &(rawmem->arom[i - _GOUTMAX - 1]);
+		} else if (i <= _AOUTMAX) {
+			returnval.data[i] = &(rawmem->audio_output[i - _AROMMAX - 1]);
 		} else if (i <= _STACKMAX) {
-			returnval.data[i] = &(rawmem->stack[i - _OUTPUTMAX - 1]);
+			returnval.data[i] = &(rawmem->stack[i - _AOUTMAX - 1]);
+		} else if (i == _FF) {
+			returnval.data[i] = &(rawmem->ff);
 		} else if (i == _ZF) {
 			returnval.data[i] = &(rawmem->zf);
 		} else if (i == _CF) {

@@ -46,12 +46,8 @@
 #define H5C_H_INDIGO  0x8AF9 /*0x8E5EE9*/ /*0x8AF9*/
 #define H5C_H_CYAN    0x363F /*0x33CCFF*/ /*0x363F*/
 
-typedef struct {
-	h5uchar val: 4;
-} H5Gear_Nibble;
-
-h5uint H5Gear_getColor(H5Gear_Nibble in) {
-	switch (in.val){
+h5uint H5Gear_getColor(h5uint in) {
+	switch (in & 0xF){
 	case H5C_C_NONE: return H5C_H_NONE;
 	case H5C_C_RED: return H5C_H_RED;
 	case H5C_C_YELLOW: return H5C_H_YELLOW;
@@ -72,10 +68,12 @@ h5uint H5Gear_getColor(H5Gear_Nibble in) {
 	}
 }
 
-H5Gear_Nibble H5Gear_extractPixel(h5uint pixel, unsigned index) {
-	return (H5Gear_Nibble){ .val = (pixel >> (16-((index+1)*4))) & 0xF };
+/*For legacy packed pixel layout*/
+h5uint H5Gear_extractPixel(h5uint pixel, unsigned index) {
+	return (pixel >> (16-((index+1)*4))) & 0xF;
 }
 
+/*For legacy packed pixel layout*/
 int H5Gear_toPixelData(h5uint native[restrict 1024], H5Render_PixelData *retval){
 	if ((retval->height != 64) || (retval->width != 64)) {
 		return 1;
@@ -87,58 +85,92 @@ int H5Gear_toPixelData(h5uint native[restrict 1024], H5Render_PixelData *retval)
 	}
 }
 
+/*For current unpacked pixel layout*/
+int H5Gear_toPixelData_UNPACKED(h5uint native[restrict 4096], H5Render_PixelData *retval){
+	if ((retval->height != 64) || (retval->width != 64)) {
+		return 1;
+	}
+	for (int i = 0; i < 64; i++) {
+		for (int j = 0; j < 64; j++) {
+			retval->data[i*64+j] = H5Gear_getColor(native[i*64+j]);
+		}
+	}
+}
+
+
 #define WCONSTANT 1024
 #define HCONSTANT 1024
 #define SCALE_FACTOR_64 16 /*Factor needed to scale a 64x64 buffer to the screen*/
 
-struct main_loop_data {
-	const int frame_length;
+/*H5Coordinate will eventually be its own library with boilerplate
+  for different types of threaded services. H5Gear has merely been
+  reorganized to serve as future reference, hence the out-of-place prefix*/
+typedef struct {
 	H5VI_Reference *ref;
-	H5Render_PixelData console_buffer;	
-	H5Render_PixelData screen_buffer;
+	const long int frame_length;
+	long int delta_time;
+	H5VI_InputData input_keys;
+	long int *time_taken;
+	H5Render_PixelData rendered_output;
+	void const *const_userdata;
+	void *userdata;
+} H5Coordinate_graphicalEventData;
+
+struct H5Gear_EventData {
 	H5VM_DefaultMemSetup *mem;
 	H5VM_ReadWriteInfo *rwinf;
 	H5VM_GeneralMemory *prog;
 	_Bool *is_paused;
-	int *frame_count_for_pause;
-	long int *sleep_time;
 	_Bool *quit;
 };
 
-/*Taking a void* is done to accomodate emscripten. Screw emscriptem*/
-int _main_loop(struct main_loop_data *opaque_handle) {
-	struct main_loop_data data = *opaque_handle;
-	int return_code;
-	H5VI_InputData myinput = {0};
+void H5Gear_printPerformanceData(int frame_length, long int time_taken, _Bool is_paused, _Bool quit) {
+	long int performance_percent = 100*(double)((double)frame_length/(double)(time_taken));
+	if (time_taken >= frame_length) {
+		printf("H5Vi: WARNING: Timing objective not met - Performance: %li%% \n",
+		       performance_percent);
+	} else {
+		printf("H5Vi: Frame time: %li nanoseconds - Performance: %li%%\n",
+		       (is_paused) ? 0 : time_taken, (is_paused) ? 100 : performance_percent);
+	}
+	if (quit) {
+		printf("H5Vi: Quitting\n");
+	}
+}
+
+/*Taking a pointer is done to accomodate emscripten. Screw emscriptem*/
+int H5Gear_simulateOneFrame(H5Coordinate_graphicalEventData *opaque_handle) {
 	clock_t start_t, end_t;
 	start_t = clock(); /*Microseconds in XSI-compliant systems*/
 
-	H5VI_getInput(data.ref, &myinput);
-	/*Bitmask: UDLR4321*/
-	h5uchar button_mask = myinput.keys[H5KEY_UP] << 7    |
-	                      myinput.keys[H5KEY_DOWN] << 6  |
-	                      myinput.keys[H5KEY_LEFT] << 5  |
-	                      myinput.keys[H5KEY_RIGHT] << 4 |
-	                      myinput.keys[H5KEY_B4] << 3    |
-	                      myinput.keys[H5KEY_B3] << 2    |
-	                      myinput.keys[H5KEY_B2] << 1    |
-	                      myinput.keys[H5KEY_B1];
-	data.mem->in = button_mask; /*Set input register to the button bitmask*/
-	if (myinput.keys[H5KEY_QUIT] == 1) {
-		printf("H5Vi: Quit key detected, exiting gracefully...\n");
-		*data.quit = 1; return 1;
+	H5Coordinate_graphicalEventData generalData = *opaque_handle;
+	struct H5Gear_EventData specificData = *(struct H5Gear_EventData *)(generalData.userdata);
+	H5VI_InputData input_keys = generalData.input_keys;
+	int return_code;
+
+	/*Bitmask: Up Down Left Right Button4 Button3 Button2 Button1*/
+	h5uchar button_mask = input_keys.keys[H5KEY_UP] << 7    |
+	                      input_keys.keys[H5KEY_DOWN] << 6  |
+	                      input_keys.keys[H5KEY_LEFT] << 5  |
+	                      input_keys.keys[H5KEY_RIGHT] << 4 |
+	                      input_keys.keys[H5KEY_B4] << 3    |
+	                      input_keys.keys[H5KEY_B3] << 2    |
+	                      input_keys.keys[H5KEY_B2] << 1    |
+	                      input_keys.keys[H5KEY_B1];
+	specificData.mem->in = button_mask; /*Set input register to the button bitmask*/
+	if (input_keys.keys[H5KEY_QUIT] == 1) {
+		*specificData.quit = 1;
+		goto GO_BACK;
 	}
-	if (myinput.keys[H5KEY_PAUSE] == 1 && *data.is_paused == 0) {
-		printf("H5Vi: PAUSED, you can either quit or unpause now\n");
-		*data.is_paused = 1; goto GO_BACK;
-	} else if (myinput.keys[H5KEY_PAUSE] == 1 && *data.is_paused == 1) {
-		printf("H5Vi: UNPAUSE\n");
-		*data.frame_count_for_pause = 0;
-		*data.is_paused = 0; goto GO_BACK;
+	if (input_keys.keys[H5KEY_PAUSE] == 1 && *specificData.is_paused == 0) {
+		*specificData.is_paused = 1;
+		goto GO_BACK;
+	} else if (input_keys.keys[H5KEY_PAUSE] == 1 && *specificData.is_paused == 1) {
+		*specificData.is_paused = 0;
+		goto GO_BACK;
 	}
 
-	if (*data.is_paused == 1) {
-		printf("H5Vi: PAUSED, you can either quit or unpause now\n");
+	if (*specificData.is_paused == 1) {
 		goto GO_BACK;
 	}
 
@@ -146,53 +178,48 @@ int _main_loop(struct main_loop_data *opaque_handle) {
 	until the finish register is changed to
 	nonzero. This is taken to mean that its
 	done rendering the current frame.*/
-	while (data.mem->output[1024] == 0) {
-		return_code = H5VM_execute(data.prog, data.rwinf);
-		if ((data.rwinf->adrw == 0xFFFC) && (data.rwinf->wrote_adrw)) { printf("Gear: OU: %X\n", data.mem->ou); }
-		if (data.prog->hf) { printf("\nGear: ---- HALT ----\n"); *data.quit = 1; return 0; }
+	while (specificData.mem->ff == 0) {
+		return_code = H5VM_execute(specificData.prog, specificData.rwinf);
+		if ((specificData.rwinf->adrw == 0xFFFC) && (specificData.rwinf->wrote_adrw)) {
+			printf("Gear: OU: %X\n", specificData.mem->ou);
+		}
+		if (specificData.prog->hf) {
+			printf("\nGear: ---- HALT ----\n"); *specificData.quit = 1;
+			goto GO_BACK;
+		}
 		switch (return_code) {
 		case 0: break;
-		case 1: printf("Gear: NONFATAL ERROR AT PC 0x%X: R/W UNMAPPED MEM\n", data.prog->co);
+		case 1:
+			printf("Gear: NONFATAL ERROR AT PC 0x%X: R/W UNMAPPED MEM\n", specificData.prog->co);
 			break;
-		case 2: printf("Gear: NONFATAL ERROR AT PC 0x%X: WRITE READ-ONLY MEM\n", data.prog->co);
+		case 2:
+			printf("Gear: NONFATAL ERROR AT PC 0x%X: WRITE READ-ONLY MEM\n", specificData.prog->co);
 			break;
-		case 3: printf("Gear: NONFATAL ERROR AT PC 0x%X: WRONG ADDRESSING MODE\n", data.prog->co);
+		case 3:
+			printf("Gear: NONFATAL ERROR AT PC 0x%X: WRONG ADDRESSING MODE\n", specificData.prog->co);
 			break;
-		case 4: printf("Gear:    FATAL ERROR AT PC 0x%X: CALLSTACK OVERFLOW\n", data.prog->co);
-			*data.quit = 1; return return_code;
-		default: printf("Gear:    ERROR AT PC 0x%X: UNKNOWN ERROR %u\n",data.prog->co,return_code);
-			*data.quit = 1; return return_code;
+		case 4:
+			printf("Gear:    FATAL ERROR AT PC 0x%X: CALLSTACK OVERFLOW\n", specificData.prog->co);
+			*specificData.quit = 1;
+			return return_code;
+		default: printf("Gear:    ERROR AT PC 0x%X: UNKNOWN ERROR %u\n",specificData.prog->co,return_code);
+			*specificData.quit = 1;
+			return return_code;
 		}
 	}
-	data.mem->output[1024] = 0; /*Reset the finish register*/
+	specificData.mem->ff = 0; /*Reset the finish register*/
 
 	/*Convert the console's internal screen representation into the internal one*/
-	H5Gear_toPixelData(&data.mem->output[0], &data.console_buffer);
-
-	/*Scale the console's screen to the
-	  window size, then  draw to the screen*/
-	H5Render_scale(data.console_buffer, data.screen_buffer, SCALE_FACTOR_64, 1);
-	H5VI_setBuffer(data.ref, &data.screen_buffer);
-	/*WARNING:
-	    This performs a conversion from RGBA5551 to the system's
-	    pixel representation. It's done pretty efficiently with a 
-	    256KBs color lookup table, but it's still the bottleneck
-	*/
+	H5Gear_toPixelData_UNPACKED(&specificData.mem->graphical_output[0], &generalData.rendered_output);
+	goto GO_BACK;
 
 GO_BACK:
 	end_t = clock(); /*Microseconds in XSI-compliant systems*/
-	time_t diff = ((end_t-start_t)*1000); /*multiply to convert to nanoseconds*/
-	long int performance_percent = 100*(double)((double)data.frame_length/(double)(diff));
-	if (diff >= data.frame_length) {
-		printf("H5Vi: WARNING: Timing objective not met - Performance: %li%% \n", performance_percent);
-		*data.sleep_time = 1;
-	} else {
-		printf("H5Vi: Frame time: %li nanoseconds - Performance: %li%%\n", (*data.is_paused) ? 0 : diff, (*data.is_paused) ? 100 : performance_percent);
-		*data.sleep_time = data.frame_length - diff;
-	}
+	*generalData.time_taken = ((end_t-start_t)*1000);
+	return 0;
 }	
 
-static h5uint array_screenbuf[64][64] = {0};
+static h5uint array_outputbuf[64][64] = {0};
 static h5uint array_main_buf[HCONSTANT][WCONSTANT] = {0};
 static H5VM_DefaultMemSetup mem = {0};
 static H5VM_ReadWriteInfo rwinf = {0};
@@ -217,51 +244,76 @@ int main(int argc, char **argv) {
 		H5ASM_parse(arr, &code.inst[i], code.opnd[i]); i++;
 	}
 	prog = H5VM_init(&code, &mem);
-	fread(mem.drom, 1, sizeof(mem.drom), dromfile);
+	fread(mem.rom, 1, sizeof(mem.rom), dromfile);
 	fread(mem.grom, 1, sizeof(mem.grom), gromfile);
 
 	H5VI_Reference main_ref;
-	H5Render_PixelData screenbuf = {64, 64, .data = &array_screenbuf[0][0]};
-	H5Render_PixelData main_buf = {HCONSTANT, WCONSTANT, .data = &array_main_buf[0][0]};
-	H5Render_fill(screenbuf, 0xFFFF);
-	H5Render_fill(main_buf, 0xFFFF);
 
+	H5Render_PixelData outputbuf = {64, 64, .data = &array_outputbuf[0][0]};
+	H5Render_PixelData main_buf = {HCONSTANT, WCONSTANT, .data = &array_main_buf[0][0]};
+	H5Render_fill(outputbuf, 0xFFFF);
+	H5Render_fill(main_buf, 0xFFFF);
+	
 	if (H5VI_init(&main_ref, HCONSTANT, WCONSTANT)) {
 		H5VI_destroy(&main_ref);
 		goto EXIT;
 	}
 	H5VI_setBuffer(&main_ref, &main_buf);
 
-	struct main_loop_data loop_data = {
-		.frame_length = 33333333,
+	H5Coordinate_graphicalEventData loop_data = {
 		.ref = &main_ref,
-		.console_buffer = screenbuf,
-		.screen_buffer = main_buf,
-		.mem = &mem,
-		.rwinf = &rwinf,
-		.prog = &prog,
-		.is_paused = &(_Bool){0},
-		.frame_count_for_pause = &(int){0},
-		.sleep_time = &(long int){0},
-		.quit = &(_Bool){0}
+		.frame_length = 33333333,
+		.delta_time = 0,
+		.time_taken = &(long int){0},
+		.rendered_output = outputbuf,
+		.const_userdata = NULL,
+		.input_keys = {0},
+		.userdata = &(struct H5Gear_EventData){
+			.mem = &mem,
+			.rwinf = &rwinf,
+			.prog = &prog,
+			.is_paused = &(_Bool){0},
+			.quit = &(_Bool){0}
+		}
 	};
 
 	/*This little event loop is where you'd hack away if
 	   you were to integrate Sheewol Gear in a cooperative
-	   multitasking environment*/
+	   multitasking environment. Screw emscriptem*/
 	while (1) {
-		_Bool old_is_paused = *loop_data.is_paused;
-		_main_loop((void *)&loop_data);
-		if (old_is_paused != *loop_data.is_paused) { /*If pause state changed, sleep 500ms instead of usual amount*/
+		_Bool old_is_paused = *(((struct H5Gear_EventData *)(loop_data.userdata))->is_paused);
+
+		H5VI_getInput(&main_ref, &loop_data.input_keys);
+		H5Gear_simulateOneFrame((void *)&loop_data);
+
+		_Bool new_is_paused = *(((struct H5Gear_EventData *)(loop_data.userdata))->is_paused);
+		_Bool quit = *(((struct H5Gear_EventData *)(loop_data.userdata))->quit);
+
+		H5Gear_printPerformanceData(loop_data.frame_length, *loop_data.time_taken, new_is_paused, quit);
+
+		if (old_is_paused != new_is_paused) { /*If pause state changed, sleep 500ms instead of usual amount*/
 			nanosleep(&(struct timespec){0, 500000000 }, NULL);
 		} else {
-			nanosleep(&(struct timespec){0, *loop_data.sleep_time }, NULL);
+			/*Scale the console's screen to the
+			  window size, then  draw to the screen*/
+			H5Render_scale(outputbuf, main_buf, SCALE_FACTOR_64, 1);
+			H5VI_setBuffer(&main_ref, &main_buf);
+			/*WARNING:
+			    This performs a conversion from RGBA5551 to the system's
+			    pixel representation. It's done pretty efficiently with a 
+			    256KBs color lookup table, but it's still the bottleneck
+			*/
+
+			long int sleep_time = loop_data.frame_length - *loop_data.time_taken;
+			/*How long do we sleep? Primitive calculation for now, better
+			  not have a potato computer or it'll just drop the framerate and complain*/
+			nanosleep(&(struct timespec){0, (sleep_time > 0) ? sleep_time : 1 }, NULL);
 		}
-		if (*(loop_data.quit)) {
+		
+		if (quit) {
 			goto EXIT;
 		}
-	}
-	
+	}	
 
 	EXIT:
 		fclose(codefile);

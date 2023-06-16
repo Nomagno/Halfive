@@ -40,14 +40,16 @@ IN THE SOFTWARE.
 	4 /*Size in MEMUNIT instruction chunks of the code \
 	 memory*/
 
-/*These three are guaranteed to be contiguous*/
-#define RAMSIZE    7 /*Size in MEMUNIT word chunks*/
-#define DROMSIZE   2 /*Size in MEMUNIT word chunks*/
-#define GROMSIZE   4 /*Size in MEMUNIT word chunks*/
-#define OUTPUTSIZE 1 /*Size in MEMUNIT word chunks*/
-#define STACKSIZE  1 /*Size in MEMUNIT word chunks*/
+/*These are guaranteed to be contiguous*/
+#define RWMSIZE     4 /*Size in MEMUNIT word chunks*/
+#define ROMSIZE     3 /*Size in MEMUNIT word chunks*/
+#define GROMSIZE    4 /*Size in MEMUNIT word chunks*/
+#define GOUTSIZE    1 /*Size in MEMUNIT word chunks*/
+#define AROMSIZE    1 /*Size in MEMUNIT word chunks*/
+#define AOUTSIZE    1 /*Size in MEMUNIT word chunks*/
+#define STACKSIZE   1 /*Size in MEMUNIT word chunks*/
 
-#define FMEMSIZE 256 /*Size in words of the subroutine memory*/
+#define FMEMSIZE 1024 /*Size in words of the subroutine memory*/
 
 /*Halfive Virtual Machine
 
@@ -261,11 +263,14 @@ typedef struct {
 
 /*Default memory setup*/
 typedef struct {
-	h5uint ram[MEMUNIT * RAMSIZE];
-	h5uint drom[MEMUNIT * DROMSIZE];
+	h5uint rwm[MEMUNIT * RWMSIZE];
+	h5uint rom[MEMUNIT * ROMSIZE];
 	h5uint grom[MEMUNIT * GROMSIZE];
-	h5uint output[MEMUNIT * OUTPUTSIZE];
+	h5uint graphical_output[MEMUNIT * GOUTSIZE];
+	h5uint arom[MEMUNIT * AOUTSIZE];	
+	h5uint audio_output[MEMUNIT * AOUTSIZE];
 	h5uint stack[MEMUNIT * STACKSIZE];
+	h5uint ff;
 	h5uint zf;
 	h5uint cf;
 	h5uint in;
