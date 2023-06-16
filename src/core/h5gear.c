@@ -92,10 +92,10 @@ int H5Gear_toPixelData_UNPACKED(h5uint native[restrict 4096], H5Render_PixelData
 #include <time.h>
 #include <stdio.h>
 
-void H5Gear_printPerformanceData(int time_available, long int time_taken, _Bool is_paused, _Bool quit) {
-	long int performance_percent = 100*(double)((double)time_available/(double)(time_taken));
+void H5Gear_printPerformanceData(h5umax time_available, h5umax time_taken, _Bool is_paused, _Bool quit) {
+	h5umax performance_percent = 100*(double)((double)time_available/(double)(time_taken));
 	if (time_taken >= time_available) {
-		maybe_printf("H5Vi: WARNING: Timing objective not met - Performance: %li%% \n",
+		maybe_printf("H5Vi: WARNING: Timing objective not met - Performance: %li%%\n",
 		       performance_percent);
 	} else {
 		maybe_printf("H5Vi: Frame time: %li nanoseconds - Performance: %li%%\n",
@@ -221,7 +221,7 @@ int main(int argc, char **argv) {
 	H5Render_PixelData main_buf = {HCONSTANT, WCONSTANT, .data = &array_main_buf[0][0]};
 	H5Render_fill(outputbuf, 0xFFFF);
 	H5Render_fill(main_buf, 0xFFFF);
-	
+
 	if (H5VI_init(&main_ref, HCONSTANT, WCONSTANT)) {
 		H5VI_destroy(&main_ref);
 		goto EXIT;
@@ -232,7 +232,7 @@ int main(int argc, char **argv) {
 		.ref = &main_ref,
 		.time_available = 33333333, /*average frame length in nanoseconds --- FPS = (1/time_available_in_seconds)*/
 		.delta_time = 0, /*To-do: update this per-run*/
-		.time_taken = &(long int){0},
+		.time_taken = &(h5umax){0},
 		.rendered_output = outputbuf,
 		.const_userdata = NULL,
 		.input_keys = {0},
@@ -274,16 +274,17 @@ int main(int argc, char **argv) {
 			    256KBs color lookup table, but it's still the bottleneck
 			*/
 
-			long int sleep_time = loop_data.time_available - *loop_data.time_taken;
+			h5smax sleep_time = loop_data.time_available - *loop_data.time_taken;
+
 			/*How long do we sleep? Primitive calculation for now, better
 			  not have a potato computer or it'll just drop the framerate and complain*/
 			nanosleep(&(struct timespec){0, (sleep_time > 0) ? sleep_time : 1 }, NULL);
 		}
-		
+
 		if (quit) {
 			goto EXIT;
 		}
-	}	
+	}
 
 	EXIT:
 		fclose(codefile);
