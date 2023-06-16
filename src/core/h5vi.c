@@ -54,6 +54,9 @@ comma-separated booleans (0 or 1) replacing from 'quit' until 'right'
 comma separated 8-bit uints (0-255) replacing from 'axis1' until 'axis4'
 */
 
+#include <halfive/code_setup.h>
+
+
 /*
 #define H5VI_GSERV_IMPL_SDL2
 #define H5VI_STDINPUT_IMPL_SDL2
@@ -148,7 +151,7 @@ unsigned H5VI_init(H5VI_Reference *ref, size_t h, size_t w)
 	SDL_PixelFormat *format = globalref.globsurf->format;
 	uint32_t formatEnum = globalref.globsurf->format->format;
 	if (format->BytesPerPixel != 4 || format->Rmask == 0) {
-		printf("FATAL: Pixel format of window isn't supported, must be 4 bytes long and non-palette-based: Name: %s - BitsPerPixel: %i, BytesPerPixel: %i - RGBA Mask %X / %X / %X / %X\n",
+		maybe_printf("FATAL: Pixel format of window isn't supported, must be 4 bytes long and non-palette-based: Name: %s - BitsPerPixel: %i, BytesPerPixel: %i - RGBA Mask %X / %X / %X / %X\n",
 		       SDL_GetPixelFormatName(formatEnum), format->BitsPerPixel, format->BytesPerPixel, 
 		       format->Rmask, format->Gmask, format->Bmask, format->Amask);
 		return 1;
@@ -222,7 +225,7 @@ unsigned H5VI_init(H5VI_Reference *ref, size_t h, size_t w)
 			break;
 	}
 
-	printf("H5Vi: Precomputing pixel conversion...\n");
+	maybe_printf("H5Vi: Precomputing pixel conversion...\n");
 	generatePrecomputation_RGBA5551_to_RGBB888(globalref.globPixels, r_pos, g_pos, b_pos, a_pos);
 
 	ref->data			 = (void *)&globalref;
@@ -232,9 +235,9 @@ unsigned H5VI_init(H5VI_Reference *ref, size_t h, size_t w)
 
 unsigned H5VI_destroy(H5VI_Reference *ref)
 {
-	SDL_DestroyWindow(((struct h5vi_sdl_track *)ref->data)->globwindow);
+	SDL_DestroyWindow(((struct h5vi_sdl2_track *)ref->data)->globwindow);
 #ifdef H5VI_AUDIOSERV_IMPL_SDL2
-	SDL_CloseAudioDevice(((struct h5vi_sdl_track *)ref->data)->globstream);
+	SDL_CloseAudioDevice(((struct h5vi_sdl2_track *)ref->data)->globstream);
 #endif
 	SDL_Quit();
 	return 0;
@@ -242,17 +245,17 @@ unsigned H5VI_destroy(H5VI_Reference *ref)
 
 unsigned H5VI_setBuffer(H5VI_Reference *ref, const H5Render_PixelData *inbuf)
 {
-	SDL_Surface *surfptr = ((struct h5vi_sdl_track *)ref->data)->globsurf;
+	SDL_Surface *surfptr = ((struct h5vi_sdl2_track *)ref->data)->globsurf;
 
 	SDL_LockSurface(surfptr);
 
 	for (unsigned long i = 0; i < inbuf->width*inbuf->height; i++) {
 		uint32_t *pix = ((uint32_t *)(surfptr->pixels)) + i;
 		uint16_t indx = inbuf->data[i];
-		*pix = ((struct h5vi_sdl_track *)ref->data)->globPixels[indx];
+		*pix = ((struct h5vi_sdl2_track *)ref->data)->globPixels[indx];
 	}
 	SDL_UnlockSurface(surfptr);
-	SDL_UpdateWindowSurface(((struct h5vi_sdl_track *)ref->data)->globwindow);
+	SDL_UpdateWindowSurface(((struct h5vi_sdl2_track *)ref->data)->globwindow);
 	return 0;
 }
 #else
@@ -290,7 +293,7 @@ unsigned H5VI_playSound(H5VI_Reference *handle, const H5VI_SoundData *insound)
 	uint32_t size;
 	SDL_AudioSpec auspec;
 
-	((struct h5vi_sdl_track *)(handle->data))->globsound =
+	((struct h5vi_sdl2_track *)(handle->data))->globsound =
 		*SDL_LoadWAV(insound->name, &auspec, &(buf), &(size));
 	SDL_QueueAudio(globalref.globstream, buf, size);
 	SDL_FreeWAV(buf);
@@ -388,7 +391,7 @@ unsigned H5VI_getInput(H5VI_Reference *handle, H5VI_InputData *keys)
 int main(int argc, char **argv)
 {
 	if (argc < 2) {
-		printf("USAGE: pamview file [scale] [tileset file] [tileY,tileX]\n");
+		maybe_printf("USAGE: pamview file [scale] [tileset file] [tileY,tileX]\n");
 		return 1;
 	}
 	size_t h, w;
@@ -424,7 +427,7 @@ int main(int argc, char **argv)
 			.names							   = &names[0][0]};
 		H5Pix_getINFO_TilesetContents(argv[3], &tiles);
 		for (size_t i = 0; i < tileset_h; i++) {
-			printf("\nROW %zu TYPE: %s\n", i,
+			maybe_printf("\nROW %zu TYPE: %s\n", i,
 				(tiles.tags[i] == tile_Symbol)
 					? "SYMBOL"
 					: ((tiles.tags[i] == tile_Sprite)
@@ -432,7 +435,7 @@ int main(int argc, char **argv)
 							  : ((tiles.tags[i] == tile_Image) ? "IMAGE"
 															   : "UNKNOWN")));
 			for (size_t j = 0; j < tileset_w; j++) {
-				printf("Y: %zu - X: %zu - %s\n", i, j,
+				maybe_printf("Y: %zu - X: %zu - %s\n", i, j,
 					MATRIX_INDEX(tiles.names, tiles.width, j, i));
 			}
 		}
@@ -446,7 +449,7 @@ int main(int argc, char **argv)
 
 	H5VI_Reference myref;
 	if (H5VI_init(&myref, h * scale, w * scale)) {
-		printf("ERROR: failed to initialize H5VI screen");
+		maybe_printf("ERROR: failed to initialize H5VI screen");
 		H5VI_destroy(&myref);
 		return 1;
 	}

@@ -31,6 +31,7 @@ H5VM_InstructionSet _isinst(char *instr);
 h5uint _isxupdigit(h5uchar inchar);
 /*Define H5ASSEMBLY to enable assembling*/
 #ifdef H5ASSEMBLY
+#include <halfive/code_setup.h>
 #include <stdio.h>
 int main(int argc, char **argv)
 {
@@ -65,20 +66,20 @@ int main(int argc, char **argv)
 
 		return_code = H5VM_execute(&prog, &rwinf);
 
-		if ((rwinf.adrw == 0xFFFC) && (rwinf.wrote_adrw)) { printf("OU: %X\n", mem.ou); }
-		if (prog.hf) { printf("\n----\nHALT\n----\n"); }
+		if ((rwinf.adrw == 0xFFFC) && (rwinf.wrote_adrw)) { maybe_printf("OU: %X\n", mem.ou); }
+		if (prog.hf) { maybe_printf("\n----\nHALT\n----\n"); }
 
 		switch (return_code) {
 		case 0: break;
-		case 1: printf("NONFATAL ERROR AT INST 0x%X: READ/WRITE UNMAPPED MEM\n", prog.co);
+		case 1: maybe_printf("NONFATAL ERROR AT INST 0x%X: READ/WRITE UNMAPPED MEM\n", prog.co);
 			break;
-		case 2: printf("NONFATAL ERROR AT INST 0x%X: WRITE TO READ-ONLY MEM\n", prog.co);
+		case 2: maybe_printf("NONFATAL ERROR AT INST 0x%X: WRITE TO READ-ONLY MEM\n", prog.co);
 			break;
-		case 3: printf("NONFATAL ERROR AT INST 0x%X: WRONG ADDRESSING MODE\n", prog.co);
+		case 3: maybe_printf("NONFATAL ERROR AT INST 0x%X: WRONG ADDRESSING MODE\n", prog.co);
 			break;
-		case 4: printf("FATAL ERROR AT INST 0x%X: CALLSTACK OVERFLOW\n", prog.co);
+		case 4: maybe_printf("FATAL ERROR AT INST 0x%X: CALLSTACK OVERFLOW\n", prog.co);
 			break;
-		default: printf("ERROR AT INST 0x%X: UNKNOWN ERROR %u\n", prog.co, return_code);
+		default: maybe_printf("ERROR AT INST 0x%X: UNKNOWN ERROR %u\n", prog.co, return_code);
 			break;
 		}
 		if (return_code >= 4) { break; }
@@ -220,7 +221,7 @@ int main(void){
 	
 	while(fgets(str, ELEMNUM(str), stdin) != NULL){
 		ASM(adrlist, intlist, str); // Read a line of assembly, then execute it
-		printf("%X,%X,%X,%X\n", intlist[0], intlist[1], intlist[2], intlist[3]);
+		maybe_printf("%X,%X,%X,%X\n", intlist[0], intlist[1], intlist[2], intlist[3]);
 		// the elements of intlist[] are now mapped to the VM addresses in adrlist[]
 	}
 }

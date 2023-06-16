@@ -32,6 +32,7 @@ h5uint _isxupdigit(h5uchar inchar);
 
 /*Define H5ASSEMBLY to enable assembling*/
 #ifdef H5ASSEMBLY
+#include <halfive/code_setup.h>
 #include <stdio.h>
 int main(int argc, char **argv)
 {
@@ -80,7 +81,7 @@ int main(int argc, char **argv)
 
 #ifdef H5ASM_VERBOSE
 		h5uint prevco = prog.co;
-		printf(
+		maybe_printf(
 			"BEFORE: PC %4u -- %u, %u, %u, %u, %u, %u, %4X (%2X), %4X (%2X)\n",
 			prog.co, rwinf.was_err, rwinf.wrote_adrw, rwinf.read_adrw,
 			rwinf.read_adrr, rwinf.write_zf, rwinf.write_cf, rwinf.adrw,
@@ -90,14 +91,14 @@ int main(int argc, char **argv)
 
 		if ((rwinf.adrw == 0xFFFC) && (rwinf.wrote_adrw)) {
 #ifdef H5ASM_VERBOSE
-			printf("OUTPUT at PC %4u: %X\n", prevco, mem.ou);
+			maybe_printf("OUTPUT at PC %4u: %X\n", prevco, mem.ou);
 #else
-			printf("OU: %X\n", mem.ou);
+			maybe_printf("OU: %X\n", mem.ou);
 #endif
 		}
 
 #ifdef H5ASM_VERBOSE
-		printf(
+		maybe_printf(
 			"AFTER:  PC %4u -- %u, %u, %u, %u, %u, %u, %4X (%2X), %4X (%2X)\n",
 			prog.co, rwinf.was_err, rwinf.wrote_adrw, rwinf.read_adrw,
 			rwinf.read_adrr, rwinf.write_zf, rwinf.write_cf, rwinf.adrw,
@@ -106,26 +107,26 @@ int main(int argc, char **argv)
 #endif
 
 		if (prog.hf) {
-			printf("\n----\nHALT\n----\n");
+			maybe_printf("\n----\nHALT\n----\n");
 			break;
 		}
 		switch (return_code) {
 		case 0:
 			break;
 		case 1:
-			printf("NONFATAL ERROR AT INST 0x%X: READ/WRITE UNMAPPED MEM\n", prog.co);
+			maybe_printf("NONFATAL ERROR AT INST 0x%X: READ/WRITE UNMAPPED MEM\n", prog.co);
 			break;
 		case 2:
-			printf("NONFATAL ERROR AT INST 0x%X: WRITE TO READ-ONLY MEM\n", prog.co);
+			maybe_printf("NONFATAL ERROR AT INST 0x%X: WRITE TO READ-ONLY MEM\n", prog.co);
 			break;
 		case 3:
-			printf("NONFATAL ERROR AT INST 0x%X: WRONG ADDRESSING MODE\n", prog.co);
+			maybe_printf("NONFATAL ERROR AT INST 0x%X: WRONG ADDRESSING MODE\n", prog.co);
 			break;
 		case 4:
-			printf("FATAL ERROR AT INST 0x%X: CALLSTACK OVERFLOW\n", prog.co);
+			maybe_printf("FATAL ERROR AT INST 0x%X: CALLSTACK OVERFLOW\n", prog.co);
 			break;
 		default:
-			printf(
+			maybe_printf(
 				"ERROR AT INST 0x%X: UNKNOWN ERROR %u\n", prog.co, return_code);
 			break;
 		}
@@ -258,6 +259,7 @@ unsigned H5ASM_run(char **str, size_t stringnum, H5VM_GeneralMemory *mem, h5uint
 }
 
 /*
+#include <code_setup.h>
 #include <stdio.h>
 
 int main(void){
@@ -269,7 +271,7 @@ int main(void){
 	
 	while(fgets(str, ELEMNUM(str), stdin) != NULL){
 		ASM(adrlist, intlist, str); // Read a line of assembly, then execute it
-		printf("%X,%X,%X,%X\n", intlist[0], intlist[1], intlist[2], intlist[3]);
+		maybe_printf("%X,%X,%X,%X\n", intlist[0], intlist[1], intlist[2], intlist[3]);
 		// the elements of intlist[] are now mapped to the VM addresses in adrlist[]
 	}
 }

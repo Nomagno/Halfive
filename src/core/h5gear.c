@@ -1,50 +1,35 @@
+/*
+Copyright Nomagno 2023
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice (including the next
+paragraph) shall be included in all copies or substantial portions of the
+Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+IN THE SOFTWARE.
+*/
+
 #include <halfive/h5req.h>
 #include <halfive/h5render.h>
-#include <halfive/h5pix.h>
-#include <halfive/h5vi.h>
+#include <halfive/h5coord.h>
 
-#include <halfive/h5stdlib.h>
-#include <stdio.h>
-#include <time.h>
 #include <halfive/h5vm/h5vm_gear.h>
 #include <halfive/h5vm/h5asm_gear.h>
+#include <halfive/h5gear.h>
 
-#define USER_BACKGROUND 0xFFFF
-
-/*COLORS IN RGB888*/ /*COLORS IN RGBA5551*/
-#define H5C_C_NONE    0 /*NONE*/      /*0x0000*/
-#define H5C_C_RED     1 /*0xFF0033*/  /*0xF80D*/
-#define H5C_C_YELLOW  2 /*0xFFCC00*/  /*0xFE01*/
-#define H5C_C_GREEN   3 /*0x76EC08*/  /*0x7701*/
-#define H5C_C_BLUE    4 /*0x2086FD*/  /*0x1C3D*/
-#define H5C_C_MAGENTA 5 /*0xB2194C*/  /*0xA8D3*/
-#define H5C_C_BLACK   6 /*0x000000*/  /*0x0001*/
-#define H5C_C_GREY    7 /*0x505675*/  /*0x4A9D*/
-#define H5C_C_NIGHT   8 /*0x21223D*/  /*0x210F*/
-#define H5C_C_BROWN   9 /*0x77001A*/  /*0x7007*/
-#define H5C_C_BEIGE   10 /*0xFFFFB4*/ /*0xFFEB*/
-#define H5C_C_NAVY    11 /*0xCAFFFF*/ /*0xC7FF*/
-#define H5C_C_ORANGE  12 /*0xBD7100*/ /*0xB341*/
-#define H5C_C_PINK    13 /*0xFF3366*/ /*0xF999*/
-#define H5C_C_INDIGO  14 /*0x8E5EE9*/ /*0x8AF9*/
-#define H5C_C_CYAN    15 /*0x33CCFF*/ /*0x363F*/
-
-#define H5C_H_NONE    USER_BACKGROUND /*NONE*/      /*0x0000*/
-#define H5C_H_RED     0xF80D /*0xFF0033*/  /*0xF80D*/
-#define H5C_H_YELLOW  0xFE01 /*0xFFCC00*/  /*0xFE01*/
-#define H5C_H_GREEN   0x7701 /*0x76EC08*/  /*0x7701*/
-#define H5C_H_BLUE    0x1C3D /*0x2086FD*/  /*0x1C3D*/
-#define H5C_H_MAGENTA 0xA8D3 /*0xB2194C*/  /*0xA8D3*/
-#define H5C_H_BLACK   0x0001 /*0x000000*/  /*0x0001*/
-#define H5C_H_GREY    0x4A9D /*0x505675*/  /*0x4A9D*/
-#define H5C_H_NIGHT   0x210F /*0x21223D*/  /*0x210F*/
-#define H5C_H_BROWN   0x7007 /*0x77001A*/  /*0x7007*/
-#define H5C_H_BEIGE   0xFFEB /*0xFFFFB4*/ /*0xFFEB*/
-#define H5C_H_NAVY    0xC7FF /*0xCAFFFF*/ /*0xC7FF*/
-#define H5C_H_ORANGE  0xB341 /*0xBD7100*/ /*0xB341*/
-#define H5C_H_PINK    0xF999 /*0xFF3366*/ /*0xF999*/
-#define H5C_H_INDIGO  0x8AF9 /*0x8E5EE9*/ /*0x8AF9*/
-#define H5C_H_CYAN    0x363F /*0x33CCFF*/ /*0x363F*/
+#include <halfive/h5vi.h>
 
 h5uint H5Gear_getColor(h5uint in) {
 	switch (in & 0xF){
@@ -102,48 +87,31 @@ int H5Gear_toPixelData_UNPACKED(h5uint native[restrict 4096], H5Render_PixelData
 #define HCONSTANT 1024
 #define SCALE_FACTOR_64 16 /*Factor needed to scale a 64x64 buffer to the screen*/
 
-/*H5Coordinate will eventually be its own library with boilerplate
-  for different types of threaded services. H5Gear has merely been
-  reorganized to serve as future reference, hence the out-of-place prefix*/
-typedef struct {
-	H5VI_Reference *ref;
-	const long int frame_length;
-	long int delta_time;
-	H5VI_InputData input_keys;
-	long int *time_taken;
-	H5Render_PixelData rendered_output;
-	void const *const_userdata;
-	void *userdata;
-} H5Coordinate_graphicalEventData;
+#include <halfive/code_setup.h>
+#include <halfive/h5stdlib.h>
+#include <time.h>
+#include <stdio.h>
 
-struct H5Gear_EventData {
-	H5VM_DefaultMemSetup *mem;
-	H5VM_ReadWriteInfo *rwinf;
-	H5VM_GeneralMemory *prog;
-	_Bool *is_paused;
-	_Bool *quit;
-};
-
-void H5Gear_printPerformanceData(int frame_length, long int time_taken, _Bool is_paused, _Bool quit) {
-	long int performance_percent = 100*(double)((double)frame_length/(double)(time_taken));
-	if (time_taken >= frame_length) {
-		printf("H5Vi: WARNING: Timing objective not met - Performance: %li%% \n",
+void H5Gear_printPerformanceData(int time_available, long int time_taken, _Bool is_paused, _Bool quit) {
+	long int performance_percent = 100*(double)((double)time_available/(double)(time_taken));
+	if (time_taken >= time_available) {
+		maybe_printf("H5Vi: WARNING: Timing objective not met - Performance: %li%% \n",
 		       performance_percent);
 	} else {
-		printf("H5Vi: Frame time: %li nanoseconds - Performance: %li%%\n",
+		maybe_printf("H5Vi: Frame time: %li nanoseconds - Performance: %li%%\n",
 		       (is_paused) ? 0 : time_taken, (is_paused) ? 100 : performance_percent);
 	}
 	if (quit) {
-		printf("H5Vi: Quitting\n");
+		maybe_printf("H5Vi: Quitting\n");
 	}
 }
 
 /*Taking a pointer is done to accomodate emscripten. Screw emscriptem*/
-int H5Gear_simulateOneFrame(H5Coordinate_graphicalEventData *opaque_handle) {
+int H5Gear_simulateOneFrame(H5Coordinate_GraphicalEventData *opaque_handle) {
 	clock_t start_t, end_t;
 	start_t = clock(); /*Microseconds in XSI-compliant systems*/
 
-	H5Coordinate_graphicalEventData generalData = *opaque_handle;
+	H5Coordinate_GraphicalEventData generalData = *opaque_handle;
 	struct H5Gear_EventData specificData = *(struct H5Gear_EventData *)(generalData.userdata);
 	H5VI_InputData input_keys = generalData.input_keys;
 	int return_code;
@@ -181,28 +149,28 @@ int H5Gear_simulateOneFrame(H5Coordinate_graphicalEventData *opaque_handle) {
 	while (specificData.mem->ff == 0) {
 		return_code = H5VM_execute(specificData.prog, specificData.rwinf);
 		if ((specificData.rwinf->adrw == 0xFFFC) && (specificData.rwinf->wrote_adrw)) {
-			printf("Gear: OU: %X\n", specificData.mem->ou);
+			maybe_printf("Gear: OU: %X\n", specificData.mem->ou);
 		}
 		if (specificData.prog->hf) {
-			printf("\nGear: ---- HALT ----\n"); *specificData.quit = 1;
+			maybe_printf("\nGear: ---- HALT ----\n"); *specificData.quit = 1;
 			goto GO_BACK;
 		}
 		switch (return_code) {
 		case 0: break;
 		case 1:
-			printf("Gear: NONFATAL ERROR AT PC 0x%X: R/W UNMAPPED MEM\n", specificData.prog->co);
+			maybe_printf("Gear: NONFATAL ERROR AT PC 0x%X: R/W UNMAPPED MEM\n", specificData.prog->co);
 			break;
 		case 2:
-			printf("Gear: NONFATAL ERROR AT PC 0x%X: WRITE READ-ONLY MEM\n", specificData.prog->co);
+			maybe_printf("Gear: NONFATAL ERROR AT PC 0x%X: WRITE READ-ONLY MEM\n", specificData.prog->co);
 			break;
 		case 3:
-			printf("Gear: NONFATAL ERROR AT PC 0x%X: WRONG ADDRESSING MODE\n", specificData.prog->co);
+			maybe_printf("Gear: NONFATAL ERROR AT PC 0x%X: WRONG ADDRESSING MODE\n", specificData.prog->co);
 			break;
 		case 4:
-			printf("Gear:    FATAL ERROR AT PC 0x%X: CALLSTACK OVERFLOW\n", specificData.prog->co);
+			maybe_printf("Gear:    FATAL ERROR AT PC 0x%X: CALLSTACK OVERFLOW\n", specificData.prog->co);
 			*specificData.quit = 1;
 			return return_code;
-		default: printf("Gear:    ERROR AT PC 0x%X: UNKNOWN ERROR %u\n",specificData.prog->co,return_code);
+		default: maybe_printf("Gear:    ERROR AT PC 0x%X: UNKNOWN ERROR %u\n",specificData.prog->co,return_code);
 			*specificData.quit = 1;
 			return return_code;
 		}
@@ -260,10 +228,10 @@ int main(int argc, char **argv) {
 	}
 	H5VI_setBuffer(&main_ref, &main_buf);
 
-	H5Coordinate_graphicalEventData loop_data = {
+	H5Coordinate_GraphicalEventData loop_data = {
 		.ref = &main_ref,
-		.frame_length = 33333333,
-		.delta_time = 0,
+		.time_available = 33333333, /*average frame length in nanoseconds --- FPS = (1/time_available_in_seconds)*/
+		.delta_time = 0, /*To-do: update this per-run*/
 		.time_taken = &(long int){0},
 		.rendered_output = outputbuf,
 		.const_userdata = NULL,
@@ -277,6 +245,8 @@ int main(int argc, char **argv) {
 		}
 	};
 
+	/*NOTE: this loop is a basic reference for how to implement H5Coord's main-loop
+	  scheduler that makes use of an event queue and can adapt to variable performance*/
 	/*This little event loop is where you'd hack away if
 	   you were to integrate Sheewol Gear in a cooperative
 	   multitasking environment. Screw emscriptem*/
@@ -289,14 +259,14 @@ int main(int argc, char **argv) {
 		_Bool new_is_paused = *(((struct H5Gear_EventData *)(loop_data.userdata))->is_paused);
 		_Bool quit = *(((struct H5Gear_EventData *)(loop_data.userdata))->quit);
 
-		H5Gear_printPerformanceData(loop_data.frame_length, *loop_data.time_taken, new_is_paused, quit);
+		H5Gear_printPerformanceData(loop_data.time_available, *loop_data.time_taken, new_is_paused, quit);
 
 		if (old_is_paused != new_is_paused) { /*If pause state changed, sleep 500ms instead of usual amount*/
 			nanosleep(&(struct timespec){0, 500000000 }, NULL);
 		} else {
 			/*Scale the console's screen to the
 			  window size, then  draw to the screen*/
-			H5Render_scale(outputbuf, main_buf, SCALE_FACTOR_64, 1);
+			H5Render_scale(outputbuf, main_buf, SCALE_FACTOR_64, 0);
 			H5VI_setBuffer(&main_ref, &main_buf);
 			/*WARNING:
 			    This performs a conversion from RGBA5551 to the system's
@@ -304,7 +274,7 @@ int main(int argc, char **argv) {
 			    256KBs color lookup table, but it's still the bottleneck
 			*/
 
-			long int sleep_time = loop_data.frame_length - *loop_data.time_taken;
+			long int sleep_time = loop_data.time_available - *loop_data.time_taken;
 			/*How long do we sleep? Primitive calculation for now, better
 			  not have a potato computer or it'll just drop the framerate and complain*/
 			nanosleep(&(struct timespec){0, (sleep_time > 0) ? sleep_time : 1 }, NULL);

@@ -27,7 +27,9 @@ IN THE SOFTWARE.
 #include <halfive/h5stdlib.h>
 
 #ifdef H5ELQ_DEBUG
-#include <stdio.h> /*Debug*/
+/*Debug features, so basically printf*/
+#include <code_setup.h>
+#include <stdio.h>
 #endif
 
 #define H5ELQ_IS_VARIABLE(x) (H5_IS_LETTER_LOWER(x) || x == '?')
@@ -206,7 +208,7 @@ H5Elq_Node *H5Elq_parse(const char *in, H5Elq_NodeHeap *nodeheap)
 			break;
 		}
 #ifdef H5ELQ_DEBUG
-		printf("COUNTER: %u\nCHARACTER: %c\n LASTCHAR: %c\n\n", i, *in,
+		maybe_printf("COUNTER: %u\nCHARACTER: %c\n LASTCHAR: %c\n\n", i, *in,
 			lastchar); /*DEBUG*/
 		i += 1;		   /*DEBUG*/
 #endif
@@ -228,21 +230,21 @@ void H5Elq_generateCode(const H5Elq_Node *ast, H5VM_GeneralMemory *program)
 int main(void)
 {
 	char in[1024];
-	printf("Input S-Expression:\n");
+	maybe_printf("Input S-Expression:\n");
 	fgets(in, sizeof(in), stdin);
 
 	H5Elq_NodeHeap nodeheap = {0};
 	H5Elq_Node *root		= H5Elq_parse(in, &nodeheap);
 
 	for (unsigned i = 0; i < 32; i++) {
-		printf("INDEX %u: %X, %s, %u, %p, PARENT: %p\n", i,
+		maybe_printf("INDEX %u: %X, %s, %u, %p, PARENT: %p\n", i,
 			nodeheap.mempool[i].valScalar, nodeheap.mempool[i].valSymbol,
 			nodeheap.mempool[i].type, (void *)&nodeheap.mempool[i],
 			(void *)nodeheap.mempool[i].parent);
 	}
 
 	int c;
-	printf(
+	maybe_printf(
 		"TYPE: %s - VAL: %X - STRING: %s - "
 		"- HASPARENT: %u - HASLEFT: %u - HASRIGHT: %u"
 		"- CYCLIC: %u"
@@ -261,7 +263,7 @@ int main(void)
 			(root->parent == root->left || root->parent == root->right),
 		(void *)root->parent, (void *)root->left, (void *)root->right);
 	while ((c = getchar()) != EOF) {
-		printf(
+		maybe_printf(
 			"TYPE: %s - VAL: %X - STRING: %s - "
 			"- HASPARENT: %u - HASLEFT: %u - HASRIGHT: %u"
 			"- CYCLIC: %u"

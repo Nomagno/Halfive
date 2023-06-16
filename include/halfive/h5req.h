@@ -9,6 +9,10 @@
 #define _Bool bool
 #endif
 
+/*printf is available on this system*/
+#define PRINTF_AVAILABLE
+
+
 /*Floats are supported on this system*/
 #define FLOATS_SUPPORTED
 

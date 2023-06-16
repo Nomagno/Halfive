@@ -206,6 +206,7 @@ unsigned H5DOC_parse(const char *input, unsigned tok_size, H5DOC_Token *toks)
 }
 
 /*
+#include <halfive/code_setup.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -216,7 +217,7 @@ val3\n\t_SUBONE\n\t\tsubkey val0 val1 val2"; H5DOC_Token toks[128] = {0};
 	for (unsigned long i = 0; i < tokensread; i++){
 		char substr[20] = {0};
 		strncpy(substr, doc+(toks[i].string_start), toks[i].string_end -
-toks[i].string_start + 1); printf("TOK %lu:\n\tSTR...: [%s]\n\tTYPE: %s\n\t"
+toks[i].string_start + 1); maybe_printf("TOK %lu:\n\tSTR...: [%s]\n\tTYPE: %s\n\t"
 			   "START.: %lu\n\tEND...: %lu\n\t"
 			   "CHILDS: %u\n", i, substr,
 			   (toks[i].type == H5DOC_SEC) ? "SECTION" : ((toks[i].type
