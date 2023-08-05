@@ -137,6 +137,23 @@ VEC2(h5smax) H5Math_smax_vecMultScalar(VEC2(h5smax) a, h5float k)
 	return (VEC2(h5smax)){.x = a.x * k, .y = a.x * k};
 }
 
+/*Composite floating point vector addition*/
+VEC2(h5float) H5Math_float_vecAddVec(VEC2(h5float) a, VEC2(h5float) b)
+{
+	return (VEC2(h5float)){.x = a.x + b.x, .y = a.y + b.y};
+}
+/*Composite floating point vector substraction*/
+VEC2(h5float) H5Math_float_vecSubVec(VEC2(h5float) a, VEC2(h5float) b)
+{
+	return (VEC2(h5float)){.x = a.x - b.x, .y = a.y - b.y};
+}
+/*Composite floating point vector scaling*/
+VEC2(h5float) H5Math_float_vecMultScalar(VEC2(h5float) a, h5float k)
+{
+	return (VEC2(h5float)){.x = a.x * k, .y = a.x * k};
+}
+
+
 /*Newton's method*/
 h5float H5Math_squareRoot(h5float a)
 {

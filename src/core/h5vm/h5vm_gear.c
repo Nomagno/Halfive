@@ -116,13 +116,14 @@ bbbbbbbb      bbbbbbbb
 #define _ERROR_ADDR (MEMUNIT * MEMSIZE - 15) /*0xFFF0*/
 
 /*GUARANTEED TO BE CONTIGUOUS*/
-#define _RWMMAX (MEMUNIT*RWMSIZE - 1)		/*0x6FFF*/
-#define _ROMMAX (MEMUNIT*ROMSIZE + _RWMMAX) /*0x8FFF*/
-#define _GROMMAX (MEMUNIT*GROMSIZE + _ROMMAX) /*0xCFFF*/
-#define _GOUTMAX (MEMUNIT*GOUTSIZE + _GROMMAX) /*0xDFFF*/
-#define _AROMMAX (MEMUNIT*AROMSIZE + _GOUTMAX) /*0xDFFF*/
-#define _AOUTMAX (MEMUNIT*AOUTSIZE + _AROMMAX) /*0xDFFF*/
-#define _STACKMAX (MEMUNIT*STACKSIZE + _AOUTMAX) /*0xEFFF*/
+#define _RWMMAX (MEMUNIT*RWMSIZE - 1)		/*0x4FFF*/
+#define _STACKMAX (MEMUNIT*STACKSIZE + _RWMMAX) /*0x5FFF*/
+#define _ROMMAX (MEMUNIT*ROMSIZE + _STACKMAX) /*0x7FFF*/
+#define _GOUTMAX (MEMUNIT*GOUTSIZE + _ROMMAX) /*0x8FFF*/
+#define _GROMMAX (MEMUNIT*GROMSIZE + _GOUTMAX) /*0xBFFF*/
+#define _AOUTMAX (MEMUNIT*AOUTSIZE + _GROMMAX) /*0xCFFF*/
+#define _AROMMAX (MEMUNIT*AROMSIZE + _AOUTMAX) /*0xDFFF*/
+#define _EXPPMAX (MEMUNIT*STACKSIZE + _AROMMAX) /*0xEFFF*/
 
 /*Unknown address*/
 
@@ -140,20 +141,23 @@ H5VM_GeneralMemory H5VM_init(
 	for (h5ulong i = 0; i < (MEMUNIT * MEMSIZE); i++) {
 		if        (i <= _RWMMAX) {
 			returnval.data[i] = &(rawmem->rwm[i]);
+		} else if (i <= _STACKMAX) {
+			returnval.data[i] = &(rawmem->stack[i - _RWMMAX - 1]);
 		} else if (i <= _ROMMAX) {
-			returnval.data[i] = &(rawmem->rom[i - _RWMMAX - 1]);
-			returnval.mask[i] = 1; /*Read-only*/
-		} else if (i <= _GROMMAX) {
-			returnval.data[i] = &(rawmem->grom[i - _ROMMAX - 1]);
+			returnval.data[i] = &(rawmem->rom[i - _STACKMAX - 1]);
 			returnval.mask[i] = 1; /*Read-only*/
 		} else if (i <= _GOUTMAX) {
-			returnval.data[i] = &(rawmem->graphical_output[i - _GROMMAX - 1]);
-		} else if (i <= _AROMMAX) {
-			returnval.data[i] = &(rawmem->arom[i - _GOUTMAX - 1]);
+			returnval.data[i] = &(rawmem->gout[i - _ROMMAX - 1]);
+		} else if (i <= _GROMMAX) {
+			returnval.data[i] = &(rawmem->grom[i - _GOUTMAX - 1]);
+			returnval.mask[i] = 1; /*Read-only*/
 		} else if (i <= _AOUTMAX) {
-			returnval.data[i] = &(rawmem->audio_output[i - _AROMMAX - 1]);
-		} else if (i <= _STACKMAX) {
-			returnval.data[i] = &(rawmem->stack[i - _AOUTMAX - 1]);
+			returnval.data[i] = &(rawmem->aout[i - _GROMMAX - 1]);
+		} else if (i <= _AROMMAX) {
+			returnval.data[i] = &(rawmem->arom[i - _AOUTMAX - 1]);
+			returnval.mask[i] = 1; /*Read-only*/
+		} else if (i <= _EXPPMAX) {
+			returnval.data[i] = &(rawmem->expp[i - _AROMMAX - 1]);
 		} else if (i == _FF) {
 			returnval.data[i] = &(rawmem->ff);
 		} else if (i == _ZF) {
@@ -314,23 +318,23 @@ unsigned H5VM_execute(H5VM_GeneralMemory *program, H5VM_ReadWriteInfo *rwinf)
 		} /*ERROR: No matching 'ret'!*/
 		break;
 	case Inst_ret: {
-		h5uint oldval = *DATA[*DATA[(CURR_OP[1] >> 8)*256]]; /*Return address is stored where the stack pointer points*/
-		*DATA[(CURR_OP[1] >> 8)*256] -= (CURR_OP[1] & 0x00FF) + 1; /*Must move stack pointer backwards*/
+		h5uint oldval = *DATA[*DATA[CURR_OP[1] & 0xFF00]]; /*Return address is stored where the stack pointer points*/
+		*DATA[CURR_OP[1] & 0xFF00] -= (CURR_OP[1] & 0x00FF) + 1; /*Must move stack pointer backwards*/
 		_PROG_CO = oldval + 1; /*Go to return address+1*/
 		_RETURN;
 		break;
 	}
 	case Inst_call: {
-		h5uint oldval = *DATA[(CURR_OP[1] >> 8)*256];
+		h5uint oldval = *DATA[CURR_OP[1] & 0xFF00];
 		h5uint newval;
 		if (oldval == 0) {
 			/*Initialize stack pointer*/
-			*DATA[(CURR_OP[1] >> 8)*256] = (CURR_OP[1] >> 8)*256 + 1; /* +1 because first frame*/
-			newval = *DATA[(CURR_OP[1] >> 8)*256];
+			*DATA[CURR_OP[1] & 0xFF00] = (CURR_OP[1] & 0xFF00) + 1; /* +1 because first frame*/
+			newval = *DATA[CURR_OP[1] & 0xFF00];
  		} else {
 			/*Increase stack pointer */
-			*DATA[(CURR_OP[1] >> 8)*256] += (CURR_OP[1] & 0x00FF) + 1;
-			newval = *DATA[(CURR_OP[1] >> 8)*256];
+			*DATA[CURR_OP[1] & 0xFF00] += (CURR_OP[1] & 0x00FF) + 1;
+			newval = *DATA[CURR_OP[1] & 0xFF00];
 		}
 		if (DATA[newval] == NULL) {
 			return_code = 4; /*Callstack overflow*/
@@ -342,7 +346,7 @@ unsigned H5VM_execute(H5VM_GeneralMemory *program, H5VM_ReadWriteInfo *rwinf)
 		break;
 	}
 	case Inst_frame: {
-		h5uint val = *DATA[(CURR_OP[1] >> 8)*256];
+		h5uint val = *DATA[CURR_OP[1] & 0xFF00];
 		setnum_dest = CURR_OP[0];
 		dest_type	= GETTYPE(CURR_OP, 1);
 		getnum_orig = val;

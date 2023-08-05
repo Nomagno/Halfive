@@ -92,7 +92,7 @@
 #d INV_ZF,skpz =2 __ set _ZF =0 __ skpz =1 __ set _ZF =1
 
 ; Constant for info on callstack
-#d @,=E00F
+#d @,=500F
 
 
 ; Subroutine _PRINT, ID =0
@@ -134,6 +134,97 @@ func _MULT @
 	skmz <MULT_FAST_LOOP< ; If the loop counter isn't 0xF yet, loop
 ret _MULT @
 
+; Subroutine _MULT, ID =2
+; Takes start of origin range at pointer !A
+; Takes start of destination range at pointer !B
+; Takes number number of elements to copy at address !C
+#d _MEMCPY,=2
+func _MEMCPY @
+	>MEMCPY_LOOP> set *!B *!A
+		sub !C =1
+		add !A =1
+		add !B =1
+		cmp !C =0
+		INV_ZF
+	skmz <MEMCPY_LOOP<
+ret _MEMCPY @
+
+; Subroutine _SETPIX, ID =20
+; Takes X coordinate at address !A
+; Takes Y coordinate at address !B
+; Takes pixel value at address !C
+; Then writes pixel to screen at those coordinates
+#d _SETPIX,=20
+func _SETPIX @
+	set 0 0
+ret _SETPIX @
+set _OU =DEAD
+
+; Subroutine _CPYSPRITE, ID =21
+; Takes X coordinate at address !A
+; Takes Y coordinate at address !B
+; Takes sprite index at address !C
+; Then writes sprite to screen at those coordinates, not writing out of bounds pixels
+#d _CPYSPRITE,=21
+func _CPYSPRITE @
+	set 0 0
+ret _CPYSPRITE @
+
+; Aligned sprite table
+; SPR_IDX1 SPR_IDX2 SPR_IDX3 SPR_IDX4... SPR_IDX64
+; 8 pixel coordinate increments
+
+; Unaligned sprite table
+; SPR_X1 SPR_Y1 SPR_IDX1 ... 0 0 0 [end of table, don't have sprite index 0 at origin!]
+
+; Animation table
+; START_FRAME_IDX1 END_FRAME_IDX1 PER_FRAME_INCREMENT ... 0 0 0 [end of table]
+
+; Subroutine _RENDERTABLE, ID =24
+; Takes X coordinate at address !A
+; Takes Y coordinate at address !B
+; Takes sprite table start at pointer !C
+; Takes camera coordinates at address !D
+; Then renders aligned sprite table to screen at those coordinates, not writing out of bounds pixels or out of camera pixels
+#d _RENDERTABLEALIGNEDCAMERA,=24
+func _RENDERTABLEALIGNEDCAMERA @
+	set 0 0
+ret _RENDERTABLEALIGNEDCAMERA @
+
+; Subroutine _RENDERTABLEALIGNED, ID =22
+; Takes X coordinate at address !A
+; Takes Y coordinate at address !B
+; Takes sprite table start at pointer !C
+; Then renders aligned sprite table to screen offset by those coordinates, not writing out of bounds pixels
+#d _RENDERTABLEALIGNED,=22
+func _RENDERTABLEALIGNED @
+	set 0 0
+ret _RENDERTABLEALIGNED @
+
+; Subroutine _RENDERTABLE, ID =25
+; Takes X coordinate at address !A
+; Takes Y coordinate at address !B
+; Takes sprite table start at pointer !C
+; Takes camera coordinates at address !D
+; Then renders unaligned sprite table to screen at those coordinates, not writing out of bounds pixels or out of camera pixels
+#d _RENDERTABLECAMERA,=25
+func _RENDERTABLECAMERA @
+	set 0 0
+	set 0 0
+ret _RENDERTABLECAMERA @
+
+; Subroutine _RENDERTABLE, ID =23
+; Takes X coordinate at address !A
+; Takes Y coordinate at address !B
+; Takes sprite table start pointer !C
+; Then renders unaligned sprite table to screen at those coordinates, not writing out of bounds pixels
+#d _RENDERTABLE,=23
+func _RENDERTABLE @
+	set 0 0
+	set 0 0
+ret _RENDERTABLE @
+
+
 ; Sheewol Gear framework
 
 ; Example code: change first 16 pixels of row 1 in 64x64PX screen in accordance 
@@ -141,26 +232,26 @@ ret _MULT @
 ; !!!WARNING!!!
 ; This specific pattern is kind of jarring, if you're prone to seizures please don't run it
 ; !!!WARNING!!!
->H5GEAR_TEST_JUMPBACK> add B000 =1
-	add B001 =5
-	add B002 =1
-	add B003 =2
-	add B004 =3
-	add B005 =4
-	add B006 =5
-	add B007 =6
-	add B008 =7
-	add B009 =8
-	add B00A =9
-	add B00B =A
-	add B00C =B
-	add B00D =C
-	add B00E =D
-	add B00F =E
-	set B010 FFFD ; Visualize input register changes to pixels [0, 16] and [0, 17]
+>H5GEAR_TEST_JUMPBACK> add 8000 =1
+	add 8001 =5
+	add 8002 =1
+	add 8003 =2
+	add 8004 =3
+	add 8005 =4
+	add 8006 =5
+	add 8007 =6
+	add 8008 =7
+	add 8009 =8
+	add 800A =9
+	add 800B =A
+	add 800C =B
+	add 800D =C
+	add 800E =D
+	add 800F =E
+	set 8010 FFFD ; Visualize input register changes to pixels [0, 16] and [0, 17]
 	set !A FFFD ; Copy to register
 	shift !A =14 ; Shift right four bits to get arrows
-	set B011 !A ; Copy to pixel
+	set 8011 !A ; Copy to pixel
 
 	set _ZF =0
 	set _FF =1 ; End frame

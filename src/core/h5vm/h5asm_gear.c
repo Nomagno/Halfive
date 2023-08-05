@@ -55,7 +55,7 @@ int main(int argc, char **argv)
 	H5VM_DefaultMemSetup mem = {0};
 	H5VM_ReadWriteInfo rwinf = {0};
 	H5VM_GeneralMemory prog	 = H5VM_init(&code, &mem);
-	fread(mem.drom, 1, sizeof(mem.drom), dromfile);
+	fread(mem.rom, 1, sizeof(mem.rom), dromfile);
 	fread(mem.grom, 1, sizeof(mem.grom), gromfile);
 
 	int return_code = 0;
@@ -64,10 +64,12 @@ int main(int argc, char **argv)
 			putchar('>'); unsigned readin; scanf("%X", &readin); mem.in = readin;
 		}
 
+		maybe_printf("PC BEFORE: %i\n", prog.co);
 		return_code = H5VM_execute(&prog, &rwinf);
+		maybe_printf("PC AFTER: %i\n", prog.co);
 
 		if ((rwinf.adrw == 0xFFFC) && (rwinf.wrote_adrw)) { maybe_printf("OU: %X\n", mem.ou); }
-		if (prog.hf) { maybe_printf("\n----\nHALT\n----\n"); }
+		if (prog.hf) { maybe_printf("\n----\nHALT\n----\n"); goto H5ASM_EXIT; }
 
 		switch (return_code) {
 		case 0: break;
@@ -85,6 +87,7 @@ int main(int argc, char **argv)
 		if (return_code >= 4) { break; }
 	}
 
+H5ASM_EXIT:
 	fclose(codefile);
 	fclose(dromfile);
 	fclose(gromfile);

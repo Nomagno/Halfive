@@ -178,7 +178,7 @@ int H5Gear_simulateOneFrame(H5Coordinate_GraphicalEventData *opaque_handle) {
 	specificData.mem->ff = 0; /*Reset the finish register*/
 
 	/*Convert the console's internal screen representation into the internal one*/
-	H5Gear_toPixelData_UNPACKED(&specificData.mem->graphical_output[0], &generalData.rendered_output);
+	H5Gear_toPixelData_UNPACKED(&specificData.mem->gout[0], &generalData.rendered_output);
 	goto GO_BACK;
 
 GO_BACK:

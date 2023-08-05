@@ -1,7 +1,8 @@
 # Halfive Track (Encoding) Specification
 
-#### SPDX identifier: MIT
-#### Copyright Nomagno 2021, 2022, 2023
+#### Copyright Nomagno 2021, 2022
+#### Copying and distribution of this work, with or without modification, are permitted in any medium without royalty, provided the copyright notice and this notice are preserved. This work is offered as-is, without any warranty.
+
 #### Please read the H5DOC format specification before this one.
 NOTE: Arguments between parentheses are variable and should be replaced according to their respective explanations.
 

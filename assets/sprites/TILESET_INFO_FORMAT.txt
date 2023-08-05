@@ -1,5 +1,8 @@
-SPDX Identifier: MIT
 Copyright Nomagno 2023
+
+Copying and distribution of this work, with or without modification, are
+permitted in any medium without royalty, provided the copyright notice and
+this notice are preserved. This work is offered as-is, without any warranty.
 
 The .info tileset info format:
 

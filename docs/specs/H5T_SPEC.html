@@ -11,16 +11,21 @@ h1,h2,h3{
 line-height:1.2
 }
 </style>
-	<title>Halfive Track</title>
+	<title>H5T_SPEC</title>
 	<meta name="description" content="The Universal Racing Game"">
 </head>
-
 <h1>Halfive Track (Encoding) Specification</h1>
-<h4>SPDX identifier: MIT</h4>
-<h4>Copyright Nomagno 2021, 2022, 2023</h4>
+<h4>Copyright Nomagno 2021, 2022</h4>
+<h4>Copying and distribution of this work, with or without modification,
+are permitted in any medium without royalty, provided the copyright
+notice and this notice are preserved. This work is offered as-is,
+without any warranty.</h4>
 <h4>Please read the H5DOC format specification before this one.</h4>
-<p>NOTE: Arguments between parentheses are variable and should be replaced according to their respective explanations.</p>
-<p>It is recommended to use the &#x201C;.h5t&#x201D; extension for H5T documents (where applicable). H5T is identified by the MIME type <code>text/x-h5t</code></p>
+<p>NOTE: Arguments between parentheses are variable and should be
+replaced according to their respective explanations.</p>
+<p>It is recommended to use the &#x201C;.h5t&#x201D; extension for H5T documents
+(where applicable). H5T is identified by the MIME type
+<code>text/x-h5t</code></p>
 <h3>H5T is a format for storing racing game tracks</h3>
 <hr />
 <pre><code>_TRACK
@@ -39,19 +44,30 @@ _SEGMENTS
     ...</code></pre>
 <hr />
 <h3>EXPLANATION:</h3>
-<p>Always start the file with the track section, followed by flags/settings, of course replacing param and value for the parameter and the value. After the track table comes the segments table. Here you define the segments, from one to a maximum of 40.</p>
-<p>Where all numbers are unsigned integers, p1 and p3 are bezier curve anchors, p2 is a bezier curve control point. pNx and pNy are unsigned 32-bit integers, and their unit is millimetres &#x2018;shape_outer&#x2019; describes the outer outline of the track segment &#x2018;shape_inner&#x2019; describes the inner outline of the track segment</p>
-<p>Aditionally, you can add special properties for that segment with local_param.</p>
+<p>Always start the file with the track section, followed by
+flags/settings, of course replacing param and value for the parameter
+and the value. After the track table comes the segments table. Here you
+define the segments, from one to a maximum of 40.</p>
+<p>Where all numbers are unsigned integers, p1 and p3 are bezier curve
+anchors, p2 is a bezier curve control point. pNx and pNy are unsigned
+32-bit integers, and their unit is millimetres &#x2018;shape_outer&#x2019; describes
+the outer outline of the track segment &#x2018;shape_inner&#x2019; describes the inner
+outline of the track segment</p>
+<p>Aditionally, you can add special properties for that segment with
+local_param.</p>
 <hr />
 <h4>AVAILABLE GLOBAL PARAMETERS:</h4>
 <p><code>name trckname</code></p>
-<p>The name must be an eight character alphanumerical string that is not &#x2019;_DEFAULT&#x2019;</p>
+<p>The name must be an eight character alphanumerical string that is not
+&#x2019;_DEFAULT&#x2019;</p>
 <p><code>time night/day</code></p>
 <p><code>biome = snow/lava/lake/desert/forest/rosegarden</code></p>
-<p>An additional &#x201C;colour - while/red/blue/yellow/green/pink&#x201D; parameter will be generated from the biome.</p>
+<p>An additional &#x201C;colour - while/red/blue/yellow/green/pink&#x201D; parameter
+will be generated from the biome.</p>
 <p><code>max_players (NUMBER)</code></p>
 <hr />
-<h4>AVAILABLE SEGMENT PARAMETERS (Include ONE of each pair max in the local_param value):</h4>
+<h4>AVAILABLE SEGMENT PARAMETERS (Include ONE of each pair max in the
+local_param value):</h4>
 <p>boost/antiboost</p>
 <p>finish_line/checkpoint</p>
 <p>guardrails/electric_guardrails</p>

@@ -97,9 +97,13 @@ void H5Render_ulong_drawLine(
 	H5Render_PixelData surf, VEC2(h5ulong) p1, VEC2(h5ulong) p2, h5uint colour);
 void H5Render_ulong_drawPolygon(
 	H5Render_PixelData surf, VEC2(h5ulong) *points, size_t n, h5uint colour);
+void H5Render_ulong_drawPolygonOutline(
+	H5Render_PixelData surf, VEC2(h5ulong) *points, size_t n, h5uint colour);
 
 void H5Render_ulong_drawTriangle(H5Render_PixelData surf, VEC2(h5ulong) p1,
 	VEC2(h5ulong) p2, VEC2(h5ulong) p3, h5uint colour);
+void H5Render_ulong_drawRectangle(H5Render_PixelData surf, VEC2(h5ulong) p1,
+	VEC2(h5ulong) p2, VEC2(h5ulong) p3, VEC2(h5ulong) p4, h5uint colour);
 void H5Render_ulong_drawLineSize(H5Render_PixelData surf, VEC2(h5ulong) p1,
 	VEC2(h5ulong) p2, h5uint colour, h5uint size);
 #endif

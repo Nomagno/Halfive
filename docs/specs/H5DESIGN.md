@@ -1,7 +1,7 @@
 # Halfive Design notes
 
-#### SPDX identifier: MIT
 #### Copyright Nomagno 2022, 2023
+#### Copying and distribution of this work, with or without modification, are permitted in any medium without royalty, provided the copyright notice and this notice are preserved. This work is offered as-is, without any warranty.
 
 ***
 ### Missing suitable (re)implementations

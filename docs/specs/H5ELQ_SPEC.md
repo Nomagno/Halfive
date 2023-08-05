@@ -1,6 +1,7 @@
 # Halfive Eloquent Lisp
-#### SPDX identifier: MIT
+
 #### Copyright Nomagno 2022, 2023
+#### Copying and distribution of this work, with or without modification, are permitted in any medium without royalty, provided the copyright notice and this notice are preserved. This work is offered as-is, without any warranty.
 
 It is recommended to use the ".h5elq" extension for Eloquent code files (where applicable).
 Eloquent is identified by the MIME type `text/x-h5elq`

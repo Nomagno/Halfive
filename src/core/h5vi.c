@@ -56,11 +56,7 @@ comma separated 8-bit uints (0-255) replacing from 'axis1' until 'axis4'
 
 #include <halfive/code_setup.h>
 
-
-/*
-#define H5VI_GSERV_IMPL_SDL2
-#define H5VI_STDINPUT_IMPL_SDL2
-*/
+#define JOYSTICK_INDEX 0
 
 #if !defined(H5VI_GSERV_IMPL_SDL2)
 #error Please define a graphics implementation (src/core/h5vi.c)
@@ -89,6 +85,9 @@ struct h5vi_sdl2_track {
 	SDL_AudioSpec globsound;
 	int globstream;
 #endif
+#if defined(H5VI_STDINPUT_IMPL_SDL2)
+	/*SDL_Joystick *controller;*/
+#endif
 	H5VI_InputData input;
 	uint32_t globPixels[(1 << 15) << 1];
 };
@@ -113,10 +112,12 @@ void generatePrecomputation_RGBA5551_to_RGBB888(uint32_t arr[(1 << 15) << 1], ui
 
 struct h5vi_sdl2_track globalref;
 
+#include <stdio.h>
 unsigned H5VI_init(H5VI_Reference *ref, size_t h, size_t w)
 {
 #if defined(H5VI_AUDIOSERV_IMPL_SDL2)
 	int initerror = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+
 	if (initerror) {
 		return 1;
 	}
@@ -137,7 +138,15 @@ unsigned H5VI_init(H5VI_Reference *ref, size_t h, size_t w)
 		return 1;
 	}
 #endif
-
+/*
+	SDL_JoystickEventState(SDL_ENABLE);
+	SDL_PumpEvents();
+	for (int i = 0; i < SDL_NumJoysticks(); i++) {
+		printf("CTRL: %s\n", SDL_JoystickNameForIndex(i));
+	}
+	globalref.controller = SDL_JoystickOpen(JOYSTICK_INDEX);
+	printf("CTRLNUM: %i\n",  SDL_NumJoysticks());
+*/
 	ref->platform[0] = 'S';
 	ref->platform[1] = 'D';
 	ref->platform[2] = 'L';
@@ -309,20 +318,60 @@ unsigned H5VI_playSound(H5VI_Reference *stream, const H5VI_SoundData *insound)
 
 #ifdef H5VI_STDINPUT_IMPL_SDL2
 
-#define H5IN_UP SDL_SCANCODE_UP
-#define H5IN_DOWN SDL_SCANCODE_DOWN
-#define H5IN_LEFT SDL_SCANCODE_LEFT
-#define H5IN_RIGHT SDL_SCANCODE_RIGHT
-#define H5IN_B1 SDL_SCANCODE_A
-#define H5IN_B2 SDL_SCANCODE_S
-#define H5IN_B3 SDL_SCANCODE_D
-#define H5IN_B4 SDL_SCANCODE_F
-#define H5IN_B5 SDL_SCANCODE_Z
-#define H5IN_B6 SDL_SCANCODE_X
-#define H5IN_B7 SDL_SCANCODE_C
-#define H5IN_B8 SDL_SCANCODE_V
-#define H5IN_QUIT SDL_SCANCODE_1
-#define H5IN_PAUSE SDL_SCANCODE_2
+#define H5IN_K_UP SDL_SCANCODE_UP
+#define H5IN_K_DOWN SDL_SCANCODE_DOWN
+#define H5IN_K_LEFT SDL_SCANCODE_LEFT
+#define H5IN_K_RIGHT SDL_SCANCODE_RIGHT
+#define H5IN_K_B1 SDL_SCANCODE_A
+#define H5IN_K_B2 SDL_SCANCODE_S
+#define H5IN_K_B3 SDL_SCANCODE_D
+#define H5IN_K_B4 SDL_SCANCODE_F
+#define H5IN_K_B5 SDL_SCANCODE_Z
+#define H5IN_K_B6 SDL_SCANCODE_X
+#define H5IN_K_B7 SDL_SCANCODE_C
+#define H5IN_K_B8 SDL_SCANCODE_V
+#define H5IN_K_QUIT SDL_SCANCODE_1
+#define H5IN_K_PAUSE SDL_SCANCODE_2
+
+#define H5IN_J_UP getB_fromA_dual(H5IN_J_LEFTX, 1, 50)
+#define H5IN_J_DOWN getB_fromA_dual(H5IN_J_LEFTX, 0, 50)
+#define H5IN_J_LEFT getB_fromA_dual(H5IN_J_LEFTY, 1, 50)
+#define H5IN_J_RIGHT getB_fromA_dual(H5IN_J_LEFTY, 0, 50)
+#define H5IN_J_B1 1
+#define H5IN_J_B2 0
+#define H5IN_J_B3 4
+#define H5IN_J_B4 3
+#define H5IN_J_B5 6
+#define H5IN_J_B6 7
+#define H5IN_J_B7 13
+#define H5IN_J_B8 14
+#define H5IN_J_QUIT 10
+#define H5IN_J_PAUSE 11
+
+#define H5IN_J_LEFTX 0
+#define H5IN_J_LEFTY 1
+#define H5IN_J_TLEFT 4
+#define H5IN_J_TRIGHT 5
+
+
+/*_Bool getB(unsigned x) {
+	return SDL_JoystickGetButton(globalref.controller, x);
+}*/
+
+/*h5uchar getA(unsigned x) {
+	return (255*SDL_JoystickGetAxis(globalref.controller, x)/65535)+128;
+}*/
+
+/*_Bool getB_fromA_dual(h5uchar axis_u, _Bool sign, h5uchar deadzone){
+//0 positive, 1 negative
+	//h5schar axis = axis_u - 128; if ((H5_ABS(axis) - deadzone > 0) && ((sign == 0) ? ( axis > 0 ) : ( axis < 0 ))) { return 1; }
+	return 0;
+}*/
+
+/*_Bool getB_fromA_single(h5uchar axis, h5uchar deadzone){
+	if (axis - deadzone > 0) { return 1; }
+	else return 0;
+}*/
 
 unsigned H5VI_getInput(H5VI_Reference *handle, H5VI_InputData *keys) {
 	SDL_PumpEvents();
@@ -330,26 +379,33 @@ unsigned H5VI_getInput(H5VI_Reference *handle, H5VI_InputData *keys) {
 	int tmp_button_mask, tmp_x, tmp_y;
 	tmp_button_mask = SDL_GetMouseState(&tmp_x, &tmp_y);
 
+
+
 	H5VI_InputData returnval = { {0}, {0}, 0, 0};
-	returnval.keys[H5KEY_UP] = keyArray[H5IN_UP];
-	returnval.keys[H5KEY_DOWN] = keyArray[H5IN_DOWN];
-	returnval.keys[H5KEY_LEFT] = keyArray[H5IN_LEFT];
-	returnval.keys[H5KEY_RIGHT] = keyArray[H5IN_RIGHT];
-	returnval.keys[H5KEY_B1] = keyArray[H5IN_B1];
-	returnval.keys[H5KEY_B2] = keyArray[H5IN_B2];
-	returnval.keys[H5KEY_B3] = keyArray[H5IN_B3];
-	returnval.keys[H5KEY_B4] = keyArray[H5IN_B4];
-	returnval.keys[H5KEY_B5] = keyArray[H5IN_B5];
-	returnval.keys[H5KEY_B6] = keyArray[H5IN_B6];
-	returnval.keys[H5KEY_B7] = keyArray[H5IN_B7];
-	returnval.keys[H5KEY_B8] = keyArray[H5IN_B8];
-	returnval.keys[H5KEY_QUIT] = keyArray[H5IN_QUIT];
-	returnval.keys[H5KEY_PAUSE] = keyArray[H5IN_PAUSE];
+	returnval.keys[H5KEY_UP] = keyArray[H5IN_K_UP] /*| H5IN_J_UP*/;
+	returnval.keys[H5KEY_DOWN] = keyArray[H5IN_K_DOWN] /*| H5IN_J_DOWN*/;
+	returnval.keys[H5KEY_LEFT] = keyArray[H5IN_K_LEFT] /*| H5IN_J_LEFT*/;
+	returnval.keys[H5KEY_RIGHT] = keyArray[H5IN_K_RIGHT] /*| H5IN_J_RIGHT*/;
+	returnval.keys[H5KEY_B1] = keyArray[H5IN_K_B1] /*| getB(H5IN_J_B1)*/;
+	returnval.keys[H5KEY_B2] = keyArray[H5IN_K_B2] /*| getB(H5IN_J_B2)*/;
+	returnval.keys[H5KEY_B3] = keyArray[H5IN_K_B3] /*| getB(H5IN_J_B3)*/;
+	returnval.keys[H5KEY_B4] = keyArray[H5IN_K_B4] /*| getB(H5IN_J_B4)*/;
+	returnval.keys[H5KEY_B5] = keyArray[H5IN_K_B5] /*| getB(H5IN_J_B5)*/;
+	returnval.keys[H5KEY_B6] = keyArray[H5IN_K_B6] /*| getB(H5IN_J_B6)*/;
+	returnval.keys[H5KEY_B7] = keyArray[H5IN_K_B7] /*| getB(H5IN_J_B7)*/;
+	returnval.keys[H5KEY_B8] = keyArray[H5IN_K_B8] /*| getB(H5IN_J_B8)*/;
+	returnval.keys[H5KEY_QUIT] = keyArray[H5IN_K_QUIT] /*| getB(H5IN_J_QUIT)*/;
+	returnval.keys[H5KEY_PAUSE] = keyArray[H5IN_K_PAUSE] /*| getB(H5IN_J_PAUSE)*/;
 
 	returnval.keys[H5KEY_M1] = tmp_button_mask & SDL_BUTTON(1);
 	returnval.keys[H5KEY_M2] = tmp_button_mask & SDL_BUTTON(1);
 	returnval.cursor_x = tmp_x;
 	returnval.cursor_x = tmp_y;
+
+	/*returnval.axis[0] = getA(H5IN_J_LEFTX);
+	returnval.axis[1] = getA(H5IN_J_LEFTY);
+	returnval.axis[2] = getA(H5IN_J_TLEFT);
+	returnval.axis[3] = getA(H5IN_J_TRIGHT);*/
 
 	*keys = returnval;
 	return 0;

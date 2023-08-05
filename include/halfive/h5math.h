@@ -123,6 +123,8 @@ h5slong h5_abs(h5slong a);
 #define FLOOR(n)	((h5smax)(n))
 
 #ifdef FLOATS_SUPPORTED
+MAKEVEC2(h5float);
+
 VEC2(h5uint) H5Math_uint_vecMultScalar(
 	VEC2(h5uint) a, h5float k); /*Multiply VEC2(h5uint) by scalar [k]*/
 VEC2(h5ulong) H5Math_ulong_vecMultScalar(

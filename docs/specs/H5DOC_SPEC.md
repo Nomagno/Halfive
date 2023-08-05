@@ -1,6 +1,7 @@
 # Halfive Document Specification (The encoding format of H5T and H5NET)
-#### SPDX identifier: MIT
-#### Copyright Nomagno 2021, 2022, 2023
+
+#### Copyright Nomagno 2021-2023
+#### Copying and distribution of this work, with or without modification, are permitted in any medium without royalty, provided the copyright notice and this notice are preserved. This work is offered as-is, without any warranty.
 
 It is recommended to use the ".h5doc" extension for H5DOC documents (where applicable).
 H5DOC is identified by the MIME type `text/x-h5doc`

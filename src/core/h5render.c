@@ -202,6 +202,15 @@ void H5Render_ulong_drawPolygon(
 	}
 }
 
+void H5Render_ulong_drawPolygonOutline(
+	H5Render_PixelData surf, VEC2(h5ulong) *points, size_t n, h5uint colour)
+{
+	for (size_t i = 0; i < n-1; i++) {
+		H5Render_ulong_drawLine(surf, points[i], points[i+1], colour);
+	}
+	H5Render_ulong_drawLine(surf, points[n-1], points[0], colour);	
+}
+
 void H5Render_ulong_drawTriangle(H5Render_PixelData surf, VEC2(h5ulong) p1,
 	VEC2(h5ulong) p2, VEC2(h5ulong) p3, h5uint colour)
 {

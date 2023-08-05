@@ -25,7 +25,7 @@
 #if (!defined(UINT8_MAX)) || (!defined(UINT16_MAX)) ||                        \
 	(!defined(UINT32_MAX)) || (!defined(UINTMAX_MAX)) ||                      \
 	(!defined(INT8_MAX)) || (!defined(INT16_MAX)) || (!defined(INT32_MAX)) || \
-	(!defined(INTMAX_MAX)) || (!defined(SIZE_MAX)) || (!defined(SSIZE_MAX))
+	(!defined(INTMAX_MAX)) || (!defined(SIZE_MAX))
 #error error : \
 One of the following types is missing; \
 uint8_t, uint16_t, uint32_t, uintmax_t, \

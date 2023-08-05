@@ -41,13 +41,14 @@ IN THE SOFTWARE.
 	 memory*/
 
 /*These are guaranteed to be contiguous*/
-#define RWMSIZE     4 /*Size in MEMUNIT word chunks*/
-#define ROMSIZE     3 /*Size in MEMUNIT word chunks*/
-#define GROMSIZE    4 /*Size in MEMUNIT word chunks*/
-#define GOUTSIZE    1 /*Size in MEMUNIT word chunks*/
-#define AROMSIZE    1 /*Size in MEMUNIT word chunks*/
-#define AOUTSIZE    1 /*Size in MEMUNIT word chunks*/
-#define STACKSIZE   1 /*Size in MEMUNIT word chunks*/
+#define RWMSIZE     5 /*Size in MEMUNIT word chunks*/ /*read-write memory*/
+#define STACKSIZE   1 /*Size in MEMUNIT word chunks*/ /*callstack*/
+#define ROMSIZE     2 /*Size in MEMUNIT word chunks*/ /*read-only memory*/
+#define GOUTSIZE    1 /*Size in MEMUNIT word chunks*/ /*Framebuffer*/
+#define GROMSIZE    3 /*Size in MEMUNIT word chunks*/ /*Graphics rom*/
+#define AOUTSIZE    1 /*Size in MEMUNIT word chunks*/ /*Audio buffer*/
+#define AROMSIZE    1 /*Size in MEMUNIT word chunks*/ /*Audio rom*/
+#define EXPPSIZE    1 /*Size in MEMUNIT word chunks*/ /*Expansion port*/
 
 #define FMEMSIZE 1024 /*Size in words of the subroutine memory*/
 
@@ -239,11 +240,14 @@ typedef struct {
 typedef struct {
 	H5VM_CodeMemory code;			  /*Code memory*/
 	h5uint *data[MEMUNIT * MEMSIZE]; /*Data memory, Sheewol Gear setup:
-	- RAM (RW), 0x0000 to 0x6FFF
-	- DROM (R-only), 0x7000 to 0x8FFF
-	- GROM (R-only), 0x9000 to 0xCFFF
-	- OUTPUT (RW), 0xD000 to 0xDFFF
-	- CALLSTACK (RW), 0xE000 to 0xEFFF
+	- RAM (RW), 0x0000 to 0x4FFF
+	- CALLSTACK (RW), 0x5000 to 0x5FFF
+	- DROM (R-only), 0x6000 to 0x7FFF
+	- GRAPHICAL OUTPUT (RW), 0x8000 to 0x8FFF
+	- GROM (R-only), 0x9000 to 0xBFFF
+	- AUDIO OUTPUT (RW), 0xC000 to 0xCFFF
+	- AROM (R-only), 0xD000 to 0xDFFF
+	- EXPANSION PORT (RW), 0xE000 to 0xEFFF
 	- Zero flag (RW), 0xFFFF
 	- Carry flag (RW), 0xFFFE
 	- Input register (R-only), 0xFFFD, LSB bitmask: UP DOWN LEFT RIGHT B4 B3 B2 B1
@@ -264,12 +268,13 @@ typedef struct {
 /*Default memory setup*/
 typedef struct {
 	h5uint rwm[MEMUNIT * RWMSIZE];
-	h5uint rom[MEMUNIT * ROMSIZE];
-	h5uint grom[MEMUNIT * GROMSIZE];
-	h5uint graphical_output[MEMUNIT * GOUTSIZE];
-	h5uint arom[MEMUNIT * AOUTSIZE];	
-	h5uint audio_output[MEMUNIT * AOUTSIZE];
 	h5uint stack[MEMUNIT * STACKSIZE];
+	h5uint rom[MEMUNIT * ROMSIZE];
+	h5uint gout[MEMUNIT * GOUTSIZE];
+	h5uint grom[MEMUNIT * GROMSIZE];
+	h5uint aout[MEMUNIT * AOUTSIZE];
+	h5uint arom[MEMUNIT * AOUTSIZE];	
+	h5uint expp[MEMUNIT * EXPPSIZE];
 	h5uint ff;
 	h5uint zf;
 	h5uint cf;

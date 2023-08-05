@@ -1,7 +1,7 @@
 # Halfive Virtual Machine Specification
 
-#### SPDX identifier: MIT
-#### Copyright Nomagno 2021, 2022, 2023
+#### Copyright Nomagno 2021-2023
+#### Copying and distribution of this work, with or without modification, are permitted in any medium without royalty, provided the copyright notice and this notice are preserved. This work is offered as-is, without any warranty.
 
 H5VM assembly is identified by the MIME type `text/x-h5asm`, extension ".h5asm"
 

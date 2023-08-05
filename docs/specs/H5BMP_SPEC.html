@@ -11,23 +11,34 @@ h1,h2,h3{
 line-height:1.2
 }
 </style>
-	<title>Halfive Bitmap</title>
+	<title>H5BMP_SPEC</title>
 	<meta name="description" content="The Universal Racing Game"">
 </head>
-
 <h1>Halfive Bitmap Specification</h1>
-<h4>SPDX identifier: MIT</h4>
-<h4>Copyright Nomagno 2021, 2022, 2023</h4>
-<p>It is recommended to use the &#x201C;.h5bmp&#x201D; extension for H5BMP bitmaps (where applicable). H5BMP is identified by the MIME type <code>application/x-h5bmp</code></p>
+<h4>Copyright Nomagno 2021-2023</h4>
+<h4>Copying and distribution of this work, with or without modification,
+are permitted in any medium without royalty, provided the copyright
+notice and this notice are preserved. This work is offered as-is,
+without any warranty.</h4>
+<p>It is recommended to use the &#x201C;.h5bmp&#x201D; extension for H5BMP bitmaps
+(where applicable). H5BMP is identified by the MIME type
+<code>application/x-h5bmp</code></p>
 <h3>H5BMP is a simple storage format for bitmaps</h3>
 <hr />
 <h4>The H5BMP format:</h4>
-<p>It is identified by the null-terminated ASCII string &#x2018;H5BMP\0&#x2019;. These six bytes shall appear at the start of every bitmap. After the identifier string, two bytes shall follow and mark the bitmap height, and right after two bytes shall indicate the bitmap width. Following the height and width, (width times height) two-byte pixels follow, where each string of (width) pixels represents a row, starting from the top left of the image.</p>
+<p>It is identified by the null-terminated ASCII string &#x2018;H5BMP\0&#x2019;. These
+six bytes shall appear at the start of every bitmap. After the
+identifier string, two bytes shall follow and mark the bitmap height,
+and right after two bytes shall indicate the bitmap width. Following the
+height and width, (width times height) two-byte pixels follow, where
+each string of (width) pixels represents a row, starting from the top
+left of the image.</p>
 <h4>The pixel format (RGBA 5551) in binary:</h4>
 <pre><code>RRRRR GGGGG BBBBB A</code></pre>
 <ul>
 <li>Where R marks the value of the colour red 0-31</li>
 <li>Where G marks the value of the colour green 0-31</li>
 <li>Where B marks the value of the colour blue 0-31</li>
-<li>Where A indicates whether the pixel is transparent (0) or opaque (1)</li>
+<li>Where A indicates whether the pixel is transparent (0) or opaque
+(1)</li>
 </ul>

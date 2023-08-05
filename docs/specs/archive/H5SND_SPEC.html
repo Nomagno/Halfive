@@ -25,8 +25,10 @@ line-height:1.2
 <ul>
 <li><code>XX</code>: hex literal</li>
 <li><code>.xxxxxxxx</code>: binary literal</li>
-<li><code>.xxxxxxxx(*N)</code>: annotated binary literal, see annotation <code>(*N)</code> where <code>N</code> is a number</li>
-<li><code>.lowercase(number)</code>: value of bit length <code>(number)</code>, see annotation <code>(lowercase)</code></li>
+<li><code>.xxxxxxxx(*N)</code>: annotated binary literal, see annotation
+<code>(*N)</code> where <code>N</code> is a number</li>
+<li><code>.lowercase(number)</code>: value of bit length
+<code>(number)</code>, see annotation <code>(lowercase)</code></li>
 </ul>
 <hr />
 <p>FILE START:</p>
@@ -35,34 +37,51 @@ line-height:1.2
 .a(16) .a(16) 00 00 00 00 00 00 .b(20) .c(3) .d(5) .e(36) .f(128)</code></pre>
 <ul>
 <li>a: BLOCKSIZE, in inter-channel samples, 16-bit, repeated twice</li>
-<li>b: Sample rate (speed at which to play back file), 20-bit, from 1Hz up to (decimal)655350Hz</li>
+<li>b: Sample rate (speed at which to play back file), 20-bit, from 1Hz
+up to (decimal)655350Hz</li>
 <li>c: Number of channels, 3-bit 1 to 8</li>
 <li>d: BITS-PER-SAMPLE, 5-bit, 4 to 32</li>
 <li>e: Total number of samples, 36-bit</li>
-<li>f: MD5 signature of unencoded data, 128-bit, if unsure just leave as zero</li>
+<li>f: MD5 signature of unencoded data, 128-bit, if unsure just leave as
+zero</li>
 </ul>
 <hr />
 <p>FRAME HEADER:</p>
 <pre><code>.11111111111110(*1) .0001110000 .g(4) .0000 .h(16) .i(8)</code></pre>
 <ul>
-<li>g: Number of channels, 4-bit, .0000 = mono, .0001 = stereo, rest of values forbidden</li>
-<li>h: BLOCKSIZE in inter-channel samples, exact same number as was used for .a(16), 16-bit</li>
-<li>i: CRC-8 (<code>polinomial = x^8 + x^2 + x^1 + x^0, initialized with 0</code>) of everything before the CRC up to and including the FRAME-HEADER-SYNC-LITERAL at the start of the FRAME HEADER, 8-bit</li>
-<li><code>*1</code>: <code>.11111111111110</code>, called the FRAME-HEADER-SYNC-LITERAL</li>
+<li>g: Number of channels, 4-bit, .0000 = mono, .0001 = stereo, rest of
+values forbidden</li>
+<li>h: BLOCKSIZE in inter-channel samples, exact same number as was used
+for .a(16), 16-bit</li>
+<li>i: CRC-8
+(<code>polinomial = x^8 + x^2 + x^1 + x^0, initialized with 0</code>) of
+everything before the CRC up to and including the
+FRAME-HEADER-SYNC-LITERAL at the start of the FRAME HEADER, 8-bit</li>
+<li><code>*1</code>: <code>.11111111111110</code>, called the
+FRAME-HEADER-SYNC-LITERAL</li>
 </ul>
 <hr />
 <p>FRAME DATA:</p>
 <pre><code>.00000010 .j(BITS-PER-SAMPLE*BLOCKSIZE)</code></pre>
 <ul>
-<li>j: Unencoded subblock of constant size, containing BLOCKSIZE number of samples of width BITS-PER-SAMPLE, big-endian two&#x2019;s complement signed integers.</li>
-<li>Frame data must appear only once if the value of <code>.g(4)</code> for this FRAME HEADER is <code>.0000</code>.</li>
-<li>Frame data must appear twice, different for the left and right channels, if the value of <code>.g(4)</code> for this FRAME HEADER is <code>.0001</code>.</li>
+<li>j: Unencoded subblock of constant size, containing BLOCKSIZE number
+of samples of width BITS-PER-SAMPLE, big-endian two&#x2019;s complement signed
+integers.</li>
+<li>Frame data must appear only once if the value of <code>.g(4)</code>
+for this FRAME HEADER is <code>.0000</code>.</li>
+<li>Frame data must appear twice, different for the left and right
+channels, if the value of <code>.g(4)</code> for this FRAME HEADER is
+<code>.0001</code>.</li>
 </ul>
 <hr />
 <p>FRAME FOOTER:</p>
 <pre><code>.k(16)</code></pre>
 <ul>
-<li>k: CRC-16 (<code>polinomial = x^16 + x^15 + x^2 + x^0, initialized with 0</code>) of everything before the CRC up to and including the FRAME-HEADER-SYNC-LITERAL at the start of this FRAME HEADER, 16-bit</li>
+<li>k: CRC-16
+(<code>polinomial = x^16 + x^15 + x^2 + x^0, initialized with 0</code>)
+of everything before the CRC up to and including the
+FRAME-HEADER-SYNC-LITERAL at the start of this FRAME HEADER, 16-bit</li>
 </ul>
 <hr />
-<h4>Repeat (FRAME HEADER, FRAME DATA, FRAME FOOTER) as many times as necessary to encode the sound data.</h4>
+<h4>Repeat (FRAME HEADER, FRAME DATA, FRAME FOOTER) as many times as
+necessary to encode the sound data.</h4>
