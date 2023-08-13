@@ -106,7 +106,7 @@ void H5Gear_printPerformanceData(h5umax time_available, h5umax time_taken, _Bool
 	}
 }
 
-/*Taking a pointer is done to accomodate emscripten. Screw emscriptem*/
+/*Taking a pointer is done to accomodate emscripten*/
 int H5Gear_simulateOneFrame(H5Coordinate_GraphicalEventData *opaque_handle) {
 	clock_t start_t, end_t;
 	start_t = clock(); /*Microseconds in XSI-compliant systems*/
@@ -249,7 +249,7 @@ int main(int argc, char **argv) {
 	  scheduler that makes use of an event queue and can adapt to variable performance*/
 	/*This little event loop is where you'd hack away if
 	   you were to integrate Sheewol Gear in a cooperative
-	   multitasking environment. Screw emscriptem*/
+	   multitasking environment*/
 	while (1) {
 		_Bool old_is_paused = *(((struct H5Gear_EventData *)(loop_data.userdata))->is_paused);
 

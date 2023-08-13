@@ -20,11 +20,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 */
-
 #include <halfive/h5req.h>
 #include <halfive/h5render.h>
 #include <halfive/h5coord.h>
 #include <halfive/h5block.h>
+
+#include <emscripten.h>
 
 /*Xorshift variant*/
 #include <stdint.h>
@@ -408,8 +409,8 @@ void H5Block_printPerformanceData(h5umax time_available, h5umax time_taken, _Boo
 	}
 }
 
-#define WCONSTANT 1024
-#define HCONSTANT 1024
+#define WCONSTANT 256
+#define HCONSTANT 256
 #define OFFSET (HCONSTANT/3)
 
 void H5Block_RenderAt(H5Render_PixelData surf, unsigned side, signed x, signed y, unsigned offset, h5uint colour) {
@@ -586,12 +587,78 @@ GO_BACK:
 
 static h5uint array_main_buf[HCONSTANT][WCONSTANT] = {0};
 
-int main(void) {
-	/*WARNING: PROGRAM DOESN'T WORK CORRECTLY IF 'CLOCKS_PER_SEC' IS NOT XSI-MANDATED 1000000*/
-	H5VI_Reference main_ref;
+/*WARNING: PROGRAM DOESN'T WORK CORRECTLY IF 'CLOCKS_PER_SEC' IS NOT XSI-MANDATED 1000000*/
+H5VI_Reference main_ref;
+/*Halfive Block game state*/
+H5Block_Game game = {
+	.list = POPULAR_SHAPES,
+	.currX = DEFAULT_X,
+	.currY = DEFAULT_Y,
+	.gravity_strength = 2
+};
+/*Playfield outputted by the CLI renderer*/
+H5Block_playfieldVisual pV = {0};
+/*Screen buffer*/
+H5Render_PixelData main_buf = {HCONSTANT, WCONSTANT, .data = &array_main_buf[0][0]};
+uint32_t seed;
+H5Coordinate_GraphicalEventData loop_data = {
+	.ref = &main_ref,
+	.time_available = 33333333, /*average frame length in nanoseconds --- FPS = (1/time_available_in_seconds)*/
+	.delta_time = 0, /*To-do: update this per-run*/
+	.time_taken = &(h5umax){0},
+	.rendered_output = {HCONSTANT, WCONSTANT, .data = &array_main_buf[0][0]},
+	.const_userdata = NULL,
+	.input_keys = {0},
+	.frame_counter = 0,
+	.userdata = &(struct H5Block_EventData){
+		.game = &game,
+		.pV = &pV,
+		.seed = &seed,
+		.is_paused = &(_Bool){0},
+		.quit = &(_Bool){0}
+	}
+};
 
-	H5Render_PixelData main_buf = {HCONSTANT, WCONSTANT, .data = &array_main_buf[0][0]};
+void infiniteLoop(void *useless) {
+	_Bool old_is_paused = *(((struct H5Block_EventData *)(loop_data.userdata))->is_paused);
+
+	for (size_t i = 0; i < ELEMNUM(loop_data.input_keys.previous_keys); i++) {
+		loop_data.input_keys.previous_keys[i] = loop_data.input_keys.keys[i];
+	}
+
+	H5VI_getInput(&main_ref, &loop_data.input_keys);
+	H5VI_updateDelayData(&main_ref, &loop_data.input_keys);
+	H5Block_simulateOneFrame((void *)&loop_data);
+	loop_data.frame_counter += 1;
+
+	_Bool new_is_paused = *(((struct H5Block_EventData *)(loop_data.userdata))->is_paused);
+	_Bool quit = *(((struct H5Block_EventData *)(loop_data.userdata))->quit);
+
+	H5Block_printPerformanceData(loop_data.time_available, *loop_data.time_taken, new_is_paused, quit);
+	H5Block_printToCommandLine_auxiliaryData(&game);
+
+	if (old_is_paused != new_is_paused) { /*If pause state changed, sleep 500ms instead of usual amount*/
+		//nanosleep(&(struct timespec){0, 500000000 }, NULL);
+	} else {
+		/*Copy the buffer to the screen*/
+		H5VI_setBuffer(&main_ref, &main_buf);
+
+		h5smax sleep_time = loop_data.time_available - *loop_data.time_taken;
+
+		/*How long do we sleep? Primitive calculation for now, better
+		  not have a potato computer or it'll just drop the framerate and complain*/
+		//nanosleep(&(struct timespec){0, (sleep_time > 0) ? sleep_time : 1 }, NULL);
+	}
+
+	if (quit || game.gameOver) {
+		maybe_printf("GAME OVER!\n");
+		emscripten_cancel_main_loop();
+	}
+}
+
+int main(void) {
 	H5Render_fill(main_buf, 0xFFFF);
+	seed = clock() % 1100;
 
 	if (H5VI_init(&main_ref, HCONSTANT, WCONSTANT)) {
 		H5VI_destroy(&main_ref);
@@ -599,82 +666,11 @@ int main(void) {
 	}
 	H5VI_setBuffer(&main_ref, &main_buf);
 
-	/*Halfive Glock game state*/
-	H5Block_Game game = {
-		.list = POPULAR_SHAPES,
-		.currX = DEFAULT_X,
-		.currY = DEFAULT_Y,
-		.gravity_strength = 2
-	};
-	
-	/*Playfield outputted by the CLI renderer*/
-	H5Block_playfieldVisual pV = {0};
-	uint32_t seed = clock() % 1100;
-
 	H5Block_populatePiecefield(&game);
 	seed = H5Block_genShapes(&game, seed, 1);
 	H5Block_pullShape(&game);
 
-	H5Coordinate_GraphicalEventData loop_data = {
-		.ref = &main_ref,
-		.time_available = 33333333, /*average frame length in nanoseconds --- FPS = (1/time_available_in_seconds)*/
-		.delta_time = 0, /*To-do: update this per-run*/
-		.time_taken = &(h5umax){0},
-		.rendered_output = main_buf,
-		.const_userdata = NULL,
-		.input_keys = {0},
-		.frame_counter = 0,
-		.userdata = &(struct H5Block_EventData){
-			.game = &game,
-			.pV = &pV,
-			.seed = &seed,
-			.is_paused = &(_Bool){0},
-			.quit = &(_Bool){0}
-		}
-	};
-
-	/*NOTE: this loop is a basic reference for how to implement H5Coord's main-loop
-	  scheduler that makes use of an event queue and can adapt to variable performance*/
-	/*This little event loop is where you'd hack away if
-	   you were to integrate Halfive Blocks in a cooperative
-	   multitasking environment*/
-	while (1) {
-		_Bool old_is_paused = *(((struct H5Block_EventData *)(loop_data.userdata))->is_paused);
-
-		for (size_t i = 0; i < ELEMNUM(loop_data.input_keys.previous_keys); i++) {
-			loop_data.input_keys.previous_keys[i] = loop_data.input_keys.keys[i];
-		}
-
-		H5VI_getInput(&main_ref, &loop_data.input_keys);
-		H5VI_updateDelayData(&main_ref, &loop_data.input_keys);
-		H5Block_simulateOneFrame((void *)&loop_data);
-		loop_data.frame_counter += 1;
-
-		_Bool new_is_paused = *(((struct H5Block_EventData *)(loop_data.userdata))->is_paused);
-		_Bool quit = *(((struct H5Block_EventData *)(loop_data.userdata))->quit);
-
-		H5Block_printPerformanceData(loop_data.time_available, *loop_data.time_taken, new_is_paused, quit);
-		H5Block_printToCommandLine_auxiliaryData(&game);
-
-		if (old_is_paused != new_is_paused) { /*If pause state changed, sleep 500ms instead of usual amount*/
-			nanosleep(&(struct timespec){0, 500000000 }, NULL);
-		} else {
-			/*Copy the buffer to the screen*/
-			H5VI_setBuffer(&main_ref, &main_buf);
-	
-			h5smax sleep_time = loop_data.time_available - *loop_data.time_taken;
-
-			/*How long do we sleep? Primitive calculation for now, better
-			  not have a potato computer or it'll just drop the framerate and complain*/
-			nanosleep(&(struct timespec){0, (sleep_time > 0) ? sleep_time : 1 }, NULL);
-		}
-
-		if (quit || game.gameOver) {
-			maybe_printf("GAME OVER!\n");
-			goto EXIT;
-		}
-	}
-
+	emscripten_set_main_loop_arg(infiniteLoop, NULL, 30, 1);
 
 	EXIT:
 		H5VI_destroy(&main_ref);
