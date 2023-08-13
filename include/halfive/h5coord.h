@@ -41,7 +41,7 @@ typedef struct {
 
 typedef struct {
 	H5VI_Reference *ref;
-	h5umax time_available; /*nanoseconds*/
+	const h5umax time_available; /*nanoseconds*/
 	h5umax delta_time; /*nanoseconds*/
 	h5umax *time_taken; /*nanoseconds, responsibility of the called function for now*/
 	H5VI_InputData input_keys;
@@ -51,9 +51,10 @@ typedef struct {
 
 typedef struct {
 	H5VI_Reference *ref;
-	h5umax time_available; /*nanoseconds*/
+	h5umax time_available; /*Usually 1/framerate*/
 	h5umax delta_time; /*nanoseconds*/
 	h5umax *time_taken; /*nanoseconds, responsibility of the called function for now*/
+	unsigned long frame_counter; /*Increases once per frame*/
 	H5VI_InputData input_keys;
 	H5Render_PixelData rendered_output;
 	void const *const_userdata;

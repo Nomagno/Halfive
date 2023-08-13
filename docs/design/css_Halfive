@@ -1,0 +1,23 @@
+<head>
+<link rel="icon" href="halfive_favicon.png" type="image/icon type">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Silkscreen">
+<style>
+body {
+  font-family: "Silkscreen";
+}
+body{
+  font-family: "Silkscreen";
+  line-height:1.6;
+  font-size:18px;
+  color:#000000;
+  background-color: #cc99ff;
+  padding:0;
+  10px;
+}
+h1,h2,h3{
+line-height:1.2
+}
+</style>
+	<title>Halfive</title>
+	<meta name="description" content="The Universal Racing Game"">
+</head>

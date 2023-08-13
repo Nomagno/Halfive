@@ -316,6 +316,62 @@ unsigned H5VI_playSound(H5VI_Reference *stream, const H5VI_SoundData *insound)
 }
 #endif
 
+unsigned H5VI_updateDelayData(H5VI_Reference *handle, H5VI_InputData *keys) {
+	for (size_t i = 0; i < ELEMNUM(keys->keys); i++){
+		if (keys->keys[i] && !keys->previous_keys[i]) {
+			keys->fetch_elapsed[i] = 0;
+		} else if (keys->keys[i] && keys->previous_keys[i]) {
+			keys->fetch_elapsed[i] += 1;
+		} else if (!keys->keys[i] && keys->previous_keys[i]) {
+			keys->fetch_elapsed[i] = 0;
+		} else if (!keys->keys[i] && !keys->previous_keys[i]) {
+
+		}
+	}
+	return 0;
+}
+
+_Bool H5VI_isOnPress(H5VI_InputData *keys, unsigned key_index) {
+	if (keys->keys[key_index] == 1 && keys->previous_keys[key_index] == 0) {
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+_Bool H5VI_isOnRelease(H5VI_InputData *keys, unsigned key_index) {
+	if (keys->keys[key_index] == 0 && keys->previous_keys[key_index] == 1) {
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+_Bool H5VI_autoRepeat(H5VI_InputData *keys, unsigned key_index, _Bool initial_press_allowed, unsigned long initial_delay, unsigned long autoRepeatTime) {
+	if (keys->keys[key_index] == 1) {
+		if (keys->fetch_elapsed[key_index] > initial_delay) {
+			if (keys->fetch_elapsed[key_index] % autoRepeatTime == 0) {
+				return 1;
+			} else if ((keys->fetch_elapsed[key_index] == initial_delay)) {
+				return 1;
+			} else {
+				return 0;
+			}
+		} else if (keys->fetch_elapsed[key_index] == 0 && initial_press_allowed) {
+			return 1;
+		} else {
+			return 0;
+		}
+	} else {
+		return 0;
+	}
+}
+
+unsigned long H5VI_pressTime(H5VI_InputData *keys, unsigned key_index) {
+	return keys->fetch_elapsed[key_index];
+}
+
+
 #ifdef H5VI_STDINPUT_IMPL_SDL2
 
 #define H5IN_K_UP SDL_SCANCODE_UP
@@ -379,9 +435,13 @@ unsigned H5VI_getInput(H5VI_Reference *handle, H5VI_InputData *keys) {
 	int tmp_button_mask, tmp_x, tmp_y;
 	tmp_button_mask = SDL_GetMouseState(&tmp_x, &tmp_y);
 
-
-
 	H5VI_InputData returnval = { {0}, {0}, 0, 0};
+
+	for (size_t i = 0; i < ELEMNUM(keys->keys); i++){
+		returnval.previous_keys[i] = keys->keys[i];
+		returnval.fetch_elapsed[i] = keys->fetch_elapsed[i];
+	}
+
 	returnval.keys[H5KEY_UP] = keyArray[H5IN_K_UP] /*| H5IN_J_UP*/;
 	returnval.keys[H5KEY_DOWN] = keyArray[H5IN_K_DOWN] /*| H5IN_J_DOWN*/;
 	returnval.keys[H5KEY_LEFT] = keyArray[H5IN_K_LEFT] /*| H5IN_J_LEFT*/;

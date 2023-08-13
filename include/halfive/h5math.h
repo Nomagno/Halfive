@@ -38,10 +38,16 @@ IN THE SOFTWARE.
 MAKEVEC2(h5uint);
 MAKEVEC2(h5ulong);
 MAKEVEC2(h5umax);
-
 MAKEVEC2(h5sint);
 MAKEVEC2(h5slong);
 MAKEVEC2(h5smax);
+
+MAKEVEC3(h5uint);
+MAKEVEC3(h5ulong);
+MAKEVEC3(h5umax);
+MAKEVEC3(h5sint);
+MAKEVEC3(h5slong);
+MAKEVEC3(h5smax);
 
 /*Composite bezier curve*/
 typedef struct {

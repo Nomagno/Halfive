@@ -54,8 +54,12 @@ pause button*/
 #define H5KEY_QUIT 14
 #define H5KEY_PAUSE 15
 
+
 typedef struct {
-	_Bool keys[16];	 /*See enum for what each pos means*/
+	_Bool keys[16]; /*See enum for what each pos means*/
+	_Bool previous_keys[16]; /*This is for detecting key press / key release*/
+	unsigned long fetch_elapsed[16]; /*How many input polls passed since each key press. Usually frames*/
+
 	h5uchar axis[4]; /*Max 4 axis*/
 	h5uint cursor_x; /*Cursor/mouse pointer X*/
 	h5uint cursor_y; /*Cursor/mouse pointer Y*/
@@ -96,25 +100,32 @@ typedef struct {
 	*/
 } H5VI_Reference;
 
-extern unsigned H5VI_init(H5VI_Reference *buf, size_t h, size_t w);
+unsigned H5VI_init(H5VI_Reference *buf, size_t h, size_t w);
 /*Initialize display (following width w and height h, error if not possible),
 sound, and input, following the advice of the foo_enabled booleans, and modify
 those if can't enable graphics, sound, or input. Additionally, set the platform string*/
 
-extern unsigned H5VI_destroy(H5VI_Reference *ref);
+unsigned H5VI_destroy(H5VI_Reference *ref);
 /*Exit gracefully*/
 
-extern unsigned H5VI_setBuffer(
+unsigned H5VI_setBuffer(
 	H5VI_Reference *handle, const H5Render_PixelData *inbuf);
 /*Set display to buffer*/
 
-extern unsigned H5VI_playSound(
+unsigned H5VI_playSound(
 	H5VI_Reference *handle, const H5VI_SoundData *sound);
 /*Play in a nonblocking manner (within reason).
 The length of the sound will get adjusted if it
 is more than that of the sound itself.
 */
 
-extern unsigned H5VI_getInput(H5VI_Reference *handle, H5VI_InputData *keys);
+unsigned H5VI_getInput(H5VI_Reference *handle, H5VI_InputData *keys);
 /*Get current user input*/
+
+unsigned H5VI_updateDelayData(H5VI_Reference *handle, H5VI_InputData *keys);
+_Bool H5VI_isOnPress(H5VI_InputData *keys, unsigned key_index);
+_Bool H5VI_isOnRelease(H5VI_InputData *keys, unsigned key_index);
+_Bool H5VI_autoRepeat(H5VI_InputData *keys, unsigned key_index, _Bool initial_press_allowed, unsigned long initial_delay, unsigned long autoRepeatTime);
+unsigned long H5VI_pressTime(H5VI_InputData *keys, unsigned key_index);
+
 #endif

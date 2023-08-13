@@ -32,15 +32,20 @@
 
 INCLROOT="../../include/"
 
-FLAGS=-Ofast
+# FLAGS=-Ofast -fsanitize=address,undefined -g -lm
+FLAGS=-Ofast -lm
 PARAMS="-DH5VERSION=0 -DH5PHY_VM_SIMULATION -DH5VI_GSERV_IMPL_SDL2 -DH5VI_STDINPUT_IMPL_SDL2"
 
 main: warn libhalfive.a
+block_sdl2_bin: warn block_sdl2
+#sim_sdl2_bin: warn sim_sdl2
 gear_sdl2_bin: warn gear_sdl2
 pamview_bin: warn pamviewer
 h5asm_bin: warn h5assembler
 h5asm_debug_bin: warn h5assembler_debug
 remain: clean main
+reblock_sdl2_bin: clean block_sdl2
+#resim_sdl2_bin: clean sim_sdl2
 regear_sdl2_bin: clean gear_sdl2
 repamview_bin: clean pamviewer
 reh5asm: clean h5assembler
@@ -49,13 +54,17 @@ reh5asm_debug: clean h5assembler_debug
 cleand:
 	rm -f *.gcov *.gcno *.gcda
 clean:
-	rm -f *.o *.a h5asm h5asm_debug pamview gear
+	rm -f *.o *.a h5asm h5asm_debug pamview gear sim block
 warn:
 	echo "This program makes extensive used of C preprocessor macros. You may use the variable PARAMS=\"-DMYVAR1 -DMYVAR2\" like so to set them"
 
 libhalfive.a : h5stdlib.o h5asm.o h5vm.o h5doc.o h5math.o h5rat.o h5render.o h5pix.o
 	ar rcs libhalfive.a h5stdlib.o h5asm.o h5vm.o h5doc.o h5math.o h5rat.o h5render.o h5pix.o
 
+block_sdl2 : h5render.o h5stdlib.o h5math.o
+	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -DH5VI_GSERV_IMPL_SDL2 -DH5VI_STDINPUT_IMPL_SDL2 -o block h5block.c h5vi.c h5render.o h5math.o h5stdlib.o -lSDL2
+#sim_sdl2 : h5render.o h5stdlib.o h5math.o
+#	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -DH5VI_GSERV_IMPL_SDL2 -DH5VI_STDINPUT_IMPL_SDL2 -o sim h5sim.c h5vi.c h5render.o h5math.o h5stdlib.o -lSDL2
 gear_sdl2 : h5render.o h5stdlib.o h5vm_gear.o h5math.o h5asm_gear.o
 	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -DH5VI_GSERV_IMPL_SDL2 -DH5VI_STDINPUT_IMPL_SDL2 -o gear h5gear.c h5vi.c h5render.o h5math.o h5stdlib.o h5vm_gear.o h5asm_gear.o -lSDL2
 pamviewer : h5pix.o h5render.o h5math.o h5stdlib.o
