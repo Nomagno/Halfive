@@ -47,12 +47,13 @@ typedef struct {
 } H5Block_Block;
 
 typedef struct {
+	h5uint color;
 	H5Block_Block blocks[SHAPE_SIZE];
 } H5Block_Shape;
 
 
 typedef struct {
-	_Bool data[PLAY_H][PLAY_W];
+	h5uint data[PLAY_H][PLAY_W];
 } H5Block_Playfield;
 
 typedef struct {
@@ -94,7 +95,7 @@ enum H5Block_Action {
 };
 
 typedef struct {
-	char data[PLAY_H][PLAY_W+1];
+	h5uint data[PLAY_H][PLAY_W];
 } H5Block_playfieldVisual;
 
 /*userdata struct of H5Coordinate_GraphicalEventData*/

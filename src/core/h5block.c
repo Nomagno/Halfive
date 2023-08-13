@@ -84,7 +84,7 @@ H5Block_Shape H5Block_getRotatedShape(H5Block_Shape x, unsigned rot) {
 	if (rot == 0) return x;
 
 	H5Block_Shape retval = {0};
-
+	retval.color = x.color;
 
 	for (int i = 0; i < SHAPE_SIZE; i++){
 		retval.blocks[i].exists = 1;
@@ -110,7 +110,7 @@ _Bool H5Block_checkMove(H5Block_Playfield *p, H5Block_Shape a, signed x, signed 
 		  finalY < 0 || finalY >= PLAY_H) {
 			return 0; /*Out of bounds move*/
 		}
-		if (p->data[finalY][finalX] == 1)  {
+		if (p->data[finalY][finalX] != 0)  {
 			return 0; /*There is already a block*/
 		}
 	}
@@ -158,10 +158,10 @@ void H5Block_addRow(H5Block_Playfield *field, unsigned row,
 
 unsigned H5Block_updatePlayfield(H5Block_Playfield *field){
 	unsigned linesCleared = 0;
-	for (unsigned i = 0; i < PLAY_H; i++) {
+	for (signed i = PLAY_H-1; i >= 0; i--) {
 		_Bool clearcheck = 1;
 		for (unsigned j = 0; j < PLAY_W; j++) {
-			clearcheck &= field->data[i][j];
+			clearcheck &= !!(field->data[i][j]);
 		}
 		if (clearcheck == 1) {
 			/*Playfield to be shifted down at row i*/
@@ -181,7 +181,7 @@ unsigned H5Block_placeShape(H5Block_Playfield *p, H5Block_Shape a, signed x, sig
 		  finalY < 0 || finalY >= PLAY_H) {
 			; /*Out of bounds placement*/
 		} else {
-			p->data[finalY][finalX] = 1;
+			p->data[finalY][finalX] = a.color;
 		}
 	}
 	linesCleared = H5Block_updatePlayfield(p);
@@ -235,6 +235,11 @@ uint32_t H5Block_doGameplayLoop(H5Block_Game *game, uint32_t seed, enum H5Block_
 			game->currY -= 1;
 		} else {
 			linesCleared = H5Block_placeShape(&game->playfield, finalShape, game->currX, game->currY);
+			if (linesCleared == 0) {
+				game->combo = 0;
+			} else {
+				;
+			}
 			game->placed_pieces += 1;
 			game->holdConsumed = 0;
 			game->currRot = 0;
@@ -287,7 +292,6 @@ uint32_t H5Block_doGameplayLoop(H5Block_Game *game, uint32_t seed, enum H5Block_
 
 	switch (linesCleared) {
 	case 0:
-		game->combo = 0;
 		break;
 	case 1:
 		game->score += game->lastLinesCleared*game->combo*5 + 10;
@@ -320,13 +324,13 @@ uint32_t H5Block_doGameplayLoop(H5Block_Game *game, uint32_t seed, enum H5Block_
   for block games with relative ubiquity*/
 #define POPULAR_SHAPES { \
 	/*left right; down up*/ \
-	{{{1, -1, 0}, {1, 0, 0}, {1, 0, 1}, {1, 1, 1}}}, /*S*/ \
-	{{{1, -1, 1}, {1, 0, 1}, {1, 0, 0}, {1, 1, 0}}}, /*Z*/ \
-	{{{1, -1, 1}, {1, -1, 0}, {1, 0, 0}, {1, 1, 0}}}, /*J*/ \
-	{{{1, -1, 0}, {1, 0, 0}, {1, 1, 0}, {1, 1, 1}}}, /*L*/ \
-	{{{1, -2, 0}, {1, -1, 0}, {1, 0, 0}, {1, 1, 0}}}, /*I*/ \
-	{{{1, -1, 1}, {1, -1, 0}, {1, 0, 0}, {1, 0, 1}}}, /*O*/ \
-	{{{1, -1, 0}, {1, 0, 0}, {1, 0, 1}, {1, 1, 0}}}, /*T*/ \
+	{0x7701, {{1, -1, 0}, {1, 0, 0}, {1, 0, 1}, {1, 1, 1}}}, /*S*/ \
+	{0xF80D, {{1, -1, 1}, {1, 0, 1}, {1, 0, 0}, {1, 1, 0}}}, /*Z*/ \
+	{0x42EF, {{1, -1, 1}, {1, -1, 0}, {1, 0, 0}, {1, 1, 0}}}, /*J*/ \
+	{0xFC01, {{1, -1, 0}, {1, 0, 0}, {1, 1, 0}, {1, 1, 1}}}, /*L*/ \
+	{0x363F, {{1, -2, 0}, {1, -1, 0}, {1, 0, 0}, {1, 1, 0}}}, /*I*/ \
+	{0xFE01, {{1, -1, 1}, {1, -1, 0}, {1, 0, 0}, {1, 0, 1}}}, /*O*/ \
+	{0x8AF9, {{1, -1, 0}, {1, 0, 0}, {1, 0, 1}, {1, 1, 0}}}, /*T*/ \
 }
 
 #include <halfive/code_setup.h>
@@ -366,30 +370,23 @@ void H5Block_printToCommandLine_auxiliaryData(H5Block_Game *game) {
 		maybe_putchar('\n');
 }
 
-void H5Block_printToCommandLine_playfield(H5Block_playfieldVisual *pV) { 
-	for (int i = PLAY_H-1; i >= 0; i--) {
-		maybe_printf("|%s|\n", pV->data[i]);
-	}
-}
-
 void H5Block_getVisualRepresentationOfField(H5Block_Game *game, H5Block_playfieldVisual *pV){
 	*pV = (H5Block_playfieldVisual){0};
 	for (int i = 0; i < PLAY_H; i++) {
 		for (int j = 0; j < PLAY_W; j++) {
-			if (game->playfield.data[i][j] == 1) {
-				pV->data[i][j] = '#';
+			if (game->playfield.data[i][j] != 0) {
+				pV->data[i][j] = game->playfield.data[i][j];
 			} else {
-				pV->data[i][j] = ' ';
+				pV->data[i][j] = 0;
 			}
 		}
-		pV->data[i][PLAY_W] = '\0';		
 	}
 	H5Block_Shape finalShape = H5Block_getRotatedShape(game->list[game->currShape-1], game->currRot);
 	for (int i = 0; i < SHAPE_SIZE; i++) {
 		unsigned coordX = finalShape.blocks[i].horizontal + game->currX;
 		unsigned coordY = finalShape.blocks[i].vertical + game->currY;
 		if (finalShape.blocks[i].exists) {
-			pV->data[coordY][coordX] = '#';
+			pV->data[coordY][coordX] = finalShape.color;
 		}
 	}
 
@@ -432,9 +429,9 @@ void H5Block_Render(H5Render_PixelData surf, H5Block_playfieldVisual pV, H5Block
 	/*Render playfield*/
 	for (unsigned i = 0; i < DEFAULT_Y+overhead_y; i++) {
 		for (unsigned j = 0; j < PLAY_W; j++) {
-			if(pV.data[i][j] == '#') {
-				H5Block_RenderAt(surf, side, j+offset_x, i+offset_y, OFFSET, 0x8AF9);
-			} else if (pV.data[i][j] == ' '){
+			if(pV.data[i][j] != 0) {
+				H5Block_RenderAt(surf, side, j+offset_x, i+offset_y, OFFSET, pV.data[i][j]);
+			} else if (pV.data[i][j] == 0){
 				H5Block_RenderAt(surf, side, j+offset_x, i+offset_y, OFFSET, 0xFFFF);
 			}
 		}
@@ -442,7 +439,7 @@ void H5Block_Render(H5Render_PixelData surf, H5Block_playfieldVisual pV, H5Block
 
 	/*Render informative elimination line*/
 	for (unsigned j = 0; j < PLAY_W; j++) {
-		if (pV.data[DEFAULT_Y][j] == ' ') {
+		if (pV.data[DEFAULT_Y][j] == 0) {
 			H5Block_RenderAt(surf, side, j+offset_x, DEFAULT_Y+offset_y, OFFSET, 0xF80D);
 		}
 	}
@@ -465,8 +462,8 @@ void H5Block_Render(H5Render_PixelData surf, H5Block_playfieldVisual pV, H5Block
 	/*Render hold slot to the left of playfield*/
 	for (unsigned i = 0; i < piecefield_h; i++) {
 		for (unsigned j = 0; j < piecefield_w; j++) {
-			if(game->hold_slot > 0 && game->piecefield[game->hold_slot-1].data[i][j] == 1) {
-				H5Block_RenderAt(surf, side, j, i+offset_left_y, OFFSET-offset_left_h_ABSOLUTE, 0x8AF9);
+			if(game->hold_slot > 0 && game->piecefield[game->hold_slot-1].data[i][j] != 0) {
+				H5Block_RenderAt(surf, side, j, i+offset_left_y, OFFSET-offset_left_h_ABSOLUTE, game->list[game->hold_slot-1].color);
 			} else if (game->hold_slot <= 0 || game->piecefield[game->hold_slot-1].data[i][j] == 0){
 				H5Block_RenderAt(surf, side, j, i+offset_left_y, OFFSET-offset_left_h_ABSOLUTE, 0xFFFF);
 			}
@@ -477,10 +474,10 @@ void H5Block_Render(H5Render_PixelData surf, H5Block_playfieldVisual pV, H5Block
 	for (signed k = 3; k >= 0; k--) {
 		for (unsigned i = 0; i < piecefield_h; i++) {
 			for (unsigned j = 0; j < piecefield_w; j++) {
-				if(game->piecefield[game->next_shapes[k]-1].data[i][j] == 1) {
-					H5Block_RenderAt(surf, side, j+offset_right_h, i+(k*3), OFFSET, 0x8AF9);
-				} else if (game->piecefield[game->next_shapes[k]-1].data[i][j] == 0){
+				if (game->next_shapes[k] == 0 || game->piecefield[game->next_shapes[k]-1].data[i][j] == 0) {
 					H5Block_RenderAt(surf, side, j+offset_right_h, i+(k*3), OFFSET, 0xFFFF);
+				} else if(game->piecefield[game->next_shapes[k]-1].data[i][j] != 0) {
+					H5Block_RenderAt(surf, side, j+offset_right_h, i+(k*3), OFFSET, game->list[game->next_shapes[k]-1].color);
 				}
 			}
 		}
