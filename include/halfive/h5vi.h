@@ -54,8 +54,20 @@ pause button*/
 #define H5KEY_QUIT 14
 #define H5KEY_PAUSE 15
 
+typedef struct {
+	_Bool isActive;
+	_Bool isPressed;
+	unsigned key_code;
+	VEC2(h5ulong) size;
+	VEC2(h5ulong) pos;
+} H5VI_VirtualButton;
 
 typedef struct {
+	h5uint view_height, view_width;
+	/*Viewport width and height. This is needed for touch input only
+	  because of how the finger reporting is done by the operating system,
+	  can be left as zero otherwise*/
+	H5VI_VirtualButton virKeys[64];
 	_Bool keys[16]; /*See enum for what each pos means*/
 	_Bool previous_keys[16]; /*This is for detecting key press / key release*/
 	unsigned long fetch_elapsed[16]; /*How many input polls passed since each key press. Usually frames*/
@@ -119,8 +131,14 @@ The length of the sound will get adjusted if it
 is more than that of the sound itself.
 */
 
-unsigned H5VI_getInput(H5VI_Reference *handle, H5VI_InputData *keys);
 /*Get current user input*/
+unsigned H5VI_getInput(H5VI_Reference *handle, H5VI_InputData *keys);
+/*Get current user input based on virtual key presses*/
+unsigned H5VI_getVirtualInput(H5VI_Reference *handle, H5VI_InputData *keys);
+unsigned H5VI_addVirtualButton(H5VI_Reference *handle, H5VI_InputData *keys, H5VI_VirtualButton button);
+unsigned H5VI_defaultVirtualLayout(H5VI_Reference *handle, H5VI_InputData *keys);
+unsigned H5VI_renderVirtualButtons(H5Render_PixelData surf, H5VI_InputData *keys, h5uint colour);
+
 
 unsigned H5VI_updateDelayData(H5VI_Reference *handle, H5VI_InputData *keys);
 _Bool H5VI_isOnPress(H5VI_InputData *keys, unsigned key_index);

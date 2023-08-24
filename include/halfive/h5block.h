@@ -22,7 +22,6 @@ IN THE SOFTWARE.
 */
 
 #include <halfive/h5req.h>
-#include <halfive/h5render.h>
 #include <halfive/h5coord.h>
 
 #ifndef H5BLOCK_H
@@ -37,6 +36,20 @@ IN THE SOFTWARE.
 #define DEFAULT_Y 21
 
 #define ELIMINATION_HEIGHT 21
+
+/*These are the one-sided tetrominoes,
+  seven mathematical four-block shapes used
+  for block games with relative ubiquity*/
+#define POPULAR_SHAPES { \
+	/*left right; down up*/ \
+	{0x7701, {{1, -1, 0}, {1, 0, 0}, {1, 0, 1}, {1, 1, 1}}}, /*S*/ \
+	{0xF80D, {{1, -1, 1}, {1, 0, 1}, {1, 0, 0}, {1, 1, 0}}}, /*Z*/ \
+	{0x42EF, {{1, -1, 1}, {1, -1, 0}, {1, 0, 0}, {1, 1, 0}}}, /*J*/ \
+	{0xFC01, {{1, -1, 0}, {1, 0, 0}, {1, 1, 0}, {1, 1, 1}}}, /*L*/ \
+	{0x363F, {{1, -2, 0}, {1, -1, 0}, {1, 0, 0}, {1, 1, 0}}}, /*I*/ \
+	{0xFE01, {{1, -1, 1}, {1, -1, 0}, {1, 0, 0}, {1, 0, 1}}}, /*O*/ \
+	{0x8AF9, {{1, -1, 0}, {1, 0, 0}, {1, 0, 1}, {1, 1, 0}}}, /*T*/ \
+}
 
 
 typedef struct {
@@ -107,6 +120,17 @@ struct H5Block_EventData {
 	_Bool *quit;
 };
 
+uint32_t H5Block_genShapes(H5Block_Game *game, uint32_t seed, _Bool initial);
+H5Block_Shape H5Block_getRotatedShape(H5Block_Shape x, unsigned rot);
+_Bool H5Block_checkMove(H5Block_Playfield *p, H5Block_Shape a, signed x, signed y);
+void H5Block_removeRow(H5Block_Playfield *field, unsigned row);
+void H5Block_addRow(H5Block_Playfield *field, unsigned row, _Bool newRow[restrict PLAY_W]);
+unsigned H5Block_updatePlayfield(H5Block_Playfield *field);
+unsigned H5Block_placeShape(H5Block_Playfield *p, H5Block_Shape a, signed x, signed y);
+void H5Block_pullShape(H5Block_Game *game);
+void H5Block_populatePiecefield(H5Block_Game *game);
+uint32_t H5Block_doGameplayLoop(H5Block_Game *game, uint32_t seed, enum H5Block_Action action);
+void H5Block_getVisualRepresentationOfField(H5Block_Game *game, H5Block_playfieldVisual *pV);
 int H5Block_simulateOneFrame(H5Coordinate_GraphicalEventData *opaque_handle);
 
 #endif

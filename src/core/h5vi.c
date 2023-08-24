@@ -58,6 +58,9 @@ comma separated 8-bit uints (0-255) replacing from 'axis1' until 'axis4'
 
 #define JOYSTICK_INDEX 0
 
+#define H5VI_GSERV_IMPL_SDL2
+#define H5VI_STDINPUT_IMPL_SDL2
+
 #if !defined(H5VI_GSERV_IMPL_SDL2)
 #error Please define a graphics implementation (src/core/h5vi.c)
 #endif
@@ -371,6 +374,127 @@ unsigned long H5VI_pressTime(H5VI_InputData *keys, unsigned key_index) {
 	return keys->fetch_elapsed[key_index];
 }
 
+unsigned H5VI_addVirtualButton(H5VI_Reference *handle, H5VI_InputData *keys, H5VI_VirtualButton button) {
+	unsigned retcode = 1;
+	for (unsigned i = 0; i < ELEMNUM(keys->virKeys); i++) {
+		if (keys->virKeys[i].isActive == 0) {
+			keys->virKeys[i] = button;
+			retcode = 0;
+			break;
+		}
+	}
+	return retcode;
+}
+
+
+unsigned H5VI_defaultVirtualLayout(H5VI_Reference *handle, H5VI_InputData *keys) {
+
+	unsigned max_height = keys->view_height/2;
+	unsigned max_width_left = keys->view_width/3;
+	unsigned max_width_right = keys->view_width-max_width_left;
+
+	H5VI_VirtualButton dpad_up = {
+		.isActive = 1,
+		.isPressed = 0,
+		.key_code = H5KEY_UP,
+		.pos = {max_width_left/3*1, max_height+(max_height/3*0)},
+		.size = { max_width_left/3, (max_height/3)},
+	};
+	H5VI_VirtualButton dpad_down = {
+		.isActive = 1,
+		.isPressed = 0,
+		.key_code = H5KEY_DOWN,
+		.pos = {max_width_left/3*1, max_height+(max_height/3*2)},
+		.size = { max_width_left/3, (max_height/3)},
+	};
+
+	H5VI_VirtualButton dpad_left = {
+		.isActive = 1,
+		.isPressed = 0,
+		.key_code = H5KEY_LEFT,
+		.pos = {max_width_left/3*0, max_height+(max_height/3)},
+		.size = { max_width_left/3, (max_height/3)},
+	};
+
+	H5VI_VirtualButton dpad_right = {
+		.isActive = 1,
+		.isPressed = 0,
+		.key_code = H5KEY_RIGHT,
+		.pos = {max_width_left/3*2, max_height+(max_height/3)},
+		.size = { max_width_left/3, (max_height/3)},
+	};
+
+
+	H5VI_VirtualButton b1 = {
+		.isActive = 1,
+		.isPressed = 0,
+		.key_code = H5KEY_B1,
+		.pos = {max_width_right+(max_width_left/3*2), max_height+(max_height/3)},
+		.size = { max_width_left/3, (max_height/3)},
+	};
+	H5VI_VirtualButton b2 = {
+		.isActive = 1,
+		.isPressed = 0,
+		.key_code = H5KEY_B2,
+		.pos = {max_width_right+(max_width_left/3*1), max_height+(max_height/3*2)},
+		.size = { max_width_left/3, (max_height/3)},
+	};
+	H5VI_VirtualButton b3 = {
+		.isActive = 1,
+		.isPressed = 0,
+		.key_code = H5KEY_B3,
+		.pos = {max_width_right+(max_width_left/3*1), max_height+(max_height/3*0)},
+		.size = { max_width_left/3, (max_height/3)},
+	};
+	H5VI_VirtualButton b4 = {
+		.isActive = 1,
+		.isPressed = 0,
+		.key_code = H5KEY_B4,
+		.pos = {max_width_right+(max_width_left/3*0), max_height+(max_height/3)},
+		.size = { max_width_left/3, (max_height/3)},
+	};
+
+	H5VI_addVirtualButton(handle, keys, dpad_up);
+	H5VI_addVirtualButton(handle, keys, dpad_down);
+	H5VI_addVirtualButton(handle, keys, dpad_left);
+	H5VI_addVirtualButton(handle, keys, dpad_right);
+	H5VI_addVirtualButton(handle, keys, b1);
+	H5VI_addVirtualButton(handle, keys, b2);
+	H5VI_addVirtualButton(handle, keys, b3);
+	H5VI_addVirtualButton(handle, keys, b4);
+
+	return 0;
+}
+
+unsigned H5VI_renderVirtualButtons(H5Render_PixelData surf, H5VI_InputData *keys, h5uint colour) {
+	for (unsigned i = 0; i < ELEMNUM(keys->virKeys); i++) {
+		if (keys->virKeys[i].isActive == 1) {
+			VEC2(h5ulong) p1 = { keys->virKeys[i].pos.x, keys->virKeys[i].pos.y };
+			VEC2(h5ulong) p2 = { keys->virKeys[i].pos.x+keys->virKeys[i].size.x, keys->virKeys[i].pos.y };
+			VEC2(h5ulong) p3 = { keys->virKeys[i].pos.x+keys->virKeys[i].size.x, keys->virKeys[i].pos.y+keys->virKeys[i].size.y };
+			VEC2(h5ulong) p4 = { keys->virKeys[i].pos.x, keys->virKeys[i].pos.y+keys->virKeys[i].size.y };
+			H5Render_ulong_drawRectangle(surf, p1, p2, p3, p4, colour);
+		}
+	}
+	return 0;
+}
+
+/*Do not negate existing hardware buttonpresses, only add one if there isn't already*/
+void updateVirtualInputNonAuthoritative(H5VI_Reference *handle, H5VI_InputData *keys, unsigned x, unsigned y) {
+	for (unsigned i = 0; i < ELEMNUM(keys->virKeys); i++) {
+		if (keys->virKeys[i].isActive == 1) {
+			if (x > keys->virKeys[i].pos.x && x < (keys->virKeys[i].pos.x + keys->virKeys[i].size.x) &&
+			    y > keys->virKeys[i].pos.y && y < (keys->virKeys[i].pos.y + keys->virKeys[i].size.y))
+			{
+				keys->virKeys[i].isPressed = 1;
+				keys->keys[keys->virKeys[i].key_code] = 1;
+			} else {
+				keys->virKeys[i].isPressed = 0;
+			}
+		}
+	}
+}
+
 
 #ifdef H5VI_STDINPUT_IMPL_SDL2
 
@@ -429,13 +553,63 @@ unsigned long H5VI_pressTime(H5VI_InputData *keys, unsigned key_index) {
 	else return 0;
 }*/
 
+unsigned H5VI_getVirtualInput(H5VI_Reference *handle, H5VI_InputData *keys) {
+	SDL_TouchID touchDevice = SDL_GetTouchDevice(0);
+	unsigned fingernum = SDL_GetNumTouchFingers(touchDevice);
+
+	if (keys->keys[H5KEY_M1] == 1) {
+		//maybe_printf("H5Vi TOUCH (mouse left button): %u, %u\n", keys->cursor_x, keys->cursor_y);
+		updateVirtualInputNonAuthoritative(handle, keys, keys->cursor_x, keys->cursor_y);
+	}
+
+	if (keys->keys[H5KEY_M2] == 1) {
+		//maybe_printf("H5Vi TOUCH (mouse right button): %u, %u\n", keys->cursor_x, keys->cursor_y);
+		updateVirtualInputNonAuthoritative(handle, keys, keys->cursor_x, keys->cursor_y);
+	}
+
+	if (fingernum > 0) {
+		for (unsigned i = 0; i < fingernum; i++) {
+			SDL_Finger *finger = SDL_GetTouchFinger(touchDevice, i);
+			if (finger != NULL) {
+				float relativeX = finger->x;
+				if (relativeX < 0) {
+					relativeX = 0;
+				}
+				if (relativeX > 1) {
+					relativeX = 1;
+				}
+
+				float relativeY = finger->y;
+				if (relativeY < 0) {
+					relativeY = 0;
+				}
+				if (relativeY > 1) {
+					relativeY = 1;
+				}
+
+				unsigned x = ((float)keys->view_width-1)*relativeX;
+				unsigned y = ((float)keys->view_height-1)*relativeY;
+				maybe_printf("H5Vi TOUCH: %u, %u\n", x, y);
+				updateVirtualInputNonAuthoritative(handle, keys, x, y);
+			} else {
+				maybe_printf("Finger is NULL, what??\n");
+			}
+		}
+	} else {
+		maybe_printf("No finger events\n");
+	}
+}
+
 unsigned H5VI_getInput(H5VI_Reference *handle, H5VI_InputData *keys) {
 	SDL_PumpEvents();
 	const uint8_t *keyArray = SDL_GetKeyboardState(NULL);
 	int tmp_button_mask, tmp_x, tmp_y;
 	tmp_button_mask = SDL_GetMouseState(&tmp_x, &tmp_y);
 
-	H5VI_InputData returnval = { {0}, {0}, 0, 0};
+	H5VI_InputData returnval = {0};
+
+	returnval.view_height = keys->view_height;
+	returnval.view_width = keys->view_width;
 
 	for (size_t i = 0; i < ELEMNUM(keys->keys); i++){
 		returnval.previous_keys[i] = keys->keys[i];
@@ -458,16 +632,24 @@ unsigned H5VI_getInput(H5VI_Reference *handle, H5VI_InputData *keys) {
 	returnval.keys[H5KEY_PAUSE] = keyArray[H5IN_K_PAUSE] /*| getB(H5IN_J_PAUSE)*/;
 
 	returnval.keys[H5KEY_M1] = tmp_button_mask & SDL_BUTTON(1);
-	returnval.keys[H5KEY_M2] = tmp_button_mask & SDL_BUTTON(1);
+	returnval.keys[H5KEY_M2] = tmp_button_mask & SDL_BUTTON(3);
 	returnval.cursor_x = tmp_x;
-	returnval.cursor_x = tmp_y;
+	returnval.cursor_y = tmp_y;
 
 	/*returnval.axis[0] = getA(H5IN_J_LEFTX);
 	returnval.axis[1] = getA(H5IN_J_LEFTY);
 	returnval.axis[2] = getA(H5IN_J_TLEFT);
 	returnval.axis[3] = getA(H5IN_J_TRIGHT);*/
 
+	for (size_t i = 0; i < ELEMNUM(keys->virKeys); i++){
+		returnval.virKeys[i] = keys->virKeys[i];
+	}
+	H5VI_getVirtualInput(handle, &returnval);
+
 	*keys = returnval;
+
+	H5VI_updateDelayData(handle, keys);
+
 	return 0;
 }
 #elif defined(H5VI_STDINPUT_IMPL_PORTABLE)

@@ -65,9 +65,9 @@ libhalfive.a : h5stdlib.o h5asm.o h5vm.o h5doc.o h5math.o h5rat.o h5render.o h5p
 	ar rcs libhalfive.a h5stdlib.o h5asm.o h5vm.o h5doc.o h5math.o h5rat.o h5render.o h5pix.o
 
 block_emscripten:
-	emcc $(FLAGS) $(PARAMS) -I$(INCLROOT) -s USE_SDL=2 h5block_emscripten.c h5vi.c h5render.c h5math.c h5stdlib.c -o block.html
-block_sdl2 : h5render.o h5stdlib.o h5math.o
-	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -DH5VI_GSERV_IMPL_SDL2 -DH5VI_STDINPUT_IMPL_SDL2 -o block h5block.c h5vi.c h5render.o h5math.o h5stdlib.o -lSDL2
+	emcc $(FLAGS) $(PARAMS) -I$(INCLROOT) -DTOUCH_SUPPORT -DIMPL_EMSCRIPTEN -s USE_SDL=2 -o block.html h5block_frontend.c h5block.c h5vi.c h5math.c h5render.c h5stdlib.c
+block_sdl2 : h5render.o h5stdlib.o h5math.o h5vi.o h5block.o
+	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -o block h5block_frontend.c h5block.o h5vi.o h5math.o h5render.o h5stdlib.o -lSDL2
 #sim_sdl2 : h5render.o h5stdlib.o h5math.o
 #	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -DH5VI_GSERV_IMPL_SDL2 -DH5VI_STDINPUT_IMPL_SDL2 -o sim h5sim.c h5vi.c h5render.o h5math.o h5stdlib.o -lSDL2
 gear_sdl2 : h5render.o h5stdlib.o h5vm_gear.o h5math.o h5asm_gear.o
@@ -84,7 +84,10 @@ h5assembler_debug : h5assembler_debug.o h5vm.o h5stdlib.o
 h5assembler_debug.o : h5vm.o
 	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -DH5ASSEMBLY -DH5ASM_VERBOSE -c -o h5assembler_debug.o h5vm/h5asm.c 
 
-
+h5vi.o : h5render.o h5pix.o
+	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -DH5VI_GSERV_IMPL_SDL2 -DH5VI_STDINPUT_IMPL_SDL2 -c -o h5vi.o h5vi.c h5render.o h5pix.o
+h5block.o : h5render.o
+	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -c -o h5block.o h5block.c h5render.o 
 h5pix.o : h5render.o h5math.o
 	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -c -o h5pix.o h5pix.c h5render.o h5math.o 
 h5render.o : h5math.o
