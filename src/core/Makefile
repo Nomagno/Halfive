@@ -57,7 +57,11 @@ reh5asm_debug: clean h5assembler_debug
 cleand:
 	rm -f *.gcov *.gcno *.gcda
 clean:
-	rm -f *.o *.a h5asm h5asm_debug pamview gear sim block block.html block.js block.wasm
+	rm -f *.o *.a h5asm h5asm_debug pamview gear sim block halfive_shell.html index.js index.wasm
+clean_visual_shell:
+	read -p "Delete path '../../docs/public_misc/*' (TAKE NOTE OF REGEX!)? ENTER TO CONFIRM! " hehe && rm -rf ../../docs/public_misc/*
+
+
 warn:
 	echo "This program makes extensive used of C preprocessor macros. You may use the variable PARAMS=\"-DMYVAR1 -DMYVAR2\" like so to set them"
 
@@ -65,7 +69,7 @@ libhalfive.a : h5stdlib.o h5asm.o h5vm.o h5doc.o h5math.o h5rat.o h5render.o h5p
 	ar rcs libhalfive.a h5stdlib.o h5asm.o h5vm.o h5doc.o h5math.o h5rat.o h5render.o h5pix.o
 
 block_emscripten:
-	emcc $(FLAGS) $(PARAMS) -I$(INCLROOT) -DTOUCH_SUPPORT -DIMPL_EMSCRIPTEN -s USE_SDL=2 -o block.html h5block_frontend.c h5block.c h5vi.c h5math.c h5render.c h5stdlib.c
+	emcc $(FLAGS) $(PARAMS) -I$(INCLROOT) -DTOUCH_SUPPORT -DIMPL_EMSCRIPTEN -s WASM=1 -s USE_SDL=2 -o index.js h5block_frontend.c h5block.c h5vi.c h5math.c h5render.c h5stdlib.c; mkdir -p ../../docs/public_misc/block; cp ../../docs/emscripten_template/halfive_shell.html index.js index.wasm ../../docs/public_misc/block/
 block_sdl2 : h5render.o h5stdlib.o h5math.o h5vi.o h5block.o
 	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -o block h5block_frontend.c h5block.o h5vi.o h5math.o h5render.o h5stdlib.o -lSDL2
 #sim_sdl2 : h5render.o h5stdlib.o h5math.o

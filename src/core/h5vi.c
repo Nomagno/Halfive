@@ -589,14 +589,14 @@ unsigned H5VI_getVirtualInput(H5VI_Reference *handle, H5VI_InputData *keys) {
 
 				unsigned x = ((float)keys->view_width-1)*relativeX;
 				unsigned y = ((float)keys->view_height-1)*relativeY;
-				maybe_printf("H5Vi TOUCH: %u, %u\n", x, y);
+				//maybe_printf("H5Vi TOUCH: %u, %u\n", x, y);
 				updateVirtualInputNonAuthoritative(handle, keys, x, y);
 			} else {
-				maybe_printf("Finger is NULL, what??\n");
+				//maybe_printf("Finger is NULL, what??\n");
 			}
 		}
 	} else {
-		maybe_printf("No finger events\n");
+		//maybe_printf("No finger events\n");
 	}
 }
 

@@ -157,7 +157,7 @@ void H5Block_Render(H5Render_PixelData surf, H5Block_playfieldVisual pV, H5Block
 }
 
 
-#define INITIAL_KEY_FRAMES 8
+#define INITIAL_KEY_FRAMES 4
 /*Game loop for Halfive Block*/
 int H5Block_simulateOneFrame(H5Coordinate_GraphicalEventData *opaque_handle) {
 	clock_t start_t, end_t;
@@ -199,7 +199,7 @@ int H5Block_simulateOneFrame(H5Coordinate_GraphicalEventData *opaque_handle) {
 	}
 
 	if (input_keys.keys[H5KEY_LEFT] || input_keys.keys[H5KEY_RIGHT]) {
-		skip_gravity = 1;
+		/*skip_gravity = 1;*/
 	}
 	if (input_keys.keys[H5KEY_LEFT] && input_keys.keys[H5KEY_RIGHT]) {
 		/*No press delay charging!*/
