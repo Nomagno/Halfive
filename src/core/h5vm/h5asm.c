@@ -26,8 +26,8 @@ IN THE SOFTWARE.
 #include <halfive/h5vm/h5asm.h>
 #include <halfive/h5stdlib.h>
 
-h5uint H5ASM_parse(char *linestr, H5VM_InstructionSet *inst, h5uint opnds[3]);
-H5VM_InstructionSet _isinst(char *instr);
+h5uint H5ASM_parse(char *linestr, H5VM_ExecutableUnit *code);
+H5VM_InstructionSet _getinst(char *instr);
 h5uint _isxupdigit(h5uchar inchar);
 
 /*Define H5ASSEMBLY to enable assembling*/
@@ -37,7 +37,6 @@ h5uint _isxupdigit(h5uchar inchar);
 int main(int argc, char **argv)
 {
 	FILE *codefile;
-	FILE *drivefile;
 
 	if (argc == 1)
 		codefile = stdin;
@@ -48,65 +47,59 @@ int main(int argc, char **argv)
 		codefile = fopen(argv[1], "r");
 	}
 
-	if (argc < 3) {
+	/* if (argc < 3) {
 		drivefile = fopen("/dev/null", "r");
 	} else {
 		drivefile = fopen(argv[2], "r");
-	}
+	} */
+
 	char arr[30];
 
-	H5VM_CodeMemory code = {(H5VM_InstructionSet)0};
-	int i				 = 0;
+	H5VM_VirtualMachine vm = {0};
+	int i = 0;
 	while (fscanf(codefile, "%[^\n] ", arr) != EOF) {
-		H5ASM_parse(arr, &code.inst[i], code.opnd[i]);
+		H5ASM_parse(arr, &vm.code[i]);
 		i += 1;
 	}
 
-	H5VM_DefaultMemSetup mem = {0};
 	H5VM_ReadWriteInfo rwinf = {0};
-	H5VM_GeneralMemory prog	 = H5VM_init(&code, &mem);
-	fread(mem.driv, 1, sizeof(mem.driv), drivefile);
 
 	int return_code = 0;
 	while (1) {
-		if ((prog.code.opnd[prog.co][0] ==
-				0xFFFD) || /*Preemtive/non-polling-but-ontime input, cheats
-					 a bit by essentially peeking at the operands*/
-			(prog.code.opnd[prog.co][1] == 0xFFFD)) {
+		if ((vm.code[vm.co].inst.operand_1 == 0xFFFD) || (vm.code[vm.co].inst.operand_2 == 0xFFFD))
+		   /*Preemtive/non-polling-but-ontime input, cheats
+             a bit by essentially peeking at the operands*/
+		{
 			putchar('>');
 			unsigned readin;
 			scanf("%X", &readin);
-			mem.in = readin;
+			vm.data[0xFFFD] = readin;
 		}
 
+		h5uint prevco = vm.co;
 #ifdef H5ASM_VERBOSE
-		h5uint prevco = prog.co;
 		maybe_printf(
 			"BEFORE: PC %4u -- %u, %u, %u, %u, %u, %u, %4X (%2X), %4X (%2X)\n",
-			prog.co, rwinf.was_err, rwinf.wrote_adrw, rwinf.read_adrw,
+			vm.co, rwinf.was_err, rwinf.wrote_adrw, rwinf.read_adrw,
 			rwinf.read_adrr, rwinf.write_zf, rwinf.write_cf, rwinf.adrw,
-			*prog.data[rwinf.adrw], rwinf.adrr, *prog.data[rwinf.adrr]);
+			vm.data[rwinf.adrw], rwinf.adrr, vm.data[rwinf.adrr]);
 #endif
-		return_code = H5VM_execute(&prog, &rwinf);
+		return_code = H5VM_execute(&vm, &rwinf);
 
 		if ((rwinf.adrw == 0xFFFC) && (rwinf.wrote_adrw)) {
-#ifdef H5ASM_VERBOSE
-			maybe_printf("OUTPUT at PC %4u: %X\n", prevco, mem.ou);
-#else
-			maybe_printf("OU: %X\n", mem.ou);
-#endif
+			maybe_printf("OUTPUT AT ABS. PC 0x%u: 0x%X\n", prevco, vm.data[0xFFFC]);
 		}
 
 #ifdef H5ASM_VERBOSE
 		maybe_printf(
 			"AFTER:  PC %4u -- %u, %u, %u, %u, %u, %u, %4X (%2X), %4X (%2X)\n",
-			prog.co, rwinf.was_err, rwinf.wrote_adrw, rwinf.read_adrw,
+			vm.co, rwinf.was_err, rwinf.wrote_adrw, rwinf.read_adrw,
 			rwinf.read_adrr, rwinf.write_zf, rwinf.write_cf, rwinf.adrw,
-			*prog.data[rwinf.adrw], rwinf.adrr, *prog.data[rwinf.adrr]);
+			vm.data[rwinf.adrw], rwinf.adrr, vm.data[rwinf.adrr]);
 		putchar('\n');
 #endif
 
-		if (prog.hf) {
+		if (vm.hf) {
 			maybe_printf("\n----\nHALT\n----\n");
 			break;
 		}
@@ -114,20 +107,20 @@ int main(int argc, char **argv)
 		case 0:
 			break;
 		case 1:
-			maybe_printf("NONFATAL ERROR AT INST 0x%X: READ/WRITE UNMAPPED MEM\n", prog.co);
+			maybe_printf("NONFATAL ERROR AT INST 0x%X: READ/WRITE UNMAPPED MEM\n", vm.co);
 			break;
 		case 2:
-			maybe_printf("NONFATAL ERROR AT INST 0x%X: WRITE TO READ-ONLY MEM\n", prog.co);
+			maybe_printf("NONFATAL ERROR AT INST 0x%X: WRITE TO READ-ONLY MEM\n", vm.co);
 			break;
 		case 3:
-			maybe_printf("NONFATAL ERROR AT INST 0x%X: WRONG ADDRESSING MODE\n", prog.co);
+			maybe_printf("NONFATAL ERROR AT INST 0x%X: WRONG ADDRESSING MODE\n", vm.co);
 			break;
 		case 4:
-			maybe_printf("FATAL ERROR AT INST 0x%X: CALLSTACK OVERFLOW\n", prog.co);
+			maybe_printf("FATAL ERROR AT INST 0x%X: CALLSTACK UNDERFLOW\n", vm.co);
 			break;
 		default:
 			maybe_printf(
-				"ERROR AT INST 0x%X: UNKNOWN ERROR %u\n", prog.co, return_code);
+				"ERROR AT INST 0x%X: UNKNOWN ERROR %u\n", vm.co, return_code);
 			break;
 		}
 		if (return_code >= 4) {
@@ -136,37 +129,46 @@ int main(int argc, char **argv)
 	}
 
 	fclose(codefile);
-	fclose(drivefile);
 
 	return return_code;
 }
 #endif
 
-h5uint H5ASM_parse(char *linestr, H5VM_InstructionSet *inst, h5uint opnds[3])
+h5uint H5ASM_parse(char *linestr, H5VM_ExecutableUnit *code)
 {
 	char *token = h5strtok(linestr,
 		" "); /*linestr can not be const because it's modified by strtok*/
 	H5VM_InstructionSet myinst;
 	int i = 0;
 	while ((token != NULL) && (i < 2)) {
-		if ((myinst = _isinst(token)) != 16) {
-			*inst = myinst;
+		if ((myinst = _getinst(token)) != 16) {
+			code->inst.opcode = myinst;
 		} else if (_isxupdigit(token[0])) {
-			opnds[i] = (h5uint)h5strtoul(token, NULL, 16);
+			if (i == 0) {
+				code->inst.operand_1 = (h5uint)h5strtoul(token, NULL, 16);
+			} else if (i == 1) {
+				code->inst.operand_2 = (h5uint)h5strtoul(token, NULL, 16);
+			}
 			i += 1;
 		} else if (token[0] == '=') {
 			token += 1;
-			opnds[i] = (h5uint)h5strtoul(token, NULL, 16);
-
-			opnds[2] = (opnds[2] | (1 << (1 - i)));
-
+			if (i == 0) {
+				code->inst.optype_1 = H5VM_ModeLit;
+				code->inst.operand_1 = (h5uint)h5strtoul(token, NULL, 16);
+			} else if (i == 1) {
+				code->inst.optype_2 = H5VM_ModeLit;
+				code->inst.operand_2 = (h5uint)h5strtoul(token, NULL, 16);
+			}
 			i += 1;
 		} else if (token[0] == '*') {
 			token += 1;
-			opnds[i] = (h5uint)h5strtoul(token, NULL, 16);
-			opnds[2] = (opnds[2] | 8);
-			opnds[2] = (opnds[2] | (1 << (1 - i)));
-
+			if (i == 0) {
+				code->inst.optype_1 = H5VM_ModePtr;
+				code->inst.operand_1 = (h5uint)h5strtoul(token, NULL, 16);
+			} else if (i == 1) {
+				code->inst.optype_2 = H5VM_ModePtr;
+				code->inst.operand_2 = (h5uint)h5strtoul(token, NULL, 16);
+			}
 			i += 1;
 		} else {
 			return 2; /*CATASTROPHIC ERROR*/
@@ -191,7 +193,7 @@ h5uint _isxupdigit(h5uchar inchar)
 		return 0;
 }
 
-H5VM_InstructionSet _isinst(char *instr)
+H5VM_InstructionSet _getinst(char *instr)
 {
 	if (h5streq(instr, "halt"))
 		return Inst_halt;
@@ -230,49 +232,3 @@ H5VM_InstructionSet _isinst(char *instr)
 	else
 		return (H5VM_InstructionSet)16;
 }
-
-unsigned H5ASM_run(char **str, size_t stringnum, H5VM_GeneralMemory *mem, h5uint *addresses, h5uint *mappings, size_t mapping_size) {
-	unsigned return_co;
-
-	for (size_t j = 0; j < mapping_size; j++) {
-		if ((mem->data[addresses[j]]) == NULL)
-			return 10;
-		*(mem->data[addresses[j]]) = mappings[j];
-	}
-
-	for (size_t i = 0; i < stringnum; i++) {
-		H5ASM_parse(str[i], &(mem->code.inst[mem->co+i]), mem->code.opnd[mem->co+i]);
-	}
-	while(!mem->hf) {
-		return_co = H5VM_execute(mem, &(H5VM_ReadWriteInfo){0});
-		if (return_co <= 3) {}
-		else return return_co; /*Fatal return code*/
-	}
-	mem->hf = 0; /*unterminate VM*/
-	for (size_t j = 0; j < mapping_size; j++) {
-		if ((mem->data[addresses[j]]) == NULL)
-			return 10;
-		mappings[j] = *(mem->data[addresses[j]]);
-	}
-
-	return 0;
-}
-
-/*
-#include <code_setup.h>
-#include <stdio.h>
-
-int main(void){
-	H5VM_DefaultMemSetup defmem = {0};
-	H5VM_GeneralMemory context = H5VM_init(&(H5VM_CodeMemory){0}, &defmem);
-	h5uint intlist[] = {0xDE, 0xAD, 0xBE, 0xEF}; // Integers mapped to the VM
-	h5uint adrlist[] = { 0, 1, 2, 3 }; // Addresses to be mapped in the VM
-	char str[40] = {0};
-	
-	while(fgets(str, ELEMNUM(str), stdin) != NULL){
-		ASM(adrlist, intlist, str); // Read a line of assembly, then execute it
-		maybe_printf("%X,%X,%X,%X\n", intlist[0], intlist[1], intlist[2], intlist[3]);
-		// the elements of intlist[] are now mapped to the VM addresses in adrlist[]
-	}
-}
-*/

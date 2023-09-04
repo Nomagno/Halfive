@@ -24,382 +24,372 @@ IN THE SOFTWARE.
 #include <halfive/h5req.h>
 #include <halfive/h5vm/h5vm.h>
 
-enum optype { adr = 0, lit = 1, ptr = 2 };
+#define UNEVENTFUL (H5VM_ReadWriteInfo){ 0 };
 
-/*
-typeinfo (type nibble of the instruction, second half of the LSB):
-P 0 X Y
-| | | ---- If this bit is set (1 << 0), the second operand is a literal
-| | ------ If this bit is set (1 << 1), the first operand  is a literal
-| -------- Always zero
----------- If this bit is set, any literals are instead treated as pointers
-*/
-#define ISADR(typeinfo, operand_position) \
-	(((typeinfo | (1 << (2 - operand_position))) != typeinfo))
-#define ISLIT(typeinfo, operand_position)                        \
-	(((typeinfo | (1 << (2 - operand_position))) == typeinfo) && \
-		((typeinfo | 8) != typeinfo))
+/*Yes, I'm seriously doing this, zero-indexing a two-element array is ugly*/
+#define OPERAND_ONE 0
+#define OPERAND_TWO 1
 
-#define ISPTR(typeinfo, operand_position)                        \
-	(((typeinfo | (1 << (2 - operand_position))) == typeinfo) && \
-		((typeinfo | 8) == typeinfo))
-
-#define _PROG_CO program->co
-
-#define CURR_OP program->code.opnd[_PROG_CO]
-#define MASK	program->mask
-#define DATA	program->data
-#define _RETURN                     \
-	rwinf->was_err = !!return_code; \
-	return return_code;
-
-#define FIRST_OPERAND  1
-#define SECOND_OPERAND 2
-
-/*
-pointer structure:
-[0xYYYY]      [0xYYYY + 1]
-bbbbbbbb      bbbbbbbb
-^<<<<<<<      ^<<<<<<<
-|             |
-|             -------------- Least Significant Byte of the address pointed to
-|--------------------------- Most Significant Byte  of the address pointed to
-*/
-#define GETPTR(memory, address) (memory[address])
-
-/*Check no null pointers will be dereferenced*/
-#define PTR_VALID(memory, address)                               \
-	((memory[address] != NULL) && \
-		(memory[GETPTR(*memory, address)] != NULL))
-
-#define GETVAR(out, operands, operand_position, rvar)                        \
-	{                                                                        \
-		if (ISLIT(operands[2], operand_position)) {                          \
-			out = operands[operand_position - 1];                            \
-		} else if (ISADR(operands[2], operand_position) &&                   \
-				   DATA[operands[operand_position - 1]] != NULL) {           \
-			out = *DATA[operands[operand_position - 1]];                     \
-			if (rvar) {                                                      \
-				rwinf->adrr		 = operands[operand_position - 1];           \
-				rwinf->read_adrr = 1;                                        \
-			} else {                                                         \
-				rwinf->adrw		 = operands[operand_position - 1];           \
-				rwinf->read_adrw = 1;                                        \
-			}                                                                \
-		} else if (ISPTR(operands[2], operand_position) &&                   \
-				   PTR_VALID(DATA, operands[operand_position - 1])) {        \
-			out = *DATA[GETPTR(*DATA, operands[operand_position - 1])];      \
-			if (rvar) {                                                      \
-				rwinf->adrr = GETPTR(*DATA, operands[operand_position - 1]); \
-				rwinf->read_adrr = 1;                                        \
-			} else {                                                         \
-				rwinf->adrw = GETPTR(*DATA, operands[operand_position - 1]); \
-				rwinf->read_adrw = 1;                                        \
-			}                                                                \
-		}                                                                    \
+h5uint operation(char op, h5uint a, h5uint b) {
+	switch (op) {
+	case '+':
+		return a + b;
+		break;
+	case '?':
+	case '-':
+		return a - b;
+		break;
+	case 'a':
+		return a & b;
+		break;
+	case 'o':
+		return a | b;
+		break;
+	case 'x':
+		return a ^ b;
+		break;
+	case 's':
+		if (b < 16)
+			return a << b;
+		else
+			return a >> (b - 16);
+		break;
+	default:
+		return 0;
+		break;
 	}
-
-#define GETTYPE(operands, operand_position) \
-	((ISPTR(operands[2], operand_position)) \
-			? ptr                           \
-			: ((ISADR(operands[2], operand_position)) ? adr : lit))
-
-/*DEFAULTS IN COMMENTS*/
-/*MEMUNIT: 4096*/
-/*MEMSIZE: 16*/
-#define _ZF	        (MEMUNIT * MEMSIZE - 1)	 /*0xFFFF*/
-#define _CF	        (MEMUNIT * MEMSIZE - 2)	 /*0xFFFE*/
-#define _IN	        (MEMUNIT * MEMSIZE - 3)	 /*0xFFFD*/
-#define _OU	        (MEMUNIT * MEMSIZE - 4)	 /*0xFFFC*/
-#define _PC_ADR     (MEMUNIT * MEMSIZE - 5)	 /*0xFFFB*/
-#define _ERROR_ADDR (MEMUNIT * MEMSIZE - 15) /*0xFFF0*/
-
-/*GUARANTEED TO BE CONTIGUOUS*/
-#define _GMEMMAX (MEMUNIT*GMEMSIZE - 1)		/*0x3FFF*/
-#define _DRIVMAX (MEMUNIT*DRIVSIZE + _GMEMMAX) /*0xBFFF*/
-#define _STACKMAX (MEMUNIT*STACKSIZE + _DRIVMAX) /*0xCFFF*/
-
-/*Unknown address*/
-
-H5VM_GeneralMemory H5VM_init(
-	H5VM_CodeMemory *code, H5VM_DefaultMemSetup *rawmem);
-unsigned H5VM_execute(H5VM_GeneralMemory *program, H5VM_ReadWriteInfo *rwinf);
-
-H5VM_GeneralMemory H5VM_init(
-	H5VM_CodeMemory *code, H5VM_DefaultMemSetup *rawmem)
-{
-	H5VM_GeneralMemory returnval = {(H5VM_InstructionSet)0};
-	returnval.code = *code;
-	rawmem->prog_co_adr = &returnval.co;
-
-	for (h5ulong i = 0; i < (MEMUNIT * MEMSIZE); i++) {
-		if (i <= _GMEMMAX) {
-			returnval.data[i] = &(rawmem->gmem[i]);
-		} else if (i <= _DRIVMAX) {
-			returnval.data[i] = &(rawmem->driv[i - _GMEMMAX - 1]);
-			returnval.mask[i] = 1; /*Read-only*/
-		} else if (i <= _STACKMAX) {
-			returnval.data[i] = &(rawmem->stack[i - _DRIVMAX - 1]);
-		} else if (i == _ZF) {
-			returnval.data[i] = &(rawmem->zf);
-		} else if (i == _CF) {
-			returnval.data[i] = &(rawmem->cf);
-		} else if (i == _IN) {
-			returnval.data[i] = &(rawmem->in);
-			returnval.mask[i] = 1; /*Read-only*/
-		} else if (i == _OU) {
-			returnval.data[i] = &(rawmem->ou);
-		} else if (i == _PC_ADR) {
-			returnval.data[i] = rawmem->prog_co_adr;
-			returnval.mask[i] = 1; /*Read-only*/
-		}
-	}
-
-	return returnval;
 }
 
-/*Return value meaning:
-0 - Successful
-1 - ERROR - Unmmapped memory
-2 - ERROR - Write to read-only address
-3 - ERROR - Wrong usage/malformed instruction
-4 - ERROR - Unmapped memory - CALLSTACK OVERFLOW*/
-unsigned H5VM_execute(H5VM_GeneralMemory *program, H5VM_ReadWriteInfo *rwinf)
-{
-	*rwinf = (H5VM_ReadWriteInfo){0};
-
-	unsigned return_code = 0;
-
-	h5uint getnum_orig    = 0;
-	h5uint setnum_dest    = 0;
-	enum optype dest_type = (enum optype)0;
-
-	_Bool donot_save = 0; /*0 - set main address; 1 - only set zf/cf*/
-	h5uint set_cf   = 0; /*0 - don't touch; 1 - set to 1; 2 - set to zero;*/
-	h5uint set_zf   = 0; /*0 - don't touch; 1 - set to 1; 2 - set to zero;*/
-	h5uint tmpint1   = 0;
-	h5uint tmpint2   = 0;
-
-	switch (program->code.inst[_PROG_CO]) {
-	case Inst_halt:
-		program->hf = 1;
+/*readReadAddress*/
+h5uint read_RA(H5VM_VirtualMachine *vm, H5VM_ReadWriteInfo *rwinf) {
+	H5VM_Instruction inst = vm->code[vm->co].inst;
+	switch (inst.optype_2) {
+	case H5VM_ModeLit:
+		rwinf->read_adrr = 0;
+		return inst.operand_2;
 		break;
-	case Inst_jmp:
-		goto _jmp;
-	case Inst_skpz:
-		if (*(DATA[_ZF]) == 0) {
-			_PROG_CO += CURR_OP[0];
+	case H5VM_ModeAdr:
+		rwinf->read_adrr = 1;
+		rwinf->adrr = inst.operand_2;
+		return vm->data[inst.operand_2];
+		break;
+	case H5VM_ModePtr:
+		rwinf->read_adrr = 1;
+		h5uint address = vm->data[inst.operand_2];
+		rwinf->adrr = address;
+		return vm->data[address];
+		break;
+	default:
+		return 0;
+		break;
+	}
+}
+
+/*readWriteAddress*/
+h5uint read_WA(H5VM_VirtualMachine *vm, H5VM_ReadWriteInfo *rwinf, _Bool cmp_mode) {
+	H5VM_Instruction inst = vm->code[vm->co].inst;
+	switch (inst.optype_1) {
+	case H5VM_ModeLit:
+		if (cmp_mode) {
+			rwinf->read_adrw = 0;
+			return inst.operand_1;
+		} else {
+			/*Wrong addressing mode*/
+			rwinf->errcode = 3;
+			rwinf->read_adrw = 0;
+			return inst.operand_1;
 		}
-		_PROG_CO += 1;
+		break;
+	case H5VM_ModeAdr:
+		rwinf->read_adrw = 1;
+		rwinf->adrw = inst.operand_1;
+		return vm->data[inst.operand_1];
+		break;
+	case H5VM_ModePtr:
+		rwinf->read_adrw = 1;
+		h5uint address = vm->data[inst.operand_1];
+		rwinf->adrw = address;
+		return vm->data[address];
+		break;
+	default:
+		return 0;
+		break;
+	}
+}
+
+/*writeWriteAddress*/
+void write_WA(H5VM_VirtualMachine *vm, H5VM_ReadWriteInfo *rwinf, h5uint val) {
+	H5VM_Instruction inst = vm->code[vm->co].inst;
+	switch (inst.optype_1) {
+	case H5VM_ModeLit:
+		/*Wrong addressing mode*/
+		rwinf->errcode = 3;
+		rwinf->wrote_adrw = 1; /*Should be 0? IDK*/
+		return;
+		break;
+	case H5VM_ModeAdr:
+		rwinf->wrote_adrw = 1;
+		rwinf->adrw = inst.operand_1;
+		vm->data[inst.operand_1] = val;
+		break;
+	case H5VM_ModePtr:
+		rwinf->wrote_adrw = 1;
+		h5uint address = vm->data[inst.operand_1];
+		rwinf->adrw = address;
+		vm->data[address] = val;
+		return;
+		break;
+	}
+}
+
+h5uint getFrameData(H5VM_VirtualMachine *vm, H5VM_ReadWriteInfo *rwinf) {
+	/*The type must be literal, so no need to check*/
+	H5VM_Instruction inst = vm->code[vm->co].inst;
+	h5uint stack_start = inst.operand_2 & 0xFF00;
+	rwinf->read_adrr = 1;
+
+	h5uint stackPtr = vm->data[stack_start];
+	rwinf->adrr = stackPtr;
+	return vm->data[stackPtr];
+}
+
+void setFunction(H5VM_CrossProcessProgramCounter *jumptable, unsigned n, H5VM_Header header, unsigned id, unsigned pc) {
+	for (unsigned i = 0; i < n; i++) {
+		if (jumptable[i].isActive == 0)
+		{
+			jumptable[i].isActive = 1;
+			jumptable[i].char1 = header.char1;
+			jumptable[i].char1 = header.char2;
+			jumptable[i].id = id;
+			jumptable[i].pc = pc;
+			break;
+		}
+	}
+}
+
+h5uint getFunction(H5VM_CrossProcessProgramCounter *jumptable, unsigned n, H5VM_Header header, unsigned id) {
+	for (unsigned i = 0; i < n; i++) {
+		if (jumptable[i].char1 == header.char1 &&
+		    jumptable[i].char1 == header.char2 &&
+		    jumptable[i].id == id && jumptable[i].isActive == 1)
+		{
+			return i;
+		}
+	}
+	return n-1;
+}
+
+void doCall(H5VM_VirtualMachine *vm, H5VM_ReadWriteInfo *rwinf) {
+	/*The type must be literal, so no need to check*/
+	H5VM_Header header = vm->code[vm->co].header;
+	H5VM_Instruction inst = vm->code[vm->co].inst;
+	h5uint stack_start = inst.operand_2 & 0xFF00;
+	h5uint frame_size = (inst.operand_2 & 0x00FF) + 1;
+	rwinf->read_adrr = 1;
+
+	h5uint stackPtr = vm->data[stack_start];
+	rwinf->adrr = stack_start;
+		rwinf->adrw = stack_start;
+	if (stackPtr == stack_start || stackPtr == 0) {
+		vm->data[stack_start] = stack_start+1;
+	} else {
+		vm->data[stack_start] += frame_size;
+	}
+	stackPtr = vm->data[stack_start];
+
+	vm->data[stackPtr] = vm->co+1;
+
+	vm->co = 1+(vm->jumptable[getFunction(vm->jumptable, JUMPTABLESIZE, header, inst.operand_1)].pc);
+
+	return;
+}
+
+void doReturn(H5VM_VirtualMachine *vm, H5VM_ReadWriteInfo *rwinf) {
+	/*The type must be literal, so no need to check*/
+	H5VM_Instruction inst = vm->code[vm->co].inst;
+	h5uint stack_start = inst.operand_2 & 0xFF00;
+	h5uint frame_size = (inst.operand_2 & 0x00FF) + 1;
+	rwinf->read_adrr = 1;
+
+	h5uint stackPtr = vm->data[stack_start];
+	rwinf->adrr = stack_start;
+		rwinf->adrw = stack_start;
+	if (stackPtr == stack_start+1) {
+		vm->data[stack_start] = stack_start;
+	} else if (stackPtr == stack_start || stackPtr == 0) {
+		rwinf->errcode = 3; /*Callstack underflow*/
+		return;
+	} else {
+		vm->data[stack_start] -= frame_size;
+	}
+	vm->co = vm->data[stackPtr];
+
+	return;
+}
+
+unsigned doGenericOperation(H5VM_VirtualMachine *vm, H5VM_ReadWriteInfo *rwinf, char type) {
+	h5uint op2 = 0;
+	if (type != 'f') {
+		op2 = read_RA(vm, rwinf);
+		if (rwinf->errcode != 0) goto END;
+	}
+
+	h5uint result = 0;
+	h5uint op1 = 0;
+
+	if (type == 'c' /*copy, aka SET opcode*/) {
+		result = op2;
+	} else if (type == 'f') /*FRAME opcode*/ {
+		result = getFrameData(vm, rwinf);
+	} else {
+		op1 = read_WA(vm, rwinf, type == '?');
+		if (rwinf->errcode != 0) goto END;
+
+		result = operation(type, op1, op2);
+		if (rwinf->errcode != 0) goto END;
+	}
+
+	if (type != '?') {
+		write_WA(vm, rwinf, result);
+	}
+
+	/*Set zero flag*/
+	if (result == 0) {
+		rwinf->wrote_zf = 1;
+		vm->data[0xFFFF] = 0;
+	} else if (type != 'c') {
+		rwinf->wrote_zf = 1;
+		vm->data[0xFFFF] = 1;
+	} else if (type == 'c') {
+		;
+	}
+
+	/*Set carry flag*/
+	if (type == '+') {
+		if (result < op1) {
+			/*Overflow*/
+			rwinf->wrote_cf = 1;
+			vm->data[0xFFFE] = 1;
+		} else {
+			rwinf->wrote_cf = 1;
+			vm->data[0xFFFE] = 0;
+		}
+	} else if (type == '-' || type == '?') {
+		if (result > op1) {
+			/*Underflow*/
+			rwinf->wrote_cf = 1;
+			vm->data[0xFFFE] = 1;
+		} else {
+			rwinf->wrote_cf = 1;
+			vm->data[0xFFFE] = 0;
+		}
+	} else {
+		;
+	}
+
+	END:
+		vm->co += 1;
+		return rwinf->errcode;
+}
+
+unsigned H5VM_execute(H5VM_VirtualMachine *vm, H5VM_ReadWriteInfo *rwinf) {
+	H5VM_Header header = vm->code[vm->co].header;
+	H5VM_Instruction inst = vm->code[vm->co].inst;
+	*rwinf = UNEVENTFUL;
+	h5uint errcode = 0;
+
+	switch(inst.opcode) {
+	case Inst_halt:
+		vm->hf = 1;
+		break;
+	case Inst_jmp: ;
+		h5uint newco = read_WA(vm, rwinf, 1);
+		vm->co = newco;
+		break;
+	case Inst_skpz:
+		if (vm->data[0xFFFF] == 0) {
+			vm->co += inst.operand_1;
+			vm->co += 1;
+		} else {
+			vm->co += 1;
+		}
 		break;
 	case Inst_skmz:
-		if (*(DATA[_ZF]) == 0) {
-			_PROG_CO -= CURR_OP[0];
-			_PROG_CO -= 1;
-		} else
-			_PROG_CO += 1;
+		if (vm->data[0xFFFF] == 0) {
+			vm->co -= inst.operand_1;
+			vm->co -= 1;
+		} else {
+			vm->co += 1;
+		}
 		break;
 	case Inst_set:
-		if ((CURR_OP[0] == CURR_OP[1]) && (GETTYPE(CURR_OP, 1) == GETTYPE(CURR_OP, 2))) {
-			_PROG_CO += 1;
-			_RETURN;
-			break; /*This is obviously a soft-nop*/
-		}
-		else {
-			GETVAR(getnum_orig, CURR_OP, SECOND_OPERAND, 1);
-			setnum_dest = CURR_OP[0];
-			dest_type	= GETTYPE(CURR_OP, 1);
-			goto _set;
-		}
+		errcode = doGenericOperation(vm, rwinf, 'c');
+
 		break;
 	case Inst_add:
-		GETVAR(tmpint1, CURR_OP, FIRST_OPERAND, 0);
-		GETVAR(tmpint2, CURR_OP, SECOND_OPERAND, 1);
-		setnum_dest = CURR_OP[0];
-		dest_type	= GETTYPE(CURR_OP, 1);
-		getnum_orig = tmpint1 + tmpint2;
-		set_cf = ((getnum_orig < tmpint1) || (getnum_orig < tmpint2)) ? 1 : 2;
-		set_zf = (getnum_orig == 0) ? 2 : 1;
-		goto _set;
+		errcode = doGenericOperation(vm, rwinf, '+');
 		break;
 	case Inst_sub:
-		GETVAR(tmpint1, CURR_OP, FIRST_OPERAND, 0);
-		GETVAR(tmpint2, CURR_OP, SECOND_OPERAND, 1);
-		setnum_dest = CURR_OP[0];
-		dest_type	= GETTYPE(CURR_OP, 1);
-		getnum_orig = tmpint1 - tmpint2;
-		set_cf		= (getnum_orig < tmpint2) ? 1 : 2;
-		set_zf		= (getnum_orig == 0) ? 2 : 1;
-		goto _set;
-		break;
-	case Inst_cmp:
-		GETVAR(tmpint1, CURR_OP, FIRST_OPERAND, 0);
-		GETVAR(tmpint2, CURR_OP, SECOND_OPERAND, 1);
-		getnum_orig = tmpint1 - tmpint2;
-		set_cf		= (getnum_orig > tmpint1) ? 1 : 2;
-		set_zf		= (getnum_orig == 0) ? 2 : 1;
-		donot_save	= 1;
-		goto _set;
+		errcode = doGenericOperation(vm, rwinf, '-');
 		break;
 	case Inst_and:
-		GETVAR(tmpint1, CURR_OP, FIRST_OPERAND, 0);
-		GETVAR(tmpint2, CURR_OP, SECOND_OPERAND, 1);
-		setnum_dest = CURR_OP[0];
-		dest_type	= GETTYPE(CURR_OP, 1);
-		getnum_orig = tmpint1 & tmpint2;
-		set_zf		= (getnum_orig == 0) ? 2 : 1;
-		goto _set;
-		break;
-	case Inst_xor:
-		GETVAR(tmpint1, CURR_OP, FIRST_OPERAND, 0);
-		GETVAR(tmpint2, CURR_OP, SECOND_OPERAND, 1);
-		setnum_dest = CURR_OP[0];
-		dest_type	= GETTYPE(CURR_OP, 1);
-		getnum_orig = tmpint1 ^ tmpint2;
-		set_zf		= (getnum_orig == 0) ? 2 : 1;
-		goto _set;
+		errcode = doGenericOperation(vm, rwinf, 'a');
 		break;
 	case Inst_or:
-		GETVAR(tmpint1, CURR_OP, FIRST_OPERAND, 0);
-		GETVAR(tmpint2, CURR_OP, SECOND_OPERAND, 1);
-		setnum_dest = CURR_OP[0];
-		dest_type	= GETTYPE(CURR_OP, 1);
-		getnum_orig = tmpint1 | tmpint2;
-		set_zf		= (getnum_orig == 0) ? 2 : 1;
-		goto _set;
+		errcode = doGenericOperation(vm, rwinf, 'o');
+		break;
+	case Inst_xor:
+		errcode = doGenericOperation(vm, rwinf, 'x');
 		break;
 	case Inst_shift:
-		GETVAR(tmpint1, CURR_OP, FIRST_OPERAND, 0);
-		GETVAR(tmpint2, CURR_OP, SECOND_OPERAND, 1);
-		setnum_dest = CURR_OP[0];
-		dest_type	= GETTYPE(CURR_OP, 1);
-		getnum_orig = (tmpint2 < 0x10) ? (tmpint1 << tmpint2)
-									 : (tmpint1 >> (tmpint2 - 0x10));
-		set_zf		= (getnum_orig == 0) ? 2 : 1;
-		goto _set;
+		errcode = doGenericOperation(vm, rwinf, 's');
 		break;
+	case Inst_cmp:
+		errcode = doGenericOperation(vm, rwinf, '?');
+		break;
+	case Inst_func: ;
+		h5uint function_id = inst.operand_1;
+		/*Register the subroutine in the jumptable*/
+		setFunction(vm->jumptable, JUMPTABLESIZE, header, function_id, vm->co);
 
-	case Inst_func:
-		program->func_co[CURR_OP[0]] = _PROG_CO; /*Annotate function start*/
-		h5uint subval = 0; /*Zero can't be a safe 'ret' place*/
-		for (h5uint i = 0; i < (sizeof(program->code.inst) - (_PROG_CO + 1)); i++) { /*Look for closest 'ret' */
-			if (program->code.inst[_PROG_CO + 1 + i] == Inst_ret) {
-				subval = _PROG_CO + 1 + i;
+		/*Skip subroutine*/
+		int i = 1;
+		do {
+			if (i > 512) {
+				/*Memory safety safeguard. If you're making subroutines 
+				  with over 512 instructions you know to change this anyways*/
+				rwinf->errcode = 3; /*Wrong usage: No Matching RET!*/
 				break;
 			}
-		}
-		if (subval) {
-			_PROG_CO  = subval + 1;
-			_RETURN;
-		} /*Skip subroutine*/
-		else {
-			return_code = 3;
-			_PROG_CO += 1;
-			_RETURN;
-		} /*ERROR: No matching 'ret'!*/
+			vm->co += 1;
+			i += 1;
+		} while (vm->code[vm->co].inst.opcode != Inst_ret);
+		vm->co += 1;
+
 		break;
-	case Inst_ret: {
-		h5uint oldval = *DATA[*DATA[(CURR_OP[1] >> 8)*256]]; /*Return address is stored where the stack pointer points*/
-		*DATA[(CURR_OP[1] >> 8)*256] -= (CURR_OP[1] & 0x00FF) + 1; /*Must move stack pointer backwards*/
-		_PROG_CO = oldval + 1; /*Go to return address+1*/
-		_RETURN;
+	case Inst_ret:
+		/*Implementation:
+		   - If the stack pointer isn't initialized, error out (underflow, ERR 4)
+		   - Else if the stack pointer is at minimum, de-initialize it
+		   - Else, decrease the stack pointer by ((operands_2 & 0x00FF)+1)
+		   - Set the program counter to the contents of the old stack frame's first address
+		*/
+		doReturn(vm, rwinf);
 		break;
-	}
-	case Inst_call: {
-		h5uint oldval = *DATA[(CURR_OP[1] >> 8)*256];
-		h5uint newval;
-		if (oldval == 0) {
-			/*Initialize stack pointer*/
-			*DATA[(CURR_OP[1] >> 8)*256] = (CURR_OP[1] >> 8)*256 + 1; /* +1 because first frame*/
-			newval = *DATA[(CURR_OP[1] >> 8)*256];
- 		} else {
-			/*Increase stack pointer */
-			*DATA[(CURR_OP[1] >> 8)*256] += (CURR_OP[1] & 0x00FF) + 1;
-			newval = *DATA[(CURR_OP[1] >> 8)*256];
-		}
-		if (DATA[newval] == NULL) {
-			return_code = 4; /*Callstack overflow*/
-			_RETURN;
-		}
-		*DATA[newval] = _PROG_CO; /*Annotate return address*/
-		_PROG_CO = program->func_co[CURR_OP[0]]+1; /*Go to function start+1*/
-		_RETURN;
+	case Inst_call:
+		/*Implementation:
+		   - If the stack pointer isn't initialized, set it to minimum
+		   - Else if the stack pointer is at a memory map/write access boundary, error out (overflow, ERR 4)
+		   - Else, increase the stack pointer ((operands_2 & 0x00FF)+1)
+		   - Set the new stack frame's first address to (program_counter+1)
+		   - Set the program counter to (jumptable[operands_1]+1)
+		*/
+		doCall(vm, rwinf);
+		break;
+	case Inst_frame:
+		errcode = doGenericOperation(vm, rwinf, 'f');		
 		break;
 	}
-	case Inst_frame: {
-		h5uint val = *DATA[(CURR_OP[1] >> 8)*256];
-		setnum_dest = CURR_OP[0];
-		dest_type	= GETTYPE(CURR_OP, 1);
-		getnum_orig = val;
-		goto _set;
-		break;
-	}
-	}
-	_RETURN;
-
-_set:
-	if (set_cf == 1) /*Shall we set the carry flag?*/
-		*DATA[_CF] = 1;
-	else if (set_cf == 2)
-		*DATA[_CF] = 0;
-
-	if (set_zf == 1) /*Shall we set the zero flag?*/
-		*DATA[_ZF] = 1;
-	else if (set_zf == 2)
-		*DATA[_ZF] = 0;
-
-	if (!donot_save) { /*We don't care about any memory
-			 stuff unless wrote something!*/
-		if (DATA[setnum_dest] == NULL)
-			return 1; /*ERROR: Trying to read/write unmapped memory!*/
-		if (dest_type == lit) {
-			return_code = 3; /*ERROR: Wrong usage! Can't set a literal, that's
-					nonsensical*/
-			_PROG_CO += 1;
-			_RETURN;
-		} else if (dest_type == adr) {
-			if (DATA[setnum_dest] == NULL) {
-				return_code =
-					1; /*ERROR: Trying to read/write unmapped memory!*/
-				_PROG_CO += 1;
-				_RETURN;
-			} else if (MASK[setnum_dest] == 1) {
-				return_code = 2; /*ERROR: Write to read-only address!*/
-				_PROG_CO += 1;
-				_RETURN;
-			};
-			*DATA[setnum_dest] = getnum_orig;
-			rwinf->adrw		   = setnum_dest;
-			rwinf->wrote_adrw  = 1;
-		} else if (dest_type == ptr) {
-			if (PTR_VALID(DATA, setnum_dest)) {
-				*DATA[GETPTR(*DATA, setnum_dest)] = getnum_orig;
-				rwinf->adrw						  = GETPTR(*DATA, setnum_dest);
-				rwinf->wrote_adrw				  = 1;
-			} else {
-				return_code = 1; /*ERROR: Trying to read/write unmapped memory!*/
-				_PROG_CO += 1;
-				_RETURN;
-			};
-		}
-	}
-	_PROG_CO += 1;
-	_RETURN;
-
-_jmp:
-	if (ISADR(CURR_OP[2], 1) || ISLIT(CURR_OP[2], 1)) {
-		/*If dealing with an address OR a literal, just
-			 move the PC to the operand*/
-		_PROG_CO = CURR_OP[0];
-	} else if (ISPTR(CURR_OP[2], 1)) {
-		/*If we are dealing with a pointer*/
-		if (PTR_VALID(
-				DATA, CURR_OP[0])) { /*If the pointer addresses are mapped*/
-			/*Read the address presented and set the PC*/
-			_PROG_CO = GETPTR(*DATA, CURR_OP[0]);
-		} else {
-			return_code = 1; /*Else report they are unmmapped*/
-		}
-	}
-	_RETURN;
+	vm->data[0xFFFA] = vm->co;
+	return errcode;
 }
