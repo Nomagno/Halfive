@@ -1,7 +1,9 @@
 #include <halfive/h5block.h>
 
 #include <halfive/code_setup.h>
+#include <halfive/h5stdlib.h>
 #include <halfive/h5vi.h>
+#include <halfive/h5pix.h>
 #include <time.h>
 #include <stdio.h>
 
@@ -30,6 +32,27 @@ char getShapeName(unsigned shape) {
 	}
 }
 
+/*retval must be a buffer at least 32 characters long*/
+void utoa(h5ulong x, char *retval)
+{
+	char buf[30];
+	unsigned counter = 0;
+
+	if (x == 0) {
+		buf[counter] = '0';
+		counter += 1;
+	}
+
+	for ( ; x != 0; x = x/10) {
+		buf[counter] = '0'+(x%10);
+		counter += 1;
+	}
+
+	for (unsigned i = 0; i < counter; ++i)
+	 	retval[i] = buf[counter - i - 1];
+
+}
+
 void H5Block_printToCommandLine_auxiliaryData(H5Block_Game *game) {
 		maybe_printf("COMBO: %u\n", game->combo);
 		maybe_printf("SCORE: %lu\n", game->score);
@@ -56,6 +79,8 @@ void H5Block_printPerformanceData(h5umax time_available, h5umax time_taken, _Boo
 	}
 }
 
+#define FONT_SCALE 2
+
 #define WCONSTANT 640
 #define HCONSTANT 360
 
@@ -67,6 +92,30 @@ void H5Block_RenderAt(H5Render_PixelData surf, unsigned side, signed x, signed y
 	VEC2(h5ulong) p3 = { p1.x+side, p1.y-side };
 	VEC2(h5ulong) p4 = { p1.x, p1.y-side };
 	H5Render_ulong_drawRectangle(surf, p1, p2, p3, p4, colour);
+}
+
+/*
+#define TEXT_SIZE(number_of_chars, scale)
+#define SAFE_REDUCE_SIZE(scale)
+#define RENDER_TEXT(string, x, y, scale)
+*/
+
+void H5Block_RenderTextAt(H5Render_PixelData surf, char *string, unsigned x, unsigned y) {
+	unsigned i;
+	char tmpstr[32] = {0};
+	for (i = 0; 1; i++) {
+		tmpstr[i] = string[i];
+		if (string[i] == '\0') break;
+	}
+	while (TEXT_SIZE(i, FONT_SCALE) > surf.width) {
+		if (i == 0) {
+			return;
+		} else {
+			i -= 1;
+		}
+	}
+	tmpstr[i] = '\0';
+	RENDER_TEXT(tmpstr, x, y, FONT_SCALE, surf);
 }
 
 void H5Block_Render(H5Render_PixelData surf, H5Block_playfieldVisual pV, H5Block_Game *game) {
@@ -139,7 +188,7 @@ void H5Block_Render(H5Render_PixelData surf, H5Block_playfieldVisual pV, H5Block
 	   though (something like 1:10 or more skewed in the height's favour).
 	 It is the horizontal offset for the next 4 pieces that will come out*/
 	unsigned offset_next_pieces_horizontal = PLAY_W+3;
-	unsigned offset_next_pieces_vertical = DEFAULT_Y+overhead_y-(4*2);
+	unsigned offset_next_pieces_vertical = DEFAULT_Y+overhead_y-(4*2)-1;
 
 	/*Render next 4 pieces to the right of playfield, same process as for the hold slot*/
 	for (signed k = 0; k < 4; k++) {
@@ -153,6 +202,14 @@ void H5Block_Render(H5Render_PixelData surf, H5Block_playfieldVisual pV, H5Block
 			}
 		}
 	}
+
+	H5Block_RenderTextAt(surf, "score", rendering_offset_horizontal, 4*block_side);
+
+	char storageOfScore[32] = {0};
+	utoa(game->score, storageOfScore);
+	H5Block_RenderTextAt(surf, storageOfScore, TEXT_SIZE(7, FONT_SCALE)+rendering_offset_horizontal, 4*block_side);
+
+	H5Block_RenderTextAt(surf, "halfive block", rendering_offset_horizontal, 1*block_side);
 
 }
 
@@ -336,8 +393,12 @@ void mainGameLoop(void *useless) {
 	}
 }
 
+#define PREPEND_PATH "../../assets/sprites/fonts/"
 int main(void) {
 	/*WARNING: PROGRAM DOESN'T WORK CORRECTLY IF 'CLOCKS_PER_SEC' IS NOT XSI-MANDATED 1000000*/
+	INIT_FONT_MAIN("8x8", FONT_SCALE);
+	global_padding = 2;
+	
 	H5Render_fill(main_buf, 0xFFFF);
 
 	if (H5VI_init(&main_ref, HCONSTANT, WCONSTANT)) {

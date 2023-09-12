@@ -24,10 +24,33 @@ IN THE SOFTWARE.
 #include <halfive/h5req.h>
 #include <halfive/h5math.h>
 #include <halfive/h5render.h>
+H5Render_GlobalTileSetData global_font;
+unsigned global_padding;
 
 /*Pixels are RGBA 16-bit 5551 format*/
 
 
+#include <halfive/h5stdlib.h>
+#undef C_A
+#define C_A
+void H5Render_blitSprite(H5Render_PixelData insurf, H5Render_PixelData outsurf, unsigned x, unsigned y, _Bool respect_transparency) {
+	for (size_t i = 0; i < insurf.height; i++) {
+		for (size_t j = 0; j < insurf.width; j++) {
+			_Bool tr = (respect_transparency && (C_A(MATRIX_GET(insurf, j, i)) == 0));
+			MATRIX_GET(outsurf, j+x, i+y) = tr ? MATRIX_GET(outsurf, j+x, i+y) : MATRIX_GET(insurf, j, i);
+		}
+	}
+}
+
+void H5Render_blitSpriteWithTransparency(H5Render_PixelData insurf, H5Render_PixelData outsurf, unsigned x, unsigned y, unsigned transparency /*out of 100*/) {
+		for (size_t i = 0; i < insurf.height; i++) {
+			for (size_t j = 0; j < insurf.width; j++) {
+				MATRIX_GET(outsurf, j+x, i+y) = MIX(MATRIX_GET(insurf, j+x, i+y), MATRIX_GET(outsurf, j, i), transparency);
+			}
+		}
+}
+
+/*These two memset/memcpy calls MUST be provided by the host platform, they are one of the biggest data throughtput bottleneck calls in the entire engine and are absolutely performance critical*/
 #include <string.h>
 void H5Render_fill(H5Render_PixelData surf, h5uint colour)
 {
@@ -78,12 +101,69 @@ void H5Render_scale(H5Render_PixelData insurf, H5Render_PixelData outsurf,
 	}
 }
 
+/*h5render_spam.c contains the definition of H5Render_mapCharToSymbol.
+It makes use of a 64-case-long switch statement.*/
+#include "h5render_spam.c"
+VEC2(h5ulong) H5Render_getStartingPositionOfTile(H5Render_Tileset *tileset, unsigned x, unsigned y) {
+	return (VEC2(h5ulong)) {
+		.x = tileset->tile_width*x + tileset->padding*x,
+		.y = tileset->tile_height*y + tileset->padding*y
+	};
+}
+void H5Render_getTileByPosition(H5Render_Tileset *tileset, H5Render_PixelData outsurf,
+	_Bool respect_transparency, size_t column, size_t row) {
+	VEC2(h5ulong) pos = H5Render_getStartingPositionOfTile(tileset, column, row);
+	unsigned x = pos.x;
+	unsigned y = pos.y;
+	for (size_t i = 0; i < tileset->tile_height; i++) {
+		for (size_t j = 0; j < tileset->tile_width; j++) {
+			_Bool tr = (respect_transparency && (C_A(MATRIX_GET(tileset->buffer, j, i)) == 0));
+			MATRIX_GET(outsurf, j, i) = tr ? MATRIX_GET(outsurf, j, i) : MATRIX_GET(tileset->buffer, j+x, i+y);
+		}
+	}
+}
+char *H5Render_getTileNameFromPosition(H5Render_Tileset *tileset, size_t column, size_t row) {
+	return (MATRIX_INDEX(tileset->names, tileset->width, column, row));
+}
+VEC2(h5ulong) H5Render_getTilePositionFromName(H5Render_Tileset *tileset, char *name) {
+	for (size_t i = 0; i < tileset->height; i++) {
+		for (size_t j = 0; j < tileset->width; j++) {
+			char *tmpname = H5Render_getTileNameFromPosition(tileset, j, i);
+			if (h5strcmp(tmpname, name) == 0) {
+				return (VEC2(h5ulong)){ .x = j, .y = i };
+			}
+		}
+	}
+	return (VEC2(h5ulong)){ 0, 0 };
+}
+void H5Render_getTileByName(H5Render_Tileset *tileset, H5Render_PixelData outsurf,
+	_Bool respect_transparency, char *name) {
+	VEC2(h5ulong) pos = H5Render_getTilePositionFromName(tileset, name);
+	H5Render_getTileByPosition(tileset, outsurf, respect_transparency, pos.x, pos.y);
+}
+
+void H5Render_renderText(char *string, H5Render_Tileset *tileset, H5Render_PixelData tmpsurf1, H5Render_PixelData tmpsurf2, H5Render_PixelData outsurf, unsigned x, unsigned y, unsigned padding, unsigned scale_factor) {
+	int i = 0;
+	for (char *c = string; *c != '\0'; c++) {
+		char converted_name[32] = {0};
+		H5Render_mapCharToSymbol(*c, converted_name, sizeof(converted_name));
+		H5Render_fill(tmpsurf1, 0xFFFF);
+		H5Render_fill(tmpsurf2, 0xFFFF);
+		H5Render_getTileByName(tileset, tmpsurf1, 0, converted_name);
+		H5Render_scale(tmpsurf1, tmpsurf2, scale_factor, 0);
+		
+		h5ulong calculated_x = x + tileset->tile_width*scale_factor*i + padding*i;
+		H5Render_blitSprite(tmpsurf2, outsurf, calculated_x, y, 0);
+		i++;
+	}
+}
+
 /*Bresenham's line drawing algorithm*/
 void H5Render_ulong_drawLine(
 	H5Render_PixelData surf, VEC2(h5ulong) p1, VEC2(h5ulong) p2, h5uint colour)
 {
-	h5slong diffx = (h5_abs(p2.x - p1.x));
-	h5slong diffy = -(h5_abs(p2.y - p1.y));
+	h5slong diffx = (H5_ABS(p2.x - p1.x));
+	h5slong diffy = -(H5_ABS(p2.y - p1.y));
 
 	h5slong error = diffx + diffy;
 
@@ -112,8 +192,8 @@ void H5Render_ulong_drawLine(
 int H5Render_ulong_getRasterInfo(
 	VEC2(h5ulong) p1, VEC2(h5ulong) p2, h5ulong edges[][2], size_t n)
 {
-	h5slong diffx = (h5_abs(p2.x - p1.x));
-	h5slong diffy = -(h5_abs(p2.y - p1.y));
+	h5slong diffx = (H5_ABS(p2.x - p1.x));
+	h5slong diffy = -(H5_ABS(p2.y - p1.y));
 
 	h5slong error = diffx + diffy;
 
@@ -147,8 +227,8 @@ int H5Render_ulong_getRasterInfo(
 void H5Render_slong_getLinePoints(VEC2(h5slong) p1, VEC2(h5slong) p2,
 	h5uint length, VEC2(h5slong) *ret, size_t n)
 {
-	h5slong diffx = (h5_abs(p2.x - p1.x));
-	h5slong diffy = -(h5_abs(p2.y - p1.y));
+	h5slong diffx = (H5_ABS(p2.x - p1.x));
+	h5slong diffy = -(H5_ABS(p2.y - p1.y));
 
 	h5slong error = diffx + diffy;
 

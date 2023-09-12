@@ -315,6 +315,8 @@ uint32_t H5Block_doGameplayLoop(H5Block_Game *game, uint32_t seed, enum H5Block_
 	default:
 		break;
 	}
+	if (linesCleared > 0) { game->lastLinesCleared = linesCleared; }
+	if (game->combo == 0) { game->lastLinesCleared = 0; }
 	return seed;
 }
 

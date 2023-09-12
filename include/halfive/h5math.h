@@ -121,9 +121,6 @@ h5ulong H5Math_ulong_integerSquareRoot(
 h5umax H5Math_umax_integerSquareRoot(
 	h5umax a); /*Integer square root of h5umax*/
 
-h5slong h5_abs(h5slong a);
-
-#define H5_ABS(n)	(((n) < 0) ? (-(n)) : (n))
 #define CEIL(n)		((h5smax)((n) + (((n) < 0) ? (1) : (-1))))
 #define CAP(n, cap) (((n) < (cap + 1)) ? (n) : (cap))
 #define FLOOR(n)	((h5smax)(n))

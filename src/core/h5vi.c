@@ -724,6 +724,11 @@ int main(int argc, char **argv)
 			.tags							   = &tags[0],
 			.names							   = &names[0][0]};
 		H5Pix_getINFO_TilesetContents(argv[3], &tiles);
+		maybe_printf("TILE_HEIGHT: %u\n", tiles.tile_height);
+		maybe_printf("TILE_WIDTH: %u\n", tiles.tile_width);
+		maybe_printf("HEIGHT: %u\n", tiles.height);
+		maybe_printf("WIDTH: %u\n", tiles.width);
+		maybe_printf("PADDING: %u\n", tiles.padding);
 		for (size_t i = 0; i < tileset_h; i++) {
 			maybe_printf("\nROW %zu TYPE: %s\n", i,
 				(tiles.tags[i] == tile_Symbol)
@@ -765,6 +770,104 @@ int main(int argc, char **argv)
 			break;
 		}
 		H5VI_setBuffer(&myref, &sprite);
+	}
+exit:
+	H5VI_destroy(&myref);
+	return 0;
+}
+#endif
+
+#ifdef H5VI_STRING_VIEWER
+#include <stdio.h>
+#include <time.h>
+
+#define HCONSTANT 512
+#define WCONSTANT 512
+
+int main(int argc, char **argv)
+{
+	if (argc < 4) {
+		maybe_printf("USAGE: pamview fontImageData fontTilesetFile text [scale]\n");
+		return 1;
+	}
+	size_t tileset_height_pix, tileset_width_pix;
+	unsigned scale = (argc >= 5) ? h5strtoul(argv[4], NULL, 10) : 1;
+	H5Pix_getPAM_Size(argv[1], &tileset_height_pix, &tileset_width_pix);
+	h5uint font_buf[tileset_height_pix][tileset_width_pix];
+	H5Render_PixelData font_sprite = {tileset_height_pix, tileset_width_pix, &font_buf[0][0]};
+	H5Render_fill(font_sprite, 0xFFFF);
+	H5Pix_getPAM_Contents(argv[1], font_sprite);
+
+
+	size_t tileset_h, tileset_w;
+	H5Pix_getINFO_TilesetSize(argv[2], &tileset_h, &tileset_w);
+	char font_names[tileset_h][tileset_w][32];
+	h5memset(font_names, 0, tileset_h*tileset_w*32);
+
+	TileCategory font_tags[tileset_h];
+	H5Render_Tileset font_tileset = {
+		.tile_height = 0,
+		.tile_width						   = 0,
+		.height							   = tileset_h,
+		.width							   = tileset_w,
+		.padding						   = 0,
+		.buffer							   = font_sprite,
+		.tags							   = &font_tags[0],
+		.names							   = &font_names[0][0]
+	};
+	H5Pix_getINFO_TilesetContents(argv[2], &font_tileset);
+	maybe_printf("TILE_HEIGHT: %zu\n", font_tileset.tile_height);
+	maybe_printf("TILE_WIDTH: %zu\n", font_tileset.tile_width);
+	maybe_printf("HEIGHT: %zu\n", font_tileset.height);
+	maybe_printf("WIDTH: %zu\n", font_tileset.width);
+	maybe_printf("PADDING: %u\n", font_tileset.padding);
+	for (size_t i = 0; i < tileset_h; i++) {
+		maybe_printf("\nROW %zu TYPE: %s\n", i,
+			(font_tileset.tags[i] == tile_Symbol)
+				? "SYMBOL"
+				: ((font_tileset.tags[i] == tile_Sprite)
+						  ? "TILE_SPRITE"
+						  : ((font_tileset.tags[i] == tile_Image) ? "IMAGE"
+														   : "UNKNOWN")));
+		for (size_t j = 0; j < tileset_w; j++) {
+			maybe_printf("Y: %zu - X: %zu - %s\n", i, j,
+				MATRIX_INDEX(font_tileset.names, font_tileset.width, j, i));
+		}
+	}
+
+	size_t font_tmp_h = font_tileset.tile_height, font_tmp_w = font_tileset.tile_width;
+	h5uint font_tmpbuf1[font_tmp_h][font_tmp_w];
+	H5Render_PixelData font_tmpsprite1 = {.height = font_tmp_h, .width = font_tmp_w, &font_tmpbuf1[0][0]};
+	H5Render_fill(font_tmpsprite1, 0xFFFF);
+
+	h5uint font_tmpbuf2[font_tmp_h*scale][font_tmp_w*scale];
+	H5Render_PixelData font_tmpsprite2 = {.height = font_tmp_h*scale, .width = font_tmp_w*scale, &font_tmpbuf2[0][0]};
+	H5Render_fill(font_tmpsprite2, 0xFFFF);
+
+	h5uint mainbuf[HCONSTANT][WCONSTANT];
+	H5Render_PixelData mainscreen = {.height = HCONSTANT, .width = WCONSTANT, &mainbuf[0][0]};
+	H5Render_fill(mainscreen, 0x24FF);
+
+	H5Render_renderText(argv[3], &font_tileset, font_tmpsprite1, font_tmpsprite2, mainscreen, 0, 0, 4, scale);
+	H5VI_Reference myref;
+	if (H5VI_init(&myref, HCONSTANT, WCONSTANT)) {
+		maybe_printf("ERROR: failed to initialize H5VI screen");
+		H5VI_destroy(&myref);
+		return 1;
+	}
+	H5VI_setBuffer(&myref, &mainscreen);
+	while (1) {
+		char a[10] = {0};
+		fgets(a, sizeof(a), stdin);
+		switch (a[0]) {
+		case 'q':
+			goto exit;
+			break;
+		case 'r':
+			nanosleep(&(struct timespec){3, 0}, NULL);
+			break;
+		}
+		H5VI_setBuffer(&myref, &mainscreen);
 	}
 exit:
 	H5VI_destroy(&myref);

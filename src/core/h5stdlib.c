@@ -189,13 +189,11 @@ void *_h5libcmemcpy(void *dest, const void *src, size_t n)
 
 char *_h5libcstrncpy(char *dest, const char *src, size_t n)
 {
-	for (size_t i = 0; (i < n) || (src[i] != '\0'); i++) {
-		if (i < n)
-			dest[i] = src[i];
-		else
-			dest[i] = '\0';
-	}
-	return dest;
+	char* ret = dest; /*Pointer to be returned*/
+    while (n-- && (*(dest++) = *(src++)))
+		;
+	if (n) *dest = 0;
+	return ret;
 }
 
 void *_h5libcmemset(void *str, int val, size_t n)

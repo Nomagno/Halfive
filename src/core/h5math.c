@@ -112,15 +112,15 @@ h5umax H5Math_umax_integerSquareRoot(h5umax a)
 /*Composite vector scaling*/
 VEC2(h5uint) H5Math_uint_vecMultScalar(VEC2(h5uint) a, h5float k)
 {
-	return (VEC2(h5uint)){.x = a.x * h5_abs(k), .y = a.x * h5_abs(k)};
+	return (VEC2(h5uint)){.x = a.x * H5_ABS(k), .y = a.x * H5_ABS(k)};
 }
 VEC2(h5ulong) H5Math_ulong_vecMultScalar(VEC2(h5ulong) a, h5float k)
 {
-	return (VEC2(h5ulong)){.x = a.x * h5_abs(k), .y = a.x * h5_abs(k)};
+	return (VEC2(h5ulong)){.x = a.x * H5_ABS(k), .y = a.x * H5_ABS(k)};
 }
 VEC2(h5umax) H5Math_umax_vecMultScalar(VEC2(h5umax) a, h5float k)
 {
-	return (VEC2(h5umax)){.x = a.x * h5_abs(k), .y = a.x * h5_abs(k)};
+	return (VEC2(h5umax)){.x = a.x * H5_ABS(k), .y = a.x * H5_ABS(k)};
 }
 
 /*Composite signed vector scaling*/
@@ -160,7 +160,7 @@ h5float H5Math_squareRoot(h5float a)
 	float guess = H5Math_uint_integerSquareRoot(a);
 	for (unsigned i = 0; i < H5MATH_SQRT_ITER; i++) {
 		guess = (guess + (a / guess)) / 2;
-		guess = h5_abs(guess);
+		guess = H5_ABS(guess);
 	}
 	return guess;
 }
@@ -233,14 +233,6 @@ VEC2(h5smax) H5Math_smax_getBezierPoint(h5bezier_smax curve, float t)
 
 	return H5Math_smax_vecAddVec(
 		H5Math_smax_vecAddVec(sumpart1, sumpart2), sumpart3);
-}
-
-h5slong h5_abs(h5slong a)
-{
-	if (a < 0)
-		return -a;
-	else
-		return a;
 }
 #endif
 
