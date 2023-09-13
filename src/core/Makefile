@@ -71,7 +71,7 @@ libhalfive.a : h5stdlib.o h5asm.o h5vm.o h5doc.o h5math.o h5rat.o h5render.o h5p
 	ar rcs libhalfive.a h5stdlib.o h5asm.o h5vm.o h5doc.o h5math.o h5rat.o h5render.o h5pix.o
 
 block_emscripten:
-	emcc $(FLAGS) $(PARAMS) -I$(INCLROOT) -DTOUCH_SUPPORT -DIMPL_EMSCRIPTEN -s WASM=1 -s USE_SDL=2 -o index.js h5block_frontend.c h5block.c h5vi.c h5math.c h5render.c h5pix.c h5stdlib.c; mkdir -p ../../docs/public_misc/block; cp ../../docs/emscripten_template/halfive_shell.html index.js index.wasm ../../docs/public_misc/block/
+	emcc $(FLAGS) $(PARAMS) -I$(INCLROOT) -DTOUCH_SUPPORT -DIMPL_EMSCRIPTEN -s WASM=1 -s USE_SDL=2 --embed-file ../../assets/sprites/ -o index.js h5block_frontend.c h5block.c h5vi.c h5math.c h5render.c h5pix.c h5stdlib.c; mkdir -p ../../docs/public_misc/block; cp ../../docs/emscripten_template/halfive_shell.html index.js index.wasm ../../docs/public_misc/block/
 block_sdl2 : h5render.o h5stdlib.o h5math.o h5vi.o h5block.o h5pix.o
 	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -o block h5block_frontend.c h5block.o h5vi.o h5math.o h5render.o h5pix.o h5stdlib.o -lSDL2
 #sim_sdl2 : h5render.o h5stdlib.o h5math.o
