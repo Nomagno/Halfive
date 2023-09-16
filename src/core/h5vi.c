@@ -393,19 +393,22 @@ unsigned H5VI_defaultVirtualLayout(H5VI_Reference *handle, H5VI_InputData *keys)
 	unsigned max_width_left = keys->view_width/3;
 	unsigned max_width_right = keys->view_width-max_width_left;
 
+	unsigned default_button_width = max_width_left/3-1;
+	unsigned default_button_height = max_height/3-1;
+
 	H5VI_VirtualButton dpad_up = {
 		.isActive = 1,
 		.isPressed = 0,
 		.key_code = H5KEY_UP,
 		.pos = {max_width_left/3*1, max_height+(max_height/3*0)},
-		.size = { max_width_left/3, (max_height/3)},
+		.size = { default_button_width, default_button_height },
 	};
 	H5VI_VirtualButton dpad_down = {
 		.isActive = 1,
 		.isPressed = 0,
 		.key_code = H5KEY_DOWN,
 		.pos = {max_width_left/3*1, max_height+(max_height/3*2)},
-		.size = { max_width_left/3, (max_height/3)},
+		.size = { default_button_width, default_button_height },
 	};
 
 	H5VI_VirtualButton dpad_left = {
@@ -413,7 +416,7 @@ unsigned H5VI_defaultVirtualLayout(H5VI_Reference *handle, H5VI_InputData *keys)
 		.isPressed = 0,
 		.key_code = H5KEY_LEFT,
 		.pos = {max_width_left/3*0, max_height+(max_height/3)},
-		.size = { max_width_left/3, (max_height/3)},
+		.size = { default_button_width, default_button_height },
 	};
 
 	H5VI_VirtualButton dpad_right = {
@@ -421,7 +424,7 @@ unsigned H5VI_defaultVirtualLayout(H5VI_Reference *handle, H5VI_InputData *keys)
 		.isPressed = 0,
 		.key_code = H5KEY_RIGHT,
 		.pos = {max_width_left/3*2, max_height+(max_height/3)},
-		.size = { max_width_left/3, (max_height/3)},
+		.size = { default_button_width, default_button_height },
 	};
 
 
@@ -430,28 +433,28 @@ unsigned H5VI_defaultVirtualLayout(H5VI_Reference *handle, H5VI_InputData *keys)
 		.isPressed = 0,
 		.key_code = H5KEY_B1,
 		.pos = {max_width_right+(max_width_left/3*2), max_height+(max_height/3)},
-		.size = { max_width_left/3, (max_height/3)},
+		.size = { default_button_width, default_button_height },
 	};
 	H5VI_VirtualButton b2 = {
 		.isActive = 1,
 		.isPressed = 0,
 		.key_code = H5KEY_B2,
 		.pos = {max_width_right+(max_width_left/3*1), max_height+(max_height/3*2)},
-		.size = { max_width_left/3, (max_height/3)},
+		.size = { default_button_width, default_button_height },
 	};
 	H5VI_VirtualButton b3 = {
 		.isActive = 1,
 		.isPressed = 0,
 		.key_code = H5KEY_B3,
 		.pos = {max_width_right+(max_width_left/3*1), max_height+(max_height/3*0)},
-		.size = { max_width_left/3, (max_height/3)},
+		.size = { default_button_width, default_button_height },
 	};
 	H5VI_VirtualButton b4 = {
 		.isActive = 1,
 		.isPressed = 0,
 		.key_code = H5KEY_B4,
 		.pos = {max_width_right+(max_width_left/3*0), max_height+(max_height/3)},
-		.size = { max_width_left/3, (max_height/3)},
+		.size = { default_button_width, default_button_height },
 	};
 
 	H5VI_addVirtualButton(handle, keys, dpad_up);

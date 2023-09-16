@@ -306,7 +306,7 @@ int H5Block_simulateOneFrame(H5Coordinate_GraphicalEventData *opaque_handle) {
 	H5Block_getVisualRepresentationOfField(game, pV);
 	H5Block_Render(generalData.rendered_output, *pV, game);
 	#ifdef TOUCH_SUPPORT
-		H5VI_renderVirtualButtons(generalData.rendered_output, &input_keys, 0x4325);
+		H5VI_renderVirtualButtons(generalData.rendered_output, &input_keys, 0x3105);
 	#endif
 
 	goto GO_BACK;
