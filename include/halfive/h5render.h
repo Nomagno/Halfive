@@ -30,24 +30,33 @@ IN THE SOFTWARE.
 #include <halfive/h5math.h>
 
 /*Pixels are RGBA 16-bit 5551 format*/
+
+/*ignore*/
+#define LEGACY_M(r, g, b) \
+	((((r)/2) << 11) | (((g)/2) << 6) | (((b)/2) << 1) | 1)
+
 #define RGB(r, g, b) \
-	((CAP(r, 0x20) << 11) | (CAP(g, 0x20) << 6) | (CAP(b, 0x20) << 1) | 1)
+	((CAP(r, 0x1F) << 11) | (CAP(g, 0x1F) << 6) | (CAP(b, 0x1F) << 1) | 1)
 #define RGBA(r, g, b, a) \
-	((CAP(r, 0x20) << 11) | (CAP(g, 0x20) << 6) | (CAP(b, 0x20) << 1) | !!(a))
+	((CAP(r, 0x1F) << 11) | (CAP(g, 0x1F) << 6) | (CAP(b, 0x1F) << 1) | !!(a))
 #define ALPHA_ON(n)		(n | 0x0001)
 #define ALPHA_OFF(n)	(n & (~0x0001))
 #define ALPHA_TOGGLE(n) (n ^ 0x0001)
 
 #define C_R(v) (v >> 11)
-#define C_G(v) ((v << 5) >> 11)
-#define C_B(v) ((v << 10) >> 11)
+#define C_G(v) (((h5uint)(v << 5)) >> 11)
+#define C_B(v) (((h5uint)(v << 10)) >> 11)
 #define C_A(v) (v & 1)
 
-#define MIX(v1, v2, alpha) RGB(\
-((C_R(v1) * alpha)/100 + (C_R(v2 * (100-alpha)))/100),\
-((C_G(v1) * alpha)/100 + (C_G(v2 * (100-alpha)))/100),\
-((C_B(v1) * alpha)/100 + (C_B(v2 * (100-alpha))/100))\
-)
+#define MIX(v1, v2, alpha) ((C_A(v1)) ? \
+	((alpha < 100) ? \
+		(RGB(\
+		(((C_R(v1) * alpha) + (C_R(v2) * (100-alpha)))/100),\
+		(((C_G(v1) * alpha) + (C_G(v2) * (100-alpha)))/100),\
+		(((C_B(v1) * alpha) + (C_B(v2) * (100-alpha)))/100))) : \
+		(v1)) \
+	: \
+		(v2))
 
 /*Pixel buffer*/
 #define MATRIX_GET(var, x, y)	   ((var).data[(((y) * (var).width) + (x))])
@@ -154,6 +163,8 @@ extern unsigned global_padding;
 void H5Render_fill(H5Render_PixelData surf, h5uint colour);
 void H5Render_scale(H5Render_PixelData insurf, H5Render_PixelData outsurf,
 	unsigned scale_factor, _Bool respect_transparency);
+void H5Render_scaleWithTransparency(H5Render_PixelData insurf, H5Render_PixelData outsurf,
+	unsigned scale_factor, unsigned alpha);
 
 char H5Render_mapSymbolToChar(char *instring);
 VEC2(h5ulong) H5Render_getStartingPositionOfTile(H5Render_Tileset *tileset, unsigned x, unsigned y);
@@ -164,10 +175,11 @@ VEC2(h5ulong) H5Render_getTilePositionFromName(H5Render_Tileset *tileset, char *
 void H5Render_getTileByName(H5Render_Tileset *tileset, H5Render_PixelData outsurf,
 	_Bool respect_transparency, char *name);
 void H5Render_renderText(char *string, H5Render_Tileset *tileset, H5Render_PixelData tmpsurf1, H5Render_PixelData tmpsurf2, H5Render_PixelData outsurf, unsigned x, unsigned y, unsigned padding, unsigned scale);
+void H5Render_renderTextWithTransparency(char *string, H5Render_Tileset *tileset, H5Render_PixelData tmpsurf1, H5Render_PixelData tmpsurf2, H5Render_PixelData outsurf, unsigned x, unsigned y, unsigned padding, unsigned scale, unsigned alpha);
 void H5Render_mapCharToSymbol(char inchar, char *outarray, size_t n);
 
 void H5Render_blitSprite(H5Render_PixelData insurf, H5Render_PixelData outsurf, unsigned x, unsigned y, _Bool respect_transparency);
-void H5Render_blitSpriteWithTransparency(H5Render_PixelData insurf, H5Render_PixelData outsurf, unsigned x, unsigned y, unsigned transparency /*out of 100*/);
+void H5Render_blitSpriteWithTransparency(H5Render_PixelData insurf, H5Render_PixelData outsurf, unsigned x, unsigned y, unsigned alpha /*out of 100*/);
 
 
 void H5Render_slong_getLinePoints(VEC2(h5slong) p1, VEC2(h5slong) p2,
@@ -175,16 +187,19 @@ void H5Render_slong_getLinePoints(VEC2(h5slong) p1, VEC2(h5slong) p2,
 int H5Render_ulong_getRasterInfo(
 	VEC2(h5ulong) p1, VEC2(h5ulong) p2, h5ulong edges[][2], size_t n);
 void H5Render_ulong_drawLine(
-	H5Render_PixelData surf, VEC2(h5ulong) p1, VEC2(h5ulong) p2, h5uint colour);
+	H5Render_PixelData surf, VEC2(h5ulong) p1, VEC2(h5ulong) p2, h5uint colour,
+	unsigned alpha);
 void H5Render_ulong_drawPolygon(
-	H5Render_PixelData surf, VEC2(h5ulong) *points, size_t n, h5uint colour);
+	H5Render_PixelData surf, VEC2(h5ulong) *points, size_t n, _Bool remark_edges, h5uint colour,
+	unsigned alpha);
 void H5Render_ulong_drawPolygonOutline(
-	H5Render_PixelData surf, VEC2(h5ulong) *points, size_t n, h5uint colour);
+	H5Render_PixelData surf, VEC2(h5ulong) *points, size_t n, h5uint colour,
+	unsigned alpha);
 
 void H5Render_ulong_drawTriangle(H5Render_PixelData surf, VEC2(h5ulong) p1,
-	VEC2(h5ulong) p2, VEC2(h5ulong) p3, h5uint colour);
+	VEC2(h5ulong) p2, VEC2(h5ulong) p3, _Bool remark_edges, h5uint colour, unsigned alpha);
 void H5Render_ulong_drawRectangle(H5Render_PixelData surf, VEC2(h5ulong) p1,
-	VEC2(h5ulong) p2, VEC2(h5ulong) p3, VEC2(h5ulong) p4, h5uint colour);
+	VEC2(h5ulong) p2, VEC2(h5ulong) p3, VEC2(h5ulong) p4, _Bool remark_edges, h5uint colour, unsigned alpha);
 void H5Render_ulong_drawLineSize(H5Render_PixelData surf, VEC2(h5ulong) p1,
-	VEC2(h5ulong) p2, h5uint colour, h5uint size);
+	VEC2(h5ulong) p2, h5uint colour, unsigned alpha, h5uint size);
 #endif

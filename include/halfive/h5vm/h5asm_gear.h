@@ -26,7 +26,7 @@ IN THE SOFTWARE.
 #ifndef H5ASM_H
 #define H5ASM_H
 #include <halfive/h5req.h>
-#include <halfive/h5vm/h5vm.h>
+#include <halfive/h5vm/h5vm_gear.h>
 h5uint H5ASM_parse(char *linestr, H5VM_InstructionSet *inst, h5uint opnds[3]);
 unsigned H5ASM_run(char **str, size_t stringnum, H5VM_GeneralMemory *mem, h5uint *addresses, h5uint *mappings, size_t mapping_size);
 

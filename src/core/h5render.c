@@ -41,10 +41,10 @@ void H5Render_blitSprite(H5Render_PixelData insurf, H5Render_PixelData outsurf, 
 	}
 }
 
-void H5Render_blitSpriteWithTransparency(H5Render_PixelData insurf, H5Render_PixelData outsurf, unsigned x, unsigned y, unsigned transparency /*out of 100*/) {
+void H5Render_blitSpriteWithTransparency(H5Render_PixelData insurf, H5Render_PixelData outsurf, unsigned x, unsigned y, unsigned alpha /*out of 100*/) {
 		for (size_t i = 0; i < insurf.height; i++) {
 			for (size_t j = 0; j < insurf.width; j++) {
-				MATRIX_GET(outsurf, j+x, i+y) = MIX(MATRIX_GET(insurf, j+x, i+y), MATRIX_GET(outsurf, j, i), transparency);
+				MATRIX_GET(outsurf, j+x, i+y) = MIX(MATRIX_GET(insurf, j+x, i+y), MATRIX_GET(outsurf, j, i), alpha);
 			}
 		}
 }
@@ -158,7 +158,8 @@ void H5Render_renderText(char *string, H5Render_Tileset *tileset, H5Render_Pixel
 
 /*Bresenham's line drawing algorithm*/
 void H5Render_ulong_drawLine(
-	H5Render_PixelData surf, VEC2(h5ulong) p1, VEC2(h5ulong) p2, h5uint colour)
+	H5Render_PixelData surf, VEC2(h5ulong) p1, VEC2(h5ulong) p2, h5uint colour,
+	unsigned alpha)
 {
 	h5slong diffx = (H5_ABS(p2.x - p1.x));
 	h5slong diffy = -(H5_ABS(p2.y - p1.y));
@@ -169,7 +170,7 @@ void H5Render_ulong_drawLine(
 	h5slong signy = (p1.y < p2.y) ? 1 : -1;
 
 	while (1) {
-		MATRIX_GET(surf, p1.x, p1.y) = colour;
+		MATRIX_GET(surf, p1.x, p1.y) = MIX(colour, MATRIX_GET(surf, p1.x, p1.y), alpha);
 		if ((p1.x == p2.x) && (p1.y == p2.y))
 			break;
 		h5slong e2 = 2 * error;
@@ -254,7 +255,8 @@ void H5Render_slong_getLinePoints(VEC2(h5slong) p1, VEC2(h5slong) p2,
 }
 
 void H5Render_ulong_drawPolygon(
-	H5Render_PixelData surf, VEC2(h5ulong) *points, size_t n, h5uint colour)
+	H5Render_PixelData surf, VEC2(h5ulong) *points, size_t n, _Bool remark_edges, h5uint colour,
+	unsigned alpha)
 {
 	h5ulong edges[surf.height][2];
 	for (h5ulong i = 0; i < surf.height; i++) {
@@ -263,41 +265,45 @@ void H5Render_ulong_drawPolygon(
 	}
 
 	for (size_t i = 0; i < (n - 1); i++) {
-		H5Render_ulong_drawLine(surf, points[i], points[i + 1], colour);
+		if (remark_edges == 1)
+			H5Render_ulong_drawLine(surf, points[i], points[i + 1], colour, alpha);
 		H5Render_ulong_getRasterInfo(
 			points[i], points[i + 1], edges, sizeof(edges));
 	}
-	H5Render_ulong_drawLine(surf, points[0], points[n - 1], colour);
+	if (remark_edges == 1)
+		H5Render_ulong_drawLine(surf, points[0], points[n - 1], colour, alpha);
 	H5Render_ulong_getRasterInfo(
 		points[0], points[n - 1], edges, sizeof(edges));
 
 	for (h5ulong y = 0; y < surf.height; y++) {
 		if (edges[y][0] != (H5ULONG_MAX - 1) && edges[y][1] != (H5ULONG_MAX)) {
 			for (h5ulong x = edges[y][0]; x <= edges[y][1]; x++) {
-				MATRIX_GET(surf, x, y) = colour;
+				MATRIX_GET(surf, x, y) = MIX(colour, MATRIX_GET(surf, x, y), alpha);
 			}
 		}
 	}
 }
 
 void H5Render_ulong_drawPolygonOutline(
-	H5Render_PixelData surf, VEC2(h5ulong) *points, size_t n, h5uint colour)
+	H5Render_PixelData surf, VEC2(h5ulong) *points, size_t n, h5uint colour,
+	unsigned alpha)
 {
 	for (size_t i = 0; i < n-1; i++) {
-		H5Render_ulong_drawLine(surf, points[i], points[i+1], colour);
+		H5Render_ulong_drawLine(surf, points[i], points[i+1], colour, alpha);
 	}
-	H5Render_ulong_drawLine(surf, points[n-1], points[0], colour);	
+	H5Render_ulong_drawLine(surf, points[n-1], points[0], colour, alpha);	
 }
 
 void H5Render_ulong_drawTriangle(H5Render_PixelData surf, VEC2(h5ulong) p1,
-	VEC2(h5ulong) p2, VEC2(h5ulong) p3, h5uint colour)
+	VEC2(h5ulong) p2, VEC2(h5ulong) p3, _Bool remark_edges, h5uint colour, unsigned alpha)
 {
-	H5Render_ulong_drawPolygon(surf, (VEC2(h5ulong)[]){p1, p2, p3}, 3, colour);
+	H5Render_ulong_drawPolygon(surf, (VEC2(h5ulong)[]){p1, p2, p3}, 3, remark_edges, colour, alpha);
 }
 
 void H5Render_ulong_drawRectangle(H5Render_PixelData surf, VEC2(h5ulong) p1,
-	VEC2(h5ulong) p2, VEC2(h5ulong) p3, VEC2(h5ulong) p4, h5uint colour)
+	VEC2(h5ulong) p2, VEC2(h5ulong) p3, VEC2(h5ulong) p4, _Bool remark_edges, h5uint colour,
+	unsigned alpha)
 {
 	H5Render_ulong_drawPolygon(
-		surf, (VEC2(h5ulong)[]){p1, p2, p3, p4}, 4, colour);
+		surf, (VEC2(h5ulong)[]){p1, p2, p3, p4}, 4, remark_edges, colour, alpha);
 }

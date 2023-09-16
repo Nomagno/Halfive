@@ -86,14 +86,14 @@ void H5Block_printPerformanceData(h5umax time_available, h5umax time_taken, _Boo
 #define WCONSTANT 640
 #define HCONSTANT 360
 
-void H5Block_RenderAt(H5Render_PixelData surf, unsigned side, signed x, signed y, unsigned offset, h5uint colour) {
+void H5Block_RenderAt(H5Render_PixelData surf, unsigned side, signed x, signed y, unsigned offset, h5uint colour, unsigned alpha) {
 	/*(surf.height-1)-(y*side) -> this takes care of the fact that in
 	  H5Block the Y axis is bottom-to-top, while in H5Render it is top-to-bottom*/
 	VEC2(h5ulong) p1 = { offset+x*side, (surf.height-1)-(y*side) };
-	VEC2(h5ulong) p2 = { p1.x+side, p1.y };
-	VEC2(h5ulong) p3 = { p1.x+side, p1.y-side };
-	VEC2(h5ulong) p4 = { p1.x, p1.y-side };
-	H5Render_ulong_drawRectangle(surf, p1, p2, p3, p4, colour);
+	VEC2(h5ulong) p2 = { p1.x+(side-1), p1.y };
+	VEC2(h5ulong) p3 = { p1.x+(side-1), p1.y-(side-1) };
+	VEC2(h5ulong) p4 = { p1.x, p1.y-(side-1) };
+	H5Render_ulong_drawRectangle(surf, p1, p2, p3, p4, 1, colour, alpha);
 }
 
 /*
@@ -139,9 +139,9 @@ void H5Block_Render(H5Render_PixelData surf, H5Block_playfieldVisual pV, H5Block
 	for (unsigned i = 0; i < DEFAULT_Y+overhead_y; i++) {
 		for (unsigned j = 0; j < PLAY_W; j++) {
 			if(pV.data[i][j] != 0) {
-				H5Block_RenderAt(surf, block_side, j+offset_x, i+offset_y, rendering_offset_horizontal, pV.data[i][j]);
+				H5Block_RenderAt(surf, block_side, j+offset_x, i+offset_y, rendering_offset_horizontal, pV.data[i][j], 100);
 			} else if (pV.data[i][j] == 0){
-				H5Block_RenderAt(surf, block_side, j+offset_x, i+offset_y, rendering_offset_horizontal, BACKGROUND_COLOUR);
+				H5Block_RenderAt(surf, block_side, j+offset_x, i+offset_y, rendering_offset_horizontal, BACKGROUND_COLOUR, 100);
 			}
 		}
 	}
@@ -149,18 +149,18 @@ void H5Block_Render(H5Render_PixelData surf, H5Block_playfieldVisual pV, H5Block
 	/*Render informative elimination line*/
 	for (unsigned j = 0; j < PLAY_W; j++) {
 		if (pV.data[DEFAULT_Y][j] == 0) {
-			H5Block_RenderAt(surf, block_side, j+offset_x, DEFAULT_Y+offset_y, rendering_offset_horizontal, 0xB00D);
+			H5Block_RenderAt(surf, block_side, j+offset_x, DEFAULT_Y+offset_y, rendering_offset_horizontal, 0xB00D, 100);
 		}
 	}
 
 	/*Render playfield black borders*/
 	for (unsigned j = 0; j < PLAY_W+2; j++) {
-		H5Block_RenderAt(surf, block_side, j, 0, rendering_offset_horizontal, 0x0001);
-		H5Block_RenderAt(surf, block_side, j, DEFAULT_Y+offset_y+overhead_y, rendering_offset_horizontal, 0x0001);
+		H5Block_RenderAt(surf, block_side, j, 0, rendering_offset_horizontal, 0x0001, 100);
+		H5Block_RenderAt(surf, block_side, j, DEFAULT_Y+offset_y+overhead_y, rendering_offset_horizontal, 0x0001, 100);
 	}
 	for (unsigned i = 0; i < DEFAULT_Y+overhead_y+2; i++) {
-		H5Block_RenderAt(surf, block_side, 0, i, rendering_offset_horizontal, 0x0001);
-		H5Block_RenderAt(surf, block_side, PLAY_W+1, i, rendering_offset_horizontal, 0x0001);
+		H5Block_RenderAt(surf, block_side, 0, i, rendering_offset_horizontal, 0x0001, 100);
+		H5Block_RenderAt(surf, block_side, PLAY_W+1, i, rendering_offset_horizontal, 0x0001, 100);
 	}
 
 	/*Rather than using rendering_offset_horizontal, we change it to be able to
@@ -178,9 +178,9 @@ void H5Block_Render(H5Render_PixelData surf, H5Block_playfieldVisual pV, H5Block
 	for (unsigned i = 0; i < piecefield_h; i++) {
 		for (unsigned j = 0; j < piecefield_w; j++) {
 			if(game->hold_slot > 0 && game->piecefield[game->hold_slot-1].data[i][j] != 0) {
-				H5Block_RenderAt(surf, block_side, j, i+offset_left_y, rendering_offset_horizontal-offset_hold_slot_horizontal_ABSOLUTE, game->list[game->hold_slot-1].colour);
+				H5Block_RenderAt(surf, block_side, j, i+offset_left_y, rendering_offset_horizontal-offset_hold_slot_horizontal_ABSOLUTE, game->list[game->hold_slot-1].colour, 100);
 			} else if (game->hold_slot <= 0 || game->piecefield[game->hold_slot-1].data[i][j] == 0){
-				H5Block_RenderAt(surf, block_side, j, i+offset_left_y, rendering_offset_horizontal-offset_hold_slot_horizontal_ABSOLUTE, BACKGROUND_COLOUR);
+				H5Block_RenderAt(surf, block_side, j, i+offset_left_y, rendering_offset_horizontal-offset_hold_slot_horizontal_ABSOLUTE, BACKGROUND_COLOUR, 100);
 			}
 		}
 	}
@@ -197,9 +197,9 @@ void H5Block_Render(H5Render_PixelData surf, H5Block_playfieldVisual pV, H5Block
 		for (unsigned i = 0; i < piecefield_h; i++) {
 			for (unsigned j = 0; j < piecefield_w; j++) {
 				if (game->next_shapes[3-k] == 0 || game->piecefield[game->next_shapes[3-k]-1].data[i][j] == 0) {
-					H5Block_RenderAt(surf, block_side, j+offset_next_pieces_horizontal, offset_next_pieces_vertical+i+(k*3), rendering_offset_horizontal, BACKGROUND_COLOUR);
+					H5Block_RenderAt(surf, block_side, j+offset_next_pieces_horizontal, offset_next_pieces_vertical+i+(k*3), rendering_offset_horizontal, BACKGROUND_COLOUR, 100);
 				} else if(game->piecefield[game->next_shapes[3-k]-1].data[i][j] != 0) {
-					H5Block_RenderAt(surf, block_side, j+offset_next_pieces_horizontal, offset_next_pieces_vertical+i+(k*3), rendering_offset_horizontal, game->list[game->next_shapes[3-k]-1].colour);
+					H5Block_RenderAt(surf, block_side, j+offset_next_pieces_horizontal, offset_next_pieces_vertical+i+(k*3), rendering_offset_horizontal, game->list[game->next_shapes[3-k]-1].colour, 100);
 				}
 			}
 		}
@@ -304,6 +304,7 @@ int H5Block_simulateOneFrame(H5Coordinate_GraphicalEventData *opaque_handle) {
 
 
 	H5Block_getVisualRepresentationOfField(game, pV);
+	H5Render_fill(generalData.rendered_output, BACKGROUND_COLOUR);
 	H5Block_Render(generalData.rendered_output, *pV, game);
 	#ifdef TOUCH_SUPPORT
 		H5VI_renderVirtualButtons(generalData.rendered_output, &input_keys, 0x3105);

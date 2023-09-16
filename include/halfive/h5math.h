@@ -122,7 +122,7 @@ h5umax H5Math_umax_integerSquareRoot(
 	h5umax a); /*Integer square root of h5umax*/
 
 #define CEIL(n)		((h5smax)((n) + (((n) < 0) ? (1) : (-1))))
-#define CAP(n, cap) (((n) < (cap + 1)) ? (n) : (cap))
+#define CAP(n, cap) (((n) < (cap)) ? (n) : (cap))
 #define FLOOR(n)	((h5smax)(n))
 
 #ifdef FLOATS_SUPPORTED

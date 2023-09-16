@@ -58,9 +58,6 @@ comma separated 8-bit uints (0-255) replacing from 'axis1' until 'axis4'
 
 #define JOYSTICK_INDEX 0
 
-#define H5VI_GSERV_IMPL_SDL2
-#define H5VI_STDINPUT_IMPL_SDL2
-
 #if !defined(H5VI_GSERV_IMPL_SDL2)
 #error Please define a graphics implementation (src/core/h5vi.c)
 #endif
@@ -476,7 +473,7 @@ unsigned H5VI_renderVirtualButtons(H5Render_PixelData surf, H5VI_InputData *keys
 			VEC2(h5ulong) p2 = { keys->virKeys[i].pos.x+keys->virKeys[i].size.x, keys->virKeys[i].pos.y };
 			VEC2(h5ulong) p3 = { keys->virKeys[i].pos.x+keys->virKeys[i].size.x, keys->virKeys[i].pos.y+keys->virKeys[i].size.y };
 			VEC2(h5ulong) p4 = { keys->virKeys[i].pos.x, keys->virKeys[i].pos.y+keys->virKeys[i].size.y };
-			H5Render_ulong_drawRectangle(surf, p1, p2, p3, p4, colour);
+			H5Render_ulong_drawRectangle(surf, p1, p2, p3, p4, 1, colour, 100);
 		}
 	}
 	return 0;
@@ -924,7 +921,7 @@ int main(void)
 						POINT_UL(190 + i * 4, 190 + i * 2),
 						POINT_UL(100 + i * 4, 240 + i * 2),
 						POINT_UL(10 + i * 4, 190 + i * 2)},
-					5, 0xF223);
+					5, 0, 0xF223, 100);
 				H5VI_setBuffer(&myref, &mybuf);
 				nanosleep(&(struct timespec){0, 10000000}, NULL);
 				H5Render_fill(mybuf, 0xFFFF);
