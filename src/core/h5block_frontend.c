@@ -11,6 +11,8 @@
 	#include <emscripten.h>
 #endif
 
+#define BACKGROUND_COLOUR 0xCBB7
+
 char getShapeName(unsigned shape) {
 	switch(shape) {
 	case 1:
@@ -139,7 +141,7 @@ void H5Block_Render(H5Render_PixelData surf, H5Block_playfieldVisual pV, H5Block
 			if(pV.data[i][j] != 0) {
 				H5Block_RenderAt(surf, block_side, j+offset_x, i+offset_y, rendering_offset_horizontal, pV.data[i][j]);
 			} else if (pV.data[i][j] == 0){
-				H5Block_RenderAt(surf, block_side, j+offset_x, i+offset_y, rendering_offset_horizontal, 0xFFFF);
+				H5Block_RenderAt(surf, block_side, j+offset_x, i+offset_y, rendering_offset_horizontal, BACKGROUND_COLOUR);
 			}
 		}
 	}
@@ -147,7 +149,7 @@ void H5Block_Render(H5Render_PixelData surf, H5Block_playfieldVisual pV, H5Block
 	/*Render informative elimination line*/
 	for (unsigned j = 0; j < PLAY_W; j++) {
 		if (pV.data[DEFAULT_Y][j] == 0) {
-			H5Block_RenderAt(surf, block_side, j+offset_x, DEFAULT_Y+offset_y, rendering_offset_horizontal, 0xF80D);
+			H5Block_RenderAt(surf, block_side, j+offset_x, DEFAULT_Y+offset_y, rendering_offset_horizontal, 0xB00D);
 		}
 	}
 
@@ -176,9 +178,9 @@ void H5Block_Render(H5Render_PixelData surf, H5Block_playfieldVisual pV, H5Block
 	for (unsigned i = 0; i < piecefield_h; i++) {
 		for (unsigned j = 0; j < piecefield_w; j++) {
 			if(game->hold_slot > 0 && game->piecefield[game->hold_slot-1].data[i][j] != 0) {
-				H5Block_RenderAt(surf, block_side, j, i+offset_left_y, rendering_offset_horizontal-offset_hold_slot_horizontal_ABSOLUTE, game->list[game->hold_slot-1].color);
+				H5Block_RenderAt(surf, block_side, j, i+offset_left_y, rendering_offset_horizontal-offset_hold_slot_horizontal_ABSOLUTE, game->list[game->hold_slot-1].colour);
 			} else if (game->hold_slot <= 0 || game->piecefield[game->hold_slot-1].data[i][j] == 0){
-				H5Block_RenderAt(surf, block_side, j, i+offset_left_y, rendering_offset_horizontal-offset_hold_slot_horizontal_ABSOLUTE, 0xFFFF);
+				H5Block_RenderAt(surf, block_side, j, i+offset_left_y, rendering_offset_horizontal-offset_hold_slot_horizontal_ABSOLUTE, BACKGROUND_COLOUR);
 			}
 		}
 	}
@@ -195,9 +197,9 @@ void H5Block_Render(H5Render_PixelData surf, H5Block_playfieldVisual pV, H5Block
 		for (unsigned i = 0; i < piecefield_h; i++) {
 			for (unsigned j = 0; j < piecefield_w; j++) {
 				if (game->next_shapes[3-k] == 0 || game->piecefield[game->next_shapes[3-k]-1].data[i][j] == 0) {
-					H5Block_RenderAt(surf, block_side, j+offset_next_pieces_horizontal, offset_next_pieces_vertical+i+(k*3), rendering_offset_horizontal, 0xFFFF);
+					H5Block_RenderAt(surf, block_side, j+offset_next_pieces_horizontal, offset_next_pieces_vertical+i+(k*3), rendering_offset_horizontal, BACKGROUND_COLOUR);
 				} else if(game->piecefield[game->next_shapes[3-k]-1].data[i][j] != 0) {
-					H5Block_RenderAt(surf, block_side, j+offset_next_pieces_horizontal, offset_next_pieces_vertical+i+(k*3), rendering_offset_horizontal, game->list[game->next_shapes[3-k]-1].color);
+					H5Block_RenderAt(surf, block_side, j+offset_next_pieces_horizontal, offset_next_pieces_vertical+i+(k*3), rendering_offset_horizontal, game->list[game->next_shapes[3-k]-1].colour);
 				}
 			}
 		}
@@ -399,7 +401,7 @@ int main(void) {
 	INIT_FONT_MAIN("8x8", FONT_SCALE);
 	global_padding = 2;
 	
-	H5Render_fill(main_buf, 0xFFFF);
+	H5Render_fill(main_buf, BACKGROUND_COLOUR);
 
 	if (H5VI_init(&main_ref, HCONSTANT, WCONSTANT)) {
 		H5VI_destroy(&main_ref);

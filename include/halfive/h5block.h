@@ -60,7 +60,7 @@ typedef struct {
 } H5Block_Block;
 
 typedef struct {
-	h5uint color;
+	h5uint colour;
 	H5Block_Block blocks[SHAPE_SIZE];
 } H5Block_Shape;
 

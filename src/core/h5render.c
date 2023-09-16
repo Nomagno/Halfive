@@ -31,12 +31,11 @@ unsigned global_padding;
 
 
 #include <halfive/h5stdlib.h>
-#undef C_A
-#define C_A
+
 void H5Render_blitSprite(H5Render_PixelData insurf, H5Render_PixelData outsurf, unsigned x, unsigned y, _Bool respect_transparency) {
 	for (size_t i = 0; i < insurf.height; i++) {
 		for (size_t j = 0; j < insurf.width; j++) {
-			_Bool tr = (respect_transparency && (C_A(MATRIX_GET(insurf, j, i)) == 0));
+			_Bool tr = (respect_transparency && !(MATRIX_GET(insurf, j, i) & 1));
 			MATRIX_GET(outsurf, j+x, i+y) = tr ? MATRIX_GET(outsurf, j+x, i+y) : MATRIX_GET(insurf, j, i);
 		}
 	}
@@ -55,7 +54,7 @@ void H5Render_blitSpriteWithTransparency(H5Render_PixelData insurf, H5Render_Pix
 void H5Render_fill(H5Render_PixelData surf, h5uint colour)
 {
 	/*memset's dramatically faster, useful for 0x0000 and 0xFFFF*/
-	if ((colour >> 8) == (colour & 0xFF)) {
+	if (((colour & 0xFF00) >> 8) == (colour & 0xFF)) {
 		memset(surf.data, (h5uchar)colour, surf.height*surf.width*sizeof(h5uint));
 	} else {
 		for (h5ulong i = 0; i < surf.width*surf.height; i++) {
@@ -71,7 +70,7 @@ void H5Render_scale(H5Render_PixelData insurf, H5Render_PixelData outsurf,
 	if (scale_factor == 1) {
 		for (render_t i = 0; i < insurf.height; i++) {
 			for (render_t j = 0; j < insurf.width; j++) {
-				_Bool tr = (respect_transparency && (MATRIX_GET(insurf, j, i) == 0));
+				_Bool tr = (respect_transparency && !(MATRIX_GET(insurf, j, i) & 1));
 				MATRIX_GET(outsurf, j, i) = tr ? MATRIX_GET(outsurf, j, i) : MATRIX_GET(insurf, j, i);
 			}
 		}
@@ -84,10 +83,9 @@ void H5Render_scale(H5Render_PixelData insurf, H5Render_PixelData outsurf,
 			for (render_t j = 0; j < insurf.width; j++) {
 				const render_t x = j * scale_factor;
 				for (render_t k1 = 0; k1 < scale_factor; k1++) {
-					_Bool tr = (respect_transparency && (MATRIX_GET(insurf, j, i) == 0));
+					_Bool tr = (respect_transparency && !(MATRIX_GET(insurf, j, i) & 1));
 					line_was_transparent &= tr ? 1 : 0;
 					MATRIX_GET(outsurf, x+k1, y) = tr ? MATRIX_GET(outsurf, x+k1, y) : MATRIX_GET(insurf, j, i);
-					MATRIX_GET(outsurf, x+k1, y) = MATRIX_GET(insurf, j, i);
 				}
 			}
 			if (!line_was_transparent) {
@@ -117,7 +115,7 @@ void H5Render_getTileByPosition(H5Render_Tileset *tileset, H5Render_PixelData ou
 	unsigned y = pos.y;
 	for (size_t i = 0; i < tileset->tile_height; i++) {
 		for (size_t j = 0; j < tileset->tile_width; j++) {
-			_Bool tr = (respect_transparency && (C_A(MATRIX_GET(tileset->buffer, j, i)) == 0));
+			_Bool tr = (respect_transparency && !(MATRIX_GET(tileset->buffer, j+x, i+y) & 1));
 			MATRIX_GET(outsurf, j, i) = tr ? MATRIX_GET(outsurf, j, i) : MATRIX_GET(tileset->buffer, j+x, i+y);
 		}
 	}
@@ -147,13 +145,13 @@ void H5Render_renderText(char *string, H5Render_Tileset *tileset, H5Render_Pixel
 	for (char *c = string; *c != '\0'; c++) {
 		char converted_name[32] = {0};
 		H5Render_mapCharToSymbol(*c, converted_name, sizeof(converted_name));
-		H5Render_fill(tmpsurf1, 0xFFFF);
-		H5Render_fill(tmpsurf2, 0xFFFF);
-		H5Render_getTileByName(tileset, tmpsurf1, 0, converted_name);
-		H5Render_scale(tmpsurf1, tmpsurf2, scale_factor, 0);
+		H5Render_fill(tmpsurf1, 0x0000);
+		H5Render_fill(tmpsurf2, 0x0000);
+		H5Render_getTileByName(tileset, tmpsurf1, 1, converted_name);
+		H5Render_scale(tmpsurf1, tmpsurf2, scale_factor, 1);
 		
 		h5ulong calculated_x = x + tileset->tile_width*scale_factor*i + padding*i;
-		H5Render_blitSprite(tmpsurf2, outsurf, calculated_x, y, 0);
+		H5Render_blitSprite(tmpsurf2, outsurf, calculated_x, y, 1);
 		i++;
 	}
 }

@@ -41,11 +41,10 @@ uint32_t prng(uint32_t x) {
 
 uint32_t shuffleList(unsigned *arr, unsigned n, uint32_t seed) {
 	seed = prng(seed);
-	for (signed i = n-1; i > 0; i--) {
-		unsigned j = (unsigned)(((float)(seed % 1000)/(float)1000) * ((float)(i+1)));
+	for (unsigned i = 0; i < n; i++) {
 		unsigned tmp = arr[i];
-		arr[i] = arr[j];
-		arr[j] = tmp;
+		arr[i] = arr[seed % (i+1)];
+		arr[seed % (i+1)] = tmp;
 	}
 	return seed;
 }
@@ -84,7 +83,7 @@ H5Block_Shape H5Block_getRotatedShape(H5Block_Shape x, unsigned rot) {
 	if (rot == 0) return x;
 
 	H5Block_Shape retval = {0};
-	retval.color = x.color;
+	retval.colour = x.colour;
 
 	for (int i = 0; i < SHAPE_SIZE; i++){
 		retval.blocks[i].exists = 1;
@@ -180,7 +179,7 @@ unsigned H5Block_placeShape(H5Block_Playfield *p, H5Block_Shape a, signed x, sig
 		  finalY < 0 || finalY >= PLAY_H) {
 			; /*Out of bounds placement*/
 		} else {
-			p->data[finalY][finalX] = a.color;
+			p->data[finalY][finalX] = a.colour;
 		}
 	}
 	linesCleared = H5Block_updatePlayfield(p);
@@ -336,7 +335,7 @@ void H5Block_getVisualRepresentationOfField(H5Block_Game *game, H5Block_playfiel
 		unsigned coordX = finalShape.blocks[i].horizontal + game->currX;
 		unsigned coordY = finalShape.blocks[i].vertical + game->currY;
 		if (finalShape.blocks[i].exists) {
-			pV->data[coordY][coordX] = finalShape.color;
+			pV->data[coordY][coordX] = finalShape.colour;
 		}
 	}
 

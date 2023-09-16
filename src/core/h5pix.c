@@ -96,14 +96,15 @@ int H5Pix_getPAM_Contents(const char *filename, H5Render_PixelData buf)
 
 	for (h5ulong i = 0; i < h; i++) {
 		for (h5ulong j = 0; j < w; j++) {
-			if ((!!(data[(((i * w) + j) * 4) + 3]))) { /*only change pixel if
-														  its opaque*/
+			if (MATRIX_INDEX(data, w, j * 4 + 3, i * 4) != 0) { /*only change pixel if
+                                                             its opaque*/
 				MATRIX_GET(buf, j, i) =
 					((MATRIX_INDEX(data, w, j * 4, i * 4) >> 3) << 11) |
 					((MATRIX_INDEX(data, w, j * 4 + 1, i * 4) >> 3) << 6) |
 					((MATRIX_INDEX(data, w, j * 4 + 2, i * 4) >> 3) << 1) |
-					!!MATRIX_INDEX(data, w, j * 4 + 3, i * 4);
+					1;
 			} else { /*Can add a debug taint color for transparent pixels here*/
+				MATRIX_GET(buf, j, i) = 0x0000;
 			}
 		}
 	}

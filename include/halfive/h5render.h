@@ -50,8 +50,8 @@ IN THE SOFTWARE.
 )
 
 /*Pixel buffer*/
-#define MATRIX_GET(var, x, y)	   (var).data[(((y) * (var).width) + (x))]
-#define MATRIX_INDEX(var, w, x, y) var[(((y) * (w)) + (x))]
+#define MATRIX_GET(var, x, y)	   ((var).data[(((y) * (var).width) + (x))])
+#define MATRIX_INDEX(var, w, x, y) (var[(((y) * (w)) + (x))])
 
 #define POINT_U(x, y) \
 	(VEC2(h5uint)) { x, y }
@@ -106,7 +106,7 @@ extern unsigned global_padding;
 	H5Pix_getPAM_Size(PREPEND_PATH v ".pam", &tileset_height_pix, &tileset_width_pix);\
 	h5uint font_buf[tileset_height_pix][tileset_width_pix];\
 	H5Render_PixelData font_sprite = {tileset_height_pix, tileset_width_pix, &font_buf[0][0]};\
-	H5Render_fill(font_sprite, 0xFFFF);\
+	H5Render_fill(font_sprite, 0x0000);\
 	H5Pix_getPAM_Contents(PREPEND_PATH v ".pam", font_sprite);\
 	size_t tileset_h, tileset_w;\
 	H5Pix_getINFO_TilesetSize(PREPEND_PATH v ".info", &tileset_h, &tileset_w);\
@@ -129,11 +129,11 @@ extern unsigned global_padding;
 	size_t font_tmp_h = font_tileset.tile_height, font_tmp_w = font_tileset.tile_width;\
 	h5uint font_tmpbuf1[font_tmp_h][font_tmp_w];\
 	H5Render_PixelData font_tmpsprite1 = {.height = font_tmp_h, .width = font_tmp_w, &font_tmpbuf1[0][0]};\
-	H5Render_fill(font_tmpsprite1, 0xFFFF);\
+	H5Render_fill(font_tmpsprite1, 0x0000);\
 	\
 	h5uint font_tmpbuf2[font_tmp_h*scaling][font_tmp_w*scaling];\
 	H5Render_PixelData font_tmpsprite2 = {.height = font_tmp_h*scaling, .width = font_tmp_w*scaling, &font_tmpbuf2[0][0]};\
-	H5Render_fill(font_tmpsprite2, 0xFFFF);\
+	H5Render_fill(font_tmpsprite2, 0x0000);\
 	\
 	global_font.tileset = &font_tileset;\
 	global_font.tmp1 = font_tmpsprite1;\
