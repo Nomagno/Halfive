@@ -318,7 +318,7 @@ GO_BACK:
 	return 0;
 }
 
-uint32_t seed = 43823754;
+uint32_t seed = 0;
 static h5uint array_main_buf[HCONSTANT][WCONSTANT] = {0};
 H5VI_Reference main_ref;
 H5Render_PixelData main_buf = {HCONSTANT, WCONSTANT, .data = &array_main_buf[0][0]};
@@ -413,7 +413,7 @@ int main(void) {
 		H5VI_defaultVirtualLayout(&main_ref, &loop_data.input_keys);
 	#endif
 
-	seed = clock() % 1100;
+	seed = time(NULL) % 1100;
 
 	H5Block_populatePiecefield(&game);
 	seed = H5Block_genShapes(&game, seed, 1);
