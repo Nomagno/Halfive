@@ -34,9 +34,19 @@ typedef struct {
 	unsigned remaining_time;
 } H5State_StateMachine;
 
+typedef enum {
+	enum_typeUnknown = 0,
+	enum_typeThinker = 1,
+	enum_typeVFX = 2
+} H5State_EntityType;
+
 typedef struct {
 	_Bool exists;
+	H5State_EntityType entity_type;
 	H5State_StateMachine state_machine;
+
+	char data_type;
+	_Bool data_is_allocated;
 	void *data;
 } H5State_Entity;
 
@@ -56,10 +66,16 @@ typedef struct {
 } H5State_StateTransition;
 
 typedef struct {
-	H5State_StateTransition *state_transitions;
+	H5State_StateTransition on_entry;
+	H5State_StateTransition update;
+	H5State_StateTransition on_exit;
+} H5State_State;
+
+typedef struct {
+	H5State_State states[128];
 	H5State_Entity entities[64];
 	unsigned current_tick;
 } H5State_GlobalObjectManagementTable;
 
-void H5State_simulateOneTick(H5State_GlobalObjectManagementTable * table);
+void H5State_simulateOneTick(H5State_GlobalObjectManagementTable *table);
 #endif
