@@ -50,6 +50,29 @@ typedef struct {
 	void *data;
 } H5State_Entity;
 
+typedef struct {
+	h5uint data[16];
+} H5State_EntityBasicData_Raw;
+
+typedef struct {
+	h5uint prev_state;
+	h5uint next_state;
+
+	h5uint axis_1_2; /*11111111 22222222*/
+	h5uint button_mask; /* UP DOWN LEFT RIGHT A B X Y L R ZL ZR MOUSE1 MOUSE2 IS_CURSOR_ON_SELF IS_JUST_CLICKED_MOUSE1*/
+
+	h5uint pos_x;
+	h5uint pos_y;
+	h5uint rot;
+
+	h5uint nearby_entities_flag_1_2_3; /* ff 111111 222222 33 */
+	h5uint nearby_entities_3_4_5;      /* 3333 444444 555555 */
+	h5uint nearby_entities_flag_types; /* f 111 222 333 444 555*/
+
+	h5uint custom_data[6];
+} H5State_EntityBasicData_BasicOverlay;
+
+
 typedef H5State_Entity(*H5State_NativeStateTransition)(H5State_Entity);
 
 typedef enum {
@@ -74,8 +97,12 @@ typedef struct {
 typedef struct {
 	H5State_State states[128];
 	H5State_Entity entities[64];
+	H5State_EntityBasicData_Raw entity_raw_data[64]; /*To be mapped as the VM's process memory for VM states*/
 	unsigned current_tick;
 } H5State_GlobalObjectManagementTable;
+
+H5State_EntityBasicData_BasicOverlay H5State_convertRawToBasic(H5State_EntityBasicData_Raw raw);
+H5State_EntityBasicData_Raw H5State_convertBasicToRaw(H5State_EntityBasicData_BasicOverlay raw);
 
 void H5State_simulateOneTick(H5State_GlobalObjectManagementTable *table);
 #endif
