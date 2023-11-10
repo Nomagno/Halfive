@@ -28,6 +28,12 @@ IN THE SOFTWARE.
 
 #include <halfive/h5req.h>
 
+#define CLAMPANGLE(x) fmodl(x, 2*PI)
+#define PI 3.1415926535897932384626433832795028841971693993751058209749445923078164062L
+#define CEIL(n)		((h5smax)((n) + (((n) < 0) ? (1) : (-1))))
+#define CAP(n, cap) (((n) < (cap)) ? (n) : (cap))
+#define FLOOR(n)	((h5smax)(n))
+
 #define MAKEVEC2(type) typedef struct { type x; type y; } vec2_##type
 #define VEC2(type) vec2_##type
 
@@ -48,6 +54,10 @@ MAKEVEC3(h5umax);
 MAKEVEC3(h5sint);
 MAKEVEC3(h5slong);
 MAKEVEC3(h5smax);
+
+typedef struct {
+	VEC2(h5ulong) size; /*Size to each of the four sides from the center*/
+} H5Math_Rect;
 
 /*Composite bezier curve*/
 typedef struct {
@@ -121,12 +131,36 @@ h5ulong H5Math_ulong_integerSquareRoot(
 h5umax H5Math_umax_integerSquareRoot(
 	h5umax a); /*Integer square root of h5umax*/
 
-#define CEIL(n)		((h5smax)((n) + (((n) < 0) ? (1) : (-1))))
-#define CAP(n, cap) (((n) < (cap)) ? (n) : (cap))
-#define FLOOR(n)	((h5smax)(n))
-
 #ifdef FLOATS_SUPPORTED
 MAKEVEC2(h5float);
+
+h5float H5Math_float_clamp(h5float x, h5slong lower_bound, h5slong upper_bound, _Bool *clamped);
+h5float H5Math_float_crossProductVecVec(VEC2(h5float) a, VEC2(h5float) b);
+VEC2(h5float) H5Math_float_crossProductVecScalar(VEC2(h5float) a, h5float s);
+VEC2(h5float) H5Math_float_crossProductScalarVec(h5float s, VEC2(h5float) b);
+
+h5float H5Math_float_dotProduct(VEC2(h5float) a, VEC2(h5float) b);
+
+VEC2(h5float) H5Math_float_rotateVector(VEC2(h5float) vec, h5float angle);
+/* https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect */
+/* https://gist.github.com/tp/75cb619a7e40e6ad008ef2a6837bbdb2 */
+/* VEC2(h5float) pointOfIntersection_crossproduct(VEC2(h5float) l1_a, VEC2(h5float) l1_b, VEC2(h5float) l2_a, VEC2(h5float) l2_b); */
+
+typedef enum {
+	Overlap_None,
+	Overlap_SinglePoint,
+	Overlap_MultiplePoints
+} H5Math_IntersectType;
+
+typedef struct {
+	H5Math_IntersectType type;
+	VEC2(h5float) point;
+} H5Math_IntersectData;
+
+_Bool H5Math_float_checkForOverlap_1D(VEC2(h5float) l1, VEC2(h5float) l2);
+/* https://stackoverflow.com/questions/16314069/calculation-of-intersections-between-line-segments */
+H5Math_IntersectData H5Math_float_pointOfIntersection(VEC2(h5float) l1_a, VEC2(h5float) l1_b, VEC2(h5float) l2_a, VEC2(h5float) l2_b);
+void H5Math_float_calculateRectCorners(H5Math_Rect rect, VEC2(h5float) *fourvecs, h5float angle);
 
 VEC2(h5uint) H5Math_uint_vecMultScalar(
 	VEC2(h5uint) a, h5float k); /*Multiply VEC2(h5uint) by scalar [k]*/

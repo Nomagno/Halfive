@@ -161,8 +161,8 @@ void H5Render_ulong_drawLine(
 	H5Render_PixelData surf, VEC2(h5ulong) p1, VEC2(h5ulong) p2, h5uint colour,
 	unsigned alpha)
 {
-	h5slong diffx = (H5_ABS(p2.x - p1.x));
-	h5slong diffy = -(H5_ABS(p2.y - p1.y));
+	h5slong diffx = (H5_ABS_INT(p2.x - p1.x));
+	h5slong diffy = -(H5_ABS_INT(p2.y - p1.y));
 
 	h5slong error = diffx + diffy;
 
@@ -191,8 +191,8 @@ void H5Render_ulong_drawLine(
 int H5Render_ulong_getRasterInfo(
 	VEC2(h5ulong) p1, VEC2(h5ulong) p2, h5ulong edges[][2], size_t n)
 {
-	h5slong diffx = (H5_ABS(p2.x - p1.x));
-	h5slong diffy = -(H5_ABS(p2.y - p1.y));
+	h5slong diffx = (H5_ABS_INT(p2.x - p1.x));
+	h5slong diffy = -(H5_ABS_INT(p2.y - p1.y));
 
 	h5slong error = diffx + diffy;
 
@@ -226,8 +226,8 @@ int H5Render_ulong_getRasterInfo(
 void H5Render_slong_getLinePoints(VEC2(h5slong) p1, VEC2(h5slong) p2,
 	h5uint length, VEC2(h5slong) *ret, size_t n)
 {
-	h5slong diffx = (H5_ABS(p2.x - p1.x));
-	h5slong diffy = -(H5_ABS(p2.y - p1.y));
+	h5slong diffx = (H5_ABS_INT(p2.x - p1.x));
+	h5slong diffy = -(H5_ABS_INT(p2.y - p1.y));
 
 	h5slong error = diffx + diffy;
 

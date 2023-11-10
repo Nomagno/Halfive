@@ -33,15 +33,16 @@ int8_t, int16_t, int32_t, intmax_t, \
 size_t, ssize_t
 #endif
 
-#define H5_ABS(n)	((((h5slong)(n)) < 0) ? (-((h5slong)(n))) : ((h5slong)(n)))
+#define H5_ABS_INT(n)	((((h5slong)(n)) < 0) ? (-((h5slong)(n))) : ((h5slong)(n)))
 
 #ifdef FLOATS_SUPPORTED
 #include <float.h>
 #define H5FLT_MAX FLT_MAX
 #define H5FLT_MIN FLT_MIN
 typedef float h5float;
+#define H5_ABS_FLOAT(n)	((((h5float)(n)) < 0) ? (-((h5float)(n))) : ((h5float)(n)))
 #define TLR						  0.1f /*Default tolerance for comparisons*/
-#define _FLT_CMP(a, b, tolerance) (H5_ABS(a - b) <= tolerance)
+#define _FLT_CMP(a, b, tolerance) (H5_ABS_FLOAT(a - b) <= tolerance)
 #define H5FLOAT_CMP(a, b)			  _FLT_CMP(a, b, TLR)
 #endif
 

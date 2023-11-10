@@ -544,7 +544,7 @@ void updateVirtualInputNonAuthoritative(H5VI_Reference *handle, H5VI_InputData *
 
 /*_Bool getB_fromA_dual(h5uchar axis_u, _Bool sign, h5uchar deadzone){
 //0 positive, 1 negative
-	//h5schar axis = axis_u - 128; if ((H5_ABS(axis) - deadzone > 0) && ((sign == 0) ? ( axis > 0 ) : ( axis < 0 ))) { return 1; }
+	//h5schar axis = axis_u - 128; if ((H5_ABS_INT(axis) - deadzone > 0) && ((sign == 0) ? ( axis > 0 ) : ( axis < 0 ))) { return 1; }
 	return 0;
 }*/
 
