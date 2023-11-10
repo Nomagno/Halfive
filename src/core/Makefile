@@ -32,15 +32,15 @@
 
 INCLROOT="../../include/"
 
-# FLAGS=-O3 -fsanitize=address,undefined -g -lm
-FLAGS=-O3 -lm
+FLAGS=-O3 -fsanitize=address,undefined -g -lm
+# FLAGS=-O3 -lm
 
-PARAMS=-DH5VERSION=0 -DH5PHY_VM_SIMULATION -DH5VI_GSERV_IMPL_SDL2 -DH5VI_STDINPUT_IMPL_SDL2
+PARAMS=-DH5VERSION=0 -DH5PHY_VM_SIMULATION -DH5VI_GSERV_IMPL_SDL2 -DH5VI_STDINPUT_IMPL_SDL2 -DTOUCH_SUPPORT
 
 main: warn libhalfive.a
 block_emscripten_bin: warn block_emscripten
 block_sdl2_bin: warn block_sdl2
-#sim_sdl2_bin: warn sim_sdl2
+sim_sdl2_bin: warn sim_sdl2
 gear_sdl2_bin: warn gear_sdl2
 pamview_bin: warn pamviewer
 texttest_bin: warn texttester
@@ -49,7 +49,7 @@ h5asm_debug_bin: warn h5assembler_debug
 remain: clean main
 reblock_emscripten_bin: clean block_emscripten
 reblock_sdl2_bin: clean block_sdl2
-#resim_sdl2_bin: clean sim_sdl2
+resim_sdl2_bin: clean sim_sdl2
 regear_sdl2_bin: clean gear_sdl2
 repamview_bin: clean pamviewer
 retexttest_bin: clean texttester
@@ -74,8 +74,8 @@ block_emscripten:
 	emcc $(FLAGS) $(PARAMS) -I$(INCLROOT) -DTOUCH_SUPPORT -DIMPL_EMSCRIPTEN -s WASM=1 -s USE_SDL=2 --embed-file ../../assets/sprites/ -o index.js h5block_frontend.c h5block.c h5vi.c h5math.c h5render.c h5pix.c h5stdlib.c; mkdir -p ../../docs/public_misc/block; cp ../../docs/emscripten_template/halfive_shell.html index.js index.wasm ../../docs/public_misc/block/
 block_sdl2 : h5render.o h5stdlib.o h5math.o h5vi.o h5block.o h5pix.o
 	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -o block h5block_frontend.c h5block.o h5vi.o h5math.o h5render.o h5pix.o h5stdlib.o -lSDL2
-#sim_sdl2 : h5render.o h5stdlib.o h5math.o
-#	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -DH5VI_GSERV_IMPL_SDL2 -DH5VI_STDINPUT_IMPL_SDL2 -o sim h5sim.c h5vi.c h5render.o h5math.o h5stdlib.o -lSDL2
+sim_sdl2 : h5render.o h5stdlib.o h5math.o
+	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -DH5VI_GSERV_IMPL_SDL2 -DH5VI_STDINPUT_IMPL_SDL2 -o sim h5sim.c h5vi.c h5render.o h5math.o h5stdlib.o -lSDL2
 gear_sdl2 : h5render.o h5stdlib.o h5vm_gear.o h5math.o h5asm_gear.o
 	cc $(FLAGS) $(PARAMS) -I$(INCLROOT) -DH5VI_GSERV_IMPL_SDL2 -DH5VI_STDINPUT_IMPL_SDL2 -o gear h5gear.c h5vi.o h5render.o h5math.o h5stdlib.o h5vm_gear.o h5asm_gear.o -lSDL2
 pamviewer : h5pix.o h5render.o h5math.o h5stdlib.o
