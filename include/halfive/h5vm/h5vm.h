@@ -28,93 +28,93 @@ IN THE SOFTWARE.
 #define H5VM_H
 #include <halfive/h5req.h>
 
-#define JUMPTABLESIZE 256 /*Size in words of the subroutine jumptable*/
-
-
 typedef enum {
-	Inst_halt = 0,
-	Inst_jmp  = 1,
-	Inst_skpz = 2,
-	Inst_skmz = 3,
-	Inst_set = 4,
-	Inst_add = 5,
-	Inst_sub = 6,
-	Inst_and = 7,
-	Inst_or	 = 8,
-	Inst_xor = 9,
-	Inst_shift = 10,
-	Inst_cmp = 11,
-	Inst_func = 12,
-	Inst_ret = 13,
-	Inst_call = 14,
-	Inst_frame = 15
+	/*Control flow group*/
+	Inst_halt =  0,
+	Inst_jump  = 1,
+	Inst_skpz =  2,
+	Inst_skmz =  3,
+
+	/*Subroutine group*/
+	Inst_stki =  4,
+	Inst_stkd =  5,
+	Inst_func =  6,
+	Inst_back =  7,
+	Inst_call =  8,
+
+	/*Memory management group*/
+	Inst_mlod =  9,
+	Inst_mstr =  10,
+	Inst_vlod =  11,
+	Inst_vstr =  12,
+	Inst_fset =  13,
+	Inst_fdel =  14,
+	Inst_fflp =  15,
+
+	/*Arithmetic group*/
+	Inst_badd =  16,
+	Inst_bsub =  17,
+	Inst_band =  18,
+	Inst_inor =  19,
+	Inst_exor =  20,
+	Inst_shft =  21,
+	Inst_comp =  22,
 } H5VM_InstructionSet;
 
-typedef enum { H5VM_ModeAdr = 0, H5VM_ModeLit = 1, H5VM_ModePtr = 2 } H5VM_AddressingMode;
-
-typedef enum {
-	H5VM_CharA = 0,
-	H5VM_CharB = 1,
-	H5VM_CharC = 2,
-	H5VM_CharD = 3,
-	H5VM_CharE = 4,
-	H5VM_CharF = 5,
-	H5VM_CharH = 6,
-	H5VM_CharI = 7,
-	H5VM_CharO = 8,
-	H5VM_CharS = 9,
-	H5VM_CharX = 10,
-	H5VM_Char1 = 11,
-	H5VM_Char2 = 12,
-	H5VM_Char3 = 13,
-	H5VM_Char4 = 14,
-	H5VM_Char5 = 15
-} H5VM_Character;
-
-typedef enum {
-	H5VM_SWLibrary = 0,
-	H5VM_SWModule = 1,
-	H5VM_SWApplication = 2,
-	H5VM_SWOther = 3,
-} H5VM_SoftwareType;
-
-/*Execution memory*/
+/*
+mode value:
+0 - default
+1 - immediate
+2 - pointer
+3 - special
+*/
 
 typedef struct {
-	H5VM_Character char1: 4;
-	H5VM_Character char2: 4;
-	h5uchar namespace: 8;
-	H5VM_SoftwareType sw_type: 4;
-	h5uchar multitasking_model: 4;
-} H5VM_Header;
-
-typedef struct {
-	H5VM_InstructionSet opcode: 4;
-	H5VM_AddressingMode optype_1: 2;
-	H5VM_AddressingMode optype_2: 2;
-	h5uint operand_1;
-	h5uint operand_2;
+	h5uchar mode: 2;
+	H5VM_InstructionSet opcode: 6;
+	h5uchar reg: 8;
+	h5uint operand: 16;
 } H5VM_Instruction;
 
-typedef struct {
-	H5VM_Header header;
-	H5VM_Instruction inst;
-} H5VM_ExecutableUnit;
+/*Callstack:
+Stack pointer register: Current stack frame start address
+Stack size register:  Size of each stack frame
+First address of each stack frame: return program counter
+Rest of addresses of each stack frame: free use
+Address 0: Zero address, special behaviour
+Addresses 1-253: Jumptable
+Addresses 1-15: Reserved addresses of jumptable
+Addresses 16-253: Free use addresses of jumptable
+Address 254: Output address, write to provide a number
+Address 255: Input address, write to request a number
+*/
+
+typedef enum {
+	H5VM_Register_Flag=0,
+	H5VM_Register_ProgramCounter=1,
+	H5VM_Register_StackPointer=2,
+	H5VM_Register_StackSize=3,
+
+	H5VM_Register_A=4,
+	H5VM_Register_B=5,
+	H5VM_Register_C=6,
+	H5VM_Register_D=7,
+
+	H5VM_Register_W=8,
+	H5VM_Register_X=9,
+	H5VM_Register_Y=10,
+	H5VM_Register_Z=11
+} H5VM_Registers;
+
+/*This enables seamless switching between harvard and von-neumann architectures*/
+#define INST(x) (H5VM_Instruction) { (x) >> 30, ((x) >> 24) & 0x3F, ((x) >> 16) & 0xFF, (x) & 0xFFFF }
+#define MACHINE_CODE(x) (h5ulong){ (h5ulong)((long int)(x.mode) /*this cast is because C is stupid*/ << 30) | ((x.opcode) << 24) | ((x.reg) << 16) | (x.operand) }
 
 typedef struct {
-	_Bool isActive;
-	H5VM_Character char1: 4;
-	H5VM_Character char2: 4;
-	h5uint id;
-	h5uint pc;
-} H5VM_CrossProcessProgramCounter;
-
-typedef struct {
-	H5VM_ExecutableUnit code[0x10000];
-	h5uint data[0x10000]; /*Array of pointers*/
-	H5VM_CrossProcessProgramCounter jumptable[JUMPTABLESIZE];
+	h5ulong code[0x08000];
+	h5uint data[0x10000];
+	h5uint registers[0x100];
 	_Bool hf; /*Halt flag*/
-	h5uint co; /*Program counter*/ /*MAPPED TO 0xFFFA*/
 } H5VM_VirtualMachine;
 
 
@@ -129,18 +129,11 @@ Other- FATAL - Unknown error
 */
 typedef struct {
 	unsigned errcode;	  /*Zero means no error*/
-	_Bool wrote_adrw; /*Was there a write to memory?*/
-	_Bool read_adrw;  /*Was the address written to also read?*/
-	_Bool read_adrr;  /*Was there a (independent) read from memory?*/
-	_Bool wrote_zf;	  /*Was the zero flag written to?*/
-	_Bool wrote_cf;	  /*Was the carry flag written to?*/
-	h5uint adrw;	  /*Which address was written to?*/
-	h5uint adrr;	  /*Which address was read from?*/
+	h5uint adrw;	  /*Which address/register was written to?*/
+	h5uint adrr;	  /*Which address/register was read from?*/
 } H5VM_ReadWriteInfo;
 
 /*Halfive VM interface*/
-
-/*Update the memory setup, please don't call every cycle, just when needed...*/
 
 /*Execute one instruction from the program*/
 extern unsigned H5VM_execute(

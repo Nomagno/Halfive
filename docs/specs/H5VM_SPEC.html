@@ -34,250 +34,308 @@ specified execution engine for programs.</p>
 <p>Following Harvard architecture principles, H5VM loads code and data
 separately into two different &#x2018;members&#x2019;. The machine code is loaded into
 the code member, while the data member contains almost all information
-that is manipulated during the program execution itself.</p>
+that is manipulated during the program execution itself. Both members
+are big-endian.</p>
 <p>The code member is read-only.</p>
 <p>The data member has addresses (16-bit unsigned memory cells indexed
-from 0 to 0xFFFF) that are either read/write (RW), read-only (RO), or
-unmapped (UM). These three properties are referred to as the
-&#x2018;permission&#x2019; of an address.</p>
-<ul>
-<li>The following addresses must be present in the data member with the
-indicated codename (for later use in this document), index, and
-permissions:
-<ul>
-<li>Zero flag (<code>_ZF</code>) (0xFFFF) (RW)</li>
-<li>Carry flag (<code>_CF</code>) (0xFFFE) (RW)</li>
-<li>Input register (<code>_IN</code>) (0xFFFD) (RO): Reads to the input
-register may prompt the user for numbers</li>
-<li>Output register (<code>_OU</code>) (0xFFFC) (RW): Writes to the
-output register may display the numbers to the user. Reads always yield
-the value zero</li>
-<li>Program counter register (<code>_PCH</code>) (0xFFFA) (RO): The
-program counter value at ALL TIMES</li>
-<li>Error address (<code>_ERR</code>) (0xFFF0) (UM)</li>
-<li>General purpose memory (<code>_GMEM</code>) (from 0 until 0x3FFF)
-(RW): General-purpose writable addresses</li>
-<li>Read-only drive (<code>_DRIV</code>) (from 0x4000 until 0xBFFF)
-(RO): Read-only addresses, intended to be loaded as static data at the
-beggining of execution</li>
-</ul></li>
-</ul>
+from 0 to 0xFFFF). Address <code>0x00</code> is known as the zero
+address, and is reserved. While the rest of the memory is completely
+free to use so long as it is mapped to a physical device, addresses
+<code>0x01</code> through <code>0xFD</code> are likely to be used for
+the jumptable. Reads from address <code>0xFE</code> may prompt the user
+for input, and writes to address <code>0xFF</code> may display the
+written data to the user. &#x201C;Jumptable address <code>foo</code>&#x201D; is a
+shorthand for the memory cell with index
+<code>jumptable_offset + 1</code>. <code>jumptable_offset</code> has
+value <code>0x01</code> which can not be changed.</p>
+<p>There is additionally a register member, which has currently multiple
+defined registers: - Flag register (<code>0x00</code>) (<code>F</code>):
+This register has multiple flags that are defined later on. Starting
+from the LEAST significant bit, the meaning of each zero-indexed bit
+position is: * 0 = Zero Flag - Set by arithmetic group operations. If
+the result is zero, it is set to low, else it is set to high. * 1 =
+Overflow Flag - Set by wraparound group operations. If the operation
+results in wraparound, set it to high, else set it to low. * 2 through 7
+- Reserved * 8 trough 15 - Implementation-defined - Program counter
+register (<code>0x01</code>) (<code>P</code>): Holds the actual program
+counter value used to drive the processor. Please modify through the
+appropiate control flow group and subroutine group operations only. -
+Stack pointer register (<code>0x02</code>) (<code>S</code>): holds the
+stack pointer, used by multiple operations. It can be modified directly,
+but using the subroutine group operations <code>STKI</code> and
+<code>STKD</code> is highly recommended unless there is a special need.
+- Stack size register (<code>0x03</code>) (<code>R</code>): holds the
+size of each stack frame, in memory cells. - General purpose registers
+<code>A</code>, <code>B</code>, <code>C</code>, <code>D</code>,
+<code>W</code>, <code>X</code>, <code>Y</code>, <code>Z</code>
+(<code>0x04</code> through to <code>0x0B</code>): Can be written or read
+from for any purpose, at any time.</p>
 <h4>Machine code format:</h4>
 <ul>
 <li>A program is a sequence of instructions.</li>
-<li>Each instruction is 5 octets in length (40 bits), and has 4 parts
-stored sequentially: the type nibble (4 bits), the opcode (4 bits), the
-first operand (16 bits), and the second operand (16 bits)</li>
-<li>The type nibble indicates the type of the operands:
-<ul>
-<li>If the lowest bit is zero, the second operand is an of type ADDRESS,
-else it is of type <code>[OPTYPE]</code>.</li>
-<li>If the second lowest bit is zero, the first operand is of type
-ADDRESS, else it is of type <code>[OPTYPE]</code>.</li>
-<li>The third lowest bit is irrelevant.</li>
-<li>If highest bit is zero, subsitute <code>[OPTYPE]</code> above with
-CONSTANT. If it is one, subsitute it with DERREFERENCE.</li>
-<li>DERREFERENCES hold a 16-bit memory address that is accessed, and the
-value of that memory address is the memory cell the instruction operares
-on.</li>
-</ul></li>
+<li>Each instruction is 4 octets in length (32 bits), and has four parts
+stored sequentially (leftmost bit == most significant bit): the opcode
+(6 bits), the addressing mode (2 bits)
+(<code>0b00</code>=<code>m</code>, <code>0b01</code>=<code>i</code>,
+<code>0b10</code>=<code>p</code>, <code>0b11</code>=<code>s</code>), the
+register cell (8 bits), and the operand (16 bits)</li>
 <li>The opcode indicates the operation to be done, see the explanation
 of opcodes below.</li>
-<li>The two operands will be interpreted depending on the opcode.</li>
+<li>The addressing mode is tied semantically to the opcode and specifies
+information about to the operation to be done, see the explanation of
+opcodes below.</li>
+<li>The register cell and operand will be interpreted depending on the
+opcode, but usually the register cell is representing a register, and
+the operand is representing an immediate value, address or pointer.</li>
 <li>The program counter is the index of the instruction being currently
 executed, if one was to assign an index to each instruction. To modify
-it means to change which instruction executes next. It can only be
+it means to change which instruction executes next. It should only be
 modified through the opcodes <code>jmp</code>, <code>skpz</code>,
 <code>skmz</code>, <code>func</code>, <code>ret</code>,
 <code>call</code>.</li>
-<li>The program counter increases by one after an instruction is
-executed, except when one of these six opcodes explicitly modifies it
-(If <code>_ZF</code> is not zero upon execution of an <code>skpz</code>
-or an <code>skmz</code>, the program counter also just increases by one
-as usual)</li>
+<li>The program counter increases by 1 after an instruction is executed,
+except when one of these six opcodes explicitly modifies it (If the zero
+flag is not 0 upon execution of an <code>skpz</code> or an
+<code>skmz</code>, the program counter also just increases by one as
+usual)</li>
 </ul>
-<p>EXAMPLE:</p>
-<pre><code>BINARY: 0001 0101 000000000000001 000000000011111 0000 0000 0000000000000000 0000000000000000
-HEX:    0x01 0x05            0x01            0x1F 0x00 0x00             0x00             0x00
-DECIMAL:   1    5               1              31 0       0                0                0
-ASSEMBLY:     add               1             =1F      halt
-ENGLISH: add the contents of address ONE and the constant 0x1F, put the result in address ONE; stop execution
-PROPER ASSEMBLY:
-    add 1 =1F
-    halt</code></pre>
 <h4>Assembly format:</h4>
 <ul>
 <li>It is a textual representation of the machine code</li>
-<li>Each opcode is represented by its lowercase name (see opcode
+<li>Each opcode is represented by its code, in uppercase (see opcode
 guide)</li>
-<li>Each operand&#x2019;s value is represented in raw, uppercase
-hexadecimal</li>
-<li>Operands are to be directly preceded by:
-<ul>
-<li>No symbol if they are of type ADDRESS</li>
-<li>The equal symbol <code>=</code> if they are of type CONSTANT</li>
-<li>The asterisk symbol <code>*</code> if they are of type
-DERREFERENCE</li>
-</ul></li>
-<li>The opcode, the first and second operands are separated by a symbol
-space &#x2018;<code></code>&#x2019;</li>
+<li>Each addressing mode is represented by its code, in lowercase</li>
+<li>Each register cell&#x2019;s value is represented by either two characters
+of uppercase hexadecimal or <code>_X</code>/<code>X_</code>, where its
+register code is <code>X</code> and has the case indicated in the memory
+layout section. If it is irrelevant, it is labelled as <code>__</code>
+in the opcode guide. Note <code>__</code> does not stand for a space,
+but for two literal underscode characters.</li>
+<li>Each operand&#x2019;s value is represented by either two or four characters
+of uppercase hexadecimal. A two-character register may also be used as
+representation, though it is suggested this is only done for operations
+that do, in fact, manipulate two registers at once.</li>
+<li>The opcode and the addressing mode are written together, the
+register cell and second operands are separated by the space symbol
+&#x2018;<code></code>&#x2019;. The following combinations are accepted in assembly, in
+which case the non present data will be taken to be all zeroes: opcode,
+opcode + addressing mode, opcode + addressing mode + register cell,
+opcode + addressing mode + register cell + two-digit operand, opcode +
+addressing mode + register cell + four-digit operand</li>
+<li>Instructions may be separated by either a newline or a colon symbol
+&#x2018;<code>:</code>&#x2019;</li>
+<li>Comments are defined as all text from the first semicolon symbol
+<code>;</code> in a line, if present, to the end of the line, and they
+are ignored by the assembler.</li>
 </ul>
-<p>EXAMPLE:</p>
-<pre><code>add 1 =50
-sub *27FA 12
-halt</code></pre>
 <h4>Opcodes</h4>
 <ul>
-<li>There are currently SIXTEEN (16) opcodes, each numbered with the
-decimal number for use in the opcode nibble.</li>
-<li>By address of/value of a DERREFERENCE, what is meant is that what
-will be read is the value of the address pointed to by THAT ADDRESS
-(e.g.&#xA0;*2 denotes the contents of memory address 0x0002 TREATED AS AN
-ADDRESS.. THAT will be the address that is written to/read from). This
-is better ilustrated with an example:</li>
-</ul>
-<pre><code>set 0 =0020
-set *0 =30
-halt</code></pre>
+<li><p>Each opcode is numbered with its corresponding decimal number. It
+corresponds to the representation used in the opcode.</p></li>
+<li><p>Opcodes <code>0</code> through to <code>3</code> conform the
+control flow group</p></li>
+<li><p>Opcodes <code>4</code> through to to <code>8</code> conform the
+subroutine group</p></li>
+<li><p>Opcodes <code>9</code> through to <code>12</code> conform the
+memory management group</p>
 <ul>
-<li>After this program is ran, address 0x0020 will have the value
-0x30</li>
-<li>Notation explanation:
-<ul>
-<li>Vx: Type of operand can be constant, address or derreference</li>
-<li>Rx: Type of operand can be address or derreference</li>
-<li>Cx: Type of operand can only be constant</li>
-<li>Except where mentioned, the value of a constant is taken as the
-lowest 8 bits of the operand</li>
+<li>Address mode <code>m</code>:</li>
+<li>Immediate mode <code>i</code>:</li>
+<li>Pointer mode <code>p</code>:</li>
+<li>Special mode mode <code>s</code>:</li>
 </ul></li>
 </ul>
 <ol start="0" type="1">
-<li><p>halt - Stop program execution immediately and
-permanently</p></li>
-<li><p>jmp <code>V1</code> - Jump</p>
+<li>HALT
 <ul>
-<li>Change program counter to the value of <code>V1</code></li>
-<li>Addresses are treated the same as constants. Derreferences are
-treated as pointers to the address containing the program counter to
-set.</li>
+<li>Stop program execution.</li>
 </ul></li>
-<li><p>skpz <code>C1</code> - Skip plus if zero</p>
+<li>JUMP <code>__</code> <code>OP</code> - Jump
 <ul>
-<li>If _ZF has the value 0, add <code>C1</code>+1 to program
-counter.</li>
+<li>Address mode <code>m</code>: Set program counter to the value of
+address <code>OP</code>.</li>
+<li>Immediate mode <code>i</code>: Set program counter to the immediate
+value <code>OP</code>.</li>
+<li>Pointer mode <code>p</code>: Set program counter to by dereference
+of <code>OP</code>.</li>
+<li>Special mode mode <code>s</code>: Not supported.</li>
 </ul></li>
-<li><p>skmz <code>C1</code> - Skip minus if zero</p>
+<li>SKPZ <code>__</code> <code>OP</code> - Skip plus if zero
 <ul>
-<li>If _ZF has the value 0, substract (<code>C1</code>+1) from program
-counter.</li>
+<li>Default mode <code>m</code>: Same as <code>i</code>.</li>
+<li>Immediate mode <code>i</code>: If the zero flag is set to low, add
+to the program counter the immediate value <code>OP</code>, plus one.
+Else, do nothing.</li>
+<li>Pointer mode <code>p</code>: Not supported.</li>
+<li>Special mode mode <code>s</code>: Not supported.</li>
 </ul></li>
-<li><p>set <code>R1 V2</code> - Copy the value of <code>V2</code> to the
-address of <code>R1</code>.</p></li>
-<li><p>add <code>R1 V2</code> - Addition</p>
+<li>SKMZ <code>__</code> <code>OP</code> - Skip minus if zero
 <ul>
-<li>Perform addition between the value of <code>R1</code> and
-<code>V2</code>.</li>
-<li>Put the result into the address of <code>R1</code>.</li>
-<li>If the value 0 was written to the address of <code>R1</code>, set
-_ZF to 0.</li>
-<li>Otherwise, set _ZF to 1.</li>
-<li>If the operation results in overflow, set _CF to 1.</li>
-<li>Otherwise, set _CF to 0.</li>
+<li>Default mode <code>m</code>: Same as <code>i</code>.</li>
+<li>Immediate mode <code>i</code>: If the zero flag is set to low,
+substract from the program counter [the immediate value <code>OP</code>,
+minus one] (pay attention to bracket positioning). Else, do
+nothing.</li>
+<li>Pointer mode <code>p</code>: Not supported.</li>
+<li>Special mode mode <code>s</code>: Not supported.</li>
 </ul></li>
-<li><p>sub <code>R1 V2</code> - Substraction</p>
+<li>STKI
 <ul>
-<li>Perform substraction between the value of <code>R1</code> and
-<code>V2</code>.</li>
-<li>Put the result into the address of <code>R1</code>.</li>
-<li>If the value 0 was written to the address of <code>R1</code>, set
-_ZF to 0.</li>
-<li>Otherwise, set _ZF to 1.</li>
-<li>If the operation results in overflow, set _CF to 1.</li>
-<li>Otherwise, set _CF to 0.</li>
+<li>Increase stack pointer by the value of the stack size register.
+Overflow may happen.</li>
 </ul></li>
-<li><p>and <code>R1 V2</code> - Binary And</p>
+<li>STKD
 <ul>
-<li>Perform binary AND with the value of <code>R1</code> and
-<code>V2</code>.</li>
-<li>Put the result into the address of <code>R1</code>.</li>
-<li>If the value 0 was written to the address of <code>R1</code>, set
-_ZF to 0.</li>
-<li>Otherwise, set _ZF to 1.</li>
+<li>Decrease stack pointer by the value of the stack size register.
+Underflow may happen.</li>
 </ul></li>
-<li><p>or <code>R1 V2</code> - Inclusive Or</p>
+<li>FUNC <code>_X</code> <code>OP</code> - Register subroutine
 <ul>
-<li>Perform inclusive OR with the value of <code>R1</code> and
-<code>V2</code>.</li>
-<li>Put the result into the address of <code>R1</code>.</li>
-<li>If the value 0 was written to the address of <code>R1</code>, set
-_ZF to 0.</li>
-<li>Otherwise, set _ZF to 1.</li>
+<li>Default mode <code>m</code>: Same as <code>i</code>.</li>
+<li>Immediate mode <code>i</code>: Set the jumptable address
+<code>OP</code> to the current program counter plus one.</li>
+<li>Pointer mode <code>p</code>: Not supported.</li>
+<li>Special mode mode <code>s</code>: Set the jumptable address [value
+of address <code>OP</code>] to the value of register
+<code>X</code>.</li>
 </ul></li>
-<li><p>xor <code>R1 V2</code> - Exclusive Or</p>
+<li>BACK - End of subroutine
 <ul>
-<li>Perform exclusive OR with the value of <code>R1</code> and
-<code>V2</code>.</li>
-<li>Put the result into the address of <code>R1</code>.</li>
-<li>If the value 0 was written to the address of <code>R1</code>, set
-_ZF to 0.</li>
-<li>Otherwise, set _ZF to 1.</li>
+<li>Set the program counter to the return program counter.</li>
 </ul></li>
-<li><p>shift <code>R1 V2</code> - Bitshift</p>
+<li>CALL <code>__</code> <code>OP</code> - Call subroutine
 <ul>
-<li>If the value of <code>V2</code> is 0x00-0x0F, bitshift the value of
-<code>R1</code> LEFT by <code>V2</code> bits.</li>
-<li>If the value of <code>V2</code> is 0x10-0x1F, bitshift the value of
-<code>R1</code> RIGHT by (<code>V2-0x10</code>) bits.</li>
-<li>If the value of <code>V2</code> is greater than 0x1F, the value of
-<code>R1</code> remains unchanged.</li>
-<li>Put the result into the address of <code>R1</code>.</li>
-<li>If the value 0 was written to the address of <code>R1</code>, set
-_ZF to 0.</li>
-<li>Otherwise, set _ZF to 1.</li>
+<li>Default mode <code>m</code>: Same as <code>i</code></li>
+<li>Immediate mode <code>i</code>: Set the address pointed to by the
+stack pointer to the current program counter plus one. This is known as
+the return program counter. Then set the program counter to the value of
+jumptable address <code>OP</code>.</li>
+<li>Pointer mode <code>p</code>: Not supported.</li>
+<li>Special mode <code>s</code>: Set the address pointed to by the stack
+pointer to the current program counter plus one. This is known as the
+return program counter. Then set the program counter to the value of
+(normal, not jumptable!) address <code>OP</code>.</li>
 </ul></li>
-<li><p>cmp <code>V1 V2</code> - Comparison</p>
+<li>MLOD <code>_X</code> <code>OP</code> - Memory load
 <ul>
-<li>Perform substraction between the value of <code>V1</code> and
-<code>V2</code>.</li>
-<li>If the value 0 was written to the address of <code>R1</code>, set
-_ZF to 0.</li>
-<li>Otherwise, set _ZF to 1.</li>
-<li>If the operation results in underflow, set _CF to 1.</li>
-<li>Otherwise, set _CF to 0.</li>
+<li>Address mode <code>m</code>: Copy value of address <code>OP</code>
+to register <code>X</code></li>
+<li>Immediate mode <code>i</code>: Copy immediate value <code>OP</code>
+to register <code>X</code></li>
+<li>Pointer mode <code>p</code>: Copy dereference of <code>OP</code> to
+register <code>X</code></li>
+<li>Special mode mode <code>s</code>: Copy register <code>OP</code> to
+register <code>X</code></li>
 </ul></li>
-<li><p>func <code>C1</code></p>
+<li>VLOD <code>_X</code> <code>OP</code> - Variable load
 <ul>
-<li>Writes down (preferrably in a place not normally addressable) the
-program counter as (start of subroutine <code>C1</code>).</li>
-<li>Moves the program counter to directly after the closest
-<code>ret</code> instruction.</li>
+<li>Address mode <code>m</code>: Copy register <code>X</code> to the
+local variable address obtained by adding [the value of address
+<code>OP</code>] to the current stack pointer value.</li>
+<li>Immediate mode <code>i</code>: Copy register <code>X</code> to the
+local variable address obtained by adding [immediate value
+<code>OP</code>] to the current stack pointer value.</li>
+<li>Pointer mode <code>p</code>: Unsupported mode</li>
+<li>Special mode mode <code>s</code>: Unsupported mode</li>
 </ul></li>
-<li><p>ret <code>C1 C2</code></p>
+<li>MSTR <code>_X</code> <code>OP</code> - Memory store
 <ul>
-<li>Marks the end of subroutine <code>C1</code>.</li>
-<li>When reached, the current stack frame is deleted.</li>
-<li>Afterwards, the program counter is set to the return address.</li>
+<li>Address mode <code>m</code>: Copy register <code>X</code> to address
+<code>OP</code></li>
+<li>Immediate mode <code>i</code>: Unsupported mode</li>
+<li>Pointer mode <code>p</code>: Copy register <code>X</code> to the
+address pointed to by <code>OP</code></li>
+<li>Special mode mode <code>s</code>: Unsupported mode</li>
 </ul></li>
-<li><p>call <code>C1 C2</code></p>
+<li>VSTR <code>_X</code> <code>OP</code> - Variable store
 <ul>
-<li>Move program counter to (start of subroutine
-<code>C1</code>)+1.</li>
-<li>Creates a new stack frame by increasing the stack pointer at (High
-octet of <code>C2</code>)<code>*</code>256.</li>
-<li>The stack frame has size (Low octet of <code>C2</code> + 1) in
-memory cells.</li>
-<li>The first memory cell of the stack frame is the return address.</li>
-<li>The return address is written down as the program counter
-corresponding to the instruction after this one.</li>
+<li>Address mode <code>m</code>: Copy the value of [the local variable
+address obtained by adding [the value of address <code>OP</code>] to the
+current stack pointer value] to register <code>X</code>.</li>
+<li>Immediate mode <code>i</code>: Copy the value of [the local variable
+address obtained by adding [immediate value <code>OP</code>] to the
+current stack pointer value] to register <code>X</code>.</li>
+<li>Pointer mode <code>p</code>: Unsupported mode</li>
+<li>Special mode mode <code>s</code>: Unsupported mode</li>
 </ul></li>
-<li><p>frame <code>R1 C2</code></p>
+<li>FSET <code>__</code> <code>OP</code> - Set flag
 <ul>
-<li>Get current stack frame information</li>
-<li>(High octet of <code>C2</code>)<code>*</code>256 is the start
-address of the stack.</li>
-<li>(Low octet of <code>C2</code> + 1) is the size in memory cells of
-each stack frame.</li>
-<li>The address of the current stack frame is deposited as a 16-bit
-number to the address <code>R1</code>.</li>
+<li>Set bit with index <code>OP</code> (starting with the least
+significant bit) of the flag register to high.</li>
+</ul></li>
+<li>FDEL <code>__</code> <code>OP</code> - Delete flag
+<ul>
+<li>Set bit with index <code>OP</code> (starting with the least
+significant bit) of the flag register to low.</li>
+</ul></li>
+<li>FFLP <code>__</code> <code>OP</code> - Flip flag
+<ul>
+<li>Set bit with index <code>OP</code> (starting with the least
+significant bit) of the flag register to low if it is currently high,
+and to high if it is currently low.</li>
+</ul></li>
+<li>BADD - Unsigned addition
+<ul>
+<li>Behaves exactly like <code>MLOD</code>, but:</li>
+<li>Sets the zero flag to low if the operation resulted in the value
+zero, and to high otherwise.</li>
+<li>Sets the overflow flag to high if the operation resulted in
+overflow, and to low otherwise.</li>
+<li>Instead of simply copying a value to the register, it performs
+binary addition with the value and the register&#x2019;s current value, and
+copies the result to the register.</li>
+</ul></li>
+<li>BSUB - Unsigned substraction
+<ul>
+<li>Behaves exactly like <code>MLOD</code>, but:</li>
+<li>Sets the zero flag to low if the operation resulted in the value
+zero, and to high otherwise.</li>
+<li>Sets the overflow flag to high if the operation resulted in
+underflow, and to low otherwise.</li>
+<li>Instead of simply copying a value to the register, it substracts the
+value from the register&#x2019;s current value, and copies the result to the
+register.</li>
+</ul></li>
+<li>BAND - Bitwise and
+<ul>
+<li>Behaves exactly like <code>MLOD</code>, but:</li>
+<li>Sets the zero flag to low if the operation resulted in the value
+zero, and to high otherwise.</li>
+<li>Instead of simply copying a value to the register, it performs
+bitwise &#x201C;and&#x201D; with the value and the register&#x2019;s current value, and
+copies the result to the register.</li>
+</ul></li>
+<li>INOR - Inclusive or
+<ul>
+<li>Behaves exactly like <code>MLOD</code>, but:</li>
+<li>Sets the zero flag to low if the operation resulted in the value
+zero, and to high otherwise.</li>
+<li>Instead of simply copying a value to the register, it performs
+bitwise &#x201C;or&#x201D; with the value and the register&#x2019;s current value, and copies
+the result to the register.</li>
+</ul></li>
+<li>EXOR - Exclusive or
+<ul>
+<li>Behaves exactly like <code>MLOD</code>, but:</li>
+<li>Sets the zero flag to low if the operation resulted in the value
+zero, and to high otherwise.</li>
+<li>Instead of simply copying a value to the register, it performs
+bitwise &#x201C;xor&#x201D; with the value and the register&#x2019;s current value, and
+copies the result to the register.</li>
+</ul></li>
+<li>SHFT - Shift bits
+<ul>
+<li>Behaves exactly like <code>MLOD</code>, but:</li>
+<li>Sets the zero flag to low if the operation resulted in the value
+zero, and to high otherwise.</li>
+<li>Instead of simply copying a value to the register, it performs
+bitwise &#x201C;xor&#x201D; with the value and the register&#x2019;s current value, and
+copies the result to the register.</li>
+</ul></li>
+<li>COMP - Comparison
+<ul>
+<li>Behaves exactly like <code>BSUB</code>, but merely sets the flags
+and doesn&#x2019;t actually modify any other place in memory or the registers,
+discarding the result.</li>
 </ul></li>
 </ol>

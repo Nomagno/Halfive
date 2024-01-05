@@ -41,7 +41,7 @@ size_t, ssize_t
 #define H5FLT_MIN FLT_MIN
 typedef float h5float;
 #define H5_ABS_FLOAT(n)	((((h5float)(n)) < 0) ? (-((h5float)(n))) : ((h5float)(n)))
-#define TLR						  0.1f /*Default tolerance for comparisons*/
+#define TLR						  0.01f /*Default tolerance for comparisons*/
 #define _FLT_CMP(a, b, tolerance) (H5_ABS_FLOAT(a - b) <= tolerance)
 #define H5FLOAT_CMP(a, b)			  _FLT_CMP(a, b, TLR)
 #endif

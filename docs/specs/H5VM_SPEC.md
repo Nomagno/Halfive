@@ -14,163 +14,157 @@ The Halfive virtual machine, henceforth referred to H5VM, is a specified executi
 
 ***
 #### H5VM Memory layout (Code memory and data memory)
-Following Harvard architecture principles, H5VM loads code and data separately into two different 'members'. The machine code is loaded into the code member, while the data member contains almost all information that is manipulated during the program execution itself.
+Following Harvard architecture principles, H5VM loads code and data separately into two different 'members'. The machine code is loaded into the code member, while the data member contains almost all information that is manipulated during the program execution itself. Both members are big-endian.
 
 The code member is read-only.
 
-The data member has addresses (16-bit unsigned memory cells indexed from 0 to 0xFFFF) that are either read/write (RW), read-only (RO), or unmapped (UM). These three properties are referred to as the 'permission' of an address.
+The data member has addresses (16-bit unsigned memory cells indexed from 0 to 0xFFFF). Address `0x00` is known as the zero address, and is reserved. While the rest of the memory is completely free to use so long as it is mapped to a physical device, addresses `0x01` through `0xFD` are likely to be used for the jumptable. Reads from address `0xFE` may prompt the user for input, and writes to address `0xFF` may display the written data to the user. "Jumptable address `foo`" is a shorthand for the memory cell with index `jumptable_offset + 1`. `jumptable_offset` has value `0x01` which can not be changed.
 
-- The following addresses must be present in the data member with the indicated codename (for later use in this document), index, and permissions:
-	- Zero flag (`_ZF`) (0xFFFF) (RW)
-	- Carry flag (`_CF`) (0xFFFE) (RW)
-	- Input register (`_IN`) (0xFFFD) (RO): Reads to the input register may prompt the user for numbers
-	- Output register (`_OU`) (0xFFFC) (RW): Writes to the output register may display the numbers to the user. Reads always yield the value zero
-	- Program counter register (`_PCH`) (0xFFFA) (RO): The program counter value at ALL TIMES
-	- Error address (`_ERR`) (0xFFF0) (UM)
-	- General purpose memory (`_GMEM`) (from 0 until 0x3FFF) (RW): General-purpose writable addresses
-	- Read-only drive (`_DRIV`) (from 0x4000 until 0xBFFF) (RO): Read-only addresses, intended to be loaded as static data at the beggining of execution
+
+There is additionally a register member, which has currently multiple defined registers:
+- Flag register (`0x00`) (`F`): This register has multiple flags that are defined later on. Starting from the LEAST significant bit, the meaning of each zero-indexed bit position is:
+  * 0 = Zero Flag - Set by arithmetic group operations. If the result is zero, it is set to low, else it is set to high.
+  * 1 = Overflow Flag - Set by wraparound group operations. If the operation results in wraparound, set it to high, else set it to low.
+  * 2 through 7 - Reserved
+  * 8 trough 15 - Implementation-defined
+- Program counter register (`0x01`) (`P`): Holds the actual program counter value used to drive the processor. Please modify through the appropiate control flow group and subroutine group operations only.
+- Stack pointer register (`0x02`) (`S`): holds the stack pointer, used by multiple operations. It can be modified directly, but using the subroutine group operations `STKI` and `STKD` is highly recommended unless there is a special need.
+- Stack size register (`0x03`) (`R`): holds the size of each stack frame, in memory cells.
+- General purpose registers `A`, `B`, `C`, `D`, `W`, `X`, `Y`, `Z` (`0x04` through to `0x0B`): Can be written or read from for any purpose, at any time.
 
 #### Machine code format:
 - A program is a sequence of instructions.
-- Each instruction is 5 octets in length (40 bits), and has 4 parts stored sequentially: the type nibble (4 bits), the opcode (4 bits), the first operand (16 bits), and the second operand (16 bits)
-- The type nibble indicates the type of the operands:
-	- If the lowest bit is zero, the second operand is an of type ADDRESS, else it is of type `[OPTYPE]`.
-	- If the second lowest bit is zero, the first operand is of type ADDRESS, else it is of type `[OPTYPE]`.
-	- The third lowest bit is irrelevant.
-	- If highest bit is zero, subsitute `[OPTYPE]` above with CONSTANT. If it is one, subsitute it with DERREFERENCE.
-	- DERREFERENCES hold a 16-bit memory address that is accessed, and the value of that memory address is the memory cell the instruction operares on.
+- Each instruction is 4 octets in length (32 bits), and has four parts stored sequentially (leftmost bit == most significant bit): the opcode (6 bits), the addressing mode (2 bits) (`0b00`=`m`, `0b01`=`i`, `0b10`=`p`, `0b11`=`s`), the register cell (8 bits), and the operand (16 bits)
 - The opcode indicates the operation to be done, see the explanation of opcodes below.
-- The two operands will be interpreted depending on the opcode.
-- The program counter is the index of the instruction being currently executed, if one was to assign an index to each instruction. To modify it means to change which instruction executes next. It can only be modified through the opcodes `jmp`, `skpz`, `skmz`, `func`, `ret`, `call`.
-- The program counter increases by one after an instruction is executed, except when one of these six opcodes explicitly modifies it (If `_ZF` is not zero upon execution of an `skpz` or an `skmz`, the program counter also just increases by one as usual)
-
-EXAMPLE:
-
-```
-BINARY: 0001 0101 000000000000001 000000000011111 0000 0000 0000000000000000 0000000000000000
-HEX:    0x01 0x05            0x01            0x1F 0x00 0x00             0x00             0x00
-DECIMAL:   1    5               1              31 0       0                0                0
-ASSEMBLY:     add               1             =1F      halt
-ENGLISH: add the contents of address ONE and the constant 0x1F, put the result in address ONE; stop execution
-PROPER ASSEMBLY:
-	add 1 =1F
-	halt
-```
+- The addressing mode is tied semantically to the opcode and specifies information about to the operation to be done, see the explanation of opcodes below.
+- The register cell and operand will be interpreted depending on the opcode, but usually the register cell is representing a register, and the operand is representing an immediate value, address or pointer.
+- The program counter is the index of the instruction being currently executed, if one was to assign an index to each instruction. To modify it means to change which instruction executes next. It should only be modified through the opcodes `jmp`, `skpz`, `skmz`, `func`, `ret`, `call`.
+- The program counter increases by 1 after an instruction is executed, except when one of these six opcodes explicitly modifies it (If the zero flag is not 0 upon execution of an `skpz` or an `skmz`, the program counter also just increases by one as usual)
 
 #### Assembly format:
 - It is a textual representation of the machine code
-- Each opcode is represented by its lowercase name (see opcode guide)
-- Each operand's value is represented in raw, uppercase hexadecimal
-- Operands are to be directly preceded by:
-	- No symbol if they are of type ADDRESS
-	- The equal symbol `=` if they are of type CONSTANT
-	- The asterisk symbol `*` if they are of type DERREFERENCE
-- The opcode, the first and second operands are separated by a symbol space '` `'
-
-EXAMPLE:
-
-```
-add 1 =50
-sub *27FA 12
-halt
-```
+- Each opcode is represented by its code, in uppercase (see opcode guide)
+- Each addressing mode is represented by its code, in lowercase
+- Each register cell's value is represented by either two characters of uppercase hexadecimal or `_X`/`X_`, where its register code is `X` and has the case indicated in the memory layout section. If it is irrelevant, it is labelled as `__` in the opcode guide. Note `__` does not stand for a space, but for two literal underscode characters.
+- Each operand's value is represented by either two or four characters of uppercase hexadecimal. A two-character register may also be used as representation, though it is suggested this is only done for operations that do, in fact, manipulate two registers at once.
+- The opcode and the addressing mode are written together, the register cell and second operands are separated by the space symbol '` `'. The following combinations are accepted in assembly, in which case the non present data will be taken to be all zeroes: opcode, opcode + addressing mode, opcode + addressing mode + register cell, opcode + addressing mode + register cell + two-digit operand, opcode + addressing mode + register cell + four-digit operand
+- Instructions may be separated by either a newline or a colon symbol '`:`'
+- Comments are defined as all text from the first semicolon symbol `;` in a line, if present, to the end of the line, and they are ignored by the assembler.
 
 #### Opcodes
-- There are currently SIXTEEN (16) opcodes, each numbered with the decimal number for use in the opcode nibble.
-- By address of/value of a DERREFERENCE, what is meant is that what will be read is the value of the address pointed to by THAT ADDRESS (e.g. *2 denotes the contents of memory address 0x0002 TREATED AS AN ADDRESS.. THAT will be the address that is written to/read from). This is better ilustrated with an example:
-```
-set 0 =0020
-set *0 =30
-halt
-```
-- After this program is ran, address 0x0020 will have the value 0x30
-- Notation explanation:
-	- Vx: Type of operand can be constant, address or derreference
-	- Rx: Type of operand can be address or derreference
-	- Cx: Type of operand can only be constant
-	- Except where mentioned, the value of a constant is taken as the lowest 8 bits of the operand
+- Each opcode is numbered with its corresponding decimal number. It corresponds to the representation used in the opcode.
+- Opcodes `0` through to `3` conform the control flow group
+- Opcodes `4` through to to `8` conform the subroutine group
+- Opcodes `9` through to `12` conform the memory management group
 
-0. halt - Stop program execution immediately and permanently
+	- Address mode `m`:
+	- Immediate mode `i`:
+	- Pointer mode `p`:
+	- Special mode mode `s`:
 
-1. jmp `V1` - Jump
-	- Change program counter to the value of `V1`
-	- Addresses are treated the same as constants. Derreferences are treated as pointers to the address containing the program counter to set.
+0. HALT
+	- Stop program execution.
 
-2. skpz `C1` - Skip plus if zero
-	- If _ZF has the value 0, add `C1`+1 to program counter.
+1. JUMP `__` `OP` - Jump
+	- Address mode `m`: Set program counter to the value of address `OP`.
+	- Immediate mode `i`: Set program counter to the immediate value `OP`.
+	- Pointer mode `p`: Set program counter to by dereference of `OP`.
+	- Special mode mode `s`: Not supported.
 
-3. skmz `C1` - Skip minus if zero
-	- If _ZF has the value 0, substract (`C1`+1) from program counter.
+2. SKPZ `__` `OP` - Skip plus if zero
+	- Default mode `m`: Same as `i`.
+	- Immediate mode `i`: If the zero flag is set to low, add to the program counter the immediate value `OP`, plus one. Else, do nothing.
+	- Pointer mode `p`: Not supported.
+	- Special mode mode `s`: Not supported.
 
-4. set `R1 V2` - Copy the value of `V2` to the address of `R1`.
+3. SKMZ `__` `OP` - Skip minus if zero
+	- Default mode `m`: Same as `i`.
+	- Immediate mode `i`: If the zero flag is set to low, substract from the program counter [the immediate value `OP`, minus one] (pay attention to bracket positioning). Else, do nothing.
+	- Pointer mode `p`: Not supported.
+	- Special mode mode `s`: Not supported.
 
-5. add `R1 V2` - Addition
-	- Perform addition between the value of `R1` and `V2`.
-	- Put the result into the address of `R1`.
-	- If the value 0 was written to the address of `R1`, set _ZF to 0.
-	- Otherwise, set _ZF to 1.
-	- If the operation results in overflow, set _CF to 1.
-	- Otherwise, set _CF to 0.
+4. STKI
+	- Increase stack pointer by the value of the stack size register. Overflow may happen.
+5. STKD
+	- Decrease stack pointer by the value of the stack size register. Underflow may happen.
 
-6. sub `R1 V2` - Substraction
-	- Perform substraction between the value of `R1` and `V2`.
-	- Put the result into the address of `R1`.
-	- If the value 0 was written to the address of `R1`, set _ZF to 0.
-	- Otherwise, set _ZF to 1.
-	- If the operation results in overflow, set _CF to 1.
-	- Otherwise, set _CF to 0.
+6. FUNC `_X` `OP` - Register subroutine
+	- Default mode `m`: Same as `i`.
+	- Immediate mode `i`: Set the jumptable address `OP` to the current program counter plus one.
+	- Pointer mode `p`: Not supported.
+	- Special mode mode `s`: Set the jumptable address [value of address `OP`] to the value of register `X`.
 
-7. and `R1 V2` - Binary And
-	- Perform binary AND with the value of `R1` and `V2`.
-	- Put the result into the address of `R1`.
-	- If the value 0 was written to the address of `R1`, set _ZF to 0.
-	- Otherwise, set _ZF to 1.
+7. BACK - End of subroutine
+	- Set the program counter to the return program counter.
 
-8. or `R1 V2` - Inclusive Or
-	- Perform inclusive OR with the value of `R1` and `V2`.
-	- Put the result into the address of `R1`.
-	- If the value 0 was written to the address of `R1`, set _ZF to 0.
-	- Otherwise, set _ZF to 1.
+8. CALL `__` `OP` - Call subroutine
+	- Default mode `m`: Same as `i`
+	- Immediate mode `i`: Set the address pointed to by the stack pointer to the current program counter plus one. This is known as the return program counter. Then set the program counter to the value of jumptable address `OP`.
+	- Pointer mode `p`: Not supported.
+	- Special mode `s`: Set the address pointed to by the stack pointer to the current program counter plus one. This is known as the return program counter. Then set the program counter to the value of (normal, not jumptable!) address `OP`.
 
-9. xor `R1 V2` - Exclusive Or
-	- Perform exclusive OR with the value of `R1` and `V2`.
-	- Put the result into the address of `R1`.
-	- If the value 0 was written to the address of `R1`, set _ZF to 0.
-	- Otherwise, set _ZF to 1.
+9. MLOD `_X` `OP` - Memory load
+	- Address mode `m`: Copy value of address `OP` to register `X`
+	- Immediate mode `i`: Copy immediate value `OP` to register `X`
+	- Pointer mode `p`: Copy dereference of `OP` to register `X`
+	- Special mode mode `s`: Copy register `OP` to register `X`
 
-10. shift `R1 V2` - Bitshift
-	- If the value of `V2` is 0x00-0x0F, bitshift the value of `R1` LEFT  by `V2` bits.
-	- If the value of `V2` is 0x10-0x1F, bitshift the value of `R1` RIGHT by (`V2-0x10`) bits.
-	- If the value of `V2` is greater than 0x1F, the value of `R1` remains unchanged.
-	- Put the result into the address of `R1`.
-	- If the value 0 was written to the address of `R1`, set _ZF to 0.
-	- Otherwise, set _ZF to 1.
+10. VLOD `_X` `OP` - Variable load
+	- Address mode `m`: Copy register `X` to the local variable address obtained by adding [the value of address `OP`] to the current stack pointer value.
+	- Immediate mode `i`: Copy register `X` to the local variable address obtained by adding [immediate value `OP`] to the current stack pointer value.
+	- Pointer mode `p`: Unsupported mode
+	- Special mode mode `s`: Unsupported mode
 
-11. cmp `V1 V2` - Comparison
-	- Perform substraction between the value of `V1` and `V2`.
-	- If the value 0 was written to the address of `R1`, set _ZF to 0.
-	- Otherwise, set _ZF to 1.
-	- If the operation results in underflow, set _CF to 1.
-	- Otherwise, set _CF to 0.
+11. MSTR `_X` `OP` - Memory store
+	- Address mode `m`: Copy register `X` to address `OP`
+	- Immediate mode `i`: Unsupported mode
+	- Pointer mode `p`: Copy register `X` to the address pointed to by `OP`
+	- Special mode mode `s`: Unsupported mode
 
-12. func `C1`
-	- Writes down (preferrably in a place not normally addressable) the program counter as (start of subroutine `C1`).
-	- Moves the program counter to directly after the closest `ret` instruction.
+12. VSTR `_X` `OP` - Variable store
+	- Address mode `m`: Copy the value of [the local variable address obtained by adding [the value of address `OP`] to the current stack pointer value] to register `X`.
+	- Immediate mode `i`: Copy the value of [the local variable address obtained by adding [immediate value `OP`] to the current stack pointer value] to register `X`.
+	- Pointer mode `p`: Unsupported mode
+	- Special mode mode `s`: Unsupported mode
 
-13. ret `C1 C2`
-	- Marks the end of subroutine `C1`.
-	- When reached, the current stack frame is deleted.
-	- Afterwards, the program counter is set to the return address.
+13. FSET `__` `OP` - Set flag
+	- Set bit with index `OP` (starting with the least significant bit) of the flag register to high.
+14. FDEL `__` `OP` - Delete flag
+	- Set bit with index `OP` (starting with the least significant bit) of the flag register to low.
+15. FFLP `__` `OP` - Flip flag
+	- Set bit with index `OP` (starting with the least significant bit) of the flag register to low if it is currently high, and to high if it is currently low.
 
-14. call `C1 C2`
-	- Move program counter to (start of subroutine `C1`)+1.
-	- Creates a new stack frame by increasing the stack pointer at (High octet of `C2`)`*`256.
-	- The stack frame has size (Low octet of `C2` +  1) in memory cells.
-	- The first memory cell of the stack frame is the return address.
-	- The return address is written down as the program counter corresponding to the instruction after this one.
+16. BADD - Unsigned addition
+	- Behaves exactly like `MLOD`, but:
+	- Sets the zero flag to low if the operation resulted in the value zero, and to high otherwise.
+	- Sets the overflow flag to high if the operation resulted in overflow, and to low otherwise.
+	- Instead of simply copying a value to the register, it performs binary addition with the value and the register's current value, and copies the result to the register.
 
-15. frame `R1 C2`
-	- Get current stack frame information
-	- (High octet of `C2`)`*`256 is the start address of the stack.
-	- (Low  octet of `C2` + 1) is the size in memory cells of each stack frame.
-	- The address of the current stack frame is deposited as a 16-bit number to the address `R1`.
+17. BSUB - Unsigned substraction
+	- Behaves exactly like `MLOD`, but:
+	- Sets the zero flag to low if the operation resulted in the value zero, and to high otherwise.
+	- Sets the overflow flag to high if the operation resulted in underflow, and to low otherwise.
+	- Instead of simply copying a value to the register, it substracts the value from the register's current value, and copies the result to the register.
+
+18. BAND - Bitwise and
+	- Behaves exactly like `MLOD`, but:
+	- Sets the zero flag to low if the operation resulted in the value zero, and to high otherwise.
+	- Instead of simply copying a value to the register, it performs bitwise "and" with the value and the register's current value, and copies the result to the register.
+
+19. INOR - Inclusive or
+	- Behaves exactly like `MLOD`, but:
+	- Sets the zero flag to low if the operation resulted in the value zero, and to high otherwise.
+	- Instead of simply copying a value to the register, it performs bitwise "or" with the value and the register's current value, and copies the result to the register.
+
+20. EXOR - Exclusive or
+	- Behaves exactly like `MLOD`, but:
+	- Sets the zero flag to low if the operation resulted in the value zero, and to high otherwise.
+	- Instead of simply copying a value to the register, it performs bitwise "xor" with the value and the register's current value, and copies the result to the register.
+
+21. SHFT - Shift bits
+	- Behaves exactly like `MLOD`, but:
+	- Sets the zero flag to low if the operation resulted in the value zero, and to high otherwise.
+	- Instead of simply copying a value to the register, it performs bitwise "xor" with the value and the register's current value, and copies the result to the register.
+
+22. COMP - Comparison
+	- Behaves exactly like `BSUB`, but merely sets the flags and doesn't actually modify any other place in memory or the registers, discarding the result.

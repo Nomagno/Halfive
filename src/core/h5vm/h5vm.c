@@ -24,372 +24,401 @@ IN THE SOFTWARE.
 #include <halfive/h5req.h>
 #include <halfive/h5vm/h5vm.h>
 
-#define UNEVENTFUL (H5VM_ReadWriteInfo){ 0 };
+#define _PC program->registers[2]
+#define CODE program->code
 
-/*Yes, I'm seriously doing this, zero-indexing a two-element array is ugly*/
-#define OPERAND_ONE 0
-#define OPERAND_TWO 1
+#define IMM currinst.operand
+#define ADR program->data[currinst.operand]
+#define PTR program->data[program->data[currinst.operand]]
 
-h5uint operation(char op, h5uint a, h5uint b) {
-	switch (op) {
-	case '+':
-		return a + b;
+unsigned H5VM_opcodeHalt(H5VM_VirtualMachine *program) {
+	program->hf = 1;
+	return 0;
+}
+
+unsigned H5VM_opcodeJump(H5VM_VirtualMachine *program) {
+	H5VM_Instruction currinst = INST(CODE[_PC]);
+	switch(currinst.mode) {
+	case 0:
+		_PC = ADR;
 		break;
-	case '?':
-	case '-':
-		return a - b;
+	case 1:
+		_PC = IMM;
 		break;
-	case 'a':
-		return a & b;
+	case 2:
+		_PC = PTR;
 		break;
-	case 'o':
-		return a | b;
-		break;
-	case 'x':
-		return a ^ b;
-		break;
-	case 's':
-		if (b < 16)
-			return a << b;
-		else
-			return a >> (b - 16);
-		break;
-	default:
-		return 0;
+	case 3:
+		return 1;
 		break;
 	}
+	return 0;
 }
 
-/*readReadAddress*/
-h5uint read_RA(H5VM_VirtualMachine *vm, H5VM_ReadWriteInfo *rwinf) {
-	H5VM_Instruction inst = vm->code[vm->co].inst;
-	switch (inst.optype_2) {
-	case H5VM_ModeLit:
-		rwinf->read_adrr = 0;
-		return inst.operand_2;
-		break;
-	case H5VM_ModeAdr:
-		rwinf->read_adrr = 1;
-		rwinf->adrr = inst.operand_2;
-		return vm->data[inst.operand_2];
-		break;
-	case H5VM_ModePtr:
-		rwinf->read_adrr = 1;
-		h5uint address = vm->data[inst.operand_2];
-		rwinf->adrr = address;
-		return vm->data[address];
-		break;
-	default:
-		return 0;
-		break;
-	}
-}
-
-/*readWriteAddress*/
-h5uint read_WA(H5VM_VirtualMachine *vm, H5VM_ReadWriteInfo *rwinf, _Bool cmp_mode) {
-	H5VM_Instruction inst = vm->code[vm->co].inst;
-	switch (inst.optype_1) {
-	case H5VM_ModeLit:
-		if (cmp_mode) {
-			rwinf->read_adrw = 0;
-			return inst.operand_1;
-		} else {
-			/*Wrong addressing mode*/
-			rwinf->errcode = 3;
-			rwinf->read_adrw = 0;
-			return inst.operand_1;
-		}
-		break;
-	case H5VM_ModeAdr:
-		rwinf->read_adrw = 1;
-		rwinf->adrw = inst.operand_1;
-		return vm->data[inst.operand_1];
-		break;
-	case H5VM_ModePtr:
-		rwinf->read_adrw = 1;
-		h5uint address = vm->data[inst.operand_1];
-		rwinf->adrw = address;
-		return vm->data[address];
-		break;
-	default:
-		return 0;
-		break;
-	}
-}
-
-/*writeWriteAddress*/
-void write_WA(H5VM_VirtualMachine *vm, H5VM_ReadWriteInfo *rwinf, h5uint val) {
-	H5VM_Instruction inst = vm->code[vm->co].inst;
-	switch (inst.optype_1) {
-	case H5VM_ModeLit:
-		/*Wrong addressing mode*/
-		rwinf->errcode = 3;
-		rwinf->wrote_adrw = 1; /*Should be 0? IDK*/
-		return;
-		break;
-	case H5VM_ModeAdr:
-		rwinf->wrote_adrw = 1;
-		rwinf->adrw = inst.operand_1;
-		vm->data[inst.operand_1] = val;
-		break;
-	case H5VM_ModePtr:
-		rwinf->wrote_adrw = 1;
-		h5uint address = vm->data[inst.operand_1];
-		rwinf->adrw = address;
-		vm->data[address] = val;
-		return;
-		break;
-	}
-}
-
-h5uint getFrameData(H5VM_VirtualMachine *vm, H5VM_ReadWriteInfo *rwinf) {
-	/*The type must be literal, so no need to check*/
-	H5VM_Instruction inst = vm->code[vm->co].inst;
-	h5uint stack_start = inst.operand_2 & 0xFF00;
-	rwinf->read_adrr = 1;
-
-	h5uint stackPtr = vm->data[stack_start];
-	rwinf->adrr = stackPtr;
-	return vm->data[stackPtr];
-}
-
-void setFunction(H5VM_CrossProcessProgramCounter *jumptable, unsigned n, H5VM_Header header, unsigned id, unsigned pc) {
-	for (unsigned i = 0; i < n; i++) {
-		if (jumptable[i].isActive == 0)
-		{
-			jumptable[i].isActive = 1;
-			jumptable[i].char1 = header.char1;
-			jumptable[i].char1 = header.char2;
-			jumptable[i].id = id;
-			jumptable[i].pc = pc;
+unsigned H5VM_opcodeSkpz(H5VM_VirtualMachine *program) {
+	H5VM_Instruction currinst = INST(CODE[_PC]);
+	if (program->registers[0] == 0){
+		switch(currinst.mode) {
+		case 0:
+		case 1:
+			_PC += IMM + 1;
+			break;
+		case 2:
+			return 1;
+			break;
+		case 3:
+			return 1;
 			break;
 		}
 	}
+	return 0;
 }
 
-h5uint getFunction(H5VM_CrossProcessProgramCounter *jumptable, unsigned n, H5VM_Header header, unsigned id) {
-	for (unsigned i = 0; i < n; i++) {
-		if (jumptable[i].char1 == header.char1 &&
-		    jumptable[i].char1 == header.char2 &&
-		    jumptable[i].id == id && jumptable[i].isActive == 1)
-		{
-			return i;
+unsigned H5VM_opcodeSkmz(H5VM_VirtualMachine *program) {
+	H5VM_Instruction currinst = INST(CODE[_PC]);
+	if (program->registers[0] == 0){
+		switch(currinst.mode) {
+		case 0:
+		case 1:
+			_PC -= IMM + 1;
+			break;
+		case 2:
+			return 1;
+			break;
+		case 3:
+			return 1;
+			break;
 		}
 	}
-	return n-1;
+	return 0;
 }
 
-void doCall(H5VM_VirtualMachine *vm, H5VM_ReadWriteInfo *rwinf) {
-	/*The type must be literal, so no need to check*/
-	H5VM_Header header = vm->code[vm->co].header;
-	H5VM_Instruction inst = vm->code[vm->co].inst;
-	h5uint stack_start = inst.operand_2 & 0xFF00;
-	h5uint frame_size = (inst.operand_2 & 0x00FF) + 1;
-	rwinf->read_adrr = 1;
-
-	h5uint stackPtr = vm->data[stack_start];
-	rwinf->adrr = stack_start;
-		rwinf->adrw = stack_start;
-	if (stackPtr == stack_start || stackPtr == 0) {
-		vm->data[stack_start] = stack_start+1;
-	} else {
-		vm->data[stack_start] += frame_size;
+unsigned H5VM_opcodeMlod(H5VM_VirtualMachine *program) {
+	H5VM_Instruction currinst = INST(CODE[_PC]);
+	switch(currinst.mode) {
+	case 0:
+		program->registers[currinst.reg] = ADR;
+		_PC += 1;
+		break;
+	case 1:
+		program->registers[currinst.reg] = IMM;
+		_PC += 1;
+		break;
+	case 2:
+		program->registers[currinst.reg] = PTR;
+		_PC += 1;
+		break;
+	case 3:
+		program->registers[currinst.reg] = program->registers[currinst.operand];
+		break;
 	}
-	stackPtr = vm->data[stack_start];
-
-	vm->data[stackPtr] = vm->co+1;
-
-	vm->co = 1+(vm->jumptable[getFunction(vm->jumptable, JUMPTABLESIZE, header, inst.operand_1)].pc);
-
-	return;
+	return 0;
 }
 
-void doReturn(H5VM_VirtualMachine *vm, H5VM_ReadWriteInfo *rwinf) {
-	/*The type must be literal, so no need to check*/
-	H5VM_Instruction inst = vm->code[vm->co].inst;
-	h5uint stack_start = inst.operand_2 & 0xFF00;
-	h5uint frame_size = (inst.operand_2 & 0x00FF) + 1;
-	rwinf->read_adrr = 1;
-
-	h5uint stackPtr = vm->data[stack_start];
-	rwinf->adrr = stack_start;
-		rwinf->adrw = stack_start;
-	if (stackPtr == stack_start+1) {
-		vm->data[stack_start] = stack_start;
-	} else if (stackPtr == stack_start || stackPtr == 0) {
-		rwinf->errcode = 3; /*Callstack underflow*/
-		return;
-	} else {
-		vm->data[stack_start] -= frame_size;
+unsigned H5VM_opcodeVlod(H5VM_VirtualMachine *program) {
+	H5VM_Instruction currinst = INST(CODE[_PC]);
+	switch(currinst.mode) {
+	case 0:
+		program->data[program->data[0]+1+ADR] = program->registers[currinst.reg];
+		_PC += 1;
+		break;
+	case 1:
+		program->data[program->data[0]+1+IMM] = program->registers[currinst.reg];
+		_PC += 1;
+		break;
+	case 2:
+		return 1;
+		break;
+	case 3:
+		return 1;
+		break;
 	}
-	vm->co = vm->data[stackPtr];
-
-	return;
+	return 0;
 }
 
-unsigned doGenericOperation(H5VM_VirtualMachine *vm, H5VM_ReadWriteInfo *rwinf, char type) {
-	h5uint op2 = 0;
-	if (type != 'f') {
-		op2 = read_RA(vm, rwinf);
-		if (rwinf->errcode != 0) goto END;
+unsigned H5VM_opcodeMstr(H5VM_VirtualMachine *program) {
+	H5VM_Instruction currinst = INST(CODE[_PC]);
+	switch(currinst.mode) {
+	case 0:
+		 ADR = program->registers[currinst.reg];
+		_PC += 1;
+		break;
+	case 1:
+		return 1;
+		break;
+	case 2:
+		PTR = program->registers[currinst.reg];
+		_PC += 1;
+		break;
+	case 3:
+		return 1;
+		break;
 	}
-
-	h5uint result = 0;
-	h5uint op1 = 0;
-
-	if (type == 'c' /*copy, aka SET opcode*/) {
-		result = op2;
-	} else if (type == 'f') /*FRAME opcode*/ {
-		result = getFrameData(vm, rwinf);
-	} else {
-		op1 = read_WA(vm, rwinf, type == '?');
-		if (rwinf->errcode != 0) goto END;
-
-		result = operation(type, op1, op2);
-		if (rwinf->errcode != 0) goto END;
-	}
-
-	if (type != '?') {
-		write_WA(vm, rwinf, result);
-	}
-
-	/*Set zero flag*/
-	if (result == 0) {
-		rwinf->wrote_zf = 1;
-		vm->data[0xFFFF] = 0;
-	} else if (type != 'c') {
-		rwinf->wrote_zf = 1;
-		vm->data[0xFFFF] = 1;
-	} else if (type == 'c') {
-		;
-	}
-
-	/*Set carry flag*/
-	if (type == '+') {
-		if (result < op1) {
-			/*Overflow*/
-			rwinf->wrote_cf = 1;
-			vm->data[0xFFFE] = 1;
-		} else {
-			rwinf->wrote_cf = 1;
-			vm->data[0xFFFE] = 0;
-		}
-	} else if (type == '-' || type == '?') {
-		if (result > op1) {
-			/*Underflow*/
-			rwinf->wrote_cf = 1;
-			vm->data[0xFFFE] = 1;
-		} else {
-			rwinf->wrote_cf = 1;
-			vm->data[0xFFFE] = 0;
-		}
-	} else {
-		;
-	}
-
-	END:
-		vm->co += 1;
-		return rwinf->errcode;
+	return 0;
 }
 
-unsigned H5VM_execute(H5VM_VirtualMachine *vm, H5VM_ReadWriteInfo *rwinf) {
-	H5VM_Header header = vm->code[vm->co].header;
-	H5VM_Instruction inst = vm->code[vm->co].inst;
-	*rwinf = UNEVENTFUL;
-	h5uint errcode = 0;
+unsigned H5VM_opcodeVstr(H5VM_VirtualMachine *program) {
+	H5VM_Instruction currinst = INST(CODE[_PC]);
+	switch(currinst.mode) {
+	case 0:
+		program->registers[currinst.reg] = program->data[program->data[0]+1+ADR];
+		_PC += 1;
+		break;
+	case 1:
+		program->registers[currinst.reg] = program->data[program->data[0]+1+IMM];
+		_PC += 1;
+		break;
+	case 2:
+		return 1;
+		break;
+	case 3:
+		return 1;
+		break;
+	}
+	return 0;
+}
 
-	switch(inst.opcode) {
-	case Inst_halt:
-		vm->hf = 1;
-		break;
-	case Inst_jmp: ;
-		h5uint newco = read_WA(vm, rwinf, 1);
-		vm->co = newco;
-		break;
-	case Inst_skpz:
-		if (vm->data[0xFFFF] == 0) {
-			vm->co += inst.operand_1;
-			vm->co += 1;
-		} else {
-			vm->co += 1;
-		}
-		break;
-	case Inst_skmz:
-		if (vm->data[0xFFFF] == 0) {
-			vm->co -= inst.operand_1;
-			vm->co -= 1;
-		} else {
-			vm->co += 1;
-		}
-		break;
-	case Inst_set:
-		errcode = doGenericOperation(vm, rwinf, 'c');
+unsigned H5VM_opcodeFset(H5VM_VirtualMachine *program) {
+	H5VM_Instruction currinst = INST(CODE[_PC]);
+	program->registers[H5VM_Register_Flag] |= 1 << currinst.operand;
+}
 
-		break;
-	case Inst_add:
-		errcode = doGenericOperation(vm, rwinf, '+');
-		break;
-	case Inst_sub:
-		errcode = doGenericOperation(vm, rwinf, '-');
-		break;
-	case Inst_and:
-		errcode = doGenericOperation(vm, rwinf, 'a');
-		break;
-	case Inst_or:
-		errcode = doGenericOperation(vm, rwinf, 'o');
-		break;
-	case Inst_xor:
-		errcode = doGenericOperation(vm, rwinf, 'x');
-		break;
-	case Inst_shift:
-		errcode = doGenericOperation(vm, rwinf, 's');
-		break;
-	case Inst_cmp:
-		errcode = doGenericOperation(vm, rwinf, '?');
-		break;
-	case Inst_func: ;
-		h5uint function_id = inst.operand_1;
-		/*Register the subroutine in the jumptable*/
-		setFunction(vm->jumptable, JUMPTABLESIZE, header, function_id, vm->co);
+unsigned H5VM_opcodeFdel(H5VM_VirtualMachine *program) {
+	H5VM_Instruction currinst = INST(CODE[_PC]);
+	program->registers[H5VM_Register_Flag] &= ~(1 << currinst.operand);
+}
 
-		/*Skip subroutine*/
-		int i = 1;
-		do {
-			if (i > 512) {
-				/*Memory safety safeguard. If you're making subroutines 
-				  with over 512 instructions you know to change this anyways*/
-				rwinf->errcode = 3; /*Wrong usage: No Matching RET!*/
+unsigned H5VM_opcodeFflp(H5VM_VirtualMachine *program) {
+	H5VM_Instruction currinst = INST(CODE[_PC]);
+	program->registers[H5VM_Register_Flag] ^= 1 << currinst.operand;
+}
+
+/*Callstack:
+Stack pointer register: Current stack frame start address
+Stack size register:  Size of each stack frame
+First address of each stack frame: return program counter
+Rest of addresses of each stack frame: free use
+Address 0: Zero address, special behaviour
+Addresses 1-253: Jumptable
+Addresses 1-15: Reserved addresses of jumptable
+Addresses 16-253: Free use addresses of jumptable
+Address 254: Output address, write to provide a number
+Address 255: Input address, write to request a number
+*/
+
+unsigned H5VM_opcodeFunc(H5VM_VirtualMachine *program) {
+	H5VM_Instruction currinst = INST(CODE[_PC]);
+	switch(currinst.mode) {
+	case 0:
+	case 1:
+		program->data[1+IMM] = _PC+1;
+		for (unsigned i = _PC; i <= _PC+0x400u; i++) {
+			if (i == _PC+0x400u) {
+				return 1;
+			} else if (INST(CODE[i]).opcode == Inst_back) {
+				_PC = i+1;
 				break;
 			}
-			vm->co += 1;
-			i += 1;
-		} while (vm->code[vm->co].inst.opcode != Inst_ret);
-		vm->co += 1;
-
+		}
 		break;
-	case Inst_ret:
-		/*Implementation:
-		   - If the stack pointer isn't initialized, error out (underflow, ERR 4)
-		   - Else if the stack pointer is at minimum, de-initialize it
-		   - Else, decrease the stack pointer by ((operands_2 & 0x00FF)+1)
-		   - Set the program counter to the contents of the old stack frame's first address
-		*/
-		doReturn(vm, rwinf);
+	case 2:
+		return 1;
 		break;
-	case Inst_call:
-		/*Implementation:
-		   - If the stack pointer isn't initialized, set it to minimum
-		   - Else if the stack pointer is at a memory map/write access boundary, error out (overflow, ERR 4)
-		   - Else, increase the stack pointer ((operands_2 & 0x00FF)+1)
-		   - Set the new stack frame's first address to (program_counter+1)
-		   - Set the program counter to (jumptable[operands_1]+1)
-		*/
-		doCall(vm, rwinf);
-		break;
-	case Inst_frame:
-		errcode = doGenericOperation(vm, rwinf, 'f');		
+	case 3:
+		program->data[1+IMM] = _PC+1;
+		program->data[1+ADR] = program->registers[currinst.reg];
+		_PC += 1;
 		break;
 	}
-	vm->data[0xFFFA] = vm->co;
-	return errcode;
+	return 0;
+}
+unsigned H5VM_opcodeStki(H5VM_VirtualMachine *program) {
+	program->registers[H5VM_Register_StackPointer] += program->registers[H5VM_Register_StackSize];
+}
+
+unsigned H5VM_opcodeStkd(H5VM_VirtualMachine *program) {
+	program->registers[H5VM_Register_StackPointer] -= program->registers[H5VM_Register_StackSize];
+}
+
+unsigned H5VM_opcodeCall(H5VM_VirtualMachine *program) {
+	H5VM_Instruction currinst = INST(CODE[_PC]);
+	switch(currinst.mode) {
+	case 0:
+	case 1:
+		program->data[program->registers[H5VM_Register_StackPointer]] = _PC + 1;
+		_PC = program->data[1+IMM];
+		break;
+	case 2:
+		return 1;
+		break;
+	case 3:
+		program->data[program->registers[H5VM_Register_StackPointer]] = _PC + 1;
+		_PC = ADR;
+		break;
+	}
+	return 0;
+}
+
+unsigned H5VM_opcodeBack(H5VM_VirtualMachine *program) {
+	_PC = program->data[program->registers[H5VM_Register_StackPointer]];
+	return 0;
+}
+
+
+unsigned H5VM_mixedOperation(char op, h5uint a, h5uint b) {
+	switch(op){
+	case '+':
+		return a + b;
+	case '-':
+		return a - b;
+	case 'a':
+		return a & b;
+	case 'o':
+		return a | b;
+	case 'x':
+		return a ^ b;
+	case 's':
+		if (b < 0x10)
+			return a << b;
+		else if (b < 0x20)
+			return a << (b - 0x10);
+		else
+			return a;
+	case '=':
+		return a;
+	}
+	return 0;
+}
+
+unsigned H5VM_opcodeArithmetic(H5VM_VirtualMachine *program, char op){
+	H5VM_Instruction currinst = INST(CODE[_PC]);
+	h5uint operand1, operand2;
+	switch(currinst.mode) {
+	case 0:
+		operand1 = program->registers[currinst.reg];
+		operand2 = ADR;
+		program->registers[currinst.reg] = H5VM_mixedOperation(op, operand1, operand2);
+		break;
+	case 1:
+		operand1 = program->registers[currinst.reg];
+		operand2 = IMM;
+		program->registers[currinst.reg] = H5VM_mixedOperation(op, operand1, operand2);
+		break;
+	case 2:
+		operand1 = program->registers[currinst.reg];
+		operand2 = PTR;
+		program->registers[currinst.reg] = H5VM_mixedOperation(op, operand1, operand2);
+		break;
+	case 3:
+		operand1 = program->registers[currinst.reg];
+		operand2 = program->registers[currinst.operand];
+		program->registers[currinst.reg] = H5VM_mixedOperation(op, operand1, operand2);
+		break;
+	 }
+		if (program->registers[currinst.reg] == 0) {
+			program->registers[H5VM_Register_Flag] &= 0b1111111111111110;
+		} else {
+			program->registers[H5VM_Register_Flag] |= 0b0000000000000001;
+		}
+		if (op == '=') {
+			if ((operand1 - operand2) == 0) {
+				program->registers[H5VM_Register_Flag] &= 0b1111111111111110;
+			} else {
+				program->registers[H5VM_Register_Flag] |= 0b0000000000000001;
+			}
+		}
+		if (op == '+' && (program->registers[currinst.reg] < operand2)) {
+			program->registers[H5VM_Register_Flag] |= 0b0000000000000010;
+		} else if ((op == '-' || op == '=') && ((h5uint)((h5uint)operand1 - (h5uint)operand2) > operand1)) {
+			program->registers[H5VM_Register_Flag] |= 0b0000000000000010;
+		} else {
+			program->registers[H5VM_Register_Flag] &= 0b1111111111111101;
+		}
+		_PC += 1;
+	return 0;
+
+}
+
+unsigned H5VM_execute(H5VM_VirtualMachine *program, H5VM_ReadWriteInfo *rwinf) {
+	H5VM_Instruction currinst = INST(CODE[_PC]);
+	rwinf->adrr = 0; /*Placeholder*/
+	rwinf->adrw = 0; /*Placeholder*/
+
+	unsigned retval;
+	switch (currinst.opcode) {
+	case Inst_halt:
+		retval = H5VM_opcodeHalt(program);
+		break;
+	case Inst_jump:
+		retval = H5VM_opcodeJump(program);
+		break;
+	case Inst_skpz:
+		retval = H5VM_opcodeSkpz(program);
+		break;
+	case Inst_skmz:
+		retval = H5VM_opcodeSkmz(program);
+		break;
+	case Inst_stki:
+		retval = H5VM_opcodeStki(program);
+		break;
+	case Inst_stkd:
+		retval = H5VM_opcodeStkd(program);
+		break;
+	case Inst_func:
+		retval = H5VM_opcodeFunc(program);
+		break;
+	case Inst_back:
+		retval = H5VM_opcodeBack(program);
+		break;
+	case Inst_call:
+		retval = H5VM_opcodeCall(program);
+		break;
+	case Inst_mlod:
+		retval = H5VM_opcodeMlod(program);
+		break;
+	case Inst_mstr:
+		retval = H5VM_opcodeMstr(program);
+		break;
+	case Inst_vlod:
+		retval = H5VM_opcodeVlod(program);
+		break;
+	case Inst_vstr:
+		retval = H5VM_opcodeVstr(program);
+		break;
+	case Inst_fset:
+		retval = H5VM_opcodeFset(program);
+		break;
+	case Inst_fdel:
+		retval = H5VM_opcodeFdel(program);
+		break;
+	case Inst_fflp:
+		retval = H5VM_opcodeFflp(program);
+		break;
+	case Inst_badd:
+		retval = H5VM_opcodeArithmetic(program, '+');
+		break;
+	case Inst_bsub:
+		retval = H5VM_opcodeArithmetic(program, '-');
+		break;
+	case Inst_band:
+		retval = H5VM_opcodeArithmetic(program, 'a');
+		break;
+	case Inst_inor:
+		retval = H5VM_opcodeArithmetic(program, 'o');
+		break;
+	case Inst_exor:
+		retval = H5VM_opcodeArithmetic(program, 'x');
+		break;
+	case Inst_shft:
+		retval = H5VM_opcodeArithmetic(program, 's');
+		break;
+	case Inst_comp:
+		retval = H5VM_opcodeArithmetic(program, '=');
+		break;
+	default:
+		/*Unhandled instruction!*/
+		retval = 2;
+		break;
+	}
+	return retval;
 }

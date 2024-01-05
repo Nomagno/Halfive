@@ -1,0 +1,50 @@
+opcode|supported modes               |explanation
+HALT  |N/A                           |Computer go ded (x_x)
+JUMP  |m, i, p                       |Jump to a specific PC
+SKPZ  |i (def)                       |Move PC relatively forwards if ZF is 0
+SKMZ  |i (def)                       |Move PC relatively backwards if ZF is 0
+STKI  |N/A                           |Create stack frame
+STKD  |N/A                           |Delete stack frame
+FUNC  |i (def), s (reg=ID, op=PC adr)|Store start PC of function with a certain ID 
+BACK  |N/A                           |PC=[PC stored by CALL]
+CALL  |i (def), s (op=PC)            |Store PC; PC=[(PC stored by FUNC) or (operand as address)]
+MLOD  |m, i, p, s (reg-reg)          |Write a specific value to a register
+MSTR  |m, p                          |Write a specific value from a register
+VLOD  |s(imm offset), m(adr offset)  |Write a specific value to a stack frame byte offset from a reg
+VSTR  |s(imm offset), m(adr offset)  |Write a specific value from a stack frame byte offset to a reg
+BADD  |m, i, p, s (reg-reg)          |Like load, but performs the operation and writes ZF, CF
+BSUB  |m, i, p, s (reg-reg)          |Like load, but performs the operation and writes ZF, CF
+BAND  |m, i, p, s (reg-reg)          |Like load, but performs the operation and writes ZF
+INOR  |m, i, p, s (reg-reg)          |Like load, but performs the operation and writes ZF
+EXOR  |m, i, p, s (reg-reg)          |Like load, but performs the operation and writes ZF
+SHFT  |m, i, p, s (reg-reg)          |Like load, but performs the operation and writes ZF
+COMP  |m, i, p, s (reg-reg)          |Like BSUB but discards result and ONLY writes ZF, CF
+
+func x(a, b, c):                      | FUNCm hash(x)
+    code(a);                          | VLODm r1 hash(a)
+                                      | [code using r1]
+    that(b);                          | VLODm r2 hash(b)
+                                      | [code using r2]
+    does(c);                          | VLODm r3 hash(c)
+                                      | [code using r3]
+    stuff;                            | [code]
+                                      | ; At this point variables in this 
+                                      | ; stack frame could be set as return values
+return;                               | BACKm
+                                      | 
+x(E3, 2C3, 3F)                        | STKI
+                                      | MLODi r1 00E3
+                                      | VLODm r1 argpos(1)
+                                      | MLODi r2 02C3
+                                      | VLODm r2 argpos(2)
+                                      | MLODi r3 003F
+                                      | VLODm r3 argpos(3)
+                                      | CALLm __ hash(x)
+                                      | ; At this point variables in the stack
+                                      |   frame could be read as return values
+                                      | STKD
+                                      |
+                                      |
+                                      |
+                                      |
+                                      |

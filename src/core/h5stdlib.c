@@ -204,11 +204,17 @@ void *_h5libcmemset(void *str, int val, size_t n)
 	return str;
 }
 
-extern _Bool _h5libstreq(char *s1, char *s2)
+_Bool _h5libstreq(char *s1, char *s2)
 {
 	if (_h5libcstrcmp(s1, s2) == 0) {
 		return 1;
 	} else {
 		return 0;
 	}
+}
+
+size_t _h5libcstrlen (const char * str) {
+	size_t i;
+	for (i = 0; str[i] != '\0'; i++);
+	return i;
 }

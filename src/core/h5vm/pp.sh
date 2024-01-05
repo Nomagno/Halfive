@@ -26,7 +26,7 @@ includepp "$1"           |
 	sed 's/\;.*//g'      |
 	sed '/^\s*$/d'       |
 	awk -f pp_1.awk      |
-	sed 's/__/\n/g'      |
+	sed 's/@@/\n/g'      |
 	sed 's/^[ \t]*//g'   |
 	awk -f pp_2.awk      |
 	awk -f pp_3.awk

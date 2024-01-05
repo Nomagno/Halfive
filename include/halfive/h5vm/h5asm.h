@@ -27,7 +27,7 @@ IN THE SOFTWARE.
 #define H5ASM_H
 #include <halfive/h5req.h>
 #include <halfive/h5vm/h5vm.h>
-h5uint H5ASM_parse(char *linestr, H5VM_ExecutableUnit *code);
+h5uint H5ASM_parse(char *linestr, h5ulong *code);
 
 #define STRARR(...) (char *[]){__VA_ARGS__}, ELEMNUM((char *[]){__VA_ARGS__})
 

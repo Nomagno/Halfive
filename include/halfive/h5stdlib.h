@@ -41,6 +41,7 @@ typedef unsigned long sulong;
 #define h5strtok  _h5libcstrtok
 #define h5memcpy  _h5libcmemcpy
 #define h5strncpy _h5libcstrncpy
+#define h5strlen _h5libcstrlen
 #define h5memset  _h5libcmemset
 
 #define h5malloc  _ERROR_UNIMPLEMENTED
@@ -68,6 +69,7 @@ extern char *_h5libcstrtok(char *, char *);
 void *_h5libcmemcpy(void *dest, const void *src, size_t n);
 char *_h5libcstrncpy(char *dest, const char *src, size_t n);
 void *_h5libcmemset(void *str, int val, size_t n);
+size_t _h5libcstrlen (const char * str);
 
 #define H5_IS_DEC_DIGIT(x)                                                   \
 	(x == '0' || x == '1' || x == '2' || x == '3' || x == '4' || x == '5' || \
