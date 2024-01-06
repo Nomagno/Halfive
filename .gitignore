@@ -1,0 +1,12 @@
+*.o
+*.a
+h5asm
+h5asm_debug
+pamview
+texttest
+gear
+sim
+block
+halfive_shell.html
+index.js
+index.wasm
