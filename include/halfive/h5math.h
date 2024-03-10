@@ -36,9 +36,11 @@ IN THE SOFTWARE.
 
 #define MAKEVEC2(type) typedef struct { type x; type y; } vec2_##type
 #define VEC2(type) vec2_##type
+#define TUPLE2(type) vec2_##type
 
 #define MAKEVEC3(type) typedef struct { type x; type y; type z; } vec3_##type
 #define VEC3(type) vec3_##type
+#define TUPLE3(type) vec3_##type
 
 
 MAKEVEC2(h5uint);
@@ -154,7 +156,7 @@ typedef enum {
 
 typedef struct {
 	H5Math_IntersectType type;
-	VEC2(h5float) point;
+	VEC2(h5float) data;
 } H5Math_IntersectData;
 
 _Bool H5Math_float_checkForOverlap_1D(VEC2(h5float) l1, VEC2(h5float) l2);

@@ -93,7 +93,7 @@ void H5Render_scale(H5Render_PixelData insurf, H5Render_PixelData outsurf,
 					memcpy(&outsurf.data[width*(y+k2)], &outsurf.data[flat_index_y], width*sizeof(h5uint));
 				}
 			} else {
-				/*printf("Wow! a totally transparent line!\n");*/
+				/*maybe_printf("Wow! a totally transparent line!\n");*/
 			}
 		}
 	}

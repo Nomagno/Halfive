@@ -1,6 +1,10 @@
 #ifndef H5REQ_H
 #define H5REQ_H
 
+#ifdef IMPL_EMSCRIPTEN
+	#define DISABLE_PRINTF
+#endif
+
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>

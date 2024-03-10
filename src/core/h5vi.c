@@ -142,10 +142,10 @@ unsigned H5VI_init(H5VI_Reference *ref, size_t h, size_t w)
 	SDL_JoystickEventState(SDL_ENABLE);
 	SDL_PumpEvents();
 	for (int i = 0; i < SDL_NumJoysticks(); i++) {
-		printf("CTRL: %s\n", SDL_JoystickNameForIndex(i));
+		maybe_printf("CTRL: %s\n", SDL_JoystickNameForIndex(i));
 	}
 	globalref.controller = SDL_JoystickOpen(JOYSTICK_INDEX);
-	printf("CTRLNUM: %i\n",  SDL_NumJoysticks());
+	maybe_printf("CTRLNUM: %i\n",  SDL_NumJoysticks());
 */
 	ref->platform[0] = 'S';
 	ref->platform[1] = 'D';

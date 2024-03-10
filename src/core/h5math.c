@@ -183,10 +183,6 @@ h5float H5Math_float_dotProduct(VEC2(h5float) a, VEC2(h5float) b){
 	return a.x*b.x + a.y*b.y;
 }
 
-/* https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect */
-/* https://gist.github.com/tp/75cb619a7e40e6ad008ef2a6837bbdb2 */
-/* VEC2(h5float) pointOfIntersection_crossproduct(VEC2(h5float) l1_a, VEC2(h5float) l1_b, VEC2(h5float) l2_a, VEC2(h5float) l2_b); */
-
 _Bool H5Math_float_checkForOverlap_1D(VEC2(h5float) l1, VEC2(h5float) l2) {
 	if ((l1.x > l2.x) && (l1.x < l2.y)) {
 		return 1;
@@ -198,57 +194,148 @@ _Bool H5Math_float_checkForOverlap_1D(VEC2(h5float) l1, VEC2(h5float) l2) {
 	return 0;
 }
 
+/* https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect */
+/* https://gist.github.com/tp/75cb619a7e40e6ad008ef2a6837bbdb2 */
 /* https://stackoverflow.com/questions/16314069/calculation-of-intersections-between-line-segments */
-H5Math_IntersectData H5Math_float_pointOfIntersection(VEC2(h5float) l1_a, VEC2(h5float) l1_b, VEC2(h5float) l2_a, VEC2(h5float) l2_b) {
-	/*For point-intercept equation (y = a*x + b)*/
-	const h5float x1 = l1_a.x;
-	const h5float x2 = l1_b.x;
-	const h5float x3 = l2_a.x;
-	const h5float x4 = l2_b.x;
-	const h5float y1 = l1_a.y;
-	const h5float y2 = l1_b.y;
-	const h5float y3 = l2_a.y;
-	const h5float y4 = l2_b.y;
 
+/*(2, 2) (3, 2) (2.5, 1) (2.5, 3)*/
 
-	_Bool l1_isvertical = H5FLOAT_CMP(x1, x2);
-	_Bool l2_isvertical = H5FLOAT_CMP(x3, x4);
-	if (l1_isvertical && l2_isvertical) {
-		if (H5FLOAT_CMP(x1, x3)) {
-			return (H5Math_IntersectData) { Overlap_None, {0, 0} };
+H5Math_IntersectData H5Math_float_getLineFromSegment(VEC2(h5float) line_start, VEC2(h5float) line_end) {
+	TUPLE2(h5float) retval = {0, 0};
+	H5Math_IntersectType type = 0;
+	_Bool line_isvertical = H5FLOAT_CMP(line_start.x, line_end.x);
+	_Bool line_ishorizontal = H5FLOAT_CMP(line_start.y, line_end.y);
+	if (line_isvertical && line_ishorizontal) {
+		/*Nonsense! This segment is closer to being a point than a segment*/
+		type = Overlap_None;
+		retval.x = line_start.x;
+		retval.y = line_start.y;
+	} else if (line_isvertical) {
+		/*Describing a vertical line as slope-intercept is not possible, but we do it anyways*/
+		type = Overlap_SinglePoint;
+		retval.x = H5FLT_MAX; /*Slope*/
+		retval.y = line_start.x; /*Intercept*/
+	} else if (line_ishorizontal) {
+		type = Overlap_SinglePoint;
+		retval.x = 0; /*Slope*/
+		retval.y = line_start.y; /*Intercept*/
+	} else {
+		/*Generic case, a line with a certain non-zero slope*/
+		type = Overlap_SinglePoint;
+		retval.x = (line_end.y - line_start.y)/(line_end.x - line_start.x); /*Slope*/
+		retval.y = line_start.y - (retval.x*line_start.x); /*Intercept*/
+	}
+	return (H5Math_IntersectData){ type, retval };
+}
+
+/*
+y = lx + j
+y = mx + k
+
+mx + k = lx + j
+mx - lx = j - k
+(m-l)x = j - k
+x = (j-k)/(m-l)
+*/
+
+H5Math_IntersectData H5Math_float_lineIntersection(TUPLE2(h5float) l1, TUPLE2(h5float) l2) {
+	h5float slope1 = l1.x;
+	h5float slope2 = l2.x;
+	h5float intercept1 = l1.y;
+	h5float intercept2 = l2.y;
+	_Bool sameslope = H5FLOAT_CMP(slope1, slope2);
+	_Bool sameintercept = H5FLOAT_CMP(intercept1, intercept2);
+	if (sameslope && sameintercept) {
+		/*They are the same line, of course the intersection is multiple points!!!*/
+		return (H5Math_IntersectData) { Overlap_MultiplePoints, {1, 1} };
+	}
+	if (sameslope && !sameintercept) {
+		/*They are parallel, of course they don't have an intersection!*/
+		return (H5Math_IntersectData) { Overlap_None, {1, 0} };
+	}
+	h5float intersectx = (intercept1-intercept2)/(slope2-slope1);
+	h5float intersecty = slope1*intersectx+intercept1;
+	return (H5Math_IntersectData) { Overlap_SinglePoint, {intersectx, intersecty} };
+}
+
+_Bool H5Math_isPointWithinSegment(VEC2(h5float) line_start, VEC2(h5float) line_end, VEC2(h5float) point) {
+	const h5float extra_tolerance = 0.0;
+	if (line_start.x <= line_end.x) {
+		return (point.x >= (line_start.x-extra_tolerance) && point.x <= (line_end.x+extra_tolerance) );
+	} else {
+		return (point.x >= (line_end.x-extra_tolerance) && point.x <= (line_start.x+extra_tolerance));
+	}
+}
+
+H5Math_IntersectData H5Math_float_pointOfIntersection(VEC2(h5float) l1_start, VEC2(h5float) l1_end, VEC2(h5float) l2_start, VEC2(h5float) l2_end) {
+	H5Math_IntersectData lineA = H5Math_float_getLineFromSegment(l1_start, l1_end);
+	h5float slopeA, interceptA;
+	_Bool lineA_isvertical;
+	if (lineA.type == Overlap_None) {
+		return (H5Math_IntersectData){ Overlap_None, {1, 0} };
+	} else if (lineA.type == Overlap_MultiplePoints) {
+		/*Burn the computer*/
+		return (H5Math_IntersectData){ Overlap_MultiplePoints, {0, 0} };
+	} else {
+		lineA_isvertical = (lineA.data.x == H5FLT_MAX);
+		slopeA = lineA.data.x;
+		interceptA = lineA.data.y;
+	}
+	H5Math_IntersectData lineB = H5Math_float_getLineFromSegment(l2_start, l2_end);
+	h5float slopeB, interceptB;
+	_Bool lineB_isvertical;
+	if (lineB.type == Overlap_None) {
+		return (H5Math_IntersectData){ Overlap_None, {2, 0} };
+	} else if (lineB.type == Overlap_MultiplePoints) {
+		/*Burn the computer*/
+		return (H5Math_IntersectData){ Overlap_MultiplePoints, {1, 0} };
+	} else {
+		lineB_isvertical = (lineB.data.x == H5FLT_MAX);
+		slopeB = lineB.data.x;
+		interceptB = lineB.data.y;
+	}
+
+	if (!lineA_isvertical && !lineB_isvertical) {
+		H5Math_IntersectData virtual_intersect = H5Math_float_lineIntersection((TUPLE2(h5float)){ slopeA, interceptA }, (TUPLE2(h5float)){ slopeB, interceptB });
+		if (virtual_intersect.type == Overlap_None) {
+			return (H5Math_IntersectData){ Overlap_None, {3, 0} };
+		} else if (virtual_intersect.type == Overlap_MultiplePoints) {
+			return (H5Math_IntersectData){ Overlap_MultiplePoints, {2, 0} };
 		} else {
-			if (H5Math_float_checkForOverlap_1D((VEC2(h5float)){y1, y2}, (VEC2(h5float)){y3, y4})) {
-				//return (H5Math_IntersectData) { Overlap_MultiplePoints, {0, 0} };
-				return (H5Math_IntersectData) { Overlap_None, {0, 0} };
+			if (H5Math_isPointWithinSegment(l1_start, l1_end, virtual_intersect.data) &&
+			    H5Math_isPointWithinSegment(l2_start, l2_end, virtual_intersect.data)) {
+				return (H5Math_IntersectData){ Overlap_SinglePoint, virtual_intersect.data };
 			} else {
-				return (H5Math_IntersectData) { Overlap_None, {0, 0} };
+				return (H5Math_IntersectData){ Overlap_None, {4, 0} };
 			}
 		}
+	} else if (!lineA_isvertical && lineB_isvertical) {
+		VEC2(h5float) virtual_intersection_point = { l2_start.x, slopeA*l2_start.x+interceptA };
+		if (H5Math_isPointWithinSegment(l1_start, l1_end, virtual_intersection_point) &&
+		    H5Math_isPointWithinSegment(l2_start, l2_end, virtual_intersection_point)) {
+				return (H5Math_IntersectData){ Overlap_SinglePoint, virtual_intersection_point };
+			} else {
+				return (H5Math_IntersectData){ Overlap_None, {5, 0} };
+			}
+	} else if (lineA_isvertical && !lineB_isvertical) {
+		VEC2(h5float) virtual_intersection_point = { l1_start.x, slopeB*l1_start.x+interceptB };
+		if (H5Math_isPointWithinSegment(l1_start, l1_end, virtual_intersection_point) &&
+		    H5Math_isPointWithinSegment(l2_start, l2_end, virtual_intersection_point)) {
+				return (H5Math_IntersectData){ Overlap_SinglePoint, virtual_intersection_point };
+			} else {
+				return (H5Math_IntersectData){ Overlap_None, {6, 0} };
+			}
+	} else /*Both lines are vertical*/ {
+		if (H5FLOAT_CMP(l1_start.x, l2_start.x)){
+			return (H5Math_IntersectData){ Overlap_MultiplePoints, {3, l1_start.x} };
+		} else {
+			return (H5Math_IntersectData){ Overlap_None, {7, 0} };
+		}
 	}
-
-	const h5float a1 = (y2-y1)/(x2-x1);
-	const h5float b1 = y1 - (a1*x1);
-	const h5float a2 = (y4-y3)/(x4-x3);
-	const h5float b2 = y3 - (a2*x3);
-
-	if (H5FLOAT_CMP(a1, a2) && H5FLOAT_CMP(b1, b2)) { /*Same slope and same intercept*/
-		//return (H5Math_IntersectData) { Overlap_MultiplePoints, {0, 0} };
-		return (H5Math_IntersectData) { Overlap_None, {0, 0} };
-	} else {
-		return (H5Math_IntersectData) { Overlap_None, {0, 0} };
-	}
-
-	if (H5FLOAT_CMP(a1-a2, 0.0)) {
-		return (H5Math_IntersectData) { Overlap_None, {0, 0} }; /*Safety guard to get out of division by zero*/
-	}
-
-	h5float x0 = -(b1-b2)/(a1-a2);
-	h5float y0 = (x0*a1) + b1;
-	return (H5Math_IntersectData) { Overlap_SinglePoint, {x0, y0} };
 }
 
 VEC2(h5float) H5Math_float_rotateVector(VEC2(h5float) vec, h5float angle) {
-	//angle = CLAMPANGLE(angle);
+	/*angle = CLAMPANGLE(angle);*/
 	return (VEC2(h5float)) {
 		cos(angle)*vec.x - sin(angle)*vec.y,
 		sin(angle)*vec.x + cos(angle)*vec.y
@@ -365,4 +452,3 @@ VEC2(h5smax) H5Math_smax_getBezierPoint(h5bezier_smax curve, float t)
 		H5Math_smax_vecAddVec(sumpart1, sumpart2), sumpart3);
 }
 #endif
-

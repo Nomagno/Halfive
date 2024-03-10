@@ -1,6 +1,6 @@
 #include <halfive/h5req.h>
 
-#ifdef PRINTF_AVAILABLE 
+#if defined(PRINTF_AVAILABLE) && !defined(DISABLE_PRINTF)
 
 #define maybe_printf printf
 #define maybe_puts puts
